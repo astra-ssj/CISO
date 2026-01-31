@@ -34,6 +34,25 @@ The **Aegis CISO Dashboard** is a high-performance, executive-level command cent
 - **Performance First**: Optimized for speed and responsiveness.
 - **Client-Side Processing**: Prioritizing data privacy by keeping sensitive processing on the client where possible.
 
+## Security & Quality Architecture
+
+The CISO Dashboard is engineered with a strict focus on data sovereignty and operational resilience.
+
+### Data Privacy & Sovereignty
+
+- **Client-First Architecture**: We prioritize client-side processing for intelligence reports and PII scanning. This ensures that sensitive data (e.g., uploaded documents for analysis) remains within the user's local environment whenever possible.
+- **No Telemetry**: The application is configured to minimize or eliminate external telemetry to ensure air-gapped compatibility.
+
+### Quality Standards
+
+- **Performance**: Optimized for Core Web Vitals, ensuring rapid load times even on constrained networks.
+- **Accessibility**: Designed with high-contrast ratios (WCAG AA compliance target) to support usability in high-stress "War Room" environments.
+
+### Vulnerability Management
+
+- **Integrated Vulnerability Tracking**: The dashboard includes specific modules for tracking and prioritizing organizational vulnerabilities.
+- **War Mode Resilience**: "War Mode" not only changes the UI but also suppresses non-critical network requests to preserve bandwidth for incident response activities.
+
 ## Getting Started
 
 To start the application locally:
