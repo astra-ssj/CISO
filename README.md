@@ -20,6 +20,31 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Key Modules
+
+### 1. Privacy Operations Center
+
+A comprehensive GDPR/CCPA command center featuring:
+
+* **RoPA Data Mapper**: Visualize cross-border data flows.
+* **DSAR Manager**: Handle subject access requests.
+* **Breach Simulator**: Gamified 72-hour incident response training.
+* **Vendor Risk Radar**: AI-driven third-party risk assessment.
+
+### 2. CISO Board Presentation Mode
+
+Transform your security data into a full-screen executive slide deck (`/reporting`).
+
+* **Interactive Slides**: Risk Scorecards, Budget Analysis, and Strategic Roadmaps.
+* **Live Data**: Slides are powered by real-time application state.
+
+### 3. Strategic Intelligence
+
+AI-powered analysis of your security posture (`/intelligence`).
+
+* **Initiative Generator**: Auto-suggests projects based on vulnerability data.
+* **Context Analysis**: Connects threat feeds to your specific architecture.
+
 ## Documentation
 
 For detailed features and usage instructions, please refer to the [User Guide](docs/USER_GUIDE.md).
@@ -28,8 +53,8 @@ For detailed features and usage instructions, please refer to the [User Guide](d
 
 To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+* [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+* [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 

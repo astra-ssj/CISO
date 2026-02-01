@@ -24,6 +24,7 @@ import {
     Target,
     Zap
 } from "lucide-react";
+import { SecureCommsWidget } from "@/components/war-room/secure-comms";
 
 interface Message {
     id: string;
@@ -200,10 +201,10 @@ export default function WarRoomPage() {
                                     )}
                                     <div className={`max-w-[80%] ${message.role === 'user' ? 'order-first' : ''}`}>
                                         <div className={`p-3 rounded-lg text-sm ${message.role === 'user'
-                                                ? 'bg-primary text-primary-foreground'
-                                                : message.role === 'system'
-                                                    ? 'bg-amber-500/10 border border-amber-500/20'
-                                                    : 'bg-secondary/50'
+                                            ? 'bg-primary text-primary-foreground'
+                                            : message.role === 'system'
+                                                ? 'bg-amber-500/10 border border-amber-500/20'
+                                                : 'bg-secondary/50'
                                             }`}>
                                             <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
                                                 {message.content}
@@ -279,8 +280,8 @@ export default function WarRoomPage() {
                                     key={item.id}
                                     onClick={() => togglePlaybookItem(item.id)}
                                     className={`w-full text-left p-2 rounded-lg text-xs flex items-start gap-2 transition-all ${item.completed
-                                            ? 'bg-emerald-500/10 text-emerald-600 line-through opacity-60'
-                                            : 'bg-secondary/30 hover:bg-secondary/50'
+                                        ? 'bg-emerald-500/10 text-emerald-600 line-through opacity-60'
+                                        : 'bg-secondary/30 hover:bg-secondary/50'
                                         }`}
                                 >
                                     {item.completed ? (
@@ -340,6 +341,8 @@ export default function WarRoomPage() {
                     </Card>
                 </div>
             </div>
+            {/* Overlay Widget */}
+            <SecureCommsWidget />
         </div>
     );
 }

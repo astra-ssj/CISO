@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +27,11 @@ import {
     FileJson,
     Loader2,
     Eye,
-    FileDown
+    FileDown,
+    Presentation,
+    ChevronRight,
+    ChevronLeft,
+    X,
 } from "lucide-react";
 
 interface ReportTemplate {
@@ -90,11 +94,138 @@ const RECENT_REPORTS = [
     { id: 5, name: "Annual Risk Assessment 2025", date: "2025-12-20", type: "risk", status: "completed" },
 ];
 
+// --- Presentation Mode Component ---
+function BoardPresentation({ onClose }: { onClose: () => void }) {
+    const [slideIndex, setSlideIndex] = useState(0);
+
+    const slides = [
+        // Slide 1: Title
+        <div key="title" className="flex flex-col items-center justify-center h-full text-center space-y-8 animate-in fade-in zoom-in duration-500">
+            <Shield className="h-32 w-32 text-primary animate-pulse" />
+            <div className="space-y-4">
+                <h1 className="text-6xl font-bold tracking-tighter bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+                    Q1 2026 Security Board Review
+                </h1>
+                <p className="text-2xl text-muted-foreground">Confidential // Board of Directors Eyes Only</p>
+            </div>
+            <div className="mt-12 p-4 border border-border/50 rounded-lg bg-card/50">
+                <div className="text-sm text-muted-foreground uppercase tracking-widest">Presenter</div>
+                <div className="text-xl font-semibold">Jane Doe, CISO</div>
+            </div>
+            <div className="absolute bottom-8 text-sm text-muted-foreground">Use Arrow Keys to Navigate</div>
+        </div>,
+
+        // Slide 2: Executive Scorecard
+        <div key="scorecard" className="grid grid-cols-2 gap-12 h-full p-12">
+            <div className="col-span-2 text-left mb-8">
+                <h2 className="text-4xl font-bold text-primary flex items-center gap-3">
+                    <TrendingUp className="h-10 w-10" /> Executive Scorecard
+                </h2>
+                <div className="h-1 w-full bg-gradient-to-r from-primary to-transparent mt-4" />
+            </div>
+
+            <div className="space-y-6">
+                <Card className="bg-card/20 border-primary/20 h-full flex flex-col justify-center items-center p-8">
+                    <div className="text-6xl font-black text-emerald-500 mb-4">A-</div>
+                    <div className="text-2xl text-muted-foreground uppercase tracking-wider">Overall Posture</div>
+                    <p className="text-center mt-4 text-emerald-400">+12% from Q4 2025</p>
+                </Card>
+            </div>
+            <div className="grid grid-rows-2 gap-6">
+                <Card className="bg-card/20 border-border p-6 flex flex-col justify-center">
+                    <div className="flex justify-between items-end">
+                        <div>
+                            <div className="text-4xl font-bold text-white">88/100</div>
+                            <div className="text-lg text-muted-foreground">Compliance Score</div>
+                        </div>
+                        <CheckCircle className="h-12 w-12 text-blue-500" />
+                    </div>
+                </Card>
+                <Card className="bg-card/20 border-border p-6 flex flex-col justify-center">
+                    <div className="flex justify-between items-end">
+                        <div>
+                            <div className="text-4xl font-bold text-amber-500">4</div>
+                            <div className="text-lg text-muted-foreground">Critical Vulns</div>
+                        </div>
+                        <AlertTriangle className="h-12 w-12 text-amber-500" />
+                    </div>
+                </Card>
+            </div>
+        </div>,
+
+        // Slide 3: Strategic Initiatives
+        <div key="strategy" className="h-full p-12 flex flex-col justify-center">
+            <h2 className="text-4xl font-bold text-primary flex items-center gap-3 mb-12">
+                <BarChart3 className="h-10 w-10" /> Strategic Roadmap
+            </h2>
+            <div className="grid grid-cols-3 gap-8">
+                {[
+                    { title: "Zero Trust Pilot", status: "On Track", progress: 65, color: "bg-blue-500" },
+                    { title: "AI Governance", status: "At Risk", progress: 30, color: "bg-amber-500" },
+                    { title: "Cloud Security", status: "Completed", progress: 100, color: "bg-emerald-500" }
+                ].map((item, i) => (
+                    <Card key={i} className="bg-card/30 border-primary/10 overflow-hidden relative">
+                        <div className={`absolute top-0 left-0 w-full h-2 ${item.color}`} />
+                        <CardContent className="p-8 space-y-6">
+                            <h3 className="text-2xl font-bold">{item.title}</h3>
+                            <div className="flex justify-between text-lg">
+                                <span className="text-muted-foreground">Status</span>
+                                <span className={item.status === 'At Risk' ? 'text-red-500' : 'text-white'}>{item.status}</span>
+                            </div>
+                            <div className="w-full bg-secondary rounded-full h-4">
+                                <div className={`${item.color} h-4 rounded-full`} style={{ width: `${item.progress}%` }} />
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        </div>
+    ];
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "ArrowRight") setSlideIndex(prev => Math.min(prev + 1, slides.length - 1));
+            if (e.key === "ArrowLeft") setSlideIndex(prev => Math.max(prev - 1, 0));
+            if (e.key === "Escape") onClose();
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [slides.length, onClose]);
+
+    return (
+        <div className="fixed inset-0 z-50 bg-black text-white flex flex-col">
+            {/* Toolbar */}
+            <div className="absolute top-4 right-4 flex gap-2 z-50">
+                <div className="px-4 py-2 bg-white/10 rounded-full text-sm font-mono backdrop-blur-md">
+                    SLIDE {slideIndex + 1} / {slides.length}
+                </div>
+                <Button variant="ghost" size="icon" onClick={onClose} className="hover:bg-red-500/20 hover:text-red-500">
+                    <X className="h-6 w-6" />
+                </Button>
+            </div>
+
+            {/* Slide Content */}
+            <div className="flex-1 overflow-hidden relative">
+                {slides[slideIndex]}
+            </div>
+
+            {/* Navigation Overlay (Invisible usually, but clickable) */}
+            <div className="absolute inset-y-0 left-0 w-24 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer bg-gradient-to-r from-black/50 to-transparent" onClick={() => setSlideIndex(p => Math.max(p - 1, 0))}>
+                <ChevronLeft className="h-12 w-12" />
+            </div>
+            <div className="absolute inset-y-0 right-0 w-24 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer bg-gradient-to-l from-black/50 to-transparent" onClick={() => setSlideIndex(p => Math.min(p + 1, slides.length - 1))}>
+                <ChevronRight className="h-12 w-12" />
+            </div>
+        </div>
+    );
+}
+
 export default function ReportingPage() {
     const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
     const [dateRange, setDateRange] = useState("last30");
     const [selectedSections, setSelectedSections] = useState<string[]>([]);
+    const [isPresenting, setIsPresenting] = useState(false);
 
     const handleGenerateReport = () => {
         setIsGenerating(true);
@@ -118,12 +249,18 @@ export default function ReportingPage() {
 
     return (
         <div className="space-y-8 max-w-7xl mx-auto">
+            {isPresenting && <BoardPresentation onClose={() => setIsPresenting(false)} />}
+
             <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Reports & Export</h1>
                     <p className="text-muted-foreground mt-1">Generate compliance reports, executive summaries, and export data</p>
                 </div>
                 <div className="flex gap-2">
+                    <Button variant="default" size="sm" onClick={() => setIsPresenting(true)} className="bg-indigo-600 hover:bg-indigo-700">
+                        <Presentation className="h-4 w-4 mr-2" />
+                        Board Mode
+                    </Button>
                     <Button variant="outline" size="sm">
                         <Calendar className="h-4 w-4 mr-2" />
                         Schedule Reports
@@ -162,8 +299,8 @@ export default function ReportingPage() {
                                     <Card
                                         key={template.id}
                                         className={`cursor-pointer transition-all hover:shadow-md ${selectedTemplate === template.id
-                                                ? 'ring-2 ring-primary border-primary'
-                                                : 'border-border hover:border-primary/30'
+                                            ? 'ring-2 ring-primary border-primary'
+                                            : 'border-border hover:border-primary/30'
                                             }`}
                                         onClick={() => {
                                             setSelectedTemplate(template.id);

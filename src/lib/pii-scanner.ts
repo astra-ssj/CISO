@@ -1,9 +1,10 @@
 export interface PIIMatch {
-    type: 'EMAIL' | 'PHONE' | 'CREDIT_CARD' | 'SSN' | 'IP_ADDRESS' | 'DATE' | 'IBAN';
+    type: 'EMAIL' | 'PHONE' | 'CREDIT_CARD' | 'SSN' | 'IP_ADDRESS' | 'DATE' | 'IBAN' | 'PASSPORT_US' | 'API_KEY' | 'UUID';
     value: string;
     sensitivity: 'HIGH' | 'MEDIUM' | 'LOW';
-    gdprArticle?: string; // e.g. "Art. 4(1) Personal Data"
+    gdprArticle?: string;
     index: number;
+    context?: string;
 }
 
 export interface ScanResult {
@@ -12,6 +13,7 @@ export interface ScanResult {
     totalPII: number;
     sensitiveCount: number;
     redactedText: string;
+    piiBreakdown: Record<string, number>;
 }
 
 const PATTERNS = {
@@ -22,41 +24,75 @@ const PATTERNS = {
     IP_ADDRESS: /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g,
     DATE: /\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b/g,
     IBAN: /[A-Z]{2}\d{2}[ ]\d{4}[ ]\d{4}[ ]\d{4}[ ]\d{4}[ ]\d{0,2}|[A-Z]{2}\d{22}/g,
+    PASSPORT_US: /\b[0-9]{9}\b/g, // Simplified US Passport (9 digits)
+    API_KEY: /\b(sk_live_|pk_live_|AIza|eyJh)[a-zA-Z0-9_\-]{20,}\b/g, // Common prefixes + high entropy
+    UUID: /\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b/g,
+};
+
+const CONTEXT_KEYWORDS = {
+    PASSPORT_US: ['passport', 'document', 'travel', 'id'],
+    API_KEY: ['key', 'secret', 'token', 'auth', 'api'],
+    SSN: ['ssn', 'social', 'security', 'tax'],
+    CREDIT_CARD: ['card', 'cc', 'visa', 'amex', 'mastercard', 'payment']
 };
 
 export const scanContent = (text: string): ScanResult => {
     let matches: PIIMatch[] = [];
     let redacted = text;
 
-    // Helper to process regex
-    const processPattern = (type: PIIMatch['type'], regex: RegExp, sensitivity: PIIMatch['sensitivity'], article: string) => {
-        let match;
-        // reset lastIndex
-        regex.lastIndex = 0;
+    // Helper to find context words nearby
+    const findContext = (index: number, type: keyof typeof CONTEXT_KEYWORDS): string | undefined => {
+        if (!CONTEXT_KEYWORDS[type]) return undefined;
 
-        // We use a new regex with 'g' to find all matches
+        const windowSize = 50;
+        const start = Math.max(0, index - windowSize);
+        const end = Math.min(text.length, index + windowSize);
+        const surroundingText = text.slice(start, end).toLowerCase();
+
+        const foundKeyword = CONTEXT_KEYWORDS[type].find(keyword => surroundingText.includes(keyword));
+        return foundKeyword ? `Context detected: "${foundKeyword}"` : undefined;
+    };
+
+    // Helper to process regex
+    const processPattern = (type: PIIMatch['type'], regex: RegExp, sensitivity: PIIMatch['sensitivity'], article: string, checkContext = false) => {
+        regex.lastIndex = 0;
         const allMatches = [...text.matchAll(regex)];
 
         allMatches.forEach(m => {
+            const index = m.index || 0;
+            let context = undefined;
+
+            // For certain types like simplified Passport regex, strict context is needed to avoid false positives
+            if (checkContext) {
+                // @ts-ignore
+                context = findContext(index, type as any);
+                if (!context && type === 'PASSPORT_US') return; // Skip 9-digit numbers if no passport context
+            }
+
             matches.push({
                 type,
                 value: m[0],
                 sensitivity,
                 gdprArticle: article,
-                index: m.index || 0
+                index,
+                context
             });
-            // Simple redaction (replace with [TYPE])
             redacted = redacted.replace(m[0], `[${type}]`);
         });
     };
 
-    processPattern('CREDIT_CARD', PATTERNS.CREDIT_CARD, 'HIGH', 'Art. 9 Special Category (Financial Context)');
-    processPattern('SSN', PATTERNS.SSN, 'HIGH', 'Art. 9 / National ID');
+    processPattern('CREDIT_CARD', PATTERNS.CREDIT_CARD, 'HIGH', 'Art. 9 Special Category (Financial Context)', true);
+    processPattern('SSN', PATTERNS.SSN, 'HIGH', 'Art. 9 / National ID', true);
     processPattern('IBAN', PATTERNS.IBAN, 'HIGH', 'Art. 9 Financial');
+    processPattern('PASSPORT_US', PATTERNS.PASSPORT_US, 'HIGH', 'Art. 9 / National ID', true);
+    processPattern('API_KEY', PATTERNS.API_KEY, 'HIGH', 'Security Critical / Technical PII', true);
+
     processPattern('EMAIL', PATTERNS.EMAIL, 'MEDIUM', 'Art. 4(1) Personal Data');
     processPattern('PHONE', PATTERNS.PHONE, 'MEDIUM', 'Art. 4(1) Personal Data');
+
     processPattern('IP_ADDRESS', PATTERNS.IP_ADDRESS, 'LOW', 'Art. 4(1) Online Identifier');
     processPattern('DATE', PATTERNS.DATE, 'LOW', 'Potential DOB context');
+    processPattern('UUID', PATTERNS.UUID, 'LOW', 'Technical Identifier');
 
     // Calculate Risk Score (0-100)
     const highRiskWeight = 15;
@@ -70,17 +106,24 @@ export const scanContent = (text: string): ScanResult => {
         else rawScore += lowRiskWeight;
     });
 
-    // Cap at 100, log scaleish
-    const normalizedScore = Math.min(100, Math.ceil(rawScore));
+    // Multiplier for combination of sensitive data type
+    const uniqueTypes = new Set(matches.map(m => m.type)).size;
+    if (uniqueTypes > 2) rawScore *= 1.2; // 20% boost if multiple types found (correlation risk)
 
-    // Sort matches by index
+    const normalizedScore = Math.min(100, Math.ceil(rawScore));
     matches.sort((a, b) => a.index - b.index);
+
+    const piiBreakdown: Record<string, number> = {};
+    matches.forEach(m => {
+        piiBreakdown[m.type] = (piiBreakdown[m.type] || 0) + 1;
+    });
 
     return {
         matches,
         riskScore: normalizedScore,
         totalPII: matches.length,
         sensitiveCount: matches.filter(m => m.sensitivity === 'HIGH').length,
-        redactedText: redacted
+        redactedText: redacted,
+        piiBreakdown
     };
 };

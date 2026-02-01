@@ -7,26 +7,47 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { FileCheck, Upload, AlertCircle, ShieldCheck, Siren } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FileCheck, Upload, AlertCircle, ShieldCheck, Siren, Fingerprint } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { useComplianceStore } from "@/stores/compliance-store";
+import { useRef, useEffect } from "react";
+// Import stores
+import { usePlaybookStore } from "@/lib/playbook-store";
+import { getDynamicControls } from "@/lib/governance";
+import { usePolicyStore } from "@/lib/policy-store";
 
 export function AuditManager() {
-    const { controls, auditMode, toggleAuditMode, breakControl, fixControl } = useComplianceStore();
+    const { playbooks } = usePlaybookStore();
+    const { policies } = usePolicyStore();
+
+    // Derived state from dynamic engine
+    const controls = getDynamicControls(policies, playbooks);
+
+    // Internal state
+    const [auditMode, setAuditMode] = useState(false);
     const [auditStep, setAuditStep] = useState(0);
     const [auditorMood, setAuditorMood] = useState(100);
     const [currentRequest, setCurrentRequest] = useState<typeof controls[0] | null>(null);
+    const [selectedEvidence, setSelectedEvidence] = useState("");
+
+    // Get all evidence across all resolved playbooks
+    const availableEvidence = playbooks
+        .flatMap(p => p.evidenceLog)
+        .map(e => ({
+            label: `${new Date(e.timestamp).toLocaleTimeString()} - ${e.message.substring(0, 30)}...`,
+            value: e.message // Using message as ID/Value for simplicity
+        }));
 
     // Mock Audit Sequence
     const startAudit = () => {
-        toggleAuditMode(true);
+        setAuditMode(true);
         setAuditorMood(50); // Start skeptical
         nextChallenge();
     };
 
     const stopAudit = () => {
-        toggleAuditMode(false);
+        setAuditMode(false);
         setAuditStep(0);
         setCurrentRequest(null);
     };
@@ -35,21 +56,35 @@ export function AuditManager() {
         // Pick a random domain to audit
         const target = controls[Math.floor(Math.random() * controls.length)];
         setCurrentRequest(target);
+        setSelectedEvidence("");
 
-        // Simulating the auditor "finding" an issue
-        if (target.status === 'COMPLIANT' && Math.random() > 0.5) {
-            breakControl(target.id); // Auditor breaks it!
-        }
+        // Logic: active incidents or missing policies trigger "finding"
+        // In this dynamic version, we respect the actual status
     };
 
     const handleEvidenceUpload = () => {
         if (!currentRequest) return;
 
-        if (currentRequest.status === 'COMPLIANT') {
-            setAuditorMood(prev => Math.min(100, prev + 15));
+        // Verification Logic
+        let success = false;
+
+        // If checking Incident Handling (IR-4), we need evidence from an Incident
+        if (currentRequest.id === 'IR-4') {
+            if (selectedEvidence && availableEvidence.some(e => e.value === selectedEvidence)) {
+                success = true;
+            }
+        }
+        // If checking Access Control (AC-1), we check if the policy exists (auto-verified largely)
+        else if (currentRequest.id === 'AC-1' && currentRequest.status === 'COMPLIANT') {
+            // For policies, pointing to the policy itself is the evidence
+            success = true;
+        }
+
+        if (success) {
+            setAuditorMood(prev => Math.min(100, prev + 25));
             setTimeout(nextChallenge, 1500); // Move to next
         } else {
-            setAuditorMood(prev => Math.max(0, prev - 20)); // You uploaded evidence but it's still broken!
+            setAuditorMood(prev => Math.max(0, prev - 20)); // Wrong evidence!
         }
     };
 
@@ -65,7 +100,7 @@ export function AuditManager() {
                         {auditMode ? "AUDIT PROTOCOL ACTIVE" : "Audit Preparedness"}
                     </CardTitle>
                     <CardDescription>
-                        {auditMode ? "External Auditor is in the building." : "Simulate an unannounced ISO audit."}
+                        {auditMode ? "External Auditor is in the building." : "Simulate an unannounced ISO audit check."}
                     </CardDescription>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -99,10 +134,39 @@ export function AuditManager() {
                                     "{currentRequest.description}"
                                 </div>
 
-                                {currentRequest.status !== 'COMPLIANT' && (
-                                    <div className="p-2 mb-4 bg-red-500/10 border border-red-500/20 rounded text-xs text-red-400 flex gap-2 items-center">
-                                        <AlertCircle className="h-4 w-4" />
-                                        Auditor Found Issue: {currentRequest.failureReason || "Control ineffective"}
+                                {/* Dynamic Status Display */}
+                                <div className={cn(
+                                    "p-2 mb-4 rounded text-xs flex gap-2 items-center",
+                                    currentRequest.status === 'COMPLIANT'
+                                        ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400"
+                                        : "bg-red-500/10 border border-red-500/20 text-red-400"
+                                )}>
+                                    {currentRequest.status === 'COMPLIANT' ? (
+                                        <><ShieldCheck className="h-4 w-4" /> Control seemingly effective. Provide proof.</>
+                                    ) : (
+                                        <><AlertCircle className="h-4 w-4" /> Control Ineffective: {currentRequest.details || "Not found"}</>
+                                    )}
+                                </div>
+
+                                {/* Evidence Selection (Dynamic) */}
+                                {currentRequest.id === 'IR-4' && (
+                                    <div className="mb-4 relative z-10 space-y-2">
+                                        <Label className="text-xs">Select Chain of Custody Log</Label>
+                                        <Select onValueChange={setSelectedEvidence} value={selectedEvidence}>
+                                            <SelectTrigger className="h-8 text-xs">
+                                                <SelectValue placeholder="Select relevant artifact..." />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {availableEvidence.map((e, i) => (
+                                                    <SelectItem key={i} value={e.value} className="text-xs">
+                                                        <span className="font-mono">{e.label}</span>
+                                                    </SelectItem>
+                                                ))}
+                                                {availableEvidence.length === 0 && (
+                                                    <SelectItem value="none" disabled>No Evidence Found in Locker</SelectItem>
+                                                )}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                 )}
 
@@ -110,13 +174,13 @@ export function AuditManager() {
                                     <Button
                                         onClick={handleEvidenceUpload}
                                         className="flex-1 bg-primary hover:bg-primary/90"
-                                        disabled={currentRequest.status !== 'COMPLIANT'} // Can't upload if broken
+                                        disabled={currentRequest.status !== 'COMPLIANT'} // Can't prove what is broken
                                     >
                                         <Upload className="mr-2 h-4 w-4" />
                                         {currentRequest.status === 'COMPLIANT' ? "Submit Evidence" : "Fix Issues First"}
                                     </Button>
                                     <Button variant="outline" className="flex-1" onClick={nextChallenge}>
-                                        Skip (Risk)
+                                        Skip (Risk Penalty)
                                     </Button>
                                 </div>
 
@@ -149,7 +213,7 @@ export function AuditManager() {
                         >
                             <FileCheck className="h-12 w-12 text-muted-foreground" />
                             <p className="text-sm max-w-[200px]">
-                                Ready to simulate an external audit against your {controls.length} live controls.
+                                Ready to simulate an external audit against {controls.length} live controls.
                             </p>
                         </motion.div>
                     )}

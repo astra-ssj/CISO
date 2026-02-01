@@ -11,7 +11,7 @@ export interface ToolExecution {
 
 export interface ThinkingStep {
     description: string;
-    status: 'pending' | 'active' | 'completed';
+    status: 'pending' | 'active' | 'completed' | 'failed';
 }
 
 export interface AgentMessage {
@@ -30,7 +30,7 @@ export class OpenClawClient {
      * Mocks sending a message to the OpenClaw agent.
      * Returns a stream of updates (Thinking -> Tool -> Response).
      */
-    async *sendMessage(query: string): AsyncGenerator<AgentMessage> {
+    async *sendMessage(query: string, context: any = {}): AsyncGenerator<AgentMessage> {
         const messageId = crypto.randomUUID();
         const timestamp = Date.now();
 
@@ -44,71 +44,62 @@ export class OpenClawClient {
             timestamp
         };
         yield { ...currentMessage };
-        await this.delay(800);
 
-        // 2. Decide to use a tool (Mock logic based on keywords)
-        const isScan = query.toLowerCase().includes('scan') || query.toLowerCase().includes('port');
+        try {
+            // Call the Server-Side Agent API
+            const response = await fetch('/api/agent/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: query,
+                    history: [], // In V2 send full history
+                    context: {
+                        page: window.location.pathname,
+                        userRole: 'CISO',
+                        systemStatus: 'NOMINAL', // In real app, get from store
+                        ...context
+                    }
+                })
+            });
 
-        if (isScan) {
-            // Update thinking
+            if (!response.ok) throw new Error('Agent API failed');
+
+            const data = await response.json();
+
+            // Simulate "Thinking" completion
             currentMessage.thinking = [
                 { description: 'Analyzing request...', status: 'completed' },
-                { description: 'Identified request for network scanning', status: 'active' }
+                { description: 'Consulting Knowledge Base', status: 'completed' }
             ];
             yield { ...currentMessage };
-            await this.delay(800);
 
-            currentMessage.thinking = [
-                { description: 'Analyzing request...', status: 'completed' },
-                { description: 'Identified request for network scanning', status: 'completed' },
-                { description: 'Selecting tool: Nmap Scanner', status: 'active' }
-            ];
-            yield { ...currentMessage };
-            await this.delay(600);
+            // Handle Tool Execution if present in response
+            if (data.toolExecution) {
+                currentMessage.thinking.push({
+                    description: `Executing tool: ${data.toolExecution.tool}`,
+                    status: 'active'
+                });
+                yield { ...currentMessage };
+                await this.delay(1000); // UI visual delay
 
-            // 3. Tool Execution Start
-            currentMessage.thinking[2].status = 'completed';
-            currentMessage.toolExecutions = [{
-                tool: 'nmap',
-                input: 'nmap -sV -p 22,80,443 192.168.1.0/24',
-                output: '',
-                status: 'running'
-            }];
-            yield { ...currentMessage };
-            await this.delay(1500);
+                currentMessage.thinking[2].status = 'completed';
+                currentMessage.toolExecutions = [{
+                    tool: data.toolExecution.tool,
+                    input: JSON.stringify(data.toolExecution.params),
+                    output: "Detailed output processed by Agent.",
+                    status: 'completed'
+                }];
+                yield { ...currentMessage };
+            }
 
-            // 4. Tool Execution Complete
-            currentMessage.toolExecutions[0].status = 'completed';
-            currentMessage.toolExecutions[0].output = `
-Starting Nmap 7.94 ( https://nmap.org ) at 2026-02-01 11:05
-Nmap scan report for 192.168.1.10
-Host is up (0.0023s latency).
-
-PORT    STATE SERVICE  VERSION
-22/tcp  open  ssh      OpenSSH 8.2p1 Ubuntu
-80/tcp  open  http     nginx 1.18.0
-443/tcp open  ssl/http nginx 1.18.0
-
-Nmap done: 256 IP addresses (1 host up) scanned in 2.45 seconds
-            `.trim();
-            yield { ...currentMessage };
-            await this.delay(500);
-
-            // 5. Final Response
-            currentMessage.content = "I've completed the network scan on the local subnet. One host (192.168.1.10) was found active with ports 22, 80, and 443 open. This appears to be a web server.";
+            // Final Response
+            currentMessage.content = data.content;
             yield { ...currentMessage };
 
-        } else {
-            // Generic response logic
-            currentMessage.thinking = [
-                { description: 'Analyzing request...', status: 'completed' },
-                { description: 'Formulating response', status: 'active' }
-            ];
-            yield { ...currentMessage };
-            await this.delay(1000);
-
-            currentMessage.thinking[1].status = 'completed';
-            currentMessage.content = "I can currently help you with network scanning tasks. Try asking me to 'scan the network'.";
+        } catch (error) {
+            console.error("Agent Error:", error);
+            currentMessage.thinking?.push({ description: 'Error connecting to ASTRA Core', status: 'failed' });
+            currentMessage.content = "I'm having trouble connecting to my core intelligence. Please try again.";
             yield { ...currentMessage };
         }
     }

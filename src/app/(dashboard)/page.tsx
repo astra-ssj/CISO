@@ -34,6 +34,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { SecurityFeed } from "@/components/dashboard/security-feed";
 import { generateExecutiveReport } from "@/lib/export-utils";
 import { DecisionConsole } from '@/components/governance/decision-console';
+import { DataSourceConnector } from '@/components/dashboard/data-source-connector';
 
 // Metric Card Component
 function MetricCard({
@@ -84,7 +85,7 @@ function MetricCard({
           <span className="text-3xl font-bold tracking-tight tabular-nums">{value}</span>
           {trend && trendValue && (
             <span className={`flex items-center text-xs font-medium ${trend === 'up' ? 'text-emerald-500' :
-                trend === 'down' ? 'text-red-500' : 'text-muted-foreground'
+              trend === 'down' ? 'text-red-500' : 'text-muted-foreground'
               }`}>
               {trend === 'up' && <TrendingUp className="h-3 w-3 mr-0.5" />}
               {trend === 'down' && <TrendingDown className="h-3 w-3 mr-0.5" />}
@@ -133,10 +134,10 @@ function QuickActionCard({
       <Card className={`h-full transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer ${variants[variant]}`}>
         <CardContent className="p-5 flex flex-col gap-3">
           <div className={`p-2.5 rounded-lg w-fit ${variant === 'primary' ? 'bg-primary/20' :
-              variant === 'destructive' ? 'bg-red-500/20' : 'bg-secondary'
+            variant === 'destructive' ? 'bg-red-500/20' : 'bg-secondary'
             }`}>
             <Icon className={`h-5 w-5 ${variant === 'primary' ? 'text-primary' :
-                variant === 'destructive' ? 'text-red-500' : 'text-muted-foreground'
+              variant === 'destructive' ? 'text-red-500' : 'text-muted-foreground'
               }`} />
           </div>
           <div>
@@ -215,6 +216,8 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex gap-2">
+          <DataSourceConnector />
+
           <Button
             variant="outline"
             size="sm"
@@ -382,10 +385,10 @@ export default function DashboardPage() {
                     <div className="flex justify-between items-start mb-2">
                       <span className="text-xs font-mono text-muted-foreground">{request.id}</span>
                       <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${request.riskLevel === 'CRITICAL'
-                          ? 'bg-red-500/10 text-red-600'
-                          : request.riskLevel === 'HIGH'
-                            ? 'bg-amber-500/10 text-amber-600'
-                            : 'bg-blue-500/10 text-blue-600'
+                        ? 'bg-red-500/10 text-red-600'
+                        : request.riskLevel === 'HIGH'
+                          ? 'bg-amber-500/10 text-amber-600'
+                          : 'bg-blue-500/10 text-blue-600'
                         }`}>
                         {request.riskLevel}
                       </span>

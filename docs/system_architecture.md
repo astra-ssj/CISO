@@ -23,6 +23,9 @@ The Astra CISO platform follows a modern **Backend-for-Frontend (BFF)** architec
     * **Stores**:
         * `useAstraStore`: Global system status, User session, Notifications.
         * `useWargameStore`: Simulation state, Turn history.
+        * `useRiskStore`: Centralized risk register and calculation logic.
+        * `useAppSecStore`: Vulnerability and pipeline health management.
+        * `usePlaybookStore`: Incident response workflows.
 
 3. **BFF / API Layer (Server)**
     * **Technology**: Next.js API Routes.

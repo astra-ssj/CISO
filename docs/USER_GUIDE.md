@@ -10,8 +10,9 @@ Welcome to the Astra CISO platform, your comprehensive AI-powered command center
 4. [Incident Response (War Room)](#incident-response-war-room)
 5. [Threat Modeling](#threat-modeling)
 6. [Governance, Risk, and Compliance](#governance-risk-and-compliance)
-7. [Reporting](#reporting)
-8. [Settings & Configuration](#settings--configuration)
+7. [Privacy Operations Center](#privacy-operations-center)
+8. [Reporting & Board Mode](#reporting--board-mode)
+9. [Settings & Configuration](#settings--configuration)
 
 ---
 
@@ -127,7 +128,30 @@ Design secure architectures and identify risks early.
 
 ---
 
-## Reporting
+## Privacy Operations Center
+
+**URL:** `/privacy`
+
+Manage data protection compliance with advanced visualization tools.
+
+### RoPA Data Mapper
+
+* **Visual Map**: See how data flows from sources (e.g., HR Portal) to processors (e.g., Workday).
+- **Risk Alerts**: Red lines indicate cross-border transfers to high-risk jurisdictions.
+
+### Breach Simulator
+
+* **Training Mode**: Simulate a GDPR data breach with a 72-hour countdown.
+- **Decision Making**: Analyze evidence and decide whether to notify the DPA.
+
+### Vendor Risk Radar
+
+* **Comparison**: View a radar chart comparing vendors on Security, Privacy, and Legal metrics.
+- **Contract AI**: Automatically flag "toxic clauses" in legal agreements.
+
+---
+
+## Reporting & Board Mode
 
 **URL:** `/reporting`
 
@@ -140,6 +164,17 @@ Generate professional documentation for stakeholders.
 - **Incident Report**: Post-mortem analysis.
 - **Wargame Report**: Results from simulation exercises.
 - **Risk Assessment**: Detailed risk register.
+
+### Board Presentation Mode
+
+1. Click the **Board Mode** button in the top right.
+2. The interface transforms into a full-screen slide deck.
+3. Use **Arrow Keys** to navigate between:
+    - Title Card
+    - Executive Scorecard
+    - Strategic Roadmap
+    - Risk Heatmap
+4. Press **Esc** to exit.
 
 ### Exporting
 
