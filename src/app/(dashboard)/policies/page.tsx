@@ -7,7 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, LayoutGrid, List, FileText, CheckCircle2, AlertTriangle, Network, Pencil, File } from "lucide-react";
+import { Plus, LayoutGrid, List, FileText, CheckCircle2, AlertTriangle, Network, Pencil, File, Sparkles, Bot } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { VisualPolicyMap } from "@/components/policies/visual-mapper";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { PolicyEditor } from "@/components/policies/policy-editor";
@@ -28,6 +31,7 @@ export default function PoliciesPage() {
     const [viewMode, setViewMode] = useState<'LIST' | 'VISUAL'>('LIST');
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [draftPolicy, setDraftPolicy] = useState<Partial<Policy> | undefined>(undefined);
 
     const selectedPolicy = policies.find(p => p.id === selectedPolicyId);
 
@@ -35,11 +39,17 @@ export default function PoliciesPage() {
         addPolicy(policy);
         setSelectedPolicyId(policy.id);
         setIsCreateDialogOpen(false);
+        setDraftPolicy(undefined);
     };
 
     const handleUpdatePolicy = (policy: Policy) => {
         updatePolicy(policy.id, policy);
         setIsEditDialogOpen(false);
+    };
+
+    const openNewPolicyDialog = () => {
+        setDraftPolicy(undefined);
+        setIsCreateDialogOpen(true);
     };
 
     return (
@@ -85,25 +95,20 @@ export default function PoliciesPage() {
                                 <DropdownMenuSeparator />
                                 {POLICY_TEMPLATES.map(tpl => (
                                     <DropdownMenuItem key={tpl.id} onClick={() => {
-                                        // TODO: Pass template to editor
-                                        // For now we just open the dialog, but in a real app we'd pass initialValues
-                                        // I'll simulate this by setting a state or just alerting for now as a POC
-                                        // actually better: I'll Modify PolicyEditor to accept initial values, but I can't do that easily without seeing it.
-                                        // Instead, I'll allow creating a "Draft" immediately from template.
-                                        const newPolicy: Policy = {
-                                            id: `pol-${Date.now()}`,
+                                        // Load template into draft state and open editor
+                                        const templateDraft: Partial<Policy> = {
                                             title: tpl.title,
-                                            type: 'ISMS', // Default to ISMS for templates
+                                            type: 'ISMS',
                                             status: 'DRAFT',
                                             version: '0.1.0',
-                                            lastUpdated: new Date().toISOString(),
-                                            owner: 'CISO Office',
+                                            // No Owner set, user must define
                                             sections: [
-                                                { id: 's1', title: 'Content', content: tpl.content }
+                                                { id: 's1', title: '1. Overview', content: tpl.content }
                                             ],
                                             mappings: []
                                         };
-                                        handleCreatePolicy(newPolicy);
+                                        setDraftPolicy(templateDraft);
+                                        setIsCreateDialogOpen(true);
                                     }}>
                                         {tpl.title}
                                     </DropdownMenuItem>
@@ -113,20 +118,26 @@ export default function PoliciesPage() {
 
                         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                             <DialogTrigger asChild>
-                                <Button className="bg-primary hover:bg-primary/90">
+                                <Button className="bg-primary hover:bg-primary/90" onClick={openNewPolicyDialog}>
                                     <Plus className="mr-2 h-4 w-4" /> New Policy
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                                 <DialogHeader>
-                                    <DialogTitle>Create New Policy</DialogTitle>
+                                    <DialogTitle>{draftPolicy ? `New Policy from ${draftPolicy.owner === 'AI Agent' ? 'AI Draft' : 'Template'}` : 'Create New Policy'}</DialogTitle>
                                 </DialogHeader>
                                 <PolicyEditor
+                                    initialPolicy={draftPolicy}
                                     onSave={handleCreatePolicy}
                                     onCancel={() => setIsCreateDialogOpen(false)}
                                 />
                             </DialogContent>
                         </Dialog>
+
+                        <AutoDraftDialog onDraftGenerated={(policy) => {
+                            setDraftPolicy(policy);
+                            setIsCreateDialogOpen(true);
+                        }} />
                     </div>
                 </div>
             </div>
@@ -273,5 +284,88 @@ export default function PoliciesPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+function AutoDraftDialog({ onDraftGenerated }: { onDraftGenerated: (policy: Partial<Policy>) => void }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [topic, setTopic] = useState('');
+    const [strictness, setStrictness] = useState('MEDIUM');
+    const [isGenerating, setIsGenerating] = useState(false);
+
+    const handleGenerate = async () => {
+        if (!topic) return;
+        setIsGenerating(true);
+        try {
+            const res = await fetch('/api/agent/generate-policy', {
+                method: 'POST',
+                body: JSON.stringify({ topic, strictness })
+            });
+            const data = await res.json();
+            onDraftGenerated(data);
+            setIsOpen(false);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+                <Button variant="secondary" className="gap-2 border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10">
+                    <Sparkles className="h-4 w-4 text-purple-500" />
+                    Auto-Draft
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                        <Bot className="h-5 w-5 text-purple-500" />
+                        AI Policy Generator
+                    </DialogTitle>
+                    <CardDescription>
+                        Define your intent, and the Agent will draft a comprehensive policy mapped to standards.
+                    </CardDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="space-y-2">
+                        <Label>Policy Topic</Label>
+                        <Input
+                            placeholder="e.g. Remote Access, BYOD, Cloud Security"
+                            value={topic}
+                            onChange={(e) => setTopic(e.target.value)}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Strictness Level</Label>
+                        <Select value={strictness} onValueChange={setStrictness}>
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="LOW">Low (Permissive)</SelectItem>
+                                <SelectItem value="MEDIUM">Medium (Balanced)</SelectItem>
+                                <SelectItem value="HIGH">High (Restrictive)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                <div className="flex justify-end">
+                    <Button onClick={handleGenerate} disabled={isGenerating || !topic} className="bg-purple-600 hover:bg-purple-700 text-white">
+                        {isGenerating ? (
+                            <>
+                                <Sparkles className="mr-2 h-4 w-4 animate-spin" /> Generating...
+                            </>
+                        ) : (
+                            <>
+                                <Sparkles className="mr-2 h-4 w-4" /> Generate Draft
+                            </>
+                        )}
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
     );
 }

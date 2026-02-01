@@ -1,255 +1,379 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, ShieldCheck, Upload, AlertTriangle, FileJson, Server, X } from "lucide-react";
-import { scanMicrosoftConfig, scanFirewallConfig, SecurityScore } from "@/lib/config-scanner";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import {
+    Brain,
+    Loader2,
+    Sparkles,
+    Key,
+    Eye,
+    EyeOff,
+    RefreshCw,
+    Moon,
+    Sun,
+    Bell,
+    Shield,
+    User,
+    Settings as SettingsIcon,
+    LogOut
+} from "lucide-react";
+import { useTheme } from "next-themes";
 
-export default function SettingsPage() {
-    const [msConfig, setMsConfig] = useState("");
-    const [fwConfig, setFwConfig] = useState("");
-    const [result, setResult] = useState<SecurityScore | null>(null);
-    const [resultType, setResultType] = useState<'MICROSOFT' | 'FIREWALL' | null>(null);
+// AI Provider Configuration Component
+function AIProviderConfig() {
+    const [providers, setProviders] = useState<string[]>([]);
+    const [activeProvider, setActiveProvider] = useState<string>('MOCK');
+    const [isLoading, setIsLoading] = useState(true);
+    const [isTesting, setIsTesting] = useState(false);
+    const [testResult, setTestResult] = useState<'success' | 'error' | null>(null);
+    const [showApiKey, setShowApiKey] = useState(false);
 
-    // Dialog States
-    const [msDialogOpen, setMsDialogOpen] = useState(false);
-    const [fwDialogOpen, setFwDialogOpen] = useState(false);
+    const [apiKeys, setApiKeys] = useState({
+        OPENAI: '',
+        ANTHROPIC: '',
+        GOOGLE: ''
+    });
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'MICROSOFT' | 'FIREWALL') => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const text = event.target?.result as string;
-                if (type === 'MICROSOFT') setMsConfig(text);
-                else setFwConfig(text);
-            };
-            reader.readAsText(file);
+    useEffect(() => {
+        fetch('/api/agent/analyze')
+            .then(res => res.json())
+            .then(data => {
+                setProviders(data.providers || ['MOCK', 'OPENAI', 'ANTHROPIC', 'GOOGLE']);
+                setActiveProvider(data.active || 'MOCK');
+                setIsLoading(false);
+            })
+            .catch(() => {
+                setProviders(['MOCK', 'OPENAI', 'ANTHROPIC', 'GOOGLE']);
+                setIsLoading(false);
+            });
+    }, []);
+
+    const testConnection = async () => {
+        setIsTesting(true);
+        setTestResult(null);
+
+        try {
+            const response = await fetch('/api/agent/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    query: 'Connection test',
+                    context: 'test'
+                })
+            });
+
+            if (response.ok) {
+                setTestResult('success');
+            } else {
+                setTestResult('error');
+            }
+        } catch {
+            setTestResult('error');
+        } finally {
+            setIsTesting(false);
         }
-        // Reset input to allow re-uploading the same file if needed
-        e.target.value = '';
     };
 
-    const clearConfig = (type: 'MICROSOFT' | 'FIREWALL') => {
-        if (type === 'MICROSOFT') setMsConfig("");
-        else setFwConfig("");
-        setResult(null);
-    };
-
-    const runAnalysis = (type: 'MICROSOFT' | 'FIREWALL') => {
-        const data = type === 'MICROSOFT' ? msConfig : fwConfig;
-        const res = type === 'MICROSOFT' ? scanMicrosoftConfig(data) : scanFirewallConfig(data);
-        setResult(res);
-        setResultType(type);
-        if (type === 'MICROSOFT') setMsDialogOpen(true);
-        else setFwDialogOpen(true);
-    };
-
-    const handleDialogChange = (open: boolean, type: 'MICROSOFT' | 'FIREWALL') => {
-        if (type === 'MICROSOFT') setMsDialogOpen(open);
-        else setFwDialogOpen(open);
-
-        if (!open) {
-            // Optional: Clear result when dialog closes to force fresh analysis next time?
-            // Or keep it. User requested "clear cache", implies resetting state.
-            // We will clear the result view state, but maybe keep the file loaded?
-            // Let's keep the file but clear the result object to be safe.
-            setResult(null);
+    const providerInfo = {
+        MOCK: {
+            name: 'Mock Provider',
+            description: 'Simulated responses for testing. No API key required.',
+            icon: '🧪',
+            color: 'bg-gray-500'
+        },
+        OPENAI: {
+            name: 'OpenAI GPT-4',
+            description: 'Powered by GPT-4o for advanced reasoning.',
+            icon: '🟢',
+            color: 'bg-emerald-500'
+        },
+        ANTHROPIC: {
+            name: 'Anthropic Claude',
+            description: 'Claude 3.5 Sonnet for nuanced analysis.',
+            icon: '🟠',
+            color: 'bg-orange-500'
+        },
+        GOOGLE: {
+            name: 'Google Gemini',
+            description: 'Gemini 2.0 Flash for fast responses.',
+            icon: '🔵',
+            color: 'bg-blue-500'
         }
     };
+
+    if (isLoading) {
+        return (
+            <Card className="border-primary/10">
+                <CardContent className="flex items-center justify-center py-12">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
 
     return (
-        <div className="space-y-8 max-w-6xl mx-auto">
+        <Card className="border-primary/10">
+            <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                        <Brain className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                        <CardTitle>AI Intelligence Provider</CardTitle>
+                        <CardDescription className="mt-1">
+                            Configure which LLM powers Astra's analysis capabilities.
+                        </CardDescription>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                {/* Provider Selection */}
+                <div className="space-y-3">
+                    <Label>Active Provider</Label>
+                    <Select value={activeProvider} onValueChange={setActiveProvider}>
+                        <SelectTrigger className="w-full">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {providers.map(provider => (
+                                <SelectItem key={provider} value={provider}>
+                                    <div className="flex items-center gap-2">
+                                        <span>{providerInfo[provider as keyof typeof providerInfo]?.icon || '⚙️'}</span>
+                                        <span>{providerInfo[provider as keyof typeof providerInfo]?.name || provider}</span>
+                                    </div>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <p className="text-sm text-muted-foreground">
+                        {providerInfo[activeProvider as keyof typeof providerInfo]?.description}
+                    </p>
+                </div>
+
+                {/* Status Indicator */}
+                <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 border border-border">
+                    <div className="flex items-center gap-3">
+                        <div className={`h-3 w-3 rounded-full ${activeProvider === 'MOCK' ? 'bg-gray-500' :
+                                testResult === 'success' ? 'bg-emerald-500 animate-pulse' :
+                                    testResult === 'error' ? 'bg-red-500' :
+                                        'bg-amber-500'
+                            }`} />
+                        <div>
+                            <div className="font-medium text-sm">
+                                {activeProvider === 'MOCK' ? 'Simulation Mode' :
+                                    testResult === 'success' ? 'Connected' :
+                                        testResult === 'error' ? 'Connection Failed' :
+                                            'Not Tested'}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                                {activeProvider === 'MOCK'
+                                    ? 'Using mock responses for demo'
+                                    : 'Run a test to verify connection'}
+                            </div>
+                        </div>
+                    </div>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={testConnection}
+                        disabled={isTesting || activeProvider === 'MOCK'}
+                    >
+                        {isTesting ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <>
+                                <RefreshCw className="h-4 w-4 mr-2" />
+                                Test
+                            </>
+                        )}
+                    </Button>
+                </div>
+
+                {/* API Key Input (for non-mock providers) */}
+                {activeProvider !== 'MOCK' && (
+                    <div className="space-y-3 p-4 rounded-lg border border-dashed border-amber-500/30 bg-amber-500/5">
+                        <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                            <Key className="h-4 w-4" />
+                            <Label className="text-amber-600 dark:text-amber-400">API Key Configuration</Label>
+                        </div>
+                        <div className="relative">
+                            <Input
+                                type={showApiKey ? 'text' : 'password'}
+                                placeholder={`Enter your ${activeProvider} API key...`}
+                                value={apiKeys[activeProvider as keyof typeof apiKeys] || ''}
+                                onChange={(e) => setApiKeys(prev => ({
+                                    ...prev,
+                                    [activeProvider]: e.target.value
+                                }))}
+                                className="pr-10 font-mono text-sm"
+                            />
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                                onClick={() => setShowApiKey(!showApiKey)}
+                            >
+                                {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            ⚠️ For production, set <code className="bg-secondary px-1 rounded">AI_PROVIDER</code> and API keys in your <code className="bg-secondary px-1 rounded">.env.local</code> file.
+                        </p>
+                    </div>
+                )}
+
+                {/* Provider Cards */}
+                <div className="grid grid-cols-2 gap-3">
+                    {Object.entries(providerInfo).map(([key, info]) => (
+                        <button
+                            key={key}
+                            onClick={() => setActiveProvider(key)}
+                            className={`p-3 rounded-lg border text-left transition-all ${activeProvider === key
+                                    ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                                    : 'border-border hover:border-primary/30 hover:bg-secondary/30'
+                                }`}
+                        >
+                            <div className="flex items-center gap-2 mb-1">
+                                <span className="text-lg">{info.icon}</span>
+                                <span className="font-medium text-sm">{info.name}</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground line-clamp-2">
+                                {info.description}
+                            </p>
+                        </button>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+// Appearance Settings Component
+function AppearanceSettings() {
+    const { theme, setTheme } = useTheme();
+
+    return (
+        <Card className="border-primary/10">
+            <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                        <Sun className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                        <CardTitle>Appearance</CardTitle>
+                        <CardDescription className="mt-1">
+                            Customize the look and feel of Astra.
+                        </CardDescription>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <Label>Theme</Label>
+                        <p className="text-sm text-muted-foreground">Switch between light and dark mode</p>
+                    </div>
+                    <div className="flex items-center gap-2 bg-secondary/30 p-1 rounded-lg">
+                        <Button
+                            variant={theme === 'light' ? 'default' : 'ghost'}
+                            size="sm"
+                            onClick={() => setTheme('light')}
+                            className="h-8"
+                        >
+                            <Sun className="h-4 w-4 mr-1.5" />
+                            Light
+                        </Button>
+                        <Button
+                            variant={theme === 'dark' ? 'default' : 'ghost'}
+                            size="sm"
+                            onClick={() => setTheme('dark')}
+                            className="h-8"
+                        >
+                            <Moon className="h-4 w-4 mr-1.5" />
+                            Dark
+                        </Button>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+// Notification Settings Component
+function NotificationSettings() {
+    const [emailAlerts, setEmailAlerts] = useState(true);
+    const [criticalOnly, setCriticalOnly] = useState(false);
+
+    return (
+        <Card className="border-primary/10">
+            <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                        <Bell className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                        <CardTitle>Notifications</CardTitle>
+                        <CardDescription className="mt-1">
+                            Configure alert preferences and notification channels.
+                        </CardDescription>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <Label>Email Alerts</Label>
+                        <p className="text-sm text-muted-foreground">Receive security alerts via email</p>
+                    </div>
+                    <Switch checked={emailAlerts} onCheckedChange={setEmailAlerts} />
+                </div>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <Label>Critical Only</Label>
+                        <p className="text-sm text-muted-foreground">Only notify for critical severity issues</p>
+                    </div>
+                    <Switch checked={criticalOnly} onCheckedChange={setCriticalOnly} />
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+export default function SettingsPage() {
+    return (
+        <div className="space-y-8 max-w-4xl mx-auto">
             <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">Configuration Security</h1>
-                <p className="text-muted-foreground">Automated review of infrastructure and cloud configurations against CIS Benchmarks.</p>
+                <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+                <p className="text-muted-foreground">Manage AI providers, appearance, and system preferences.</p>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
-                {/* Microsoft Tenant Review */}
-                <Card className="bg-card border-primary/10 flex flex-col">
-                    <CardHeader>
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-blue-500/10 rounded-lg">
-                                <ShieldCheck className="h-6 w-6 text-blue-500" />
-                            </div>
-                            <CardTitle>Microsoft 365 / Azure</CardTitle>
-                        </div>
-                        <CardDescription>Upload tenant configuration (JSON) or paste content directly.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-1 flex flex-col gap-4">
-                        <Tabs defaultValue="upload" className="w-full">
-                            <TabsList className="grid w-full grid-cols-2 mb-4">
-                                <TabsTrigger value="upload">Upload File</TabsTrigger>
-                                <TabsTrigger value="paste">Paste Config</TabsTrigger>
-                            </TabsList>
-                            <TabsContent value="upload" className="mt-0">
-                                <div className="border-2 border-dashed rounded-xl h-[200px] flex flex-col items-center justify-center bg-secondary/5 text-muted-foreground relative hover:bg-secondary/10 transition-colors">
-                                    <FileJson className="h-8 w-8 mb-2 opacity-50" />
-                                    <p className="text-sm">Upload Config JSON</p>
-                                    <input
-                                        type="file"
-                                        accept=".json"
-                                        onChange={(e) => handleFileUpload(e, 'MICROSOFT')}
-                                        className="absolute inset-0 opacity-0 cursor-pointer z-50"
-                                    />
-                                </div>
-                            </TabsContent>
-                            <TabsContent value="paste" className="mt-0">
-                                <Textarea
-                                    placeholder="Paste Microsoft configuration JSON here..."
-                                    className="h-[200px] font-mono text-xs resize-none"
-                                    value={msConfig}
-                                    onChange={(e) => setMsConfig(e.target.value)}
-                                />
-                            </TabsContent>
-                        </Tabs>
+            {/* AI Provider Section */}
+            <section>
+                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    AI Intelligence
+                </h2>
+                <AIProviderConfig />
+            </section>
 
-                        {msConfig && (
-                            <div className="flex items-center justify-between text-sm bg-secondary/20 p-2 rounded">
-                                <span className="font-mono text-xs truncate max-w-[200px] text-emerald-600">Configuration Loaded</span>
-                                <div className="flex items-center gap-2">
-                                    <Badge variant="outline" className="text-emerald-500 border-emerald-500/20">Ready</Badge>
-                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => clearConfig('MICROSOFT')}>
-                                        <X className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                        <Dialog open={msDialogOpen} onOpenChange={(o) => handleDialogChange(o, 'MICROSOFT')}>
-                            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={!msConfig} onClick={() => runAnalysis('MICROSOFT')}>
-                                Analyze Configuration
-                            </Button>
-                            <DialogContent className="max-w-3xl">
-                                <DialogHeader>
-                                    <DialogTitle>Configuration Analysis Report</DialogTitle>
-                                    <DialogDescription>Findings based on CIS Benchmark standards.</DialogDescription>
-                                </DialogHeader>
-                                {result && resultType === 'MICROSOFT' && (
-                                    <div className="space-y-6">
-                                        <div className="flex items-center gap-4">
-                                            <div className="text-4xl font-bold text-foreground">{result.score}%</div>
-                                            <Progress value={result.score} className="h-4" />
-                                        </div>
-                                        <div className="space-y-3 max-h-[400px] overflow-y-auto">
-                                            {result.findings.map((f, i) => (
-                                                <div key={i} className="p-4 border rounded-lg bg-red-500/5 border-red-500/10">
-                                                    <div className="flex justify-between items-start mb-1">
-                                                        <span className="font-semibold text-red-600 flex items-center gap-2">
-                                                            <AlertTriangle className="h-4 w-4" /> {f.title}
-                                                        </span>
-                                                        <Badge variant="destructive">{f.severity}</Badge>
-                                                    </div>
-                                                    <p className="text-sm text-muted-foreground mb-2">{f.description}</p>
-                                                    <div className="text-xs font-mono text-muted-foreground bg-background/50 p-1 rounded inline-block">
-                                                        Ref: {f.cisControl}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                            {result.findings.length === 0 && <div className="text-center text-emerald-500 py-8">No Issues Found. Configuration is secure.</div>}
-                                        </div>
-                                    </div>
-                                )}
-                            </DialogContent>
-                        </Dialog>
-                    </CardContent>
-                </Card>
-
-                {/* Firewall Review */}
-                <Card className="bg-card border-primary/10 flex flex-col">
-                    <CardHeader>
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-orange-500/10 rounded-lg">
-                                <Server className="h-6 w-6 text-orange-500" />
-                            </div>
-                            <CardTitle>Firewall Configuration</CardTitle>
-                        </div>
-                        <CardDescription>Review firewall rules (JSON/Text) or paste directly.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-1 flex flex-col gap-4">
-                        <Tabs defaultValue="upload" className="w-full">
-                            <TabsList className="grid w-full grid-cols-2 mb-4">
-                                <TabsTrigger value="upload">Upload File</TabsTrigger>
-                                <TabsTrigger value="paste">Paste Config</TabsTrigger>
-                            </TabsList>
-                            <TabsContent value="upload" className="mt-0">
-                                <div className="border-2 border-dashed rounded-xl h-[200px] flex flex-col items-center justify-center bg-secondary/5 text-muted-foreground relative hover:bg-secondary/10 transition-colors">
-                                    <FileJson className="h-8 w-8 mb-2 opacity-50" />
-                                    <p className="text-sm">Upload Rule Export</p>
-                                    <input
-                                        type="file"
-                                        accept=".json,.txt"
-                                        onChange={(e) => handleFileUpload(e, 'FIREWALL')}
-                                        className="absolute inset-0 opacity-0 cursor-pointer z-50"
-                                    />
-                                </div>
-                            </TabsContent>
-                            <TabsContent value="paste" className="mt-0">
-                                <Textarea
-                                    placeholder="Paste firewall rules (e.g., 'permit ip any any') here..."
-                                    className="h-[200px] font-mono text-xs resize-none"
-                                    value={fwConfig}
-                                    onChange={(e) => setFwConfig(e.target.value)}
-                                />
-                            </TabsContent>
-                        </Tabs>
-
-                        {fwConfig && (
-                            <div className="flex items-center justify-between text-sm bg-secondary/20 p-2 rounded">
-                                <span className="font-mono text-xs truncate max-w-[200px] text-emerald-600">Configuration Loaded</span>
-                                <div className="flex items-center gap-2">
-                                    <Badge variant="outline" className="text-emerald-500 border-emerald-500/20">Ready</Badge>
-                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => clearConfig('FIREWALL')}>
-                                        <X className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                        <Dialog open={fwDialogOpen} onOpenChange={(o) => handleDialogChange(o, 'FIREWALL')}>
-                            <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white" disabled={!fwConfig} onClick={() => runAnalysis('FIREWALL')}>
-                                Analyze Firewall Rules
-                            </Button>
-                            <DialogContent className="max-w-3xl">
-                                <DialogHeader>
-                                    <DialogTitle>Firewall Risk Report</DialogTitle>
-                                    <DialogDescription>Findings based on Network Security best practices.</DialogDescription>
-                                </DialogHeader>
-                                {result && resultType === 'FIREWALL' && (
-                                    <div className="space-y-6">
-                                        <div className="flex items-center gap-4">
-                                            <div className="text-4xl font-bold text-foreground">{result.score}%</div>
-                                            <Progress value={result.score} className="h-4" />
-                                        </div>
-                                        <div className="space-y-3 max-h-[400px] overflow-y-auto">
-                                            {result.findings.map((f, i) => (
-                                                <div key={i} className="p-4 border rounded-lg bg-orange-500/5 border-orange-500/10">
-                                                    <div className="flex justify-between items-start mb-1">
-                                                        <span className="font-semibold text-orange-600 flex items-center gap-2">
-                                                            <AlertTriangle className="h-4 w-4" /> {f.title}
-                                                        </span>
-                                                        <Badge className="bg-orange-500 hover:bg-orange-600 border-orange-200">{f.severity}</Badge>
-                                                    </div>
-                                                    <p className="text-sm text-muted-foreground mb-2">{f.description}</p>
-                                                    <div className="text-xs font-mono text-muted-foreground bg-background/50 p-1 rounded inline-block">
-                                                        Ref: {f.cisControl}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                            {result.findings.length === 0 && <div className="text-center text-emerald-500 py-8">No Issues Found. Configuration is secure.</div>}
-                                        </div>
-                                    </div>
-                                )}
-                            </DialogContent>
-                        </Dialog>
-                    </CardContent>
-                </Card>
-            </div>
+            {/* Appearance Section */}
+            <section>
+                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <SettingsIcon className="h-5 w-5 text-primary" />
+                    Preferences
+                </h2>
+                <div className="space-y-4">
+                    <AppearanceSettings />
+                    <NotificationSettings />
+                </div>
+            </section>
         </div>
     );
 }

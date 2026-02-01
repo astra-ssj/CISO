@@ -1,4 +1,5 @@
-import { DecisionRequest, RiskLevel } from "./store";
+import { DecisionRequest, RiskLevel, ComplianceStandard } from "./store";
+import { Policy } from "./policy-store";
 
 interface AnalysisResult {
     riskScore: number;
@@ -9,79 +10,113 @@ interface AnalysisResult {
     generatedArtifacts: NonNullable<DecisionRequest['generatedArtifacts']>;
 }
 
-export const analyzeRequest = (title: string, description: string): AnalysisResult => {
+export const analyzeRequestAsync = async (
+    title: string,
+    description: string,
+    context: {
+        activeStandards: ComplianceStandard[],
+        policies: Policy[]
+    }
+): Promise<AnalysisResult> => {
     const fullText = `${title} ${description}`.toLowerCase();
+
+    // Simulate Agent Thinking Time
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
     const flaggedKeywords: string[] = [];
     const complianceGaps: string[] = [];
     const recommendedActions: string[] = [];
     const generatedArtifacts: AnalysisResult['generatedArtifacts'] = [];
     let riskScore = 0;
 
-    // Heuristic Rules
+    // --- Dynamic Context Awareness ---
 
     // 1. Container / Kubernetes
-    // Regex matches: kubernetes, k8s, kube, docker, container, pod, helm (case insensitive)
     if (/(?:kubernetes|k8s|kube|docker|container|pod|helm)\b/i.test(fullText)) {
         flaggedKeywords.push('Containerization', 'Orchestration');
-        complianceGaps.push('NIST 800-190 (Container Security)', 'ISO 27001 A.14.2 (Secure Development)');
-        recommendedActions.push('Enforce Pod Security Standards (PSS)', 'Implement Image Signing (Notary)', 'Enable Runtime Threat Detection');
+
+        // Context-Aware Gap Analysis
+        if (context.activeStandards.includes('NIST_CSF')) {
+            complianceGaps.push('NIST CSF PR.IP-1 (Baseline Configuration)');
+        }
+        if (context.activeStandards.includes('ISO_27001')) {
+            complianceGaps.push('ISO 27001 A.14.2.5 (Secure Engineering Principles)');
+        }
+
+        recommendedActions.push('Enforce Pod Security Standards (PSS)', 'Implement Image Signing (Notary)');
         riskScore += 65;
 
         generatedArtifacts.push({
             id: `art-${Date.now()}-1`,
             type: 'POLICY_DRAFT',
             title: 'Container Security Standard v1.0',
-            content: `
-# Container Security Standard
-
-## 1. Purpose
-To ensure all containerized workloads deployed in the environment adhere to strict security baselines.
-
-## 2. Requirements
-### 2.1 Base Images
-- All images must be sourced from the Trusted Registry (Harbor).
-- Images must be scanned for vulnerabilities (CVSS > 7.0 must be remediated).
-
-### 2.2 Runtime Protection
-- Root privileges inside containers are PROHIBITED.
-- Read-only root filesystems must be enforced where possible.
-
-## 3. Compliance
-Violations of this policy will result in the automated termination of the workload by the Admission Controller.
-            `
+            content: `# Container Security Standard\n\n## Purpose\nMandatory security controls for all K8s workloads.\n\n## Requirements\n1. No Root Containers\n2. Read-Only Filesystems`
         });
     }
 
-    // 2. Cloud / AWS / Azure
-    // Regex matches: cloud, aws, azure, gcp, s3, blob, bucket, lambda, serverless
+    // 2. Cloud / Serverless
     if (/(?:cloud|aws|azure|gcp|s3|blob|bucket|lambda|serverless)\b/i.test(fullText)) {
         flaggedKeywords.push('Public Cloud', 'Data Residency');
-        complianceGaps.push('GDPR Article 44 (Cross-Border Transfer)', 'SOC 2 CC (Logical Access)');
-        recommendedActions.push('Enable MFA on Root Accounts', 'Block Public Buckets via SCP', 'Activate CloudTrail/GuardDuty');
+
+        if (context.activeStandards.includes('GDPR')) {
+            complianceGaps.push('GDPR Art. 44 (Cross-Border Transfer)');
+        }
+        if (context.activeStandards.includes('SOC2')) {
+            complianceGaps.push('SOC 2 CC6.1 (Logical Access)');
+        }
+
+        recommendedActions.push('Enable MFA on Root Accounts', 'Block Public Buckets via SCP');
         riskScore += 40;
 
         generatedArtifacts.push({
             id: `art-${Date.now()}-2`,
             type: 'ARCHITECTURE_DIAGRAM',
-            title: 'Secure Cloud Landing Zone Specification',
-            content: `
-# Secure Landing Zone Specs
-
-1. **Identity**: AWS IAM Identity Center (SSO) integrated with Azure AD.
-2. **Network**: Hub-and-Spoke model with Transit Gateway.
-3. **Egress**: All outbound traffic filtered via Central Firewall VPC.
-4. **Encryption**: KMS Customer Managed Keys (CMK) required for all storage.
-            `
+            title: 'Secure Cloud Landing Zone',
+            content: `# Landing Zone Specs\n\n1. Identity (SSO)\n2. Transit Gateway (Hub-Spoke)\n3. Centralized Logging`
         });
     }
 
-    // 3. Data / AI / Model
-    // Regex matches: ai, ml, model, training, llm, gpt, inference, data
+    // 3. AI / ML Models
     if (/(?:ai|ml|model|training|llm|gpt|inference|data)\b/i.test(fullText)) {
         flaggedKeywords.push('AI/ML', 'Sensitive Data');
-        complianceGaps.push('EU AI Act (Transparency)', 'GDPR Article 35 (DPIA)');
-        recommendedActions.push('Conduct Algorithmic Impact Assessment', 'Anonymize Training Data', 'Implement Model Inventory');
+        complianceGaps.push('EU AI Act (Transparency)');
+        recommendedActions.push('Conduct Algorithmic Impact Assessment');
         riskScore += 80;
+    }
+
+    // --- AGENTIC INTEGRATION: OpenClaw ---
+    try {
+        const { openClaw } = await import('./openclaw-client');
+        const agentAnalysis = await openClaw.analyzePolicy(fullText, context.activeStandards);
+
+        // Merge Agent Findings
+        if (agentAnalysis.gaps.length > 0) {
+            complianceGaps.push(...agentAnalysis.gaps.map(g => `[AGENT] ${g}`));
+        }
+        if (agentAnalysis.recommendations.length > 0) {
+            recommendedActions.push(...agentAnalysis.recommendations.map(r => `[AGENT] ${r}`));
+        }
+
+        // Adjust Risk Score (Agent opinion weight: 40%)
+        riskScore = Math.floor((riskScore * 0.6) + (agentAnalysis.riskScore * 0.4));
+
+    } catch (e) {
+        console.warn("OpenClaw Agent unavailable, falling back to heuristics only.");
+    }
+
+    // 4. Policy Cross-Reference (Agentic Feature)
+    // Check if we already have a relevant policy
+    const relevantPolicies = context.policies.filter(p =>
+        fullText.includes(p.title.toLowerCase()) ||
+        p.sections.some(s => fullText.includes(s.title.toLowerCase()))
+    );
+
+    if (relevantPolicies.length > 0) {
+        recommendedActions.push(`Review existing policy: ${relevantPolicies[0].title}`);
+        riskScore -= 10; // Mitigating factor: Policy exists
+    } else {
+        recommendedActions.push('Gap Identified: No specific policy found for this domain.');
+        riskScore += 10;
     }
 
     // Risk Calculation
@@ -92,8 +127,7 @@ Violations of this policy will result in the automated termination of the worklo
 
     // Default Fallback
     if (recommendedActions.length === 0) {
-        recommendedActions.push('Conduct Manual Architecture Review', 'Perform Vendor Risk Assessment');
-        complianceGaps.push('ISO 27001 General Controls');
+        recommendedActions.push('Conduct Manual Architecture Review');
         generatedArtifacts.push({
             id: `art-${Date.now()}-def`,
             type: 'POLICY_DRAFT',
@@ -109,5 +143,53 @@ Violations of this policy will result in the automated termination of the worklo
         complianceGaps,
         recommendedActions,
         generatedArtifacts
+    };
+};
+
+export const generatePolicyAsync = async (
+    topic: string,
+    strictness: 'LOW' | 'MEDIUM' | 'HIGH',
+    frameworks: string[] = []
+): Promise<Partial<Policy>> => {
+    // Simulate generation delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    const contentTemplate = strictness === 'HIGH'
+        ? "MUST implemented Strict Access Control. MFA is mandatory for all access attempts."
+        : "Should implement Access Control where feasible. MFA recommended for critical systems.";
+
+    return {
+        title: `${topic} Policy (AI Generated)`,
+        type: 'ISMS',
+        status: 'DRAFT',
+        version: '0.1.0',
+        owner: 'AI Agent',
+        sections: [
+            {
+                id: 's1',
+                title: '1. Purpose',
+                content: `To establish the rules and guidelines regarding ${topic} within the organization, ensuring confidentiality and integrity.`
+            },
+            {
+                id: 's2',
+                title: '2. Scope',
+                content: `This policy applies to all employees, contractors, and third-party vendors accessing ${topic} resources.`
+            },
+            {
+                id: 's3',
+                title: '3. Policy Statements',
+                content: contentTemplate
+            },
+            {
+                id: 's4',
+                title: '4. Compliance',
+                content: `Violations of this policy may result in disciplinary action. Compliance is monitored via ${frameworks.join(', ') || 'Internal Audits'}.`
+            }
+        ],
+        mappings: frameworks.map(f => ({
+            frameworkId: f,
+            controlId: 'Unknown',
+            coverage: 'PARTIAL'
+        }))
     };
 };

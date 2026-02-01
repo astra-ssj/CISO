@@ -8,6 +8,7 @@ import { Bot, MessageSquare, X, Send, User, Mic } from 'lucide-react';
 import { useAstraStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
+import { AgentThinking } from './agent-thinking';
 
 export function ChatInterface() {
     const [isOpen, setIsOpen] = useState(false);
@@ -80,18 +81,18 @@ export function ChatInterface() {
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
                         className="mb-4"
                     >
-                        <Card className="w-[350px] md:w-[400px] h-[500px] flex flex-col shadow-2xl border-primary/20 bg-card/95 backdrop-blur-md">
+                        <Card className="w-[400px] md:w-[500px] h-[600px] flex flex-col shadow-2xl border-primary/20 bg-card/95 backdrop-blur-md">
                             <CardHeader className="flex flex-row items-center justify-between py-3 border-b border-white/5 bg-primary/5">
                                 <div className="flex items-center gap-2">
                                     <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                                    <CardTitle className="text-sm font-mono text-primary">ASTRA_AI_CORE</CardTitle>
+                                    <ViewTitle />
                                 </div>
                                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsOpen(false)}>
                                     <X className="h-4 w-4" />
                                 </Button>
                             </CardHeader>
 
-                            <CardContent className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
+                            <CardContent className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-hide">
                                 {chatHistory.map((msg) => (
                                     <div
                                         key={msg.id}
@@ -109,12 +110,27 @@ export function ChatInterface() {
                                             {msg.role === 'assistant' ? <Bot className="h-4 w-4" /> : <User className="h-4 w-4" />}
                                         </div>
                                         <div className={cn(
-                                            "p-3 rounded-lg max-w-[80%]",
-                                            msg.role === 'assistant'
-                                                ? "bg-card border border-primary/10 text-card-foreground"
-                                                : "bg-primary text-primary-foreground"
+                                            "flex flex-col max-w-[85%]",
+                                            msg.role === 'user' && "items-end"
                                         )}>
-                                            {msg.content}
+                                            {msg.role === 'assistant' && (
+                                                <AgentThinking
+                                                    thinking={msg.thinking}
+                                                    tools={msg.toolExecutions}
+                                                    isFinished={!!msg.content && msg.thinking?.every(t => t.status === 'completed')}
+                                                />
+                                            )}
+
+                                            {msg.content && (
+                                                <div className={cn(
+                                                    "p-3 rounded-lg",
+                                                    msg.role === 'assistant'
+                                                        ? "bg-card border border-primary/10 text-card-foreground shadow-sm"
+                                                        : "bg-primary text-primary-foreground"
+                                                )}>
+                                                    {msg.content}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
@@ -162,4 +178,13 @@ export function ChatInterface() {
             </Button>
         </div>
     );
+}
+
+function ViewTitle() {
+    return (
+        <div className="flex flex-col">
+            <span className="text-sm font-mono text-primary font-bold">ASTRA_AI_CORE</span>
+            <span className="text-[10px] text-muted-foreground">OpenClaw Agent Connected</span>
+        </div>
+    )
 }

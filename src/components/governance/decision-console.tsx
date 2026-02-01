@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertTriangle, CheckCircle, ShieldAlert, Cpu, FileText, Check, X, Loader2, ArrowRight } from 'lucide-react';
 import { useAstraStore } from "@/lib/store";
-import { analyzeRequest } from "@/lib/intelligence-engine";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
@@ -19,7 +18,7 @@ interface DecisionConsoleProps {
 }
 
 export function DecisionConsole({ requestId, open, onOpenChange }: DecisionConsoleProps) {
-    const { decisionQueue, resolveDecision, updateDecisionAnalysis, currentUser } = useAstraStore() as any; // Cast for now until store type picks up new method
+    const { decisionQueue, resolveDecision, updateDecisionAnalysis, triggerAnalysis, currentUser } = useAstraStore() as any;
     const request = requestId ? decisionQueue.find((r: any) => r.id === requestId) : null;
 
     const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -34,25 +33,20 @@ export function DecisionConsole({ requestId, open, onOpenChange }: DecisionConso
 
     if (!request) return null;
 
-    const handleRunAnalysis = () => {
+    const handleRunAnalysis = async () => {
         setIsAnalyzing(true);
-        // Simulate processing time for "AI" feel
-        setTimeout(() => {
-            const results = analyzeRequest(request.title, request.description);
-            // We need to add an update action to the store for this. 
-            // For now, let's assume resolveDecision can handle patches or we'll add a helper.
-            // *Self-Correction*: The store needs an 'updateRequest' method. I'll add it to the component logic locally if needed,
-            // but ideally the store should have it. I'll implement a temporary patch logic here 
-            // or rely on a new store action.
-
-            // Calling the store action we WILL add in the next step
-            if (updateDecisionAnalysis) {
-                updateDecisionAnalysis(request.id, results);
+        try {
+            if (triggerAnalysis) {
+                await triggerAnalysis(request.id, request);
+            } else {
+                console.error("triggerAnalysis action missing from store");
             }
-
+        } catch (error) {
+            console.error("Analysis failed:", error);
+        } finally {
             setIsAnalyzing(false);
             setActiveTab("intelligence");
-        }, 1500);
+        }
     };
 
     const handleApprove = () => {

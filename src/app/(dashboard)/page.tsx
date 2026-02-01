@@ -1,7 +1,21 @@
 "use client";
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Activity, ShieldCheck, AlertTriangle, FileCheck, Send, ShieldQuestion, FileDown, Terminal, DollarSign } from 'lucide-react';
+import {
+  Activity,
+  ShieldCheck,
+  AlertTriangle,
+  FileCheck,
+  Send,
+  ShieldQuestion,
+  FileDown,
+  Terminal,
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  ArrowRight,
+  Sparkles
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useAstraStore } from '@/lib/store';
@@ -19,9 +33,124 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { SecurityFeed } from "@/components/dashboard/security-feed";
 import { generateExecutiveReport } from "@/lib/export-utils";
-
-
 import { DecisionConsole } from '@/components/governance/decision-console';
+
+// Metric Card Component
+function MetricCard({
+  label,
+  value,
+  icon: Icon,
+  trend,
+  trendValue,
+  status
+}: {
+  label: string;
+  value: string;
+  icon: React.ElementType;
+  trend?: 'up' | 'down' | 'neutral';
+  trendValue?: string;
+  status?: 'success' | 'warning' | 'danger' | 'neutral';
+}) {
+  const statusColors = {
+    success: 'text-emerald-500',
+    warning: 'text-amber-500',
+    danger: 'text-red-500',
+    neutral: 'text-primary'
+  };
+
+  const statusBg = {
+    success: 'bg-emerald-500/10',
+    warning: 'bg-amber-500/10',
+    danger: 'bg-red-500/10',
+    neutral: 'bg-primary/10'
+  };
+
+  return (
+    <Card className="relative overflow-hidden group transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+      {/* Subtle gradient overlay on hover */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          {label}
+        </CardTitle>
+        <div className={`p-2 rounded-lg ${statusBg[status || 'neutral']} transition-colors`}>
+          <Icon className={`h-4 w-4 ${statusColors[status || 'neutral']}`} />
+        </div>
+      </CardHeader>
+
+      <CardContent>
+        <div className="flex items-baseline gap-2">
+          <span className="text-3xl font-bold tracking-tight tabular-nums">{value}</span>
+          {trend && trendValue && (
+            <span className={`flex items-center text-xs font-medium ${trend === 'up' ? 'text-emerald-500' :
+                trend === 'down' ? 'text-red-500' : 'text-muted-foreground'
+              }`}>
+              {trend === 'up' && <TrendingUp className="h-3 w-3 mr-0.5" />}
+              {trend === 'down' && <TrendingDown className="h-3 w-3 mr-0.5" />}
+              {trendValue}
+            </span>
+          )}
+        </div>
+
+        {/* Mini sparkline placeholder */}
+        <div className="mt-3 h-8 flex items-end gap-0.5">
+          {[40, 65, 50, 75, 60, 80, 70, 90, 85].map((h, i) => (
+            <div
+              key={i}
+              className="flex-1 bg-primary/20 rounded-sm transition-all group-hover:bg-primary/30"
+              style={{ height: `${h}%` }}
+            />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Quick Action Card
+function QuickActionCard({
+  title,
+  description,
+  icon: Icon,
+  href,
+  variant = 'default'
+}: {
+  title: string;
+  description: string;
+  icon: React.ElementType;
+  href: string;
+  variant?: 'default' | 'primary' | 'destructive';
+}) {
+  const variants = {
+    default: 'border-border hover:border-primary/30 hover:bg-primary/5',
+    primary: 'border-primary/30 bg-primary/5 hover:bg-primary/10',
+    destructive: 'border-red-500/30 bg-red-500/5 hover:bg-red-500/10'
+  };
+
+  return (
+    <Link href={href}>
+      <Card className={`h-full transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer ${variants[variant]}`}>
+        <CardContent className="p-5 flex flex-col gap-3">
+          <div className={`p-2.5 rounded-lg w-fit ${variant === 'primary' ? 'bg-primary/20' :
+              variant === 'destructive' ? 'bg-red-500/20' : 'bg-secondary'
+            }`}>
+            <Icon className={`h-5 w-5 ${variant === 'primary' ? 'text-primary' :
+                variant === 'destructive' ? 'text-red-500' : 'text-muted-foreground'
+              }`} />
+          </div>
+          <div>
+            <h4 className="font-semibold text-foreground flex items-center gap-2">
+              {title}
+              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+            </h4>
+            <p className="text-sm text-muted-foreground mt-0.5">{description}</p>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
 
 export default function DashboardPage() {
   const { complianceScore, activeThreats, decisionQueue, systemStatus, addDecisionRequest } = useAstraStore();
@@ -35,7 +164,7 @@ export default function DashboardPage() {
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
 
   const pendingDecisions = decisionQueue.filter(d => d.status === 'PENDING');
-  const statusColor = systemStatus === 'NOMINAL' ? 'text-emerald-400' : 'text-red-500';
+  const statusColor = systemStatus === 'NOMINAL' ? 'text-emerald-500' : 'text-red-500';
 
   const handleDownloadReport = () => {
     generateExecutiveReport({
@@ -59,53 +188,51 @@ export default function DashboardPage() {
       title: protocolTitle,
       description: protocolDesc,
       requester: "Security Architect",
-      riskLevel: "MEDIUM", // Default risk for new protocols
+      riskLevel: "MEDIUM",
       timestamp: new Date().toISOString()
     });
 
-    // Reset and Close
     setProtocolTitle('');
     setProtocolDesc('');
     setIsProtocolOpen(false);
   };
 
   return (
-    <div className="space-y-6">
-      {/* Welcome / Status Section */}
+    <div className="space-y-8 max-w-7xl mx-auto">
+      {/* Header Section */}
       <section className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
+          <h1 className="text-3xl font-bold tracking-tight">
             Command Center
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Current Security Posture: <span className={`font-mono font-bold ${statusColor}`}>{systemStatus}</span>
+          <p className="text-muted-foreground mt-1 flex items-center gap-2">
+            System Status:
+            <span className={`inline-flex items-center gap-1.5 font-mono font-semibold ${statusColor}`}>
+              <span className={`h-2 w-2 rounded-full ${systemStatus === 'NOMINAL' ? 'bg-emerald-500' : 'bg-red-500'} animate-pulse`} />
+              {systemStatus}
+            </span>
           </p>
         </div>
-        <div className="flex gap-3">
+
+        <div className="flex gap-2">
           <Button
             variant="outline"
-            className="gap-2 border-primary/20 hover:bg-primary/10 hover:text-primary"
+            size="sm"
+            className="h-9"
             onClick={handleDownloadReport}
           >
-            <FileDown className="h-4 w-4" />
-            Download Report
-          </Button>
-
-          <Button
-            variant="outline"
-            className="border-primary/20 hover:bg-primary/10 hover:text-primary"
-            onClick={() => alert("Audit Wizard Initiated. Scanned 452 assets. No critical anomalies found.")}
-          >
-            New Audit
+            <FileDown className="h-4 w-4 mr-2" />
+            Export Report
           </Button>
 
           <Dialog open={isProtocolOpen} onOpenChange={setIsProtocolOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(var(--primary),0.3)]">
+              <Button size="sm" className="h-9">
+                <Sparkles className="h-4 w-4 mr-2" />
                 Initiate Protocol
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[525px] bg-card/95 backdrop-blur-xl border-primary/20 z-[60]">
+            <DialogContent className="sm:max-w-[525px]">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                   <ShieldQuestion className="h-5 w-5 text-primary" />
@@ -113,10 +240,6 @@ export default function DashboardPage() {
                 </DialogTitle>
                 <DialogDescription>
                   Submit a proposed architecture, vendor, or access request for CISO governance review.
-                  <br />
-                  <span className="text-xs text-amber-500 mt-1 block font-semibold">
-                    ⚠ ASTRA will enforce ISO 27001 & NIST CSF compliance on this request.
-                  </span>
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={(e) => {
@@ -129,7 +252,6 @@ export default function DashboardPage() {
                     <Input
                       id="title"
                       placeholder="e.g. Deploy New Kubernetes Cluster"
-                      className="bg-secondary/50 border-input/50 focus-visible:ring-primary"
                       value={protocolTitle}
                       onChange={(e) => setProtocolTitle(e.target.value)}
                     />
@@ -139,7 +261,7 @@ export default function DashboardPage() {
                     <Textarea
                       id="desc"
                       placeholder="Describe architectural changes, data flows, and involved assets..."
-                      className="bg-secondary/50 border-input/50 min-h-[100px] focus-visible:ring-primary"
+                      className="min-h-[100px]"
                       value={protocolDesc}
                       onChange={(e) => setProtocolDesc(e.target.value)}
                     />
@@ -157,86 +279,128 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* KPI Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: 'Compliance Score', value: `${complianceScore}%`, icon: FileCheck, color: 'text-emerald-400', sub: 'Calculated from active standards' },
-          { label: 'Active Threats', value: activeThreats.toString(), icon: ShieldCheck, color: activeThreats > 0 ? 'text-red-500' : 'text-blue-400', sub: activeThreats === 0 ? 'System secure' : 'Action required' },
-          { label: 'Pending Reviews', value: pendingDecisions.length.toString(), icon: Activity, color: pendingDecisions.length > 0 ? 'text-amber-400' : 'text-muted-foreground', sub: 'Requires CISO attention' },
-          { label: 'Risk Exposure', value: 'Low', icon: AlertTriangle, color: 'text-indigo-400', sub: 'Within tolerance' },
-        ].map((stat, i) => (
-          <Card key={i} className="bg-card/40 border-primary/10 backdrop-blur-sm relative overflow-hidden group hover:border-primary/30 transition-all">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {stat.label}
-              </CardTitle>
-              <stat.icon className={`h-4 w-4 ${stat.color} opacity-70 group-hover:opacity-100 transition-opacity`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Metrics Grid */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <MetricCard
+          label="Compliance Score"
+          value={`${complianceScore}%`}
+          icon={FileCheck}
+          trend="up"
+          trendValue="+2.3%"
+          status="success"
+        />
+        <MetricCard
+          label="Active Threats"
+          value={activeThreats.toString()}
+          icon={ShieldCheck}
+          status={activeThreats > 0 ? 'danger' : 'success'}
+        />
+        <MetricCard
+          label="Pending Reviews"
+          value={pendingDecisions.length.toString()}
+          icon={Activity}
+          status={pendingDecisions.length > 0 ? 'warning' : 'neutral'}
+        />
+        <MetricCard
+          label="Risk Exposure"
+          value="Low"
+          icon={AlertTriangle}
+          trend="down"
+          trendValue="-5%"
+          status="success"
+        />
+      </section>
 
-      {/* Main Dashboard Area */}
+      {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Strategic Command Center Modules - Replaces Threat Map */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-card/40 rounded-xl border border-dashed border-primary/20 p-8 flex flex-col items-center justify-center min-h-[400px] text-center gap-4">
-            <ShieldQuestion className="h-12 w-12 text-primary/40" />
-            <div>
-              <h3 className="text-xl font-bold text-foreground">Strategic Command Center</h3>
-              <p className="text-muted-foreground max-w-md mx-auto">
-                War Games, Budget Planning, and AI Intelligence modules are being initialized.
-              </p>
-            </div>
-            <div className="flex gap-4">
-              <Link href="/wargames">
-                <Button variant="outline" className="border-primary/20 hover:bg-primary/10 hover:text-primary">
-                  <Terminal className="mr-2 h-4 w-4" /> War Games
-                </Button>
-              </Link>
-              <Link href="/budget">
-                <Button variant="outline" className="border-primary/20 hover:bg-primary/10 hover:text-primary">
-                  <DollarSign className="mr-2 h-4 w-4" /> Budget Planner
-                </Button>
-              </Link>
-            </div>
+        {/* Quick Actions */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Quick Actions</h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <QuickActionCard
+              title="War Games"
+              description="Run tabletop exercises and AI simulations"
+              icon={Terminal}
+              href="/wargames"
+              variant="primary"
+            />
+            <QuickActionCard
+              title="Budget Planner"
+              description="Analyze and optimize security spend"
+              icon={DollarSign}
+              href="/budget"
+            />
+            <QuickActionCard
+              title="Policy Engine"
+              description="Review and generate security policies"
+              icon={FileCheck}
+              href="/policies"
+            />
+            <QuickActionCard
+              title="Risk Assessment"
+              description="View governance and compliance status"
+              icon={ShieldQuestion}
+              href="/governance"
+            />
           </div>
         </div>
 
-        <div className="hidden lg:block lg:col-span-1">
+        {/* Security Feed */}
+        <div className="lg:col-span-1">
           <SecurityFeed />
         </div>
 
-        <Card className="col-span-1 min-h-[400px] border-primary/10 shadow-sm">
-          <CardHeader>
-            <CardTitle>Rapid Decisions</CardTitle>
+        {/* Pending Decisions */}
+        <Card className="lg:col-span-2 border-border">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg font-semibold">Rapid Decisions</CardTitle>
+              {pendingDecisions.length > 0 && (
+                <span className="text-xs font-medium px-2 py-1 rounded-full bg-amber-500/10 text-amber-600">
+                  {pendingDecisions.length} pending
+                </span>
+              )}
+            </div>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent>
             {pendingDecisions.length === 0 ? (
-              <div className="text-sm text-muted-foreground text-center py-10">All clean.</div>
+              <div className="text-center py-12">
+                <ShieldCheck className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">All caught up. No pending decisions.</p>
+              </div>
             ) : (
-              pendingDecisions.map((request) => (
-                <div
-                  key={request.id}
-                  onClick={() => setSelectedRequestId(request.id)}
-                  className="p-3 rounded-md bg-secondary/30 border border-border/50 hover:bg-secondary/50 transition-colors cursor-pointer group"
-                >
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs font-mono text-primary group-hover:text-primary/80 transition-colors">{request.id}</span>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${request.riskLevel === 'CRITICAL' ? 'bg-red-500/10 text-red-600' : 'bg-amber-500/10 text-amber-600'}`}>
-                      {request.riskLevel}
-                    </span>
+              <div className="space-y-2">
+                {pendingDecisions.map((request) => (
+                  <div
+                    key={request.id}
+                    onClick={() => setSelectedRequestId(request.id)}
+                    className="p-4 rounded-lg border border-border hover:border-primary/30 hover:bg-secondary/30 transition-all cursor-pointer group"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="text-xs font-mono text-muted-foreground">{request.id}</span>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${request.riskLevel === 'CRITICAL'
+                          ? 'bg-red-500/10 text-red-600'
+                          : request.riskLevel === 'HIGH'
+                            ? 'bg-amber-500/10 text-amber-600'
+                            : 'bg-blue-500/10 text-blue-600'
+                        }`}>
+                        {request.riskLevel}
+                      </span>
+                    </div>
+                    <div className="font-medium text-foreground group-hover:text-primary transition-colors">
+                      {request.title}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1.5 flex items-center gap-2">
+                      <span>Requester: {request.requester}</span>
+                      <span>•</span>
+                      <span>{new Date(request.timestamp).toLocaleDateString()}</span>
+                    </div>
                   </div>
-                  <div className="text-sm font-medium line-clamp-2 text-foreground/90">{request.title}</div>
-                  <div className="text-[10px] text-muted-foreground mt-1">
-                    Req: {request.requester}
-                  </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </CardContent>
         </Card>

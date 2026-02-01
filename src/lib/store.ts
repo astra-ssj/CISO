@@ -27,12 +27,9 @@ export interface DecisionRequest {
     }[];
 }
 
-export interface ChatMessage {
-    id: string;
-    role: 'user' | 'assistant';
-    content: string;
-    timestamp: number;
-}
+import { AgentMessage, openClaw } from './openclaw-client';
+
+export interface ChatMessage extends AgentMessage { }
 
 interface AstraState {
     // Global Posture
@@ -49,6 +46,7 @@ interface AstraState {
     addDecisionRequest: (request: Omit<DecisionRequest, 'id' | 'status'>) => void;
     resolveDecision: (id: string, outcome: 'APPROVED' | 'DENIED', reason: string) => void;
     updateDecisionAnalysis: (id: string, results: any) => void;
+    triggerAnalysis: (id: string, request: DecisionRequest) => Promise<void>; // New Async Action
     updateComplianceScore: (score: number) => void;
     sendQuery: (query: string) => void;
     clearChat: () => void;
@@ -99,12 +97,22 @@ export const useAstraStore = create<AstraState>()(
                 }
             ],
 
-            addDecisionRequest: (request) => set((state) => ({
-                decisionQueue: [
-                    ...state.decisionQueue,
-                    { ...request, id: `REQ-${Date.now()}`, status: 'PENDING' }
-                ]
-            })),
+            addDecisionRequest: (request) => {
+                const id = `REQ-${Date.now()}`;
+                const newRequest: DecisionRequest = {
+                    ...request,
+                    id,
+                    status: 'PENDING',
+                    timestamp: new Date().toISOString()
+                } as DecisionRequest;
+
+                set((state) => ({
+                    decisionQueue: [...state.decisionQueue, newRequest]
+                }));
+
+                // Trigger Async Analysis
+                get().triggerAnalysis(id, newRequest as DecisionRequest);
+            },
 
             resolveDecision: (id, outcome, reason) => set((state) => ({
                 decisionQueue: state.decisionQueue.map(d =>
@@ -127,10 +135,48 @@ export const useAstraStore = create<AstraState>()(
                 )
             })),
 
+            triggerAnalysis: async (id, request) => {
+                const { usePolicyStore } = await import('./policy-store');
+                const policies = usePolicyStore.getState().policies;
+                const state = get();
+
+                try {
+                    // Refactoring to BFF Pattern (R-03)
+                    // Instead of running locally, we call the secure API endpoint
+                    const response = await fetch('/api/agent/analyze', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            title: request.title,
+                            description: request.description,
+                            context: {
+                                activeStandards: state.activeStandards,
+                                policies: policies
+                            }
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Analysis API failed: ${response.statusText}`);
+                    }
+
+                    const results = await response.json();
+
+                    // Update State with Results from Server
+                    get().updateDecisionAnalysis(id, results);
+
+                } catch (error) {
+                    console.error("Failed to trigger secure analysis:", error);
+                    // Optionally handle error state in UI
+                }
+            },
+
             updateComplianceScore: (score) => set({ complianceScore: score }),
 
-            // Simulated NLP Logic
-            sendQuery: (query) => {
+            // Integrated OpenClaw Logic
+            sendQuery: async (query) => {
                 const state = get();
                 const userMsg: ChatMessage = {
                     id: Date.now().toString(),
@@ -141,32 +187,25 @@ export const useAstraStore = create<AstraState>()(
 
                 set(s => ({ chatHistory: [...s.chatHistory, userMsg] }));
 
-                // Simulating "Thinking" delay
-                setTimeout(() => {
-                    let responseText = "I'm not sure I understand that command. Try asking about 'compliance', 'risks', or 'status'.";
-                    const lowerQuery = query.toLowerCase();
+                // Start handling the stream from OpenClaw
+                const iterator = openClaw.sendMessage(query);
 
-                    if (lowerQuery.includes('status') || lowerQuery.includes('health')) {
-                        responseText = `System status is currently ${state.systemStatus}. All core security services are operational.`;
-                    } else if (lowerQuery.includes('compliance') || lowerQuery.includes('score')) {
-                        responseText = `Current Compliance Score is ${state.complianceScore}%. We are tracking against ${state.activeStandards.join(', ')}.`;
-                    } else if (lowerQuery.includes('risk') || lowerQuery.includes('threat')) {
-                        responseText = `I have detected ${state.activeThreats} active threat(s). ${state.activeThreats > 0 ? 'Review the AppSec dashboard immediately.' : 'No immediate action required.'}`;
-                    } else if (lowerQuery.includes('audit') || lowerQuery.includes('protocol')) {
-                        responseText = "To initiate a new audit or protocol, please use the 'Initiate Protocol' button in the Command Center. I will enforce ISO 27001 checklists on the request.";
-                    } else if (lowerQuery.includes('hello') || lowerQuery.includes('hi')) {
-                        responseText = "Greetings. I am ready to assist with security governance decisions.";
+                let messageId: string | null = null;
+
+                for await (const update of iterator) {
+                    if (!messageId) {
+                        messageId = update.id;
+                        // Add the initial empty/thinking message
+                        set(s => ({ chatHistory: [...s.chatHistory, update] }));
+                    } else {
+                        // Update the existing message in place
+                        set(s => ({
+                            chatHistory: s.chatHistory.map(msg =>
+                                msg.id === messageId ? update : msg
+                            )
+                        }));
                     }
-
-                    const aiMsg: ChatMessage = {
-                        id: (Date.now() + 1).toString(),
-                        role: 'assistant',
-                        content: responseText,
-                        timestamp: Date.now()
-                    };
-
-                    set(s => ({ chatHistory: [...s.chatHistory, aiMsg] }));
-                }, 600);
+                }
             },
 
             clearChat: () => set({ chatHistory: [] }),
@@ -174,15 +213,22 @@ export const useAstraStore = create<AstraState>()(
             currentUser: null,
             isAuthenticated: false,
 
-            login: (role = 'CISO') => set({
-                isAuthenticated: true,
-                currentUser: {
-                    name: role === 'CISO' ? 'Chief Information Security Officer' : 'Security Architect',
-                    role: role
-                }
-            }),
+            login: (role = 'CISO') => {
+                // Set Secure Cookie for Middleware verification
+                document.cookie = "astra-auth=true; path=/; max-age=86400; SameSite=Strict";
+                set({
+                    isAuthenticated: true,
+                    currentUser: {
+                        name: role === 'CISO' ? 'Chief Information Security Officer' : 'Security Architect',
+                        role: role
+                    }
+                });
+            },
 
-            logout: () => set({ isAuthenticated: false, currentUser: null })
+            logout: () => {
+                document.cookie = "astra-auth=; path=/; max-age=0";
+                set({ isAuthenticated: false, currentUser: null });
+            }
         }),
         {
             name: 'astra-main-store',

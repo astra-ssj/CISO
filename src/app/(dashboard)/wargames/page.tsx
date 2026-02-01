@@ -114,6 +114,21 @@ export default function WarGamesPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {/* AI Red Team Mode - Featured */}
+                    <Link href="/wargames/ai">
+                        <Card className="h-full border-2 border-red-500/30 hover:border-red-500/60 hover:bg-red-500/5 transition-all cursor-pointer flex flex-col items-center justify-center p-6 space-y-4 group text-center bg-gradient-to-br from-red-950/20 to-transparent">
+                            <div className="p-4 rounded-full bg-red-500/10 group-hover:bg-red-500/20 transition-colors relative">
+                                <div className="absolute inset-0 rounded-full border border-red-500/30 animate-ping opacity-30" />
+                                <Skull className="h-8 w-8 text-red-500" />
+                            </div>
+                            <div>
+                                <Badge variant="destructive" className="mb-2">NEW: AI-Powered</Badge>
+                                <h3 className="font-bold text-lg group-hover:text-red-500 transition-colors">AI Red Team Mode</h3>
+                                <p className="text-sm text-muted-foreground mt-2">Dynamic adversary simulation. The AI adapts to your defenses in real-time.</p>
+                            </div>
+                        </Card>
+                    </Link>
+
                     <Link href="/wargames/builder">
                         <Card className="h-full border-dashed border-2 border-primary/20 hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer flex flex-col items-center justify-center p-6 space-y-4 group text-center">
                             <div className="p-4 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
