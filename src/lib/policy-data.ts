@@ -17,6 +17,17 @@ export const SEED_POLICIES: Policy[] = [
         mappings: [
             { frameworkId: 'ISO_27001', controlId: '5.1', coverage: 'FULL' },
             { frameworkId: 'NIST_CSF', controlId: 'GV.PO-01', coverage: 'FULL' }
+        ],
+        dependencies: [],
+        acknowledgment: {
+            status: 'COMPLETED',
+            totalUsers: 450,
+            signedUsers: 442,
+            dueDate: '2025-12-31'
+        },
+        changelog: [
+            { version: '2.1.0', date: '2025-01-15', author: 'CISO', notes: 'Annual review complete.' },
+            { version: '2.0.0', date: '2024-06-10', author: 'GRC Lead', notes: 'Major rewrite for ISO 27001:2022.' }
         ]
     },
     {
@@ -36,6 +47,16 @@ export const SEED_POLICIES: Policy[] = [
             { frameworkId: 'ISO_27001', controlId: 'A.9.1', coverage: 'FULL' },
             { frameworkId: 'NIST_800_53', controlId: 'AC-1', coverage: 'FULL' },
             { frameworkId: 'SOC2', controlId: 'CC6.1', coverage: 'FULL' }
+        ],
+        dependencies: ['pol-isms-001'], // Depends on Global ISMS
+        acknowledgment: {
+            status: 'ACTIVE',
+            totalUsers: 450,
+            signedUsers: 120,
+            dueDate: '2026-03-01'
+        },
+        changelog: [
+            { version: '1.5.0', date: '2026-01-20', author: 'IAM Manager', notes: 'Added MFA requirement for all remote access.' }
         ]
     },
     {
@@ -55,7 +76,10 @@ export const SEED_POLICIES: Policy[] = [
             { frameworkId: 'ISO_27001', controlId: 'A.16.1', coverage: 'FULL' },
             { frameworkId: 'NIST_CSF', controlId: 'RS.CO-01', coverage: 'FULL' },
             { frameworkId: 'GDPR', controlId: 'Art. 33', coverage: 'FULL' }
-        ]
+        ],
+        dependencies: [],
+        acknowledgment: { status: 'ACTIVE', totalUsers: 50, signedUsers: 50, dueDate: '2025-11-30' },
+        changelog: []
     },
     {
         id: 'pol-priv-001',
@@ -73,7 +97,10 @@ export const SEED_POLICIES: Policy[] = [
         mappings: [
             { frameworkId: 'GDPR', controlId: 'Art. 5', coverage: 'FULL' },
             { frameworkId: 'ISO_27701', controlId: '6.3', coverage: 'FULL' }
-        ]
+        ],
+        dependencies: ['pol-isms-001'],
+        acknowledgment: { status: 'PENDING', totalUsers: 450, signedUsers: 10, dueDate: '2026-06-01' },
+        changelog: []
     },
     {
         id: 'pol-net-001',
@@ -90,7 +117,10 @@ export const SEED_POLICIES: Policy[] = [
         mappings: [
             { frameworkId: 'ISO_27001', controlId: 'A.13.1', coverage: 'FULL' },
             { frameworkId: 'NIST_800_53', controlId: 'SC-7', coverage: 'FULL' }
-        ]
+        ],
+        dependencies: ['pol-isms-001', 'pol-access-001'],
+        acknowledgment: { status: 'ACTIVE', totalUsers: 50, signedUsers: 45 },
+        changelog: []
     },
     {
         id: 'pol-vendor-001',
@@ -107,7 +137,10 @@ export const SEED_POLICIES: Policy[] = [
         mappings: [
             { frameworkId: 'ISO_27001', controlId: 'A.15.1', coverage: 'FULL' },
             { frameworkId: 'SOC2', controlId: 'CC9.2', coverage: 'FULL' }
-        ]
+        ],
+        dependencies: ['pol-isms-001'],
+        acknowledgment: { status: 'PENDING', totalUsers: 20, signedUsers: 5 },
+        changelog: []
     },
     {
         id: 'pol-ai-001',
@@ -126,6 +159,9 @@ export const SEED_POLICIES: Policy[] = [
             { frameworkId: 'EU_AI_ACT', controlId: 'Art. 9', coverage: 'PARTIAL' },
             { frameworkId: 'ISO_42001', controlId: 'A.6.2', coverage: 'FULL' },
             { frameworkId: 'NIST_AI_RMF', controlId: 'MAP-1.2', coverage: 'FULL' }
-        ]
+        ],
+        dependencies: ['pol-priv-001'],
+        acknowledgment: { status: 'PENDING', totalUsers: 450, signedUsers: 0 },
+        changelog: []
     }
 ];

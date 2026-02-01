@@ -26,6 +26,20 @@ export interface Policy {
     lastUpdated: string;
     sections: PolicySection[];
     mappings: FrameworkMapping[];
+    // New Fields for Governance 2.0
+    dependencies: string[]; // IDs of policies this ones depends on
+    acknowledgment: {
+        status: 'ACTIVE' | 'PENDING' | 'COMPLETED';
+        totalUsers: number;
+        signedUsers: number;
+        dueDate?: string;
+    };
+    changelog: {
+        version: string;
+        date: string;
+        author: string;
+        notes: string;
+    }[];
 }
 
 interface PolicyState {

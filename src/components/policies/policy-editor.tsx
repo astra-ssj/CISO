@@ -75,7 +75,17 @@ export function PolicyEditor({ initialPolicy, onSave, onCancel }: PolicyEditorPr
             owner,
             lastUpdated: new Date().toISOString(),
             sections,
-            mappings: initialPolicy?.mappings || []
+            mappings: initialPolicy?.mappings || [],
+            // Initialize new governance fields
+            dependencies: initialPolicy?.dependencies || [],
+            acknowledgment: initialPolicy?.acknowledgment || {
+                status: 'PENDING',
+                totalUsers: 0,
+                signedUsers: 0
+            },
+            changelog: initialPolicy?.changelog || [
+                { version: finalVersion, date: new Date().toISOString(), author: owner, notes: 'Initial version' }
+            ]
         };
         onSave(newPolicy);
     };
