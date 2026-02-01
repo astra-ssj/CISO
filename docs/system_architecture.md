@@ -7,37 +7,7 @@
 
 The Astra CISO platform follows a modern **Backend-for-Frontend (BFF)** architecture, designed to balance rich client-side interactivity with server-side security and secret isolation.
 
-```mermaid
-graph TD
-    subgraph Client ["Client Layer (Browser)"]
-        UI[React UI (Next.js)]
-        Store[Zustand State Store]
-        LocalEng[Local Engines (Wargame)]
-    end
-
-    subgraph Edge ["Edge Layer"]
-        MW[Middleware (Auth Guard)]
-    end
-
-    subgraph Server ["Server Layer (Node.js/Edge)"]
-        BFF[BFF API Routes]
-        Intel[Intelligence Engine]
-        Threat[Threat Engine Core]
-    end
-
-    subgraph External ["External Services"]
-        LLM[AI Providers (OpenAI/Anthropic)]
-        DB[(Policy Database - Mock)]
-    end
-
-    User((CISO User)) -->|Interacts| UI
-    UI -->|State Updates| Store
-    UI <-->|Nav Requests| MW
-    UI -->|Secure API Ops| BFF
-    BFF -->|Context Injection| Intel
-    Intel -->|Inference| LLM
-    BFF -->|Analysis| Threat
-```
+![System Architecture Diagram](assets/system_architecture.png)
 
 ### 1.1 Core Layers
 
