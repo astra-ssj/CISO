@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getProvider } from '@/lib/ai';
+import { ax } from '@/lib/ai/engine';
 
 export interface WargameState {
     scenarioType: string;
@@ -56,8 +56,6 @@ export async function POST(request: Request) {
             );
         }
 
-        const provider = getProvider();
-
         // Construct the game context
         const gameContext = `
 ## Current Wargame State
@@ -82,19 +80,33 @@ ${state.playerActions.map((a, i) => `Turn ${i + 1}: ${a}`).join('\n')}
 Generate the threat actor's response and updated game state.
 `;
 
-        const result = await provider.complete({
-            systemPrompt: RED_TEAM_SYSTEM_PROMPT,
-            messages: [
+        const result = await ax.chat({
+            chatPrompt: [
+                { role: 'system', content: RED_TEAM_SYSTEM_PROMPT },
                 { role: 'user', content: gameContext }
-            ],
-            temperature: 0.8 // Higher for more creative adversary responses
+            ]
         });
 
         // Parse AI response
+        // Ax handling
+        let content = "";
+        let modelName = "unknown";
+
+        if (typeof result === 'string') {
+            content = result;
+        } else if ('content' in (result as any)) {
+            content = (result as any).content;
+            modelName = (result as any).model || "unknown";
+        } else if ('results' in (result as any)) {
+            content = (result as any).results[0].content;
+        } else {
+            content = JSON.stringify(result);
+        }
+
         let parsed;
         try {
             // Try to extract JSON from the response
-            const jsonMatch = result.content.match(/\{[\s\S]*\}/);
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
                 parsed = JSON.parse(jsonMatch[0]);
             } else {
@@ -103,7 +115,7 @@ Generate the threat actor's response and updated game state.
         } catch {
             // Fallback to structured mock if parsing fails
             parsed = {
-                narrative: result.content,
+                narrative: content,
                 threatAction: "The adversary adapts to your action...",
                 newSituation: state.currentSituation,
                 severity: "MEDIUM",
@@ -119,8 +131,8 @@ Generate the threat actor's response and updated game state.
 
         return NextResponse.json({
             ...parsed,
-            provider: result.provider,
-            model: result.model,
+            provider: 'AX',
+            model: modelName,
             turnNumber: state.turnNumber + 1
         });
 

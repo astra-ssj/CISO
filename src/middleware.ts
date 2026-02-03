@@ -1,22 +1,32 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { jwtVerify } from 'jose';
 
-export function middleware(request: NextRequest) {
+const SECRET_KEY = process.env.JWT_SECRET || 'astra-local-dev-secret-key-change-in-prod';
+const key = new TextEncoder().encode(SECRET_KEY);
+
+async function verify(token: string) {
+    try {
+        await jwtVerify(token, key, { algorithms: ['HS256'] });
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+export async function middleware(request: NextRequest) {
     // Check for the auth cookie
     const authCookie = request.cookies.get('astra-auth');
-    const isAuthenticated = authCookie?.value === 'true';
+    const token = authCookie?.value;
+
+    // Verify Token
+    let isAuthenticated = false;
+    if (token) {
+        isAuthenticated = await verify(token);
+    }
 
     // Define protected paths
     const isLoginPage = request.nextUrl.pathname === '/login';
-    const isDashboard = request.nextUrl.pathname === '/' || request.nextUrl.pathname.startsWith('/(dashboard)'); // Note: Group routes like (dashboard) are not in the URL
-
-    // Real check: If it's NOT login, NOT static, and NOT api (unless specific api protection needed here)
-    // For this app, essentially everything at root '/' is protected except login.
-
-    // Exclude static assets, api, and login from default protection if needed, 
-    // OR explicitly protect root and sub-routes.
-
-    // Simplified logic: Protect everything except /login, /api (optional, handled separately or here), and static assets.
     const path = request.nextUrl.pathname;
 
     // Public paths
@@ -24,14 +34,14 @@ export function middleware(request: NextRequest) {
         path.startsWith('/_next') ||
         path.startsWith('/static') ||
         path === '/login' ||
+        path.startsWith('/api/auth') || // Allow login API
         path.match(/\.(png|jpg|jpeg|gif|ico|svg)$/)
     ) {
         return NextResponse.next();
     }
 
-    // API Routes - we can also protect them here or in the route handler. 
-    // Let's protect sensitive agent APIs here too for double safety.
-    if (path.startsWith('/api/agent')) {
+    // API Routes protection
+    if (path.startsWith('/api')) {
         if (!isAuthenticated) {
             return NextResponse.json(
                 { error: 'Unauthorized: Session required' },
@@ -53,12 +63,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
     matcher: [
-        /*
-         * Match all request paths except for the ones starting with:
-         * - _next/static (static files)
-         * - _next/image (image optimization files)
-         * - favicon.ico (favicon file)
-         */
         '/((?!_next/static|_next/image|favicon.ico).*)',
     ],
 };

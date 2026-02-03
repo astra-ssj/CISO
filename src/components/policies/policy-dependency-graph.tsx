@@ -37,7 +37,7 @@ export function PolicyDependencyGraph() {
 
             <svg className="absolute inset-0 w-full h-full pointer-events-none">
                 {nodes.map(node => (
-                    node.dependencies.map(depId => {
+                    (node.dependencies || []).map(depId => {
                         const target = nodes.find(n => n.id === depId);
                         if (!target) return null;
 
@@ -69,9 +69,9 @@ export function PolicyDependencyGraph() {
                     <Card className="p-3 shadow-md bg-card/90 backdrop-blur border-l-4 border-l-primary cursor-pointer hover:scale-105 transition-transform">
                         <div className="text-[10px] font-bold uppercase text-muted-foreground">{node.type}</div>
                         <div className="font-semibold text-sm truncate" title={node.title}>{node.title}</div>
-                        {node.dependencies.length > 0 && (
+                        {(node.dependencies || []).length > 0 && (
                             <div className="mt-1 text-[10px] text-amber-600 bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400 px-1 rounded w-fit">
-                                Depends on {node.dependencies.length} Policy
+                                Depends on {(node.dependencies || []).length} Policy
                             </div>
                         )}
                     </Card>

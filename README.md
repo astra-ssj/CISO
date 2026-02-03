@@ -49,6 +49,12 @@ AI-powered analysis of your security posture (`/intelligence`).
 
 For detailed features and usage instructions, please refer to the [User Guide](docs/USER_GUIDE.md).
 
+## Technical Documentation
+
+- [High-Level Design (HLD)](docs/HIGH_LEVEL_DESIGN.md)
+* [Low-Level Design (LLD)](docs/LOW_LEVEL_DESIGN.md)
+* [Security & QA Report](docs/SECURITY_AND_QA_REPORT.md)
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

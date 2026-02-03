@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { getProvider } from '@/lib/ai';
+import { ax } from '@/lib/ai/engine';
 
 // System Prompt Definition
 const ASTRA_SYSTEM_PROMPT = `You are ASTRA (Authorized Security & Threat Response Agent), an advanced CISO AI assistant.
@@ -40,15 +40,12 @@ export async function POST(request: NextRequest) {
         }
 
         // Security Check: Verify Auth
-        // In a real app, rely on specific headers or strictly validated cookies
         const authCookie = request.cookies.get('astra-auth');
         const authHeader = request.headers.get('Authorization');
 
         if (authCookie?.value !== 'true' && !authHeader?.startsWith('Bearer ')) {
             return NextResponse.json({ error: "Unauthorized Access to Neural Core" }, { status: 401 });
         }
-
-        const provider = getProvider();
 
         // Construct Context Block
         const contextBlock = `
@@ -59,47 +56,60 @@ export async function POST(request: NextRequest) {
 - **Active Threats**: ${context?.activeThreats || 0}
 `;
 
-        const messages = [
+        // Using Ax AI
+        const chatPrompt = [
+            { role: 'system', content: ASTRA_SYSTEM_PROMPT },
             ...history.map((msg: any) => ({ role: msg.role, content: msg.content })),
             { role: 'user', content: message + contextBlock }
         ];
 
-        // Streaming is preferred for chat, but starting with simple request/response for stability in V1 integration
-        const response = await provider.complete({
-            systemPrompt: ASTRA_SYSTEM_PROMPT,
-            messages: messages,
-            maxTokens: 1000,
-            temperature: 0.7
+        const response = await ax.chat({
+            chatPrompt
         });
 
-        // Simple Tool Parsing Logic (for V1 Mock/Simulation)
-        // In a real agent, this would be a loop or recursive call
-        let finalContent = response.content;
+        // Parse Response (Ax returns structured object or string based on config, but here standard chat)
+        // With Ax standard chat, it might return a simple string or an object depending on version.
+        // The previous code handled string. Let's normalize.
+        let finalContent = "";
+
+        if (typeof response === 'string') {
+            finalContent = response;
+        } else if ('content' in (response as any)) {
+            finalContent = (response as any).content;
+        } else if ('results' in (response as any)) {
+            finalContent = (response as any).results[0].content;
+        } else {
+            finalContent = JSON.stringify(response);
+        }
+
+        // Tool execution logic (Mock for now, similar to before)
+        // Ax has advanced tool support, but for V1 migration we keep the prompt-based parsing 
+        // to minimize regression risk on the specific internal tool syntax.
         let toolExecution = null;
 
-        // Attempt to detect tool call
         try {
             const toolMatch = finalContent.match(/```json\n([\s\S]*?)\n```/);
             if (toolMatch) {
                 const toolJson = JSON.parse(toolMatch[1]);
                 if (toolJson.tool) {
                     toolExecution = toolJson;
-                    // Execute "Tool" (Mock Logic)
                     const toolResult = executeMockTool(toolJson.tool, toolJson.params);
-                    // Append result to content for the user to see (or for a 2nd LLM pass - keeping simple for now)
                     finalContent = `*[ASTRA executing ${toolJson.tool}...]*\n\n> **Tool Output**: ${toolResult}\n\n`;
 
-                    // Optional: Do a second pass to interpret the result? 
-                    // For now, return the result directly as part of the answer.
-                    const followUp = await provider.complete({
-                        systemPrompt: ASTRA_SYSTEM_PROMPT,
-                        messages: [
-                            ...messages,
+                    // Simple follow-up
+                    const followUp = await ax.chat({
+                        chatPrompt: [
+                            ...chatPrompt,
                             { role: 'assistant', content: finalContent },
                             { role: 'user', content: "Interpret this tool output and give me the bottom line." }
                         ]
                     });
-                    finalContent += followUp.content;
+
+                    let followUpContent = "";
+                    if (typeof followUp === 'string') followUpContent = followUp;
+                    else if ('content' in (followUp as any)) followUpContent = (followUp as any).content;
+
+                    finalContent += followUpContent;
                 }
             }
         } catch (e) {

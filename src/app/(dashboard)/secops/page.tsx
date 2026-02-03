@@ -26,8 +26,14 @@ import {
     Loader2,
     Bug,
     FileWarning,
-    Scan
+    Scan,
+    Network,
+    Activity
 } from "lucide-react";
+
+import { NetworkTopologyMap } from "@/components/secops/network-topology-map";
+import { NetFlowTable } from "@/components/secops/net-flow-table";
+import { NetworkTrafficChart } from "@/components/secops/network-traffic-chart";
 
 // Mock data for CI/CD pipelines
 const MOCK_PIPELINES = [
@@ -193,10 +199,10 @@ function PipelineCard({ pipeline }: { pipeline: typeof MOCK_PIPELINES[0] }) {
                         <div
                             key={i}
                             className={`flex-1 h-1.5 rounded-full ${stage.status === 'success' ? 'bg-emerald-500' :
-                                    stage.status === 'failed' ? 'bg-red-500' :
-                                        stage.status === 'warning' ? 'bg-amber-500' :
-                                            stage.status === 'running' ? 'bg-blue-500 animate-pulse' :
-                                                'bg-secondary'
+                                stage.status === 'failed' ? 'bg-red-500' :
+                                    stage.status === 'warning' ? 'bg-amber-500' :
+                                        stage.status === 'running' ? 'bg-blue-500 animate-pulse' :
+                                            'bg-secondary'
                                 }`}
                             title={`${stage.name}: ${stage.status}`}
                         />
@@ -224,7 +230,7 @@ function PipelineCard({ pipeline }: { pipeline: typeof MOCK_PIPELINES[0] }) {
                     )}
                     {pipeline.securityScore && (
                         <span className={`font-mono font-bold ${pipeline.securityScore >= 90 ? 'text-emerald-500' :
-                                pipeline.securityScore >= 70 ? 'text-amber-500' : 'text-red-500'
+                            pipeline.securityScore >= 70 ? 'text-amber-500' : 'text-red-500'
                             }`}>
                             {pipeline.securityScore}%
                         </span>
@@ -251,7 +257,7 @@ function CloudProviderCard({ provider }: { provider: typeof MOCK_CLOUD_RESOURCES
                     </div>
                     <div className="text-right">
                         <div className={`text-2xl font-bold ${complianceRate >= 90 ? 'text-emerald-500' :
-                                complianceRate >= 70 ? 'text-amber-500' : 'text-red-500'
+                            complianceRate >= 70 ? 'text-amber-500' : 'text-red-500'
                             }`}>
                             {complianceRate}%
                         </div>
@@ -394,6 +400,10 @@ export default function SecOpsPage() {
                         <Bug className="h-4 w-4" />
                         Findings
                     </TabsTrigger>
+                    <TabsTrigger value="network" className="gap-2">
+                        <Network className="h-4 w-4" />
+                        Network Observability
+                    </TabsTrigger>
                 </TabsList>
 
                 {/* Pipelines Tab */}
@@ -468,7 +478,7 @@ export default function SecOpsPage() {
                                         </div>
                                         <div className="w-24 text-right">
                                             <span className={`font-mono font-bold ${benchmark.score >= 90 ? 'text-emerald-500' :
-                                                    benchmark.score >= 70 ? 'text-amber-500' : 'text-red-500'
+                                                benchmark.score >= 70 ? 'text-amber-500' : 'text-red-500'
                                                 }`}>
                                                 {benchmark.score}%
                                             </span>
@@ -499,8 +509,8 @@ export default function SecOpsPage() {
                                     <div
                                         key={finding.id}
                                         className={`p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md ${finding.severity === 'critical' ? 'border-red-500/30 bg-red-500/5 hover:bg-red-500/10' :
-                                                finding.severity === 'high' ? 'border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10' :
-                                                    'border-border bg-secondary/30 hover:bg-secondary/50'
+                                            finding.severity === 'high' ? 'border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10' :
+                                                'border-border bg-secondary/30 hover:bg-secondary/50'
                                             }`}
                                     >
                                         <div className="flex items-start justify-between">
@@ -508,8 +518,8 @@ export default function SecOpsPage() {
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <span className="text-xs font-mono text-muted-foreground">{finding.id}</span>
                                                     <Badge className={`text-[10px] ${finding.severity === 'critical' ? 'bg-red-500 hover:bg-red-500' :
-                                                            finding.severity === 'high' ? 'bg-amber-500 hover:bg-amber-500' :
-                                                                'bg-secondary'
+                                                        finding.severity === 'high' ? 'bg-amber-500 hover:bg-amber-500' :
+                                                            'bg-secondary'
                                                         }`}>
                                                         {finding.severity.toUpperCase()}
                                                     </Badge>
@@ -530,7 +540,63 @@ export default function SecOpsPage() {
                         </CardContent>
                     </Card>
                 </TabsContent>
+
+
+                {/* Network Observability Tab */}
+                <TabsContent value="network" className="space-y-6">
+                    <div className="grid lg:grid-cols-3 gap-6">
+                        {/* Left Column: Topology */}
+                        <div className="lg:col-span-2">
+                            <NetworkTopologyMap />
+                        </div>
+
+                        {/* Right Column: Traffic Chart & Summary */}
+                        <div className="space-y-6">
+                            <NetworkTrafficChart />
+
+                            <Card className="border-primary/10 bg-primary/5">
+                                <CardHeader>
+                                    <CardTitle className="text-sm font-medium">Network Health</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <div className="text-2xl font-bold text-emerald-500">99.9%</div>
+                                            <p className="text-xs text-muted-foreground">Packet Delivery</p>
+                                        </div>
+                                        <div>
+                                            <div className="text-2xl font-bold text-primary">12ms</div>
+                                            <p className="text-xs text-muted-foreground">Avg Latency</p>
+                                        </div>
+                                        <div>
+                                            <div className="text-2xl font-bold text-amber-500">2</div>
+                                            <p className="text-xs text-muted-foreground">Policy Drops</p>
+                                        </div>
+                                        <div>
+                                            <div className="text-2xl font-bold text-blue-500">1.2GB</div>
+                                            <p className="text-xs text-muted-foreground">Total Throughput</p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+
+                    {/* Flow Table (Full Width) */}
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-semibold flex items-center gap-2">
+                                <Activity className="h-4 w-4 text-muted-foreground" />
+                                Real-time Flow Logs
+                            </h3>
+                            <Badge variant="outline" className="font-mono text-xs">
+                                SOURCE: eBPF
+                            </Badge>
+                        </div>
+                        <NetFlowTable />
+                    </div>
+                </TabsContent>
             </Tabs>
-        </div>
+        </div >
     );
 }

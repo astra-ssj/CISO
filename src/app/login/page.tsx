@@ -26,48 +26,54 @@ export default function LoginPage() {
         if (isAuthenticated) router.push('/');
     }, [isAuthenticated, router]);
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setIsLoading(true);
 
-        // Governance Check: Use Environment Variables (or default for dev safety)
-        const ADMIN_USER = process.env.NEXT_PUBLIC_ADMIN_USER || 'admin';
-        const ADMIN_PASS = process.env.NEXT_PUBLIC_ADMIN_PASS || 'password';
-
-        const isValid = (username === ADMIN_USER && password === ADMIN_PASS) ||
-            (username === 'root' && password === 'toor');
-
-        if (isValid) {
-            setIsLoading(true);
-            setLoginStage('DECRYPTING');
-
-            // Initiate simulated decryption sequence
-            const sequence = [
-                "Establishing secure handshake...",
-                "Verifying biometric signature...",
-                "Decrypting user keys [AES-256]...",
-                "Access Level: SYSTEM ADMINISTRATOR confirmed.",
-            ];
-
-            let delay = 0;
-            sequence.forEach((line, index) => {
-                setTimeout(() => {
-                    setTerminalLines(prev => [...prev, line]);
-                    if (index === sequence.length - 1) {
-                        setTimeout(() => {
-                            setLoginStage('ACCESS_GRANTED');
-                            setTimeout(() => {
-                                login();
-                                router.push('/');
-                            }, 1000);
-                        }, 800);
-                    }
-                }, delay);
-                delay += 600;
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password }),
             });
-        } else {
-            setError("ACCESS DENIED. Invalid Credentials.");
-            setTerminalLines(prev => [...prev, `[ERROR] Failed login attempt for user: ${username}`]);
+
+            if (res.ok) {
+                setLoginStage('DECRYPTING');
+
+                // Initiate simulated decryption sequence (Visuals only)
+                const sequence = [
+                    "Establishing secure handshake...",
+                    "Verifying biometric signature...",
+                    "Decrypting user keys [AES-256]...",
+                    "Access Level: SYSTEM ADMINISTRATOR confirmed.",
+                ];
+
+                let delay = 0;
+                sequence.forEach((line, index) => {
+                    setTimeout(() => {
+                        setTerminalLines(prev => [...prev, line]);
+                        if (index === sequence.length - 1) {
+                            setTimeout(() => {
+                                setLoginStage('ACCESS_GRANTED');
+                                setTimeout(() => {
+                                    login(); // Sync client store state
+                                    router.push('/');
+                                    router.refresh(); // Refresh to catch cookie via middleware
+                                }, 1000);
+                            }, 800);
+                        }
+                    }, delay);
+                    delay += 600;
+                });
+            } else {
+                setError("ACCESS DENIED. Invalid Credentials.");
+                setTerminalLines(prev => [...prev, `[ERROR] Failed login attempt for user: ${username}`]);
+                setIsLoading(false);
+            }
+        } catch (err) {
+            setError("Connection Error.");
+            setIsLoading(false);
         }
     };
 

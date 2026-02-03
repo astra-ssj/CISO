@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { generatePolicyAsync } from '@/lib/intelligence-engine';
-import { getProvider } from '@/lib/ai';
+import { ax, isAIConfigured } from '@/lib/ai/engine';
 
 export async function POST(request: Request) {
     try {
@@ -15,13 +15,12 @@ export async function POST(request: Request) {
         }
 
         const safeTopic = topic.slice(0, 100).replace(/[<>]/g, "");
-        const provider = getProvider();
-        const isRealProvider = provider.name !== 'MOCK' && useRealAI !== false;
+        const isRealProvider = isAIConfigured() && useRealAI !== false;
 
         if (isRealProvider) {
             // Use real LLM for policy generation
-            const aiResult = await provider.complete({
-                messages: [
+            const result = await ax.chat({
+                chatPrompt: [
                     {
                         role: 'user',
                         content: `Generate a comprehensive security policy for: "${safeTopic}"
@@ -40,6 +39,18 @@ Format as a professional policy document.`
                 ]
             });
 
+            let content = "";
+            let modelName = "unknown";
+
+            if (typeof result === 'string') {
+                content = result;
+            } else if ('content' in (result as any)) {
+                content = (result as any).content;
+                modelName = (result as any).model || "unknown";
+            } else if ('results' in (result as any)) {
+                content = (result as any).results[0].content;
+            }
+
             return NextResponse.json({
                 title: `${safeTopic} Policy`,
                 type: 'ISMS',
@@ -47,11 +58,11 @@ Format as a professional policy document.`
                 version: '0.1.0',
                 owner: 'AI Agent',
                 sections: [
-                    { id: 's1', title: 'AI-Generated Policy', content: aiResult.content }
+                    { id: 's1', title: 'AI-Generated Policy', content: content }
                 ],
                 mappings: [],
-                provider: aiResult.provider,
-                model: aiResult.model
+                provider: 'AX',
+                model: modelName
             });
         }
 

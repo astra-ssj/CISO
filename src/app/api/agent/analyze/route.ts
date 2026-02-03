@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { analyzeRequestAsync } from '@/lib/intelligence-engine';
-import { getProvider, listProviders } from '@/lib/ai';
+import { ax, isAIConfigured } from '@/lib/ai/engine';
 
 export async function POST(request: Request) {
     try {
@@ -23,13 +23,13 @@ export async function POST(request: Request) {
         }
 
         // Check if we should use real AI provider
-        const provider = getProvider();
-        const isRealProvider = provider.name !== 'MOCK' && useRealAI !== false;
+        // Check if we should use real AI provider
+        const isRealProvider = isAIConfigured() && useRealAI !== false;
 
         if (isRealProvider) {
             // Use real LLM provider
-            const aiResult = await provider.complete({
-                messages: [
+            const result = await ax.chat({
+                chatPrompt: [
                     {
                         role: 'user',
                         content: `Analyze this security request and provide a risk assessment:
@@ -51,16 +51,31 @@ Format your response as structured analysis.`
             });
 
             // Parse AI response into structured format
+            // Simple parsing for now, assuming string or content object
+            let content = "";
+            let modelName = "unknown";
+            let tokensUsed = 0;
+
+            if (typeof result === 'string') {
+                content = result;
+            } else if ('content' in (result as any)) {
+                content = (result as any).content;
+                modelName = (result as any).model || "unknown";
+                tokensUsed = (result as any).usage?.totalTokens || 0;
+            } else if ('results' in (result as any)) {
+                content = (result as any).results[0].content;
+            }
+
             return NextResponse.json({
                 riskScore: 50,
                 riskLevel: 'MEDIUM',
                 flaggedKeywords: ['AI-Analyzed'],
                 complianceGaps: [],
-                recommendedActions: [aiResult.content],
+                recommendedActions: [content],
                 generatedArtifacts: [],
-                provider: aiResult.provider,
-                model: aiResult.model,
-                tokensUsed: aiResult.tokensUsed
+                provider: 'AX',
+                model: modelName,
+                tokensUsed: tokensUsed
             });
         }
 
@@ -92,8 +107,11 @@ Format your response as structured analysis.`
 // GET endpoint to list available providers
 export async function GET() {
     return NextResponse.json({
-        providers: listProviders(),
-        active: process.env.AI_PROVIDER || 'MOCK'
+        providers: [
+            { name: 'OLLAMA', available: process.env.NEXT_PUBLIC_USE_OLLAMA === 'true' },
+            { name: 'OPENAI', available: !!process.env.OPENAI_API_KEY }
+        ],
+        active: process.env.NEXT_PUBLIC_USE_OLLAMA === 'true' ? 'OLLAMA' : 'OPENAI'
     });
 }
 

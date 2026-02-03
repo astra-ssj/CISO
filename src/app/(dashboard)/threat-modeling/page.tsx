@@ -49,6 +49,8 @@ import {
     Info
 } from 'lucide-react';
 import mermaid from 'mermaid';
+// @ts-ignore
+import DOMPurify from 'isomorphic-dompurify';
 
 // Types
 type ComponentType = 'web_app' | 'api' | 'database' | 'storage' | 'external' | 'mobile' | 'iot' | 'cloud' | 'user';
@@ -276,7 +278,7 @@ export default function ThreatModelingPage() {
         try {
             const id = `diagram-${Date.now()}`;
             const { svg } = await mermaid.render(id, diagram);
-            setDiagramSvg(svg);
+            setDiagramSvg(DOMPurify.sanitize(svg));
         } catch (e) {
             console.error('Mermaid error:', e);
         }
@@ -897,9 +899,9 @@ export default function ThreatModelingPage() {
                                             <Card
                                                 key={threat.id}
                                                 className={`border-l-4 cursor-pointer transition-all hover:shadow-lg ${threat.riskScore >= 8 ? 'border-l-red-500 bg-red-500/5' :
-                                                        threat.riskScore >= 6 ? 'border-l-orange-500 bg-orange-500/5' :
-                                                            threat.riskScore >= 4 ? 'border-l-amber-500 bg-amber-500/5' :
-                                                                'border-l-blue-500 bg-blue-500/5'
+                                                    threat.riskScore >= 6 ? 'border-l-orange-500 bg-orange-500/5' :
+                                                        threat.riskScore >= 4 ? 'border-l-amber-500 bg-amber-500/5' :
+                                                            'border-l-blue-500 bg-blue-500/5'
                                                     } ${threat.status === 'mitigated' ? 'opacity-60' : ''}`}
                                                 onClick={() => setSelectedThreat(threat)}
                                             >
@@ -931,9 +933,9 @@ export default function ThreatModelingPage() {
                                                         </div>
                                                         <div className="flex flex-col items-center gap-1">
                                                             <div className={`text-2xl font-bold ${threat.riskScore >= 8 ? 'text-red-500' :
-                                                                    threat.riskScore >= 6 ? 'text-orange-500' :
-                                                                        threat.riskScore >= 4 ? 'text-amber-500' :
-                                                                            'text-blue-500'
+                                                                threat.riskScore >= 6 ? 'text-orange-500' :
+                                                                    threat.riskScore >= 4 ? 'text-amber-500' :
+                                                                        'text-blue-500'
                                                                 }`}>
                                                                 {threat.riskScore}
                                                             </div>
