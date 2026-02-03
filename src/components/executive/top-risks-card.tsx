@@ -2,106 +2,81 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle, TrendingUp, AlertOctagon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { TrendingUp, TrendingDown, Minus, AlertTriangle, AlertOctagon } from "lucide-react";
 
 export interface RiskItem {
     id: string;
-    businessRisk: string; // The "Business Language" version
-    technicalRootCause: string; // The technical detail (hidden/small)
+    businessRisk: string;
+    technicalRootCause: string;
     trend: "up" | "down" | "stable";
-    severity: "critical" | "high" | "medium";
+    severity: "critical" | "high" | "medium" | "low";
     owner: string;
 }
 
 interface TopRisksCardProps {
     risks: RiskItem[];
-    maxItems?: number;
 }
 
-export function TopRisksCard({ risks, maxItems = 3 }: TopRisksCardProps) {
-    // Enforce maxItems strictly for the "Brief" concept
-    const displayRisks = risks.slice(0, maxItems);
+export function TopRisksCard({ risks }: TopRisksCardProps) {
+    // Take only top 3
+    const displayRisks = risks.slice(0, 3);
 
     return (
-        <Card className="h-full bg-zinc-900 border-zinc-800 shadow-xl overflow-hidden relative group">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <AlertOctagon className="w-24 h-24 text-red-500" />
-            </div>
-
-            <CardHeader className="pb-2 relative z-10">
-                <CardTitle className="text-xl font-bold text-zinc-100 flex items-center gap-2">
-                    <AlertTriangle className="w-5 h-5 text-amber-500" />
-                    Top {maxItems} Business Risks
+        <Card className="h-full border-zinc-800 bg-zinc-950/50 flex flex-col overflow-hidden group hover:border-zinc-700 transition-colors">
+            <CardHeader className="pb-2 border-b border-zinc-800/50 bg-zinc-900/20">
+                <CardTitle className="text-sm font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-500" />
+                    Top Business Risks
                 </CardTitle>
-                <p className="text-zinc-500 text-sm">
-                    Critical threats to revenue and continuity.
-                </p>
             </CardHeader>
-            <CardContent className="pt-4 space-y-4 relative z-10">
-                {displayRisks.map((risk, index) => (
-                    <motion.div
-                        key={risk.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="p-4 rounded-lg bg-zinc-950/50 border border-zinc-800/50 hover:border-zinc-700 transition-colors"
-                    >
-                        <div className="flex justify-between items-start mb-1">
-                            <h3 className="text-lg font-semibold text-zinc-100 leading-tight">
-                                {risk.businessRisk}
-                            </h3>
-                            <RiskBadge severity={risk.severity} />
-                        </div>
-
-                        <div className="flex items-center justify-between mt-3">
-                            <div className="text-xs text-zinc-500 font-mono group-hover:text-zinc-400 transition-colors">
-                                Root Cause: <span className="text-zinc-400">{risk.technicalRootCause}</span>
+            <CardContent className="flex-1 p-0 overflow-y-auto">
+                <div className="divide-y divide-zinc-800/50">
+                    {displayRisks.map((risk) => (
+                        <div key={risk.id} className="p-4 hover:bg-zinc-900/30 transition-colors">
+                            <div className="flex items-start justify-between mb-1">
+                                <div className="font-semibold text-sm text-zinc-100">{risk.businessRisk}</div>
+                                <SeverityBadge severity={risk.severity} />
                             </div>
-
-                            <div className="flex items-center gap-2 text-xs text-zinc-500">
+                            <div className="text-xs text-muted-foreground mb-3 font-mono border-l-2 border-zinc-800 pl-2 ml-1">
+                                {risk.technicalRootCause}
+                            </div>
+                            <div className="flex items-center justify-between text-[10px] text-zinc-500 uppercase tracking-wide">
                                 <span>Owner: {risk.owner}</span>
                                 <TrendIndicator trend={risk.trend} />
                             </div>
                         </div>
-                    </motion.div>
-                ))}
-
-                {risks.length === 0 && (
-                    <div className="text-center py-10 text-zinc-500 italic">
-                        No critical business risks identified.
-                    </div>
-                )}
+                    ))}
+                </div>
             </CardContent>
+            {/* Footer / Status */}
+            <div className="p-2 bg-red-500/5 border-t border-red-500/10 text-center">
+                <span className="text-xs font-medium text-red-400">
+                    {risks.filter(r => r.severity === 'critical').length} Critical Items Attention Required
+                </span>
+            </div>
         </Card>
     );
 }
 
-function RiskBadge({ severity }: { severity: RiskItem["severity"] }) {
-    const colors = {
+function SeverityBadge({ severity }: { severity: RiskItem["severity"] }) {
+    const styles = {
         critical: "bg-red-500/10 text-red-500 border-red-500/20",
         high: "bg-orange-500/10 text-orange-500 border-orange-500/20",
         medium: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
+        low: "bg-blue-500/10 text-blue-500 border-blue-500/20"
     };
 
     return (
-        <span
-            className={cn(
-                "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border",
-                colors[severity]
-            )}
-        >
+        <Badge variant="outline" className={cn("text-[10px] uppercase h-5 px-1.5", styles[severity])}>
             {severity}
-        </span>
+        </Badge>
     );
 }
 
 function TrendIndicator({ trend }: { trend: RiskItem["trend"] }) {
-    if (trend === 'stable') return <span className="text-zinc-600">–</span>;
-    return (
-        <span className={cn("flex items-center gap-0.5", trend === 'up' ? "text-red-500" : "text-emerald-500")}>
-            <TrendingUp className={cn("w-3 h-3", trend === 'down' && "rotate-180")} />
-        </span>
-    )
+    if (trend === 'up') return <div className="flex items-center text-red-400 gap-1"><TrendingUp className="w-3 h-3" /> Degrading</div>;
+    if (trend === 'down') return <div className="flex items-center text-emerald-400 gap-1"><TrendingDown className="w-3 h-3" /> Improving</div>;
+    return <div className="flex items-center text-zinc-500 gap-1"><Minus className="w-3 h-3" /> Stable</div>;
 }

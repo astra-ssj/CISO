@@ -4,7 +4,7 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { ShieldCheck, AlertTriangle, XCircle, Activity } from "lucide-react";
+import { ShieldCheck, AlertTriangle, XCircle, Activity, Box } from "lucide-react";
 
 export interface Safeguard {
     id: string;
@@ -17,61 +17,70 @@ export interface Safeguard {
 interface SafeguardCellProps {
     safeguard?: Safeguard;
     emptyText?: string;
+    compact?: boolean;
 }
 
-export function SafeguardCell({ safeguard, emptyText = "None" }: SafeguardCellProps) {
+export function SafeguardCell({ safeguard, emptyText = "Gap", compact = false }: SafeguardCellProps) {
     if (!safeguard || safeguard.status === 'missing') {
         return (
-            <div className="h-full min-h-[60px] flex items-center justify-center p-2 rounded border border-dashed border-zinc-800 bg-zinc-900/20 text-xs text-zinc-600">
+            <div className={cn(
+                "flex items-center justify-center rounded border border-dashed border-zinc-800 bg-zinc-900/10 text-[10px] text-zinc-600 font-mono",
+                compact ? "h-6 w-full" : "h-7 px-2"
+            )}>
                 {emptyText}
             </div>
         );
     }
 
-    const statusStyles = {
-        healthy: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20",
-        degraded: "bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20",
-        failing: "bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20",
-        missing: "bg-zinc-800 text-zinc-500"
+    const statusConfig = {
+        healthy: { bg: "bg-emerald-500/15", text: "text-emerald-400", border: "border-emerald-500/20", icon: ShieldCheck },
+        degraded: { bg: "bg-amber-500/15", text: "text-amber-400", border: "border-amber-500/20", icon: AlertTriangle },
+        failing: { bg: "bg-red-500/15", text: "text-red-400", border: "border-red-500/20", icon: XCircle },
     };
 
-    const statusIcons = {
-        healthy: ShieldCheck,
-        degraded: AlertTriangle,
-        failing: XCircle,
-        missing: XCircle
-    };
-
-    const StatusIcon = statusIcons[safeguard.status];
+    const config = statusConfig[safeguard.status] || statusConfig.failing;
+    const StatusIcon = config.icon;
 
     return (
         <TooltipProvider>
-            <Tooltip>
+            <Tooltip delayDuration={200}>
                 <TooltipTrigger asChild>
                     <div className={cn(
-                        "h-full min-h-[60px] p-2 rounded border flex flex-col justify-between cursor-pointer transition-colors",
-                        statusStyles[safeguard.status]
+                        "group flex items-center gap-1.5 rounded-sm border px-2 py-1 cursor-pointer transition-all hover:bg-opacity-80 hover:scale-[1.02]",
+                        config.bg, config.border,
+                        compact ? "h-6" : "min-h-[28px]"
                     )}>
-                        <div className="flex justify-between items-start">
-                            <span className="text-xs font-semibold leading-tight line-clamp-2">{safeguard.name}</span>
-                            <StatusIcon className="w-3 h-3 flex-shrink-0" />
-                        </div>
-                        <div className="flex justify-between items-end mt-2">
-                            <Badge variant="outline" className="text-[9px] px-1 h-4 border-zinc-700 bg-zinc-900/50 text-zinc-400 uppercase tracking-wider">
-                                {safeguard.type}
-                            </Badge>
-                            <div className="text-[10px] font-mono opacity-80">{safeguard.score}%</div>
-                        </div>
+                        <StatusIcon className={cn("w-3 h-3 flex-shrink-0", config.text)} />
+                        <span className="text-[11px] font-medium text-zinc-300 truncate max-w-[120px]">
+                            {safeguard.name}
+                        </span>
+
+                        {/* Score indicator for high density view */}
+                        {!compact && (
+                            <div className={cn("ml-auto text-[9px] font-mono opacity-60", config.text)}>
+                                {safeguard.score}
+                            </div>
+                        )}
                     </div>
                 </TooltipTrigger>
-                <TooltipContent>
-                    <div className="text-xs">
-                        <strong className="block mb-1">{safeguard.name}</strong>
-                        <div className="flex items-center gap-2 mb-1">
-                            <Activity className="w-3 h-3" />
-                            <span>Status: <span className="uppercase">{safeguard.status}</span></span>
+                <TooltipContent className="bg-zinc-900 border-zinc-800 p-3 shadow-xl">
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-4">
+                            <span className="font-semibold text-sm">{safeguard.name}</span>
+                            <Badge variant="outline" className={cn("text-[10px] uppercase h-5", config.border, config.text)}>
+                                {safeguard.status}
+                            </Badge>
                         </div>
-                        <p className="text-muted-foreground">Type: {safeguard.type}</p>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1.5">
+                                <Box className="w-3 h-3" />
+                                {safeguard.type}
+                            </div>
+                            <div className="flex items-center gap-1.5 font-mono">
+                                <Activity className="w-3 h-3" />
+                                Score: {safeguard.score}/100
+                            </div>
+                        </div>
                     </div>
                 </TooltipContent>
             </Tooltip>

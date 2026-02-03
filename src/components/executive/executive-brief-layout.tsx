@@ -2,58 +2,40 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { MotionConfig } from "framer-motion";
 
-interface ExecutiveBriefLayoutProps {
-    children: React.ReactNode;
-    date?: string;
-    presenter?: string;
-    className?: string;
-}
+export function ExecutiveBriefLayout({ children }: { children: React.ReactNode }) {
+    const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
-export function ExecutiveBriefLayout({
-    children,
-    date = new Date().toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-    }),
-    presenter = "CISO Office",
-    className,
-}: ExecutiveBriefLayoutProps) {
     return (
-        <div
-            className={cn(
-                "min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-emerald-500/30",
-                className
-            )}
-        >
-            <header className="px-8 py-6 border-b border-zinc-800 flex justify-between items-end bg-zinc-900/50 backdrop-blur-sm sticky top-0 z-50">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-white mb-1">
-                        Executive Risk Briefing
-                    </h1>
-                    <p className="text-zinc-400 text-sm font-medium tracking-wide">
-                        {date}
-                    </p>
-                </div>
-                <div className="text-right">
-                    <div className="flex items-center gap-2 justify-end">
-                        <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-xs font-mono text-emerald-500 uppercase tracking-widest">
-                            Live Data
-                        </span>
+        <div className="min-h-screen bg-black/95 text-foreground p-6 md:p-10 font-sans">
+            <div className="max-w-7xl mx-auto space-y-8">
+                {/* Header / Hero */}
+                <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-zinc-800 pb-6">
+                    <div>
+                        <div className="text-zinc-500 text-sm font-medium uppercase tracking-widest mb-2">{today}</div>
+                        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-2">
+                            Executive <span className="text-zinc-600">Briefing</span>
+                        </h1>
+                        <p className="text-zinc-400 text-lg">
+                            Real-time intelligence on risk, velocity, and investments.
+                        </p>
                     </div>
-                    <p className="text-zinc-500 text-xs mt-1">Prepared by {presenter}</p>
-                </div>
-            </header>
+                    <div className="flex items-center gap-4">
+                        <div className="text-right">
+                            <div className="text-[10px] uppercase text-zinc-500 tracking-wider font-bold">System Status</div>
+                            <div className="flex items-center gap-2 justify-end">
+                                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                <span className="text-emerald-500 font-mono text-sm">OPERATIONAL</span>
+                            </div>
+                        </div>
+                    </div>
+                </header>
 
-            <main className="p-8 max-w-[1920px] mx-auto">
-                <MotionConfig transition={{ duration: 0.5, ease: "easeOut" }}>
+                {/* Dashboard Grid Content */}
+                <main className="animate-fade-in-up">
                     {children}
-                </MotionConfig>
-            </main>
+                </main>
+            </div>
         </div>
     );
 }
