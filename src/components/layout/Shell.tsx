@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -27,13 +27,16 @@ import {
     FileBarChart,
     Presentation,
     Triangle,
-    BookOpen
+    BookOpen,
+    Eye,
+    EyeOff
 } from 'lucide-react';
 import { useAstraStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { ChatInterface } from '@/components/ui/chat-interface';
 import { ThemeSwitcher } from '@/components/ui/theme-switcher';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { GlobalThreatPulse } from '@/components/federated/global-threat-pulse';
 
 const navItems = [
     { name: 'Command Center', href: '/', icon: LayoutDashboard },
@@ -50,13 +53,56 @@ const navItems = [
     { name: 'Threat Modeling', href: '/threat-modeling', icon: Network },
     { name: 'Wargames', href: '/wargames', icon: Gamepad2 },
     { name: 'Reporting', href: '/reporting', icon: FileBarChart },
+    { name: 'Nexus Graph', href: '/nexus', icon: Network },
 ];
 
 export function Shell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isSilentMode, setIsSilentMode] = useState(false);
     const { logout } = useAstraStore();
+
+    // Silent Mode Effect (Elon's "Demon Thread" Simulation)
+    useEffect(() => {
+        if (isSilentMode) {
+            document.body.style.cursor = 'none'; // Hide cursor for full immersion
+        } else {
+            document.body.style.cursor = 'default';
+        }
+        return () => { document.body.style.cursor = 'default'; }
+    }, [isSilentMode]);
+
+    // Exit Silent Mode on any key press
+    useEffect(() => {
+        const handleKeyDown = () => {
+            if (isSilentMode) setIsSilentMode(false);
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isSilentMode]);
+
+
+    if (isSilentMode) {
+        return (
+            <div className="min-h-screen bg-black flex flex-col items-center justify-center font-mono cursor-none" onClick={() => setIsSilentMode(false)}>
+                <div className="relative flex items-center justify-center">
+                    {/* Pulsing Daemon Core */}
+                    <div className="w-4 h-4 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_50px_rgba(16,185,129,0.8)]" />
+                    <div className="absolute inset-0 w-4 h-4 bg-emerald-500 rounded-full animate-ping opacity-20" />
+                </div>
+                <div className="mt-8 text-xs text-emerald-900/50 uppercase tracking-[0.5em] animate-pulse">
+                    Astra Daemon Active
+                </div>
+                <div className="mt-2 text-[10px] text-zinc-900">
+                    System Protected. 0 Threats Detected.
+                </div>
+                <div className="fixed bottom-8 text-[9px] text-zinc-900 uppercase">
+                    Press any key to wake interface
+                </div>
+            </div>
+        );
+    }
 
     return (
         <TooltipProvider delayDuration={0}>
@@ -137,6 +183,26 @@ export function Shell({ children }: { children: React.ReactNode }) {
                         "p-3 border-t border-sidebar-border space-y-2",
                         isCollapsed && "px-2"
                     )}>
+                        {/* Silent Mode Toggle */}
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className={cn(
+                                "w-full h-9 text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10 transition-colors hidden md:flex",
+                                isCollapsed ? "justify-center" : "justify-start"
+                            )}
+                            onClick={() => setIsSilentMode(true)}
+                        >
+                            {isCollapsed ? (
+                                <EyeOff className="h-4 w-4" />
+                            ) : (
+                                <>
+                                    <EyeOff className="h-4 w-4 mr-2" />
+                                    <span className="text-xs">Silent Mode</span>
+                                </>
+                            )}
+                        </Button>
+
                         {/* Collapse Toggle */}
                         <Button
                             variant="ghost"
@@ -197,7 +263,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                                     <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                                     <span>SYS_STATUS: ONLINE</span>
                                 </div>
-                                <div className="opacity-60">VER: 0.9.2</div>
+                                <div className="opacity-60">VER: 0.9.3 (UNICORN)</div>
                             </div>
                         )}
                     </div>
@@ -257,6 +323,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
                             </div>
                         </div>
                     </header>
+
+                    {/* Federated Defense Ticker */}
+                    <GlobalThreatPulse />
 
                     {/* Page Content */}
                     <div className="flex-1 overflow-auto p-4 md:p-6 lg:p-8 scroll-smooth">

@@ -1,61 +1,78 @@
 # Investor Plan: Astra CISO (MNP)
 
-## 1. Investment Thesis
+## 1. Investment Thesis: The "Decision Engine" Pivot
 
-**The Opportunity**: The Cybersecurity GRC (Governance, Risk, Compliance) market is ripe for disruption by Agentic AI. Legacy tools (Archer, ServiceNow) are clunky forms-over-data engines. Astra brings **consumer-grade UX** and **LLM intelligence** to the enterprise suite.
+**The Problem**: The cybersecurity market is drowning in *logs* (Splunk, Datadog) but starving for *context*. Existing tools tell you "Server 59 is down". They don't tell you "Server 59 powers the $500M checkout API."
+**The Solution**: Astra is not another dashboard. It is an **Autonomous Decision Engine** that builds a **Context Graph** linking technical assets to business value. We don't just report the fire; we calculate the cost of the burn and, eventually, put it out ourselves.
 
-**Why Now?**
+**Why Now? (The Deep Tech Convergence)**
 
-- **AI Maturity**: LLMs can finally synthesize complex security logs into executive insights.
-- **Regulatory Explosion**: SEC, GDPR, DORA requirements demand real-time reporting.
-- **Market Gap**: No existing tool effectively bridges the gap between "Tech Ops" and "Business Strategy".
+- **LLM Cognition**: Able to reason across unstructured data (slack, pdfs, logs) to build context.
+- **API Economy**: Every SaaS tool allows for programmatic remediation (The "Active Defense" enabler).
+- **The "CISO Cliff"**: Regulatory pressure (SEC, DORA) is forcing CISOs to prove *business* oversight, not just uptime.
 
-## 2. Prototype to Production Roadmap
+## 2. The Product: "Defense OS" (Not a Dashboard)
 
-### Phase 1: High-Fidelity Prototype (Current)
+Differentiation relies on three technical moats:
 
-*Goal: Secure Seed Funding*
+### Moat 1: The Context Graph (Nexus)
 
-- **Deliverable**: Interactive React Application (The MNP Demo).
-- **Capabilities**:
-  - Dynamic UI (Brief, Pyramid, Matrix).
-  - Simulated AI Chat (Astra).
-  - Configurable Views (Time/Unit slicing).
-- **Purpose**: Demonstrate the "Art of the Possible" and validate UX with design partners.
+* **What**: A proprietary graph database mapping `Revenue Stream` <-> `Application` <-> `Infrastructure` <-> `Vulnerability`.
+- **Value**: Enables risk decisions based on *financial impact*, not just CVSS scores.
 
-### Phase 2: Data Integration MVP (Months 1-6)
+### Moat 2: Active Defense (The Engine)
 
-*Goal: Beta Launch with 5 Design Partners*
+* **What**: An actionable layer that converts insights into CLI commands (Terraform, Kubectl).
+- **Trust Model**:
+  - *Mode 1 (Advisor)*: "Here is the fix, approve it?"
+  - *Mode 2 (Supervisor)*: "Fixing this in 5m, click to cancel."
+  - *Mode 3 (Autonomous)*: "Fixed Log4j variant across 40 nodes."
 
-- **Engineering Focus**:
-  - Build API Connectors (Jira, GitHub, CrowdStrike, AWS).
-  - Implement Real Authentication & RBAC (Auth0/Okta).
-  - Deploy "View Engine" backend (Postgres + Redis).
-- **Hiring**: 2 Full-stack Engineers, 1 AI/ML Engineer.
+### Moat 3: Federated Defense (Network Effect)
 
-### Phase 3: Autonomous Governance (Months 7-12)
+* **What**: Sharing anonymized "Attack Patterns" and "Remediation Playbooks" across the Astra customer base.
+- **Value**: Customer #100 makes Customer #1 safer.
 
-*Goal: Series A Preparedness / $1M ARR*
+## 3. Prototype to Production Roadmap
 
-- **Capabilities**:
-  - Autonomous Policy Enforcement (AI auto-closes Jira tickets).
-  - Predictive Budgeting (AI forecasts spend vs. risk).
-  - Mobile App for Executives.
+### Phase 1: The "Vision" Prototype (Current Status)
 
-## 3. Funding Plan (Seed Round)
+* **Goal**: Demonstrate the "Decision Engine" capability.
+- **Delivered Capabilities**:
+  - **Nexus Graph**: Visualizing the link between Business Value and Tech Risk.
+  - **Active Defense**: Simulated terminal-based remediation (e.g., Log4j patching).
+  - **Global Pulse**: Visualizing the federated network effect.
+
+### Phase 2: The "Context" MVP (Months 1-6)
+
+* **Goal**: Build the Graph.
+- **Focus**:
+  - **Ingestion Engine**: Connectors for AWS, GitHub, Jira, and Salesforce to populate the Context Graph.
+  - **Analytic Core**: Algorithms to calculate "Revenue at Risk".
+  - **Design Partners**: Deploy in 5 mid-market fintech environments.
+
+### Phase 3: The "Autonomous" Scale (Months 7-12)
+
+* **Goal**: Close the Loop.
+- **Focus**:
+  - **Write-Back Integrations**: Executing fixes in CrowdStrike/AWS.
+  - **Trust Scoring**: Dynamic permissioning for the AI agent.
+  - **Federated Learning**: Automating threat signature sharing.
+
+## 4. Funding Plan (Seed Round)
 
 **Ask**: $2.5M for 18 Months Runway
 
-### Use of Funds
+### Use of Funds (Optimization for Deep Tech)
 
-| Category | Allocation | Amount | Details |
-| :--- | :--- | :--- | :--- |
-| **Engineering** | 55% | $1.375M | Core Team (CTO + 4 Engineers), AI R&D. |
-| **GTM / Sales** | 25% | $625k | Founder-led sales support, Marketing, Conferences (RSA/BlackHat). |
-| **Ops & Legal** | 20% | $500k | Infrastructure (Cloud GPU), Legal/Compliance, Office. |
+| Category | Allocation | Details |
+| :--- | :--- | :--- |
+| **R&D (Graph & AI)** | 60% | Hiring "Graph Data Engineers" and "Agentic AI" specialists. This is IP-heavy code. |
+| **Integrations** | 20% | Building robust, write-back connectors to major platforms. |
+| **GTM & Trust** | 20% | Security audits (SOC2), legal compliance, and founder-led sales. |
 
-### Key Milestones for Series A
+### Series A Milestones
 
-1. **Product**: Fully functional SaaS with 10+ active Integrations.
-2. **Traction**: $1M ARR (Annual Recurring Revenue).
-3. **Engagement**: Daily Active Usage (DAU) by CISOs > 40%.
+1. **Technical**: Fully functional "Read/Write" capability across 3 major clouds.
+2. **Commercial**: $1M ARR with strong signal on "Expansion Revenue" (customers trusting the AI more over time).
+3. **Network**: Proof of "Federated Defense" stopping an attack at Company B based on intel from Company A.
