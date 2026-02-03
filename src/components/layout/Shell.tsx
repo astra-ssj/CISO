@@ -24,7 +24,10 @@ import {
     Gamepad2,
     Sparkles,
     GitBranch,
-    FileBarChart
+    FileBarChart,
+    Presentation,
+    Triangle,
+    BookOpen
 } from 'lucide-react';
 import { useAstraStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -34,6 +37,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 
 const navItems = [
     { name: 'Command Center', href: '/', icon: LayoutDashboard },
+    { name: 'Executive Brief', href: '/executive-brief', icon: Presentation },
+    { name: 'Strategy Pyramid', href: '/strategy', icon: Triangle },
+    { name: 'Defense Matrix', href: '/strategy/matrix', icon: Shield },
     { name: 'Policy Intelligence', href: '/intelligence', icon: BrainCircuit },
     { name: 'Policy Engine', href: '/policies', icon: ScrollText },
     { name: 'Data Privacy', href: '/privacy', icon: Lock },
