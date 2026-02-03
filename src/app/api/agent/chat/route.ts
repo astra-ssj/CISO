@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { getProvider } from '@/lib/ai';
 
 // System Prompt Definition
@@ -30,13 +30,22 @@ You can simulate the execution of the following security tools. To use a tool, g
 -   Be helpful and proactive.
 `;
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
         const { message, history, context } = body;
 
         if (!message) {
             return NextResponse.json({ error: "Message is required" }, { status: 400 });
+        }
+
+        // Security Check: Verify Auth
+        // In a real app, rely on specific headers or strictly validated cookies
+        const authCookie = request.cookies.get('astra-auth');
+        const authHeader = request.headers.get('Authorization');
+
+        if (authCookie?.value !== 'true' && !authHeader?.startsWith('Bearer ')) {
+            return NextResponse.json({ error: "Unauthorized Access to Neural Core" }, { status: 401 });
         }
 
         const provider = getProvider();

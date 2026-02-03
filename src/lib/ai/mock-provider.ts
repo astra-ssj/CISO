@@ -17,7 +17,7 @@ class MockProvider implements AIProvider {
         const lastMessage = options.messages[options.messages.length - 1]?.content.toLowerCase() || '';
 
         // Context-aware mock responses
-        let response = this.generateContextualResponse(lastMessage);
+        const response = this.generateContextualResponse(lastMessage);
 
         return {
             content: response,

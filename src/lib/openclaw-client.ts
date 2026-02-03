@@ -35,7 +35,7 @@ export class OpenClawClient {
         const timestamp = Date.now();
 
         // 1. Initial "Thinking" State
-        let currentMessage: AgentMessage = {
+        const currentMessage: AgentMessage = {
             id: messageId,
             role: 'assistant',
             content: '',

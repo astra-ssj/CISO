@@ -5,8 +5,16 @@ import { SafeguardCell, Safeguard } from "./safeguard-cell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Skull, Eye, Shield, Search, Zap, RotateCcw, Filter, LayoutGrid } from "lucide-react";
+import { Skull, Eye, Shield, Search, Zap, RotateCcw, Filter, LayoutGrid, Settings2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export interface ThreatRow {
     id: string;
@@ -26,6 +34,8 @@ interface ThreatMatrixProps {
 
 export function ThreatMatrix({ data }: ThreatMatrixProps) {
     const [filter, setFilter] = useState<"all" | "critical" | "gaps">("all");
+    const [xAxis, setXAxis] = useState<'function' | 'severity' | 'status'>('function');
+    const [yAxis, setYAxis] = useState<'scenario' | 'asset'>('scenario');
 
     // Calculate Global Health Score
     // (Mock logic: Average of all safeguards across all rows)
@@ -58,6 +68,27 @@ export function ThreatMatrix({ data }: ThreatMatrixProps) {
             {/* Control Bar */}
             <div className="flex items-center justify-between p-1">
                 <div className="flex items-center gap-2 bg-zinc-900/50 p-1 rounded-lg border border-zinc-800">
+                    {/* View Configuration */}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1.5 px-2">
+                                <Settings2 className="w-3.5 h-3.5" />
+                                Configure View
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-48 bg-zinc-900 border-zinc-800">
+                            <DropdownMenuLabel className="text-xs text-muted-foreground">X-Axis Dimension</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => setXAxis('function')}>NIST Function</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setXAxis('severity')}>Severity Level</DropdownMenuItem>
+                            <DropdownMenuSeparator className="bg-zinc-800" />
+                            <DropdownMenuLabel className="text-xs text-muted-foreground">Y-Axis Dimension</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => setYAxis('scenario')}>Threat Scenario</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setYAxis('asset')}>Asset Class</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <div className="w-px h-4 bg-zinc-800 mx-1" />
+
                     <Button
                         variant={filter === "all" ? "secondary" : "ghost"}
                         size="sm"

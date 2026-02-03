@@ -37,7 +37,7 @@ const CONTEXT_KEYWORDS = {
 };
 
 export const scanContent = (text: string): ScanResult => {
-    let matches: PIIMatch[] = [];
+    const matches: PIIMatch[] = [];
     let redacted = text;
 
     // Helper to find context words nearby

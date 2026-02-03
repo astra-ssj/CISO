@@ -13,7 +13,7 @@ export interface SecurityScore {
 
 // Mock Logic for Microsoft Config
 export function scanMicrosoftConfig(jsonString: string): SecurityScore {
-    let findings: ConfigFinding[] = [];
+    const findings: ConfigFinding[] = [];
     let score = 100;
 
     try {
@@ -70,7 +70,7 @@ export function scanMicrosoftConfig(jsonString: string): SecurityScore {
 
 // Mock Logic for Firewall Config
 export function scanFirewallConfig(configString: string): SecurityScore {
-    let findings: ConfigFinding[] = [];
+    const findings: ConfigFinding[] = [];
     let score = 100;
     const lower = configString.toLowerCase();
 
@@ -127,7 +127,7 @@ export function scanFirewallConfig(configString: string): SecurityScore {
 
 // Mock Logic for Network Switch (Cisco IOS)
 export function scanSwitchConfig(configString: string): SecurityScore {
-    let findings: ConfigFinding[] = [];
+    const findings: ConfigFinding[] = [];
     let score = 100;
     const lower = configString.toLowerCase();
 
@@ -172,7 +172,7 @@ export function scanSwitchConfig(configString: string): SecurityScore {
 
 // Mock Logic for SIEM (Splunk inputs.conf)
 export function scanSIEMConfig(configString: string): SecurityScore {
-    let findings: ConfigFinding[] = [];
+    const findings: ConfigFinding[] = [];
     let score = 100;
     const lower = configString.toLowerCase();
 

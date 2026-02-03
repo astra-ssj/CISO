@@ -4,6 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Target, BarChart2, Activity } from "lucide-react";
+import { useViewEngine } from "@/stores/view-engine-store";
 
 export type StrategyLevel = "okr" | "kpi" | "metric";
 
@@ -22,10 +23,26 @@ export function StrategyPyramid({
     onSelectLevel,
     counts = { okr: 0, kpi: 0, metric: 0 },
 }: StrategyPyramidProps) {
+    const { context } = useViewEngine();
+
+    // Dynamic styling based on context
+    const isGlobal = context.unit === 'Global';
+
     return (
         <div className="flex flex-col items-center justify-center py-12 relative w-full h-full min-h-[500px] perspective-[1000px]">
-            {/* Dynamic Light Source */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-gradient-to-b from-white/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+            {/* Context Indicator */}
+            <div className="absolute top-4 right-4 text-xs font-mono text-zinc-500 border border-zinc-800 rounded px-2 py-1">
+                SLICE: <span className="text-zinc-300">{context.unit.toUpperCase()}</span> // {context.timeframe}
+            </div>
+
+            {/* Dynamic Light Source - Changes color based on Unit */}
+            <div className={cn(
+                "absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-gradient-to-b rounded-full blur-3xl pointer-events-none transition-colors duration-1000",
+                "to-transparent",
+                isGlobal ? "from-white/5" :
+                    context.unit === 'Engineering' ? "from-blue-500/10" :
+                        context.unit === 'Sales' ? "from-emerald-500/10" : "from-purple-500/10"
+            )} />
 
             {/* The Pyramid Container */}
             <div className="relative w-96 h-96 flex flex-col gap-2 z-10 transform-style-3d">

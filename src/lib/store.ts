@@ -29,7 +29,7 @@ export interface DecisionRequest {
 
 import { AgentMessage, openClaw } from './openclaw-client';
 
-export interface ChatMessage extends AgentMessage { }
+export type ChatMessage = AgentMessage;
 
 interface AstraState {
     // Global Posture
