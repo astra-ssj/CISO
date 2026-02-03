@@ -8,13 +8,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Policy, PolicySection, PolicyStatus } from "@/lib/policy-store";
-import { Plus, Trash2, Info } from "lucide-react";
+import { Plus, Trash2, Info, BookOpen, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface PolicyEditorProps {
     initialPolicy?: Partial<Policy>;
     onSave: (policy: Policy) => void;
     onCancel: () => void;
 }
+
+import { GoldenLibraryPanel } from "@/components/policies/golden-library-panel";
 
 export function PolicyEditor({ initialPolicy, onSave, onCancel }: PolicyEditorProps) {
     const isEditing = !!initialPolicy?.id;
@@ -25,6 +28,8 @@ export function PolicyEditor({ initialPolicy, onSave, onCancel }: PolicyEditorPr
     const [status, setStatus] = useState<PolicyStatus>(initialPolicy?.status || "DRAFT");
     const [version, setVersion] = useState(initialPolicy?.version || "0.1.0");
     const [incrementVersion, setIncrementVersion] = useState(false);
+    const [showLibrary, setShowLibrary] = useState(false);
+    const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
 
     const [sections, setSections] = useState<PolicySection[]>(initialPolicy?.sections || [
         { id: 's1', title: 'Purpose', content: '' },
@@ -40,16 +45,27 @@ export function PolicyEditor({ initialPolicy, onSave, onCancel }: PolicyEditorPr
         }
     }, [isEditing]);
 
+    // Set first section as active by default if none selected
+    useEffect(() => {
+        if (!activeSectionId && sections.length > 0) {
+            setActiveSectionId(sections[0].id);
+        }
+    }, [sections]);
+
     const handleAddSection = () => {
-        setSections([...sections, { id: `s${Date.now()}`, title: 'New Section', content: '' }]);
+        const newId = `s${Date.now()}`;
+        setSections([...sections, { id: newId, title: 'New Section', content: '' }]);
+        setActiveSectionId(newId);
     };
 
     const handleUpdateSection = (id: string, field: 'title' | 'content', value: string) => {
         setSections(sections.map(s => s.id === id ? { ...s, [field]: value } : s));
+        if (id !== activeSectionId) setActiveSectionId(id);
     };
 
     const handleDeleteSection = (id: string) => {
         setSections(sections.filter(s => s.id !== id));
+        if (activeSectionId === id) setActiveSectionId(null);
     };
 
     const calculateNextVersion = (current: string) => {
@@ -90,116 +106,157 @@ export function PolicyEditor({ initialPolicy, onSave, onCancel }: PolicyEditorPr
         onSave(newPolicy);
     };
 
-    return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label>Policy Title <span className="text-destructive">*</span></Label>
-                    <Input
-                        value={title}
-                        onChange={e => setTitle(e.target.value)}
-                        placeholder="e.g. Access Control Policy"
-                        className={!title.trim() ? "border-red-500/50" : ""}
-                    />
-                </div>
-                <div className="space-y-2">
-                    <Label>Type</Label>
-                    <Select value={type} onValueChange={(v: any) => setType(v)}>
-                        <SelectTrigger>
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="ISMS">Information Security (ISMS)</SelectItem>
-                            <SelectItem value="PRIVACY">Privacy & GDPR</SelectItem>
-                            <SelectItem value="AI_GOV">AI Governance</SelectItem>
-                            <SelectItem value="ACCESS">Access Control</SelectItem>
-                            <SelectItem value="INCIDENT">Incident Response</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="space-y-2">
-                    <Label>Policy Owner <span className="text-destructive">*</span></Label>
-                    <Input
-                        value={owner}
-                        onChange={e => setOwner(e.target.value)}
-                        placeholder="e.g. CISO, Head of Engineering"
-                        className={!owner.trim() ? "border-red-500/50" : ""}
-                    />
-                </div>
+    const handleInsertClause = (text: string) => {
+        if (!activeSectionId) {
+            alert("Please select a section to insert the clause.");
+            return;
+        }
 
-                {/* Status & Versioning Control */}
-                <div className="space-y-2">
-                    <Label>Status & Version</Label>
-                    <div className="flex gap-2 items-center">
-                        <Select value={status} onValueChange={(v: any) => setStatus(v)} disabled={!isEditing}>
-                            <SelectTrigger className="w-[180px]">
+        const section = sections.find(s => s.id === activeSectionId);
+        if (section) {
+            const newContent = section.content ? `${section.content}\n\n${text}` : text;
+            handleUpdateSection(activeSectionId, 'content', newContent);
+        }
+    };
+
+    return (
+        <div className="flex h-[calc(90vh-100px)] gap-6">
+            <div className="flex-1 space-y-6 overflow-y-auto pr-2">
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label>Policy Title <span className="text-destructive">*</span></Label>
+                        <Input
+                            value={title}
+                            onChange={e => setTitle(e.target.value)}
+                            placeholder="e.g. Access Control Policy"
+                            className={!title.trim() ? "border-red-500/50" : ""}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Type</Label>
+                        <Select value={type} onValueChange={(v: any) => setType(v)}>
+                            <SelectTrigger>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="DRAFT">Draft</SelectItem>
-                                <SelectItem value="IN_REVIEW">In Review</SelectItem>
-                                <SelectItem value="APPROVED">Approved</SelectItem>
-                                <SelectItem value="ACTIVE">Active</SelectItem>
-                                <SelectItem value="RETIRED">Retired</SelectItem>
+                                <SelectItem value="ISMS">Information Security (ISMS)</SelectItem>
+                                <SelectItem value="PRIVACY">Privacy & GDPR</SelectItem>
+                                <SelectItem value="AI_GOV">AI Governance</SelectItem>
+                                <SelectItem value="ACCESS">Access Control</SelectItem>
+                                <SelectItem value="INCIDENT">Incident Response</SelectItem>
                             </SelectContent>
                         </Select>
-                        <div className="px-3 py-2 bg-secondary rounded text-sm font-mono border">v{isEditing && incrementVersion ? calculateNextVersion(version) : version}</div>
                     </div>
-                    {isEditing && (
-                        <div className="flex items-center space-x-2 mt-1">
-                            <Checkbox id="inc-ver" checked={incrementVersion} onCheckedChange={(c: any) => setIncrementVersion(c)} />
-                            <label htmlFor="inc-ver" className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                Increment Patch Version
-                            </label>
+                    <div className="space-y-2">
+                        <Label>Policy Owner <span className="text-destructive">*</span></Label>
+                        <Input
+                            value={owner}
+                            onChange={e => setOwner(e.target.value)}
+                            placeholder="e.g. CISO, Head of Engineering"
+                            className={!owner.trim() ? "border-red-500/50" : ""}
+                        />
+                    </div>
+
+                    {/* Status & Versioning Control */}
+                    <div className="space-y-2">
+                        <Label>Status & Version</Label>
+                        <div className="flex gap-2 items-center">
+                            <Select value={status} onValueChange={(v: any) => setStatus(v)} disabled={!isEditing}>
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="DRAFT">Draft</SelectItem>
+                                    <SelectItem value="IN_REVIEW">In Review</SelectItem>
+                                    <SelectItem value="APPROVED">Approved</SelectItem>
+                                    <SelectItem value="ACTIVE">Active</SelectItem>
+                                    <SelectItem value="RETIRED">Retired</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <div className="px-3 py-2 bg-secondary rounded text-sm font-mono border">v{isEditing && incrementVersion ? calculateNextVersion(version) : version}</div>
                         </div>
-                    )}
+                        {isEditing && (
+                            <div className="flex items-center space-x-2 mt-1">
+                                <Checkbox id="inc-ver" checked={incrementVersion} onCheckedChange={(c: any) => setIncrementVersion(c)} />
+                                <label htmlFor="inc-ver" className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                    Increment Patch Version
+                                </label>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </div>
 
-            <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                    <Label className="text-base font-semibold">Policy Sections</Label>
-                    <Button variant="outline" size="sm" onClick={handleAddSection}>
-                        <Plus className="h-4 w-4 mr-2" /> Add Section
-                    </Button>
-                </div>
-
-                <div className="space-y-4 policy-sections-container max-h-[400px] overflow-y-auto pr-2">
-                    {sections.map((section, index) => (
-                        <div key={section.id} className="p-4 border rounded-md bg-secondary/10 space-y-3 relative group">
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                        <Label className="text-base font-semibold">Policy Sections</Label>
+                        <div className="flex gap-2">
                             <Button
-                                variant="ghost"
-                                size="icon"
-                                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:bg-destructive/10"
-                                onClick={() => handleDeleteSection(section.id)}
+                                variant={showLibrary ? "secondary" : "outline"}
+                                size="sm"
+                                onClick={() => setShowLibrary(!showLibrary)}
+                                className={showLibrary ? "bg-amber-500/10 text-amber-600 border-amber-200" : ""}
                             >
-                                <Trash2 className="h-4 w-4" />
+                                <BookOpen className="h-4 w-4 mr-2" />
+                                {showLibrary ? "Close Library" : "Golden Library"}
                             </Button>
-                            <div>
-                                <Input
-                                    value={section.title}
-                                    onChange={e => handleUpdateSection(section.id, 'title', e.target.value)}
-                                    className="font-semibold bg-transparent border-none px-0 h-auto focus-visible:ring-0 placeholder:text-muted-foreground/50"
-                                    placeholder="Section Title"
+                            <Button variant="outline" size="sm" onClick={handleAddSection}>
+                                <Plus className="h-4 w-4 mr-2" /> Add Section
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4 policy-sections-container">
+                        {sections.map((section, index) => (
+                            <div
+                                key={section.id}
+                                className={cn(
+                                    "p-4 border rounded-md transition-all relative group",
+                                    activeSectionId === section.id
+                                        ? "bg-background border-primary ring-1 ring-primary shadow-sm"
+                                        : "bg-secondary/10 border-transparent hover:border-primary/30"
+                                )}
+                                onClick={() => setActiveSectionId(section.id)}
+                            >
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:bg-destructive/10"
+                                    onClick={(e) => { e.stopPropagation(); handleDeleteSection(section.id); }}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                                <div className="mb-3">
+                                    <Input
+                                        value={section.title}
+                                        onChange={e => handleUpdateSection(section.id, 'title', e.target.value)}
+                                        className="font-semibold bg-transparent border-none px-0 h-auto focus-visible:ring-0 placeholder:text-muted-foreground/50"
+                                        placeholder="Section Title"
+                                    />
+                                </div>
+                                <Textarea
+                                    value={section.content}
+                                    onChange={e => handleUpdateSection(section.id, 'content', e.target.value)}
+                                    placeholder="Enter policy text here or insert from Golden Library..."
+                                    className="min-h-[150px] bg-background/50 text-sm focus:bg-background"
+                                    onFocus={() => setActiveSectionId(section.id)}
                                 />
                             </div>
-                            <Textarea
-                                value={section.content}
-                                onChange={e => handleUpdateSection(section.id, 'content', e.target.value)}
-                                placeholder="Enter policy text here..."
-                                className="min-h-[100px] bg-background text-sm"
-                            />
-                        </div>
-                    ))}
+                        ))}
+                    </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t sticky bottom-0 bg-background pb-0">
+                    <Button variant="ghost" onClick={onCancel}>Cancel</Button>
+                    <Button onClick={handleSave}>
+                        {isEditing ? 'Save Changes' : 'Create Policy'}
+                    </Button>
                 </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t">
-                <Button variant="ghost" onClick={onCancel}>Cancel</Button>
-                <Button onClick={handleSave}>
-                    {isEditing ? 'Save Changes' : 'Create Policy'}
-                </Button>
-            </div>
+            {/* Golden Library Panel */}
+            {showLibrary && (
+                <GoldenLibraryPanel onInsert={handleInsertClause} />
+            )}
         </div>
     );
 }

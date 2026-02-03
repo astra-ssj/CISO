@@ -100,7 +100,7 @@ export default function PoliciesPage() {
                                 <Plus className="mr-2 h-4 w-4" /> New Policy
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                        <DialogContent className="max-w-7xl h-[90vh] overflow-hidden flex flex-col">
                             <DialogHeader>
                                 <DialogTitle>{draftPolicy ? `New Policy from ${draftPolicy.owner === 'AI Agent' ? 'AI Draft' : 'Template'}` : 'Create New Policy'}</DialogTitle>
                             </DialogHeader>
@@ -112,10 +112,7 @@ export default function PoliciesPage() {
                         </DialogContent>
                     </Dialog>
 
-                    <AutoDraftDialog onDraftGenerated={(policy) => {
-                        setDraftPolicy(policy);
-                        setIsCreateDialogOpen(true);
-                    }} />
+
                 </div>
             </div>
 
@@ -196,7 +193,7 @@ export default function PoliciesPage() {
                                                         <Pencil className="mr-2 h-4 w-4" /> Edit Policy
                                                     </Button>
                                                 </DialogTrigger>
-                                                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                                                <DialogContent className="max-w-7xl h-[90vh] overflow-hidden flex flex-col">
                                                     <DialogHeader>
                                                         <DialogTitle>Edit Policy: {selectedPolicy.title}</DialogTitle>
                                                     </DialogHeader>
@@ -317,87 +314,4 @@ export default function PoliciesPage() {
     );
 }
 
-// ... AutoDraftDialog component (unchanged) ...
 
-function AutoDraftDialog({ onDraftGenerated }: { onDraftGenerated: (policy: Partial<Policy>) => void }) {
-    const [isOpen, setIsOpen] = useState(false);
-    const [topic, setTopic] = useState('');
-    const [strictness, setStrictness] = useState('MEDIUM');
-    const [isGenerating, setIsGenerating] = useState(false);
-
-    const handleGenerate = async () => {
-        if (!topic) return;
-        setIsGenerating(true);
-        try {
-            const res = await fetch('/api/agent/generate-policy', {
-                method: 'POST',
-                body: JSON.stringify({ topic, strictness })
-            });
-            const data = await res.json();
-            onDraftGenerated(data);
-            setIsOpen(false);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setIsGenerating(false);
-        }
-    };
-
-    return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-                <Button variant="secondary" className="gap-2 border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10">
-                    <Sparkles className="h-4 w-4 text-purple-500" />
-                    Auto-Draft
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                        <Bot className="h-5 w-5 text-purple-500" />
-                        AI Policy Generator
-                    </DialogTitle>
-                    <CardDescription>
-                        Define your intent, and the Agent will draft a comprehensive policy mapped to standards.
-                    </CardDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                    <div className="space-y-2">
-                        <Label>Policy Topic</Label>
-                        <Input
-                            placeholder="e.g. Remote Access, BYOD, Cloud Security"
-                            value={topic}
-                            onChange={(e) => setTopic(e.target.value)}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Strictness Level</Label>
-                        <Select value={strictness} onValueChange={setStrictness}>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="LOW">Low (Permissive)</SelectItem>
-                                <SelectItem value="MEDIUM">Medium (Balanced)</SelectItem>
-                                <SelectItem value="HIGH">High (Restrictive)</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-                <div className="flex justify-end">
-                    <Button onClick={handleGenerate} disabled={isGenerating || !topic} className="bg-purple-600 hover:bg-purple-700 text-white">
-                        {isGenerating ? (
-                            <>
-                                <Sparkles className="mr-2 h-4 w-4 animate-spin" /> Generating...
-                            </>
-                        ) : (
-                            <>
-                                <Sparkles className="mr-2 h-4 w-4" /> Generate Draft
-                            </>
-                        )}
-                    </Button>
-                </div>
-            </DialogContent>
-        </Dialog>
-    );
-}

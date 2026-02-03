@@ -5,7 +5,13 @@ import { cn } from "@/lib/utils";
 import { useViewEngine } from "@/stores/view-engine-store";
 import { ChevronDown } from "lucide-react";
 
-export function ExecutiveBriefLayout({ children }: { children: React.ReactNode }) {
+export interface ExecutiveBriefLayoutProps {
+    children: React.ReactNode;
+    presenter?: string;
+    date?: string;
+}
+
+export function ExecutiveBriefLayout({ children, presenter, date }: ExecutiveBriefLayoutProps) {
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
     const { context, setDimension } = useViewEngine();
 
@@ -15,7 +21,9 @@ export function ExecutiveBriefLayout({ children }: { children: React.ReactNode }
                 {/* Header / Hero */}
                 <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-zinc-800 pb-6">
                     <div>
-                        <div className="text-zinc-500 text-sm font-medium uppercase tracking-widest mb-2">{today}</div>
+                        <div className="text-zinc-500 text-sm font-medium uppercase tracking-widest mb-2">
+                            {date || today} {presenter && <span className="text-zinc-700 mx-2">•</span>} {presenter && <span className="text-zinc-400">Presented by {presenter}</span>}
+                        </div>
                         <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-2">
                             Executive <span className="text-zinc-600">Briefing</span>
                         </h1>

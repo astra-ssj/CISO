@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Terminal, ShieldCheck, Fingerprint, Lock, CheckCircle2, AlertTriangle, X, PlayCircle, BarChart3, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { TwoKeyModal } from './two-key-modal';
 
 interface RemediationModalProps {
     isOpen: boolean;
@@ -11,7 +12,6 @@ interface RemediationModalProps {
     threatId: string;
     threatTitle?: string;
 }
-
 
 type Step = 'scanning' | 'simulation' | 'supervisor' | 'proposal' | 'auth' | 'diagnostics' | 'executing' | 'complete';
 
@@ -69,6 +69,8 @@ export function RemediationModal({ isOpen, onClose, threatId, threatTitle = "Cri
     const [step, setStep] = useState<Step>('scanning');
     const [isCanary, setIsCanary] = useState(false);
     const [logs, setLogs] = useState<string[]>([]);
+    const [showDetails, setShowDetails] = useState(false);
+    const [isTwoKeyOpen, setIsTwoKeyOpen] = useState(false);
     const logsEndRef = useRef<HTMLDivElement>(null);
 
     // Reset state on open
@@ -76,26 +78,32 @@ export function RemediationModal({ isOpen, onClose, threatId, threatTitle = "Cri
         if (isOpen) {
             setStep('scanning');
             setLogs([]);
+            setShowDetails(false); // Reset to summary view
             runScan();
         }
     }, [isOpen]);
 
     // Auto-scroll logs
     useEffect(() => {
-        logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [logs]);
+        if (showDetails) {
+            logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [logs, showDetails]);
 
     const addLog = (msg: string) => {
         setLogs(prev => [...prev, msg]);
     };
 
     const runScan = async () => {
+        // ... (Mock scan logic)
         for (const log of MOCK_LOGS) {
             await new Promise(r => setTimeout(r, 600));
             addLog(log);
         }
         setStep('simulation');
     };
+
+    // ... (Keep other run functions same, just ensuring they exist)
 
     const runSimulation = async () => {
         for (const log of SIMULATION_LOGS) {
@@ -137,6 +145,47 @@ export function RemediationModal({ isOpen, onClose, threatId, threatTitle = "Cri
     };
 
     if (!isOpen) return null;
+
+    // SUMMARY VIEW (Default)
+    if (!showDetails) {
+        return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden font-sans"
+                >
+                    <div className="p-6 flex flex-col items-center text-center">
+                        <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-4">
+                            <AlertTriangle className="w-8 h-8 text-red-500" />
+                        </div>
+                        <h2 className="text-xl font-bold text-white mb-2">{threatTitle}</h2>
+                        <p className="text-sm text-zinc-400 mb-6">
+                            Critical vulnerability detected in <strong>{threatId}</strong>.
+                            AI Engine recommends immediate patch application.
+                        </p>
+
+                        <div className="flex flex-col w-full gap-3">
+                            <button
+                                onClick={() => setShowDetails(true)}
+                                className="w-full py-3 bg-white hover:bg-zinc-200 text-black font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                            >
+                                <PlayCircle className="w-4 h-4" />
+                                Review & Remediate
+                            </button>
+                            <button
+                                onClick={onClose}
+                                className="w-full py-3 bg-transparent hover:bg-zinc-900 text-zinc-400 font-medium rounded-lg transition-colors"
+                            >
+                                Dismiss
+                            </button>
+                        </div>
+                    </div>
+                </motion.div>
+            </div>
+        )
+    }
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
@@ -250,48 +299,12 @@ export function RemediationModal({ isOpen, onClose, threatId, threatTitle = "Cri
                                     Biometric Authorization Required
                                 </div>
                                 <button
-                                    onClick={runExecution}
-                                    className="w-full max-w-xs h-12 border border-red-500/50 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded flex items-center justify-center gap-3 transition-all group"
+                                    onClick={() => setIsTwoKeyOpen(true)}
+                                    className="w-full max-w-xs h-12 border border-red-500/50 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded flex items-center justify-center gap-3 transition-all group shadow-[0_0_20px_rgba(220,38,38,0.2)]"
                                 >
                                     <Fingerprint className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                                    <span className="font-mono font-bold">CONFIRM IDENTITY</span>
+                                    <span className="font-mono font-bold">INITIATE SEQUENCE</span>
                                 </button>
-                            </div>
-                        )}
-
-                        {step === 'executing' && (
-                            <div className="w-full flex items-center justify-center gap-8 animate-in fade-in duration-500">
-                                {/* Orchestration Hub Visualization */}
-                                <div className="relative flex items-center gap-8">
-                                    {/* Astra Core */}
-                                    <div className="relative z-10 w-16 h-16 bg-emerald-950 border border-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.2)]">
-                                        <div className="absolute inset-0 bg-emerald-500/20 rounded-full animate-ping" />
-                                        <Bot className="w-8 h-8 text-emerald-500" />
-                                    </div>
-
-                                    {/* Connectors */}
-                                    <div className="flex gap-4">
-                                        {[
-                                            { name: 'Ansible', color: 'text-red-400', bg: 'bg-red-900/20', border: 'border-red-500/30' },
-                                            { name: 'JIRA', color: 'text-blue-400', bg: 'bg-blue-900/20', border: 'border-blue-500/30' },
-                                            { name: 'Intune', color: 'text-indigo-400', bg: 'bg-indigo-900/20', border: 'border-indigo-500/30' }
-                                        ].map((tool, i) => (
-                                            <div key={tool.name} className={cn(
-                                                "flex flex-col items-center gap-2 p-3 rounded border transition-all duration-500",
-                                                logs.length > i + 1 ? "opacity-100 scale-100" : "opacity-30 scale-90",
-                                                tool.bg, tool.border
-                                            )}>
-                                                <div className={cn("w-2 h-2 rounded-full animate-pulse", tool.color.replace('text', 'bg'))} />
-                                                <span className={cn("text-xs font-bold", tool.color)}>{tool.name}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Connection Lines (Simulated) */}
-                                    <svg className="absolute top-1/2 left-16 w-full h-1 overflow-visible -z-0">
-                                        <line x1="0" y1="0" x2="100%" y2="0" stroke="currentColor" className="text-zinc-700" strokeWidth="2" strokeDasharray="4 4" />
-                                    </svg>
-                                </div>
                             </div>
                         )}
 
@@ -341,6 +354,16 @@ export function RemediationModal({ isOpen, onClose, threatId, threatTitle = "Cri
 
                 </div>
             </motion.div>
+
+            <TwoKeyModal
+                isOpen={isTwoKeyOpen}
+                onClose={() => setIsTwoKeyOpen(false)}
+                onConfirm={() => {
+                    setIsTwoKeyOpen(false);
+                    runExecution();
+                }}
+                actionName={isCanary ? "DEPLOY_CANARY_PATCH" : "EXECUTE_HOTFIX_2931"}
+            />
         </div>
     );
 }

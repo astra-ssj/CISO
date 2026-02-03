@@ -4,7 +4,7 @@ import React from "react";
 import { ExecutiveBriefLayout } from "@/components/executive/executive-brief-layout";
 import { TopRisksCard, RiskItem } from "@/components/executive/top-risks-card";
 import { InvestmentHeatmap } from "@/components/executive/investment-heatmap";
-import { RevenueVelocityGauge } from "@/components/executive/revenue-velocity-gauge";
+import { RevenueVelocityGauge, VelocityMetric } from "@/components/executive/revenue-velocity-gauge";
 
 // MOCK DATA
 const MOCK_RISKS: RiskItem[] = [
@@ -42,12 +42,12 @@ const MOCK_INVESTMENTS = [
     { id: "5", category: "Consulting Retainer", spend: 60, riskReduction: 40, actualSpend: "$1.5M" }, // Questionable
 ];
 
-const MOCK_VELOCITY = [
+const MOCK_VELOCITY: VelocityMetric[] = [
     { id: "1", processName: "New Vendor Onboarding", delay: "+12 Days", impact: "high", status: "blocked" },
     { id: "2", processName: "DevOps Release Cycle", delay: "+4 Hours", impact: "low", status: "optimized" },
     { id: "3", processName: "Remote Access Provisioning", delay: "+2 Days", impact: "medium", status: "slow" },
     { id: "4", processName: "Cloud Resource Approval", delay: "+5 Days", impact: "medium", status: "slow" },
-] as const;
+];
 
 export default function ExecutiveBriefPage() {
     return (

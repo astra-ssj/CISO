@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Globe, Server, Box, Activity, ZoomIn, ZoomOut, Filter, Search, Shield, Zap, Network, Eye, ShieldAlert, ShieldCheck, AlertTriangle, Database, Layers, MousePointer2, Scale } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Server, Database, Globe, ShieldAlert, Layers, Activity, Network, MousePointer2, Scale } from 'lucide-react';
 import { RemediationModal } from '../active-defense/remediation-modal';
 import { DataIngestionPanel } from './ingestion/data-ingestion-panel';
+import { MOCK_COMPLIANCE_LINKS } from '@/lib/compliance-weave';
 import { Button } from '@/components/ui/button';
 import { useUnificationStore } from '@/lib/unification-store';
 
@@ -124,13 +125,14 @@ function NodeIcon({ type, className }: { type: NodeType, className?: string }) {
 }
 
 export function NexusGraph() {
-    const [selectedNode, setSelectedNode] = useState<string | null>(null);
+
     const [viewMode, setViewMode] = useState<ViewMode>('business');
     const [nodes, setNodes] = useState(INITIAL_NODES);
     const [isRemediationOpen, setIsRemediationOpen] = useState(false);
+    const [showCompliance, setShowCompliance] = useState(false);
 
     // Unification Store
-    const activeConstraints = useUnificationStore((state) => state.activeConstraints);
+    const { activeConstraints, selectedNodeId, setSelectedNodeId } = useUnificationStore();
 
     // Dynamic links based on view mode
     const activeLinks = viewMode === 'business' ? BUSINESS_LINKS : NETWORK_LINKS;
@@ -229,7 +231,7 @@ export function NexusGraph() {
                         const end = getNode(link.target);
                         if (!start || !end) return null;
 
-                        const isRiskPath = link.active || (selectedNode && (link.source === selectedNode || link.target === selectedNode));
+                        const isRiskPath = link.active || (selectedNodeId && (link.source === selectedNodeId || link.target === selectedNodeId));
                         const isNetworkMode = viewMode === 'network';
 
                         // Network visualization props
@@ -271,6 +273,57 @@ export function NexusGraph() {
                         );
                     })}
                 </AnimatePresence>
+
+                {/* Compliance Weave Edges */}
+                {showCompliance && MOCK_COMPLIANCE_LINKS.map(link => {
+                    const sourceNode = nodes.find(n => n.id === link.source);
+                    const targetNode = nodes.find(n => n.id === link.target);
+                    if (!sourceNode || !targetNode) return null; // Removed graphDimensions.width check as x/y are percentages
+
+                    return (
+                        <g key={link.id}>
+                            <motion.line
+                                initial={{ pathLength: 0, opacity: 0 }}
+                                animate={{ pathLength: 1, opacity: 1 }}
+                                x1={sourceNode.x + "%"}
+                                y1={sourceNode.y + "%"}
+                                x2={targetNode.x + "%"}
+                                y2={targetNode.y + "%"}
+                                stroke={
+                                    link.status === 'VIOLATION' ? '#ef4444' :
+                                        link.status === 'WARNING' ? '#f59e0b' :
+                                            '#10b981'
+                                }
+                                strokeWidth="2"
+                                strokeDasharray="4 4" // Dashed line
+                                markerEnd={
+                                    link.status === 'VIOLATION' ? 'url(#arrow-violation)' :
+                                        'url(#arrow-compliant)'
+                                }
+                            />
+                            {/* Label on the line (Midpoint) */}
+                            <foreignObject
+                                x={((sourceNode.x + targetNode.x) / 2) + "%"}
+                                y={((sourceNode.y + targetNode.y) / 2) + "%"}
+                                width="200"
+                                height="50"
+                                style={{ transform: 'translate(-50%, -50%)' }}
+                            >
+                                <div className={cn(
+                                    "px-2 py-1 rounded text-[9px] font-bold border backdrop-blur-md flex items-center gap-1 w-fit mx-auto",
+                                    link.status === 'VIOLATION' ? "bg-red-500/20 border-red-500 text-red-200" :
+                                        link.status === 'WARNING' ? "bg-amber-500/20 border-amber-500 text-amber-200" :
+                                            "bg-emerald-500/20 border-emerald-500 text-emerald-200"
+                                )}>
+                                    {link.status === 'VIOLATION' ? <ShieldAlert className="w-3 h-3" /> :
+                                        link.status === 'WARNING' ? <AlertTriangle className="w-3 h-3" /> :
+                                            <ShieldCheck className="w-3 h-3" />}
+                                    {link.reason}
+                                </div>
+                            </foreignObject>
+                        </g>
+                    );
+                })}
             </svg>
 
             {/* Nodes Layer */}
@@ -289,7 +342,7 @@ export function NexusGraph() {
                                 "flex flex-col items-center justify-center gap-2"
                             )}
                             style={{ left: `${node.x}%`, top: `${node.y}%` }}
-                            onClick={() => setSelectedNode(node.id)}
+                            onClick={() => setSelectedNodeId(node.id)}
                             whileHover={{ scale: 1.1 }}
                         >
                             {/* Node Circle */}
@@ -343,7 +396,7 @@ export function NexusGraph() {
 
             {/* Context Panel (Drill Down) */}
             <AnimatePresence>
-                {selectedNode && (
+                {selectedNodeId && (
                     <motion.div
                         initial={{ x: 300, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
@@ -352,18 +405,18 @@ export function NexusGraph() {
                     >
                         <div className="flex items-center justify-between mb-8">
                             <h3 className="text-lg font-bold text-white">Node Analysis</h3>
-                            <button onClick={() => setSelectedNode(null)} className="text-zinc-500 hover:text-white">✕</button>
+                            <button onClick={() => setSelectedNodeId(null)} className="text-zinc-500 hover:text-white">✕</button>
                         </div>
 
                         {/* Node Details Content */}
                         <div className="space-y-6">
                             <div className="p-4 rounded-lg bg-zinc-950/50 border border-zinc-900">
                                 <div className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Asset ID</div>
-                                <div className="font-mono text-emerald-400">{selectedNode}</div>
+                                <div className="font-mono text-emerald-400">{selectedNodeId}</div>
                             </div>
 
                             {/* Active Legal Violations */}
-                            {getActiveConstraint(selectedNode) && (
+                            {getActiveConstraint(selectedNodeId) && (
                                 <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/30 animate-in fade-in slide-in-from-right-4">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Scale className="w-4 h-4 text-red-500" />
@@ -371,9 +424,9 @@ export function NexusGraph() {
                                             Legal Violation
                                         </div>
                                     </div>
-                                    <h4 className="font-bold text-white text-sm mb-1">{getActiveConstraint(selectedNode)?.name}</h4>
+                                    <h4 className="font-bold text-white text-sm mb-1">{getActiveConstraint(selectedNodeId)?.name}</h4>
                                     <p className="text-xs text-zinc-400 leading-relaxed mb-3">
-                                        {getActiveConstraint(selectedNode)?.description}
+                                        {getActiveConstraint(selectedNodeId)?.description}
                                     </p>
                                     <Button size="sm" variant="destructive" className="w-full text-xs h-8">
                                         View Legal Context
@@ -397,11 +450,11 @@ export function NexusGraph() {
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <div className="text-2xl font-mono text-white">{getNode(selectedNode)?.networkStats?.throughput}</div>
+                                                <div className="text-2xl font-mono text-white">{getNode(selectedNodeId)?.networkStats?.throughput}</div>
                                                 <div className="text-[10px] text-zinc-500 uppercase">Throughput</div>
                                             </div>
                                             <div>
-                                                <div className="text-2xl font-mono text-white">{getNode(selectedNode)?.networkStats?.activeFlows}</div>
+                                                <div className="text-2xl font-mono text-white">{getNode(selectedNodeId)?.networkStats?.activeFlows}</div>
                                                 <div className="text-[10px] text-zinc-500 uppercase">Active Flows</div>
                                             </div>
                                         </div>
@@ -413,7 +466,7 @@ export function NexusGraph() {
                                             "font-mono font-bold",
                                             getNode(selectedNode)?.networkStats?.dropRate === '0%' ? "text-emerald-500" : "text-red-500"
                                         )}>
-                                            {getNode(selectedNode)?.networkStats?.dropRate}
+                                            {getNode(selectedNodeId)?.networkStats?.dropRate}
                                         </span>
                                     </div>
                                 </div>

@@ -4,7 +4,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Gauge, Zap } from "lucide-react";
 
-interface VelocityMetric {
+export interface VelocityMetric {
     id: string;
     processName: string; // e.g., "Vendor Onboarding"
     delay: string; // e.g., "+2 Weeks"
