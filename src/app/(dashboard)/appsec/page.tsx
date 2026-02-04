@@ -37,6 +37,7 @@ const PIPELINE_DATA = [
 ];
 
 import { useAppSecStore } from "@/lib/appsec-store";
+import { TrivyReportDashboard } from '@/components/security/trivy-report';
 
 // ... existing imports
 
@@ -198,6 +199,11 @@ export default function AppSecPage() {
                 </Card>
             </div>
 
+            {/* Vulnerability Scanner Widget */}
+            <div className="grid grid-cols-1">
+                <TrivyReportDashboard />
+            </div>
+
             {/* Main Scanner Interface */}
             <div className="grid grid-cols-12 gap-6 flex-1 h-[600px] min-h-0">
                 {/* Input Column */}
@@ -343,6 +349,6 @@ export default function AppSecPage() {
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
