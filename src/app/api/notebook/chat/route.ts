@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { ax } from '@/lib/ai/engine';
+import { ax } from '@/lib/ai/ax-engine';
 
 export async function POST(req: Request) {
     try {
@@ -24,54 +24,44 @@ Current Time: ${context.timestamp || new Date().toISOString()}.
 
         systemInstruction += `\nBe concise, professional, and actionable. Use markdown for formatting.`;
 
-        // 2. Augment messages with system prompt
-        // Ax expects { role: 'system' | 'user' | 'assistant', content: string }
-        const chatMessages = [
-            { role: 'system', content: systemInstruction },
-            ...messages
-        ];
+        // 2. Start Chat Session using Ax
+        // Ax handles the conversation history and prompt construction cleanly.
+        // We create a new chat session for this request (stateless API style or handling history manually)
 
-        // 3. Call Ax
-        const result = await ax.chat({
-            chatPrompt: chatMessages as any
-        });
+        // Prepare history for Ax (Standard OpenAI/Ax format: { role: 'user'|'assistant', content: string })
+        // Note: The frontend sends 'assistant', Google wanted 'model'. Ax wants 'assistant'.
+        const axHistory = messages.slice(0, -1).map((m: any) => ({
+            role: m.role,
+            content: m.content
+        }));
 
-        console.log("Ax Result:", JSON.stringify(result, null, 2));
+        const lastMessage = messages[messages.length - 1];
 
-        // 4. Parse Result
-        let textResponse = "";
-
-        // Handle various return shapes from Ax
-        if (typeof result === 'string') {
-            textResponse = result;
-        } else if (Array.isArray(result)) {
-            // Handle array response (common in some streaming adapters or Ollama direct)
-            if (result.length > 0) {
-                if (typeof result[0] === 'string') textResponse = result[0];
-                else if (result[0].content) textResponse = result[0].content;
-                else textResponse = JSON.stringify(result[0]);
-            }
-        } else if (result && typeof result === 'object') {
-            if ('content' in result) {
-                textResponse = (result as any).content;
-            } else if ('results' in result && Array.isArray((result as any).results)) {
-                textResponse = (result as any).results[0].content;
-            } else if ('choices' in result && Array.isArray((result as any).choices)) {
-                textResponse = (result as any).choices[0].message.content;
-            } else {
-                textResponse = JSON.stringify(result);
-            }
-        }
+        // 3. Send Message
+        const response = await ax.chat({
+            chatPrompt: [
+                { role: 'system', content: systemInstruction },
+                ...axHistory,
+                { role: 'user', content: lastMessage.content }
+            ]
+        }, { stream: false });
 
         // 4. Return result
+        // Ax response structure: { results: [{ content: "..." }] }
+        // Type guard or cast since response can be a stream
+        const chatResponse = response as any;
+        const content = chatResponse.results?.[0]?.content;
         return NextResponse.json({
-            response: textResponse || "No response generated."
+            response: content || "No response generated."
         });
 
-    } catch (error) {
-        console.error("AI Error:", error);
+
+
+
+    } catch (error: any) {
+        console.error("AI Error Details:", error);
         return NextResponse.json(
-            { error: 'Failed to process request' },
+            { error: "AI Processing Failed", details: error.message },
             { status: 500 }
         );
     }

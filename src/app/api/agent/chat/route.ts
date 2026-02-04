@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { ax } from '@/lib/ai/engine';
+import { generativeModel } from '@/lib/ai/engine';
 
 // System Prompt Definition
 const ASTRA_SYSTEM_PROMPT = `You are ASTRA (Authorized Security & Threat Response Agent), an advanced CISO AI assistant.
@@ -57,34 +57,38 @@ export async function POST(request: NextRequest) {
 `;
 
         // Using Ax AI
-        const chatPrompt = [
-            { role: 'system', content: ASTRA_SYSTEM_PROMPT },
-            ...history.map((msg: any) => ({ role: msg.role, content: msg.content })),
-            { role: 'user', content: message + contextBlock }
-        ];
+        // Initialize Google Chat Session
+        let chatHistory = history.map((msg: any) => ({
+            role: msg.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: msg.content }]
+        }));
 
-        const response = await ax.chat({
-            chatPrompt
-        });
-
-        // Parse Response (Ax returns structured object or string based on config, but here standard chat)
-        // With Ax standard chat, it might return a simple string or an object depending on version.
-        // The previous code handled string. Let's normalize.
-        let finalContent = "";
-
-        if (typeof response === 'string') {
-            finalContent = response;
-        } else if ('content' in (response as any)) {
-            finalContent = (response as any).content;
-        } else if ('results' in (response as any)) {
-            finalContent = (response as any).results[0].content;
-        } else {
-            finalContent = JSON.stringify(response);
+        // Remove leading model messages if passing history directly (though here we prepend system prompt, so check subsequent history)
+        if (chatHistory.length > 0 && chatHistory[0].role === 'model') {
+            chatHistory = chatHistory.slice(1);
         }
 
-        // Tool execution logic (Mock for now, similar to before)
-        // Ax has advanced tool support, but for V1 migration we keep the prompt-based parsing 
-        // to minimize regression risk on the specific internal tool syntax.
+        const chat = generativeModel.startChat({
+            history: [
+                { role: 'user', parts: [{ text: ASTRA_SYSTEM_PROMPT }] },
+                { role: 'model', parts: [{ text: "Understood. I am Astra, ready to assist." }] },
+                ...chatHistory
+            ]
+        });
+
+        // Send User Message with Context
+        // Send User Message with Context (with Retry)
+        const { runWithRetry } = await import('@/lib/ai/utils');
+
+        const result = await runWithRetry(async () => {
+            return await chat.sendMessage(message + contextBlock);
+        });
+
+        const responseText = result.response.text();
+
+        let finalContent = responseText;
+
+        // Tool execution logic
         let toolExecution = null;
 
         try {
@@ -96,20 +100,13 @@ export async function POST(request: NextRequest) {
                     const toolResult = executeMockTool(toolJson.tool, toolJson.params);
                     finalContent = `*[ASTRA executing ${toolJson.tool}...]*\n\n> **Tool Output**: ${toolResult}\n\n`;
 
-                    // Simple follow-up
-                    const followUp = await ax.chat({
-                        chatPrompt: [
-                            ...chatPrompt,
-                            { role: 'assistant', content: finalContent },
-                            { role: 'user', content: "Interpret this tool output and give me the bottom line." }
-                        ]
+                    // Simple follow-up using the same chat session
+                    const followUpResult = await runWithRetry(async () => {
+                        return await chat.sendMessage(
+                            `Tool Output: ${toolResult}\n\nIntepret this output and give me the bottom line.`
+                        );
                     });
-
-                    let followUpContent = "";
-                    if (typeof followUp === 'string') followUpContent = followUp;
-                    else if ('content' in (followUp as any)) followUpContent = (followUp as any).content;
-
-                    finalContent += followUpContent;
+                    finalContent += followUpResult.response.text();
                 }
             }
         } catch (e) {
@@ -122,9 +119,17 @@ export async function POST(request: NextRequest) {
             toolExecution
         });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Chat API Error:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+
+        const status = error.status || 500;
+        let message = 'Internal Server Error';
+
+        if (status === 429 || error.message?.includes('429')) {
+            message = 'AI Rate Limit Exceeded. Please try again in a moment. (Retried 3 times)';
+        }
+
+        return NextResponse.json({ error: message, details: error.message }, { status: status });
     }
 }
 

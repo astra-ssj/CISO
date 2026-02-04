@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { generatePolicyAsync } from '@/lib/intelligence-engine';
-import { ax, isAIConfigured } from '@/lib/ai/engine';
+import { ax, isAIReady } from '@/lib/ai/ax-engine';
 
 export async function POST(request: Request) {
     try {
@@ -15,15 +15,12 @@ export async function POST(request: Request) {
         }
 
         const safeTopic = topic.slice(0, 100).replace(/[<>]/g, "");
-        const isRealProvider = isAIConfigured() && useRealAI !== false;
+        const isReady = await isAIReady();
+        const isRealProvider = isReady && useRealAI !== false;
 
         if (isRealProvider) {
             // Use real LLM for policy generation
-            const result = await ax.chat({
-                chatPrompt: [
-                    {
-                        role: 'user',
-                        content: `Generate a comprehensive security policy for: "${safeTopic}"
+            const prompt = `Generate a comprehensive security policy for: "${safeTopic}"
 
 Strictness Level: ${strictness || 'MEDIUM'}
 
@@ -34,22 +31,22 @@ Include the following sections:
 4. Policy Statements - The actual rules (be ${strictness === 'HIGH' ? 'very strict and prescriptive' : 'balanced and practical'})
 5. Compliance - Monitoring and enforcement
 
-Format as a professional policy document.`
-                    }
+Format as a professional policy document.`;
+
+            // Use Ax Chat for generation
+            const response = await ax.chat({
+                chatPrompt: [
+                    { role: 'system', content: 'You are a Policy Drafting Expert.' },
+                    { role: 'user', content: prompt }
                 ]
-            });
+            }, { stream: false });
 
-            let content = "";
-            let modelName = "unknown";
+            // Handle output type safely
+            const chatResponse = response as any;
+            const rawContent = chatResponse.results?.[0]?.content;
+            const content = rawContent || "No content generated.";
 
-            if (typeof result === 'string') {
-                content = result;
-            } else if ('content' in (result as any)) {
-                content = (result as any).content;
-                modelName = (result as any).model || "unknown";
-            } else if ('results' in (result as any)) {
-                content = (result as any).results[0].content;
-            }
+            let modelName = "llama3";
 
             return NextResponse.json({
                 title: `${safeTopic} Policy`,
@@ -61,7 +58,7 @@ Format as a professional policy document.`
                     { id: 's1', title: 'AI-Generated Policy', content: content }
                 ],
                 mappings: [],
-                provider: 'AX',
+                provider: 'AX (Llama 3)',
                 model: modelName
             });
         }
@@ -75,10 +72,10 @@ Format as a professional policy document.`
             model: 'intelligence-engine-v1'
         });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Policy Generation Failed:", error);
         return NextResponse.json(
-            { error: "Internal Server Error during generation." },
+            { error: "Generation Failed", details: error.message },
             { status: 500 }
         );
     }

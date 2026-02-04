@@ -1,6 +1,6 @@
 "use server";
 
-import { ax, isAIConfigured } from '@/lib/ai/engine';
+import { generativeModel, isAIConfigured } from '@/lib/ai/engine';
 
 // --- Type Definitions ---
 export interface AIResult {
@@ -20,14 +20,8 @@ export async function analyzeThreatBatchAction(events: any[]): Promise<AIResult>
         Task: You are a CISO. Summarize these security events into 2 concise sentences for an executive briefing. Focus on the most critical risks.
         `;
 
-        const result = await ax.chat({
-            chatPrompt: [{ role: 'user', content: prompt }]
-        });
-
-        let content = "No content generated.";
-        if (typeof result === 'string') content = result;
-        else if ('content' in (result as any)) content = (result as any).content;
-        else if ('results' in (result as any)) content = (result as any).results[0].content;
+        const result = await generativeModel.generateContent(prompt);
+        let content = result.response.text() || "No content generated.";
 
         return { success: true, content: content };
     } catch (e: any) {
@@ -47,15 +41,8 @@ export async function generateRemediationPlanAction(threatId: string, descriptio
         Format as clear code blocks.
         `;
 
-        const result = await ax.chat({
-            chatPrompt: [{ role: 'user', content: prompt }]
-        });
-
-        let content = "";
-        if (typeof result === 'string') content = result;
-        else if ('content' in (result as any)) content = (result as any).content;
-        else if ('results' in (result as any)) content = (result as any).results[0].content;
-        else content = JSON.stringify(result);
+        const result = await generativeModel.generateContent(prompt);
+        let content = result.response.text() || "";
 
         return { success: true, content: content };
     } catch (e: any) {
@@ -81,15 +68,8 @@ export async function draftPolicyAction(topic: string, specificRequirements?: st
         Keep it professional and concise.
         `;
 
-        const result = await ax.chat({
-            chatPrompt: [{ role: 'user', content: prompt }]
-        });
-
-        let content = "";
-        if (typeof result === 'string') content = result;
-        else if ('content' in (result as any)) content = (result as any).content;
-        else if ('results' in (result as any)) content = (result as any).results[0].content;
-        else content = JSON.stringify(result);
+        const result = await generativeModel.generateContent(prompt);
+        let content = result.response.text() || "";
 
         return { success: true, content: content };
     } catch (e: any) {

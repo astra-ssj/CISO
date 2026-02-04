@@ -1,6 +1,6 @@
 "use server";
 
-import { ax, isAIConfigured } from '@/lib/ai/engine';
+import { generativeModel, isAIConfigured } from '@/lib/ai/engine';
 
 export interface CounterDraftResult {
     success: boolean;
@@ -46,27 +46,14 @@ export async function generateCounterDraftAction(
         Draft the counter-proposal now.
         `;
 
-        // 3. Call Ax Engine
-        const result = await ax.chat({
-            chatPrompt: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: userPrompt }
-            ]
-        });
+        // 3. Call Google Engine
+        const result = await generativeModel.generateContent(
+            `${systemPrompt}\n\n${userPrompt}`
+        );
 
         // 4. Parse Result with Robustness
-        // Ax result handling
-        let textResponse = "";
-
-        if (typeof result === 'string') {
-            textResponse = result;
-        } else if ('content' in (result as any)) {
-            textResponse = (result as any).content;
-        } else if ('results' in (result as any)) {
-            textResponse = (result as any).results[0].content;
-        } else {
-            textResponse = JSON.stringify(result);
-        }
+        const response = result.response;
+        let textResponse = response.text();
 
         // Clean up markdown code blocks if present
         textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();

@@ -1,42 +1,19 @@
-import { AxAI } from '@ax-llm/ax';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Feature Flag: Prefer Local AI (Privacy Mode)
 // Defaults to true if OPENAI_API_KEY is missing, or if explicitly set.
-// Provider Configuration
-const PROVIDER = process.env.AI_PROVIDER || 'OLLAMA';
+// Provider Configuration: Exclusive to Google Gemini
+const modelName = process.env.GEMINI_MODEL || 'gemini-2.0-flash-001';
+const apiKey = process.env.GOOGLE_API_KEY || '';
 
-const getAxInstance = () => {
-    switch (PROVIDER) {
-        case 'GEMINI':
-            return new AxAI({
-                name: 'google-gemini',
-                apiKey: process.env.GOOGLE_API_KEY as string,
-                config: { model: (process.env.GEMINI_MODEL || 'gemini-1.5-pro-latest') as any }
-            });
-        case 'OPENAI':
-            return new AxAI({
-                name: 'openai',
-                apiKey: process.env.OPENAI_API_KEY as string,
-                config: { model: (process.env.OPENAI_MODEL || 'gpt-4o') as any }
-            });
-        case 'OLLAMA':
-        default:
-            return new AxAI({
-                name: 'ollama',
-                apiKey: 'ollama',
-                config: { model: process.env.OLLAMA_MODEL || 'llama4:scout' }
-            });
-    }
-};
+const genAI = new GoogleGenerativeAI(apiKey);
 
-export const ax = getAxInstance();
+export const generativeModel = genAI.getGenerativeModel({
+    model: modelName,
+    systemInstruction: "You are Astra, an advanced AI Security Analyst. concise, professional, and actionable. Use markdown for formatting."
+});
 
 // Helper to check availability
 export const isAIConfigured = () => {
-    switch (PROVIDER) {
-        case 'GEMINI': return !!process.env.GOOGLE_API_KEY;
-        case 'OPENAI': return !!process.env.OPENAI_API_KEY;
-        case 'OLLAMA': return true; // Assume local is always "there" for now
-        default: return false;
-    }
+    return !!process.env.GOOGLE_API_KEY;
 };

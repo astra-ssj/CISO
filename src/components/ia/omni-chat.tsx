@@ -55,7 +55,10 @@ export function OmniChat() {
                 })
             });
 
-            if (!response.ok) throw new Error('Failed to fetch response');
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || `Server Error: ${response.status}`);
+            }
 
             const data = await response.json();
             // Handle both streaming and static responses (simplified for now to static)
@@ -67,12 +70,12 @@ export function OmniChat() {
             };
 
             setMessages(prev => [...prev, aiMsg]);
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
             setMessages(prev => [...prev, {
                 id: Date.now().toString(),
                 role: 'assistant',
-                content: "Error connecting to Neural Core.",
+                content: error.message || "Error connecting to Neural Core.",
                 timestamp: Date.now()
             }]);
         } finally {
