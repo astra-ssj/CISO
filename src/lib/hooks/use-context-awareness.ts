@@ -22,7 +22,14 @@ export function useContextAwareness(): ContextPayload {
         if (path.includes('nexus')) return 'Nexus Graph';
         if (path.includes('policies')) return 'Policy Governance';
         if (path.includes('executive')) return 'Executive Brief';
-        return 'Unknown';
+        if (path.includes('intelligence')) return 'Threat Intelligence';
+        if (path.includes('strategy')) return 'Strategy Pyramid';
+        if (path.includes('appsec')) return 'AppSec Dashboard';
+        if (path.includes('threat-modeling')) return 'Threat Modeling';
+        if (path.includes('wargames')) return 'Wargames';
+        if (path.includes('help')) return 'Help Center';
+        if (path.includes('reporting')) return 'Reporting';
+        return 'Unknown Module';
     };
 
     // Build context object

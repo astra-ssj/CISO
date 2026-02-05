@@ -8,11 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { BrainCircuit, Upload, FileText, CheckCircle2, AlertTriangle, ShieldAlert, Zap, Target, TrendingUp, Plus, Lightbulb } from "lucide-react";
+import { BrainCircuit, Upload, FileText, CheckCircle2, AlertTriangle, ShieldAlert, Zap, Target, TrendingUp, Plus, Lightbulb, Map } from "lucide-react";
 import { COMPLIANCE_FRAMEWORKS, FrameworkID } from "@/lib/compliance-frameworks";
 import { analyzePolicy, AnalysisResult } from "@/lib/policy-engine";
 import { useAppSecStore } from '@/lib/appsec-store';
 import { usePlaybookStore } from '@/lib/playbook-store';
+import { MitreMatrix } from "@/components/intelligence/mitre-matrix";
+
+import { SecurityEventsFeed } from "@/components/intelligence/security-events-feed";
+import { SystemHealthWidget } from "@/components/intelligence/system-health";
 
 interface StrategicInitiative {
     id: string;
@@ -110,22 +114,41 @@ export default function IntelligencePage() {
     const initiatives = generateInitiatives();
 
     return (
-        <div className="space-y-6 max-w-7xl mx-auto">
+        <div className="space-y-6 max-w-[1600px] mx-auto">
             <div className="flex flex-col gap-2">
                 <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
                     <BrainCircuit className="h-8 w-8 text-primary" />
-                    CISO Intelligence Engine
+                    Threat Intelligence Center
                 </h1>
                 <p className="text-muted-foreground text-lg">
-                    AI-driven analysis for Policy Compliance and Strategic Planning.
+                    Real-time MITRE ATT&CK visualization and AI-driven strategic planning.
                 </p>
             </div>
 
-            <Tabs defaultValue="strategy" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+            <Tabs defaultValue="threats" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
+                    <TabsTrigger value="threats">Live Operations</TabsTrigger>
                     <TabsTrigger value="strategy">Strategic Planning</TabsTrigger>
                     <TabsTrigger value="policy">Policy Analysis</TabsTrigger>
                 </TabsList>
+
+                {/* TAB: LIVE THREATS */}
+                <TabsContent value="threats" className="mt-6 space-y-6">
+
+
+                    {/* Security Analytics Row */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[400px]">
+                        <div className="lg:col-span-2 h-full">
+                            <SecurityEventsFeed />
+                        </div>
+                        <div className="lg:col-span-1 h-full">
+                            <SystemHealthWidget />
+                        </div>
+                    </div>
+
+                    {/* MITRE Matrix */}
+                    <MitreMatrix />
+                </TabsContent>
 
                 {/* TAB: STRATEGIC PLANNING */}
                 <TabsContent value="strategy" className="mt-6 space-y-6">

@@ -43,7 +43,7 @@ const navItems = [
     { name: 'Executive Brief', href: '/executive-brief', icon: Presentation },
     { name: 'Strategy Pyramid', href: '/strategy', icon: Triangle },
     { name: 'Defense Matrix', href: '/strategy/matrix', icon: Shield },
-    { name: 'Policy Intelligence', href: '/intelligence', icon: BrainCircuit },
+    { name: 'Threat Intelligence', href: '/intelligence', icon: BrainCircuit },
     { name: 'Policy Engine', href: '/policies', icon: ScrollText },
     { name: 'Data Privacy', href: '/privacy', icon: Lock },
     { name: 'Governance & Risk', href: '/governance', icon: FileText },

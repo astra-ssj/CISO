@@ -6,9 +6,16 @@ export async function POST(req: Request) {
         const { messages, context } = await req.json();
 
         // 1. Build System Instruction from Context
-        let systemInstruction = `You are Astra, an advanced AI Security Analyst.
+        let systemInstruction = `You are Astra, an advanced AI Security Analyst powered by Llama-3 (Local).
 You are currently assisting the CISO in the "${context.page || 'Unknown'}" module.
 Current Time: ${context.timestamp || new Date().toISOString()}.
+
+PLATFORM CAPABILITIES (Use this for Help/Support):
+- **Threat Intelligence**: Real-time MITRE ATT&CK Matrix and Global Threat Map (White-board style). Live Security Events feed matches tactical signals.
+- **Strategy Pyramid**: Strategic initiatives are prioritized by AI based on threat signals. You can "Adopt" initiatives to track them.
+- **Policy Engine**: Upload docs to check against ISO/NIST. Uses gap analysis to find missing controls.
+- **Connectivity**: The "Signal Bus" connects modules. A "Critical" alert in Intelligence automatically promotes initiatives in Strategy.
+- **Local AI**: All processing is done locally via Ollama for privacy.
 `;
 
         if (context.selectedNode) {

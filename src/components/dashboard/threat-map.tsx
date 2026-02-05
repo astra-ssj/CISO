@@ -1,138 +1,204 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Globe, ShieldAlert, Zap, Activity } from "lucide-react";
+import { Globe } from "lucide-react";
 
-// Simplified SVG Path for World Map (Abstract representation for visual candy)
-const WORLD_MAP_PATH = "M150,100 Q200,50 250,100 T350,150 T450,100 T550,150 T650,100 T750,150 V300 H150 Z";
-// Note: Real world paths are huge. For "Visual Candy" abstract polygon is often enough or we assume a background image. 
-// Better approach: Use a pre-defined set of dots/grid for a "Cyber" look.
+// --- Simplified World Map Polygons ---
+// Coarse approximations for visual clarity
+const CONTINENTS = [
+    {
+        id: 'na',
+        name: 'North America',
+        points: "50,60 180,60 220,150 120,200 80,150",
+    },
+    {
+        id: 'sa',
+        name: 'South America',
+        points: "150,210 220,220 200,380 160,350",
+    },
+    {
+        id: 'eu',
+        name: 'Europe',
+        points: "360,60 450,60 450,140 380,150 350,120",
+    },
+    {
+        id: 'af',
+        name: 'Africa',
+        points: "360,160 460,160 480,250 420,350 350,250",
+    },
+    {
+        id: 'as',
+        name: 'Asia',
+        points: "460,60 700,60 750,150 650,250 550,220 460,150",
+    },
+    {
+        id: 'au',
+        name: 'Australia',
+        points: "600,280 720,280 700,380 620,360",
+    }
+];
 
-const GRID_POINTS = Array.from({ length: 50 }).map((_, i) => ({
-    x: Math.random() * 800,
-    y: Math.random() * 400,
-    id: i
-}));
+// APT Origins (Adjusted for new coordinate space)
+// X/Y coordinates must fall within the SVG viewBox 0 0 800 450
+const APT_ZONES = [
+    { id: 'apt-russia', name: 'APT29', x: 550, y: 100, color: '#dc2626' }, // Moscow (Red)
+    { id: 'apt-china', name: 'APT41', x: 620, y: 160, color: '#ca8a04' }, // Beijing (Dark Yellow)
+    { id: 'apt-nk', name: 'Lazarus', x: 680, y: 150, color: '#ea580c' }, // Pyongyang (Orange)
+    { id: 'apt-iran', name: 'APT33', x: 500, y: 180, color: '#7e22ce' }, // Tehran (Purple)
+];
 
 interface Attack {
     id: number;
     startX: number;
     startY: number;
+    controlX: number;
+    controlY: number;
     endX: number;
     endY: number;
-    type: 'ddos' | 'malware' | 'phishing';
+    type: 'apt' | 'ddos';
     color: string;
+    label?: string;
 }
 
 export function CyberThreatMap() {
     const [attacks, setAttacks] = useState<Attack[]>([]);
-    const [stats, setStats] = useState({ blocked: 1240, active: 3, bandwidth: '450 Mbps' });
 
-    // Generate random attacks
     useEffect(() => {
         const interval = setInterval(() => {
             const id = Date.now();
-            const startX = Math.random() * 800;
-            const startY = Math.random() * 400;
-            // Target is roughly center (HQ)
-            const endX = 400 + (Math.random() * 40 - 20);
-            const endY = 200 + (Math.random() * 40 - 20);
+            const sourceZone = APT_ZONES[Math.floor(Math.random() * APT_ZONES.length)];
 
-            const types: ('ddos' | 'malware' | 'phishing')[] = ['ddos', 'malware', 'phishing'];
-            const type = types[Math.floor(Math.random() * types.length)];
-            const color = type === 'ddos' ? '#ef4444' : type === 'malware' ? '#eab308' : '#3b82f6';
+            // Randomize start slightly around the zone center
+            const startX = sourceZone.x + (Math.random() * 20 - 10);
+            const startY = sourceZone.y + (Math.random() * 20 - 10);
 
-            setAttacks(prev => [...prev.slice(-10), { id, startX, startY, endX, endY, type, color }]);
+            // Target: US East Coast (Approx 150, 120) or EU (400, 100)
+            const targets = [{ x: 150, y: 120 }, { x: 400, y: 100 }];
+            const target = targets[Math.floor(Math.random() * targets.length)];
+            const endX = target.x + (Math.random() * 20 - 10);
+            const endY = target.y + (Math.random() * 20 - 10);
 
-            // Randomly update stats
-            if (Math.random() > 0.7) {
-                setStats(s => ({
-                    blocked: s.blocked + Math.floor(Math.random() * 5),
-                    active: Math.max(0, s.active + (Math.random() > 0.5 ? 1 : -1)),
-                    bandwidth: `${300 + Math.floor(Math.random() * 300)} Mbps`
-                }));
-            }
-        }, 800);
+            // Arc Control Point
+            const midX = (startX + endX) / 2;
+            const midY = Math.min(startY, endY) - 100;
 
+            setAttacks(prev => [...prev.slice(-10), {
+                id, startX, startY, controlX: midX, controlY: midY, endX, endY,
+                type: 'apt',
+                color: sourceZone.color,
+                label: sourceZone.name
+            }]);
+        }, 1200);
         return () => clearInterval(interval);
     }, []);
 
     return (
-        <Card className="col-span-1 md:col-span-2 min-h-[400px] border-primary/20 bg-black/40 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10 pointer-events-none" />
-
-            <CardHeader className="relative z-10 flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-lg font-mono flex items-center gap-2 text-primary">
-                    <Globe className="h-4 w-4" />
-                    GLOBAL_THREAT_INTEL
+        <Card className="col-span-1 md:col-span-2 min-h-[500px] border-zinc-200 bg-white shadow-xl relative overflow-hidden text-zinc-900">
+            {/* Header */}
+            <CardHeader className="relative z-10 flex flex-row items-center justify-between pb-2 border-b border-zinc-100 bg-white/90 backdrop-blur-sm">
+                <CardTitle className="text-lg font-bold flex items-center gap-2 text-zinc-800 tracking-tight">
+                    <Globe className="h-5 w-5 text-blue-600" />
+                    GLOBAL THREAT INTELLIGENCE
                 </CardTitle>
                 <div className="flex gap-2">
-                    <Badge variant="outline" className="bg-black/50 border-primary/30 text-xs font-mono">
-                        LIVE_FEED
-                    </Badge>
-                    <Badge variant="destructive" className="animate-pulse text-xs font-mono">
-                        {stats.active} THREATS
-                    </Badge>
+                    {APT_ZONES.map(zone => (
+                        <div key={zone.id} className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-zinc-100 border border-zinc-200 text-[10px] font-bold uppercase text-zinc-600">
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: zone.color }} />
+                            {zone.name}
+                        </div>
+                    ))}
                 </div>
             </CardHeader>
 
-            <CardContent className="h-[350px] relative p-0 overflow-hidden">
-                {/* Map Overlay Stats */}
-                <div className="absolute bottom-4 left-4 z-20 space-y-1 bg-black/60 p-2 rounded border border-white/10 backdrop-blur-sm text-xs font-mono text-muted-foreground">
-                    <div className="flex justify-between gap-4"><span>BLOCKED_RQS:</span> <span className="text-emerald-500">{stats.blocked.toLocaleString()}</span></div>
-                    <div className="flex justify-between gap-4"><span>NET_FLOW:</span> <span className="text-blue-400">{stats.bandwidth}</span></div>
-                </div>
+            <CardContent className="h-[450px] relative p-0">
+                <div className="w-full h-full bg-slate-50 relative">
+                    {/* SVG Map */}
+                    <svg viewBox="0 0 800 450" className="w-full h-full">
+                        {/* Grid Lines for style */}
+                        <defs>
+                            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" strokeWidth="1" />
+                            </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#grid)" />
 
-                {/* Visualization Area */}
-                <div className="w-full h-full relative">
-                    <svg viewBox="0 0 800 400" className="w-full h-full opacity-80">
-                        {/* Abstract World Grid/Dots */}
-                        {GRID_POINTS.map(p => (
-                            <circle key={p.id} cx={p.x} cy={p.y} r={1.5} fill="#334155" opacity={0.5} />
+                        {/* Continents */}
+                        {CONTINENTS.map(c => (
+                            <g key={c.id}>
+                                <polygon
+                                    points={c.points}
+                                    fill="#cbd5e1" // slate-300
+                                    stroke="#94a3b8" // slate-400
+                                    strokeWidth="1"
+                                    className="hover:fill-slate-400 transition-colors"
+                                />
+                                {/* Label (Optional) */}
+                                {/* <text x={parsePoints(c.points).cx} y={parsePoints(c.points).cy} fontSize="10" fill="#64748b" textAnchor="middle">{c.name}</text> */}
+                            </g>
                         ))}
 
-                        {/* Central Hub (HQ) */}
-                        <motion.circle
-                            cx={400} cy={200} r={5}
-                            fill="none" stroke="#6366f1" strokeWidth={2}
-                            animate={{ r: [5, 15, 5], opacity: [1, 0, 1] }}
-                            transition={{ duration: 3, repeat: Infinity }}
-                        />
-                        <circle cx={400} cy={200} r={3} fill="#6366f1" />
+                        {/* APT Origins (Pulsing Rings) */}
+                        {APT_ZONES.map(zone => (
+                            <g key={zone.id}>
+                                <motion.circle
+                                    cx={zone.x} cy={zone.y}
+                                    r={15}
+                                    fill={zone.color}
+                                    initial={{ opacity: 0.3, scale: 0.5 }}
+                                    animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.5, 1] }}
+                                    transition={{ duration: 2, repeat: Infinity }}
+                                />
+                                <circle cx={zone.x} cy={zone.y} r={4} fill={zone.color} stroke="white" strokeWidth="1" />
+                            </g>
+                        ))}
 
                         {/* Attacks */}
                         <AnimatePresence>
                             {attacks.map(attack => (
                                 <g key={attack.id}>
-                                    {/* Projectile Line */}
                                     <motion.path
-                                        d={`M${attack.startX},${attack.startY} L${attack.endX},${attack.endY}`}
-                                        initial={{ pathLength: 0, opacity: 0 }}
-                                        animate={{ pathLength: 1, opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        transition={{ duration: 1.5, ease: "linear" }}
+                                        d={`M${attack.startX},${attack.startY} Q${attack.controlX},${attack.controlY} ${attack.endX},${attack.endY}`}
+                                        fill="none"
                                         stroke={attack.color}
                                         strokeWidth={2}
-                                        fill="none"
                                         strokeLinecap="round"
+                                        initial={{ pathLength: 0, opacity: 0.8 }}
+                                        animate={{ pathLength: 1, opacity: 0 }}
+                                        transition={{ duration: 1.5, ease: "easeOut" }}
                                     />
-                                    {/* Source Ripple */}
-                                    <motion.circle
-                                        cx={attack.startX} cy={attack.startY}
-                                        initial={{ r: 0, opacity: 1 }}
-                                        animate={{ r: 10, opacity: 0 }}
-                                        transition={{ duration: 1 }}
-                                        fill="none"
-                                        stroke={attack.color}
-                                        strokeWidth={1}
-                                    />
+                                    {/* Projectile Head */}
+                                    {/* Simple trick: Animation creates line, we can add a dot moving along it if needed, but path drawing is usually sufficient for 'laser' effect */}
+
+                                    {/* Text Label Fade In/Out */}
+                                    <motion.text
+                                        x={(attack.startX + attack.endX) / 2}
+                                        y={Math.min(attack.startY, attack.endY) - 50}
+                                        fill={attack.color}
+                                        fontSize="12"
+                                        fontWeight="bold"
+                                        textAnchor="middle"
+                                        initial={{ opacity: 1, y: 0 }}
+                                        animate={{ opacity: 0, y: -20 }}
+                                        transition={{ duration: 1.5 }}
+                                    >
+                                        {attack.label} DETECTED
+                                    </motion.text>
                                 </g>
                             ))}
                         </AnimatePresence>
+
                     </svg>
+                </div>
+
+                {/* Stats Footer */}
+                <div className="absolute bottom-0 w-full bg-white/80 backdrop-blur border-t border-zinc-200 p-2 flex justify-between text-xs font-mono text-zinc-500">
+                    <div>STATUS: ACTIVE MONITORING</div>
+                    <div className="flex gap-4">
+                        <span>THREAT LEVEL: HIGH</span>
+                        <span>INTERCEPTED: {attacks.length * 42}</span>
+                    </div>
                 </div>
             </CardContent>
         </Card>
