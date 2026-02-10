@@ -62,7 +62,32 @@ export class OpenClawClient {
                 })
             });
 
-            if (!response.ok) throw new Error('Agent API failed');
+            if (!response.ok) {
+                // Handle Rate Limiting (Graceful Fallback)
+                if (response.status === 429) {
+                    console.warn("Agent API Rate Limit Exceeded. Switching to Simulation Mode.");
+
+                    // Simulate "Thinking" completion
+                    currentMessage.thinking = [
+                        { description: 'Analyzing request...', status: 'completed' },
+                        { description: 'External Intelligence Busy', status: 'completed' }, // Mark as busy instead of consulting
+                        { description: 'Engaging Local Fallback Protocols', status: 'active' } // New step
+                    ];
+                    yield { ...currentMessage };
+                    await this.delay(1500);
+
+                    currentMessage.thinking[2].status = 'completed';
+
+                    // Fallback Content
+                    currentMessage.content = "## ⚠️ Connection Limit Reached\n\nI am currently operating in **Offline Simulation Mode** due to high traffic on the neural link (Rate Limit Exceeded).\n\nWhile I cannot process new external queries right now, my local protocols suggest:\n\n1. Reviewing the **Help Center** for static guides.\n2. Checking the **Intelligence Feed** for pre-cached threats.\n3. Trying again in 60 seconds.";
+                    yield { ...currentMessage };
+                    return; // Exit successfully
+                }
+
+                const errorText = await response.text();
+                console.error(`Agent API Failed [${response.status}]:`, errorText);
+                throw new Error(`Agent API failed: ${response.status} ${response.statusText}`);
+            }
 
             const data = await response.json();
 
@@ -99,6 +124,8 @@ export class OpenClawClient {
         } catch (error) {
             console.error("Agent Error:", error);
             currentMessage.thinking?.push({ description: 'Error connecting to ASTRA Core', status: 'failed' });
+
+            // If it was a hard network error (not 429 response), show generic error
             currentMessage.content = "I'm having trouble connecting to my core intelligence. Please try again.";
             yield { ...currentMessage };
         }

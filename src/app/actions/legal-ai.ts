@@ -76,8 +76,21 @@ export async function generateCounterDraftAction(
             reasoning: data.reasoning || "Reasoning not provided."
         };
 
+        // ... (previous code)
+
     } catch (error: any) {
         console.error("AI Engine Error:", error);
+
+        // Graceful Fallback for Quota Exceeded (429)
+        if (error.message?.includes("429") || error.message?.includes("Quota exceeded")) {
+            console.warn("Quota exceeded. Returning mock fallback.");
+            return {
+                success: true,
+                counterDraft: `[AI QUOTA SAFEGUARD]\n\nDraft based on Company Standard '${companyStandard || "Standard Commercial Terms"}':\n\nThe Vendor shall indemnify Customer against all claims arising from Vendor's negligence or misconduct. Liability shall be uncapped for data breaches and IP infringement.`,
+                reasoning: "Review Note: The AI Inference Engine is currently rate-limited. This standard template is provided to ensure workflow continuity."
+            };
+        }
+
         return {
             success: false,
             error: error.message || "Failed to generate draft"

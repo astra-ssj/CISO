@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Globe, Shield, Zap, Lock, Radio, Trophy, TrendingUp, ShieldOff } from 'lucide-react';
+import { Zap, Lock, Radio, Trophy, TrendingUp, ShieldOff, Shield, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAstraStore } from '@/lib/store';
 
 // Phase 4: Viral Loop Data
 const LEADERBOARD = [
@@ -23,6 +24,7 @@ export function GlobalThreatPulse() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [mode, setMode] = useState<'events' | 'leaderboard'>('events');
     const [privacyMode, setPrivacyMode] = useState<'dark' | 'airlock' | 'open'>('airlock');
+    const { signals } = useAstraStore();
 
     // Rotate events & Toggle Modes
     useEffect(() => {
@@ -40,6 +42,20 @@ export function GlobalThreatPulse() {
             clearInterval(modeTimer);
         };
     }, []);
+
+    // Signal Bus Listener
+    // Signal Bus Listener
+    useEffect(() => {
+        if (signals.length > 0) {
+            const latest = signals[0];
+            if (latest.type === 'THREAT_DETECTED') {
+                // Flash the new threat immediately
+                setMode('events');
+                // You could dynamically insert this into the EVENTS array here if needed,
+                // but for V1 just ensuring the mode switches back to events is a good visual indicator.
+            }
+        }
+    }, [signals]);
 
     const event = EVENTS[currentIndex];
     const leader = LEADERBOARD[0];

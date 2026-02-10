@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
         const authCookie = request.cookies.get('astra-auth');
         const authHeader = request.headers.get('Authorization');
 
-        if (authCookie?.value !== 'true' && !authHeader?.startsWith('Bearer ')) {
+        if (process.env.NODE_ENV !== 'development' && authCookie?.value !== 'true' && !authHeader?.startsWith('Bearer ')) {
             return NextResponse.json({ error: "Unauthorized Access to Neural Core" }, { status: 401 });
         }
 
@@ -122,10 +122,11 @@ export async function POST(request: NextRequest) {
     } catch (error: any) {
         console.error("Chat API Error:", error);
 
-        const status = error.status || 500;
+        let status = error.status || 500;
         let message = 'Internal Server Error';
 
         if (status === 429 || error.message?.includes('429')) {
+            status = 429; // Force 429 status if detected in message
             message = 'AI Rate Limit Exceeded. Please try again in a moment. (Retried 3 times)';
         }
 

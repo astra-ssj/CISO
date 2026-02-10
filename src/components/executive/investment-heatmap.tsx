@@ -19,44 +19,38 @@ interface InvestmentHeatmapProps {
 
 export function InvestmentHeatmap({ items }: InvestmentHeatmapProps) {
     return (
-        <Card className="h-full bg-zinc-900 border-zinc-800 shadow-xl overflow-hidden flex flex-col">
-            <CardHeader className="pb-2">
-                <CardTitle className="text-xl font-bold text-zinc-100 flex items-center gap-2">
-                    <DollarSign className="w-5 h-5 text-emerald-500" />
-                    Investment Efficiency
-                </CardTitle>
-                <p className="text-zinc-500 text-sm">
-                    Where are we over-investing? (Spend vs. Risk Reduction)
-                </p>
-            </CardHeader>
-            <CardContent className="flex-1 min-h-[300px] relative p-6">
-                {/* Axis Labels */}
-                <div className="absolute left-2 top-1/2 -translate-y-1/2 -rotate-90 text-xs font-bold text-zinc-600 tracking-widest uppercase origin-center whitespace-nowrap">
-                    Risk Reduction Value
+        <div className="h-full flex flex-col relative">
+            <div className="absolute top-0 right-0 z-10">
+                <div className="flex items-center gap-2 text-[10px] text-zinc-500">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)]"></div>
+                    <span>Strategic</span>
+                    <div className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_5px_rgba(239,68,68,0.5)] ml-2"></div>
+                    <span>Waste</span>
                 </div>
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs font-bold text-zinc-600 tracking-widest uppercase">
-                    Annual Spend
+            </div>
+
+            <h3 className="text-xs font-mono font-bold text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <DollarSign className="w-3 h-3" />
+                Capital Efficiency
+            </h3>
+
+            <div className="flex-1 relative border border-zinc-800/50 bg-zinc-950/50 rounded-lg overflow-hidden">
+                {/* Grid Background */}
+                <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
+                    <div className="border-r border-b border-zinc-800/30"></div>
+                    <div className="border-b border-zinc-800/30"></div>
+                    <div className="border-r border-zinc-800/30"></div>
+                    <div></div>
                 </div>
 
-                {/* The Grid */}
-                <div className="absolute inset-8 border border-zinc-800 bg-zinc-950/50 rounded-lg overflow-hidden grid grid-cols-2 grid-rows-2">
-                    {/* Quadrants */}
-                    <div className="bg-red-500/5 p-2 flex items-start justify-end border-r border-b border-zinc-800/50">
-                        <span className="text-[10px] font-mono text-red-500/50 uppercase text-right">High Spend<br />Low Value<br />(Over-Investing)</span>
-                    </div>
-                    <div className="bg-emerald-500/5 p-2 flex items-start justify-end border-b border-zinc-800/50">
-                        <span className="text-[10px] font-mono text-emerald-500/50 uppercase text-right">High Spend<br />High Value<br />(Strategic)</span>
-                    </div>
-                    <div className="p-2 flex items-end justify-start border-r border-zinc-800/50">
-                        <span className="text-[10px] font-mono text-zinc-700 uppercase">Low Spend<br />Low Value<br />(Transactional)</span>
-                    </div>
-                    <div className="bg-blue-500/5 p-2 flex items-end justify-start">
-                        <span className="text-[10px] font-mono text-blue-500/50 uppercase">Low Spend<br />High Value<br />(Efficient)</span>
-                    </div>
+                {/* X/Y Labels (Subtle) */}
+                <div className="absolute bottom-2 right-2 text-[9px] text-zinc-600 font-mono tracking-wider uppercase">Annual Spend →</div>
+                <div className="absolute top-2 left-2 text-[9px] text-zinc-600 font-mono tracking-wider uppercase vertical-text">
+                    Risk Reduction (Value) ↑
                 </div>
 
                 {/* Data Points */}
-                <div className="absolute inset-8">
+                <div className="absolute inset-4">
                     {items.map((item, idx) => (
                         <motion.div
                             key={item.id}
@@ -69,27 +63,28 @@ export function InvestmentHeatmap({ items }: InvestmentHeatmapProps) {
                                 bottom: `${item.riskReduction}%`
                             }}
                         >
-                            <div className={`w-4 h-4 rounded-full border-2 shadow-lg transition-transform group-hover:scale-150
+                            <div className={`w-3 h-3 rounded-full shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300 group-hover:scale-150 group-hover:shadow-[0_0_20px_2px_rgba(255,255,255,0.3)]
                         ${getPointColor(item.spend, item.riskReduction)}
                     `} />
 
                             {/* Tooltip */}
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-32 bg-zinc-800 text-white text-xs rounded p-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 border border-zinc-700">
-                                <div className="font-bold mb-1">{item.category}</div>
-                                <div className="text-zinc-400">{item.actualSpend}</div>
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[150px] bg-zinc-900 text-white text-[10px] rounded border border-zinc-800 p-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl">
+                                <div className="font-bold text-zinc-200">{item.category}</div>
+                                <div className="text-zinc-500 font-mono mt-0.5">{item.actualSpend}</div>
                             </div>
                         </motion.div>
                     ))}
                 </div>
-
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }
 
 function getPointColor(spend: number, riskReduction: number) {
-    if (spend > 50 && riskReduction < 50) return "bg-red-500 border-red-300"; // Bad
-    if (spend > 50 && riskReduction >= 50) return "bg-emerald-500 border-emerald-300"; // Good
-    if (spend <= 50 && riskReduction >= 50) return "bg-blue-500 border-blue-300"; // Efficient
-    return "bg-zinc-500 border-zinc-300"; // Neutral
+    if (spend > 50 && riskReduction < 50) return "bg-red-500"; // Bad
+    if (spend > 50 && riskReduction >= 50) return "bg-emerald-400"; // Good
+    if (spend <= 50 && riskReduction >= 50) return "bg-blue-400"; // Efficient
+    return "bg-zinc-600"; // Neutral
 }
+
+

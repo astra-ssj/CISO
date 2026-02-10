@@ -29,7 +29,8 @@ import {
     Triangle,
     BookOpen,
     Eye,
-    EyeOff
+    EyeOff,
+    HelpCircle
 } from 'lucide-react';
 import { useAstraStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -41,19 +42,15 @@ import { GlobalThreatPulse } from '@/components/federated/global-threat-pulse';
 const navItems = [
     { name: 'Command Center', href: '/', icon: LayoutDashboard },
     { name: 'Executive Brief', href: '/executive-brief', icon: Presentation },
-    { name: 'Strategy Pyramid', href: '/strategy', icon: Triangle },
     { name: 'Defense Matrix', href: '/strategy/matrix', icon: Shield },
     { name: 'Threat Intelligence', href: '/intelligence', icon: BrainCircuit },
     { name: 'Policy Engine', href: '/policies', icon: ScrollText },
-    { name: 'Data Privacy', href: '/privacy', icon: Lock },
     { name: 'Governance & Risk', href: '/governance', icon: FileText },
     { name: 'Incidents', href: '/incidents', icon: Siren },
-    { name: 'SecOps Center', href: '/secops', icon: GitBranch },
     { name: 'AppSec Dashboard', href: '/appsec', icon: Shield },
-    { name: 'Threat Modeling', href: '/threat-modeling', icon: Network },
     { name: 'Wargames', href: '/wargames', icon: Gamepad2 },
     { name: 'Reporting', href: '/reporting', icon: FileBarChart },
-    { name: 'Nexus Graph', href: '/nexus', icon: Network },
+    { name: 'Help Center', href: '/help', icon: HelpCircle },
 ];
 
 export function Shell({ children }: { children: React.ReactNode }) {

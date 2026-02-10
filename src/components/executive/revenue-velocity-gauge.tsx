@@ -17,49 +17,49 @@ interface RevenueVelocityGaugeProps {
 }
 
 export function RevenueVelocityGauge({ metrics }: RevenueVelocityGaugeProps) {
+    // Sort: Blocked first
+    const sorted = [...metrics].sort((a, b) => (a.status === 'blocked' ? -1 : 1));
+
     return (
-        <Card className="h-full bg-zinc-900 border-zinc-800 shadow-xl">
-            <CardHeader className="pb-2">
-                <CardTitle className="text-xl font-bold text-zinc-100 flex items-center gap-2">
-                    <Zap className="w-5 h-5 text-blue-500" />
-                    Revenue Velocity
-                </CardTitle>
-                <p className="text-zinc-500 text-sm">
-                    Where is security slowing down the business?
-                </p>
-            </CardHeader>
-            <CardContent className="pt-4 space-y-4">
-                {metrics.map((metric) => (
-                    <div
-                        key={metric.id}
-                        className="group flex items-center justify-between p-3 rounded-lg bg-zinc-950/30 border border-zinc-800/30 hover:bg-zinc-950/50 transition-colors"
-                    >
+        <div className="h-full flex flex-col">
+            <h3 className="text-xs font-mono font-bold text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <Zap className="w-3 h-3" />
+                Process Velocity
+            </h3>
+
+            <div className="space-y-4">
+                {sorted.map(metric => (
+                    <div key={metric.id} className="flex items-center justify-between group">
                         <div className="flex items-center gap-3">
-                            <StatusIcon status={metric.status} />
+                            {/* Minimal Status Dot */}
+                            <div className={`w-1.5 h-1.5 rounded-full ${getStatusColor(metric.status)} ${metric.status === 'blocked' ? 'animate-pulse' : ''}`} />
+
                             <div>
-                                <p className="text-sm font-medium text-zinc-200 group-hover:text-white transition-colors">
+                                <div className="text-sm text-zinc-300 group-hover:text-white transition-colors">
                                     {metric.processName}
-                                </p>
-                                <p className="text-xs text-zinc-500">
-                                    Impact: <span className="uppercase">{metric.impact}</span>
-                                </p>
+                                </div>
+                                <div className="text-[10px] text-zinc-600">
+                                    {metric.impact.toUpperCase()} IMPACT
+                                </div>
                             </div>
                         </div>
+
                         <div className="text-right">
-                            <p className={`text-sm font-bold font-mono ${getDelayColor(metric.status)}`}>
+                            <div className={`text-xs font-mono ${metric.status === 'blocked' ? 'text-red-400' : 'text-zinc-500'}`}>
                                 {metric.delay}
-                            </p>
+                            </div>
                         </div>
                     </div>
                 ))}
-                {metrics.length === 0 && (
-                    <div className="text-center py-6 text-zinc-500 italic text-sm">
-                        No velocity constraints detected.
-                    </div>
-                )}
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
+}
+
+function getStatusColor(status: VelocityMetric["status"]) {
+    if (status === 'blocked') return 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]';
+    if (status === 'slow') return 'bg-amber-500';
+    return 'bg-emerald-500';
 }
 
 function StatusIcon({ status }: { status: VelocityMetric["status"] }) {
