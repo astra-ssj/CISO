@@ -19,44 +19,65 @@ interface TopRisksCardProps {
     risks: RiskItem[];
 }
 
-export function TopRisksCard({ risks }: TopRisksCardProps) {
-    // Take only top 3
-    const displayRisks = risks.slice(0, 3);
+export function TopRisksCard({ risks, strategyLevel }: { risks: RiskItem[], strategyLevel?: 'okr' | 'kpi' | 'metric' }) {
+    // Filter logic: 
+    // OKR -> Critical business risks (Strategic)
+    // KPI -> High technical risks (Tactical)
+    // Metric -> Operational risks (process/supply chain)
+
+    // For now, let's just highlight instead of strict filter to keep density high
+    // or maybe strict filter is cleaner? "Not focused and too many things" -> Strict Filter.
+
+    const visibleRisks = risks.filter(r => {
+        if (!strategyLevel) return true;
+        if (strategyLevel === 'okr') return r.severity === 'critical'; // Strategic
+        if (strategyLevel === 'kpi') return r.severity === 'high'; // Tactical
+        return true; // Metric shows all or medium
+    });
+
+    const displayRisks = visibleRisks.slice(0, 4);
 
     return (
-        <Card className="h-full border-zinc-800 bg-zinc-950/50 flex flex-col overflow-hidden group hover:border-zinc-700 transition-colors">
-            <CardHeader className="pb-2 border-b border-zinc-800/50 bg-zinc-900/20">
-                <CardTitle className="text-sm font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-amber-500" />
-                    Top Business Risks
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 p-0 overflow-y-auto">
-                <div className="divide-y divide-zinc-800/50">
-                    {displayRisks.map((risk) => (
-                        <div key={risk.id} className="p-4 hover:bg-zinc-900/30 transition-colors">
-                            <div className="flex items-start justify-between mb-1">
-                                <div className="font-semibold text-sm text-zinc-100">{risk.businessRisk}</div>
-                                <SeverityBadge severity={risk.severity} />
-                            </div>
-                            <div className="text-xs text-muted-foreground mb-3 font-mono border-l-2 border-zinc-800 pl-2 ml-1">
-                                {risk.technicalRootCause}
-                            </div>
-                            <div className="flex items-center justify-between text-[10px] text-zinc-500 uppercase tracking-wide">
-                                <span>Owner: {risk.owner}</span>
-                                <TrendIndicator trend={risk.trend} />
-                            </div>
+        <div className="h-full flex flex-col">
+            <h3 className="text-xs font-mono font-bold text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <AlertTriangle className="w-3 h-3" />
+                Active Risks
+            </h3>
+
+            <div className="space-y-3">
+                {displayRisks.length === 0 && (
+                    <div className="text-zinc-600 italic text-sm py-4">No critical risks at this level.</div>
+                )}
+                {displayRisks.map((risk, i) => (
+                    <div key={risk.id} className="group relative pl-4 border-l border-zinc-800 hover:border-red-500/50 transition-colors duration-300">
+                        {/* Hover Glow */}
+                        <div className="absolute left-0 top-0 bottom-0 w-px bg-red-500 opacity-0 group-hover:opacity-100 shadow-[0_0_10px_rgba(239,68,68,0.8)] transition-all duration-300" />
+
+                        <div className="flex justify-between items-start">
+                            <h4 className="text-zinc-300 text-sm font-medium group-hover:text-white transition-colors">
+                                {risk.businessRisk}
+                            </h4>
+                            <SeverityBadge severity={risk.severity} />
                         </div>
-                    ))}
-                </div>
-            </CardContent>
-            {/* Footer / Status */}
-            <div className="p-2 bg-red-500/5 border-t border-red-500/10 text-center">
-                <span className="text-xs font-medium text-red-400">
-                    {risks.filter(r => r.severity === 'critical').length} Critical Items Attention Required
-                </span>
+
+                        <div className="mt-1 flex items-center justify-between">
+                            <span className="text-[10px] text-zinc-500 font-mono truncate max-w-[200px]">
+                                {risk.technicalRootCause}
+                            </span>
+                            <TrendIndicator trend={risk.trend} />
+                        </div>
+                    </div>
+                ))}
             </div>
-        </Card>
+
+            {/* Context Line */}
+            <div className="mt-auto pt-4 border-t border-zinc-900">
+                <div className="flex justify-between items-center text-[10px] uppercase text-zinc-600 font-mono">
+                    <span>Total Exposure</span>
+                    <span className="text-zinc-400">$4.2M / Qtr</span>
+                </div>
+            </div>
+        </div>
     );
 }
 

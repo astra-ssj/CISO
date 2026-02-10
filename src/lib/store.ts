@@ -59,6 +59,21 @@ interface AstraState {
     isAuthenticated: boolean;
     login: (role?: 'CISO' | 'ARCHITECT' | 'DEVOPS') => void;
     logout: () => void;
+
+    // UI State
+    isChatOpen: boolean;
+    setChatOpen: (isOpen: boolean) => void;
+
+    // Signal Bus
+    signals: Signal[];
+    dispatchSignal: (type: string, payload: any) => void;
+}
+
+export interface Signal {
+    id: string;
+    type: string;
+    payload: any;
+    timestamp: number;
 }
 
 export const useAstraStore = create<AstraState>()(
@@ -228,7 +243,28 @@ export const useAstraStore = create<AstraState>()(
             logout: () => {
                 document.cookie = "astra-auth=; path=/; max-age=0";
                 set({ isAuthenticated: false, currentUser: null });
-            }
+            },
+
+            isChatOpen: false,
+            setChatOpen: (isOpen) => set({ isChatOpen: isOpen }),
+
+            // Signal Bus Implementation
+            signals: [],
+            dispatchSignal: (type, payload) => {
+                const newSignal: Signal = {
+                    id: crypto.randomUUID(),
+                    type,
+                    payload,
+                    timestamp: Date.now()
+                };
+
+                // Keep only last 50 signals to prevent memory leaks
+                set(state => ({
+                    signals: [newSignal, ...state.signals].slice(0, 50)
+                }));
+
+                console.log(`[SIGNAL BUS] Dispatched: ${type}`, payload);
+            },
         }),
         {
             name: 'astra-main-store',

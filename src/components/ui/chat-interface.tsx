@@ -11,9 +11,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { AgentThinking } from './agent-thinking';
 
 export function ChatInterface() {
-    const [isOpen, setIsOpen] = useState(false);
+    // const [isOpen, setIsOpen] = useState(false); // Removed local state
     const [inputValue, setInputValue] = useState("");
-    const { chatHistory, sendQuery } = useAstraStore();
+    const { chatHistory, sendQuery, isChatOpen, setChatOpen } = useAstraStore();
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -21,10 +21,10 @@ export function ChatInterface() {
     };
 
     useEffect(() => {
-        if (isOpen) {
+        if (isChatOpen) {
             scrollToBottom();
         }
-    }, [chatHistory, isOpen]);
+    }, [chatHistory, isChatOpen]);
 
     const [isListening, setIsListening] = useState(false);
 
@@ -74,7 +74,7 @@ export function ChatInterface() {
     return (
         <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
             <AnimatePresence>
-                {isOpen && (
+                {isChatOpen && (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -87,7 +87,7 @@ export function ChatInterface() {
                                     <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                                     <ViewTitle />
                                 </div>
-                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsOpen(false)}>
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setChatOpen(false)}>
                                     <X className="h-4 w-4" />
                                 </Button>
                             </CardHeader>
@@ -171,7 +171,7 @@ export function ChatInterface() {
             </AnimatePresence>
 
             <Button
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => setChatOpen(!isChatOpen)}
                 className="h-14 w-14 rounded-full shadow-[0_0_20px_rgba(var(--primary),0.4)] bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 transition-all"
             >
                 <Bot className="h-7 w-7" />

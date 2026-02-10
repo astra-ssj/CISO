@@ -29,7 +29,7 @@ export function StrategyPyramid({
     const isGlobal = context.unit === 'Global';
 
     return (
-        <div className="flex flex-col items-center justify-center py-12 relative w-full h-full min-h-[500px] perspective-[1000px]">
+        <div className="flex flex-col items-center justify-center relative w-full h-full perspective-[1000px]">
             {/* Context Indicator */}
             <div className="absolute top-4 right-4 text-xs font-mono text-zinc-500 border border-zinc-800 rounded px-2 py-1">
                 SLICE: <span className="text-zinc-300">{context.unit.toUpperCase()}</span> // {context.timeframe}

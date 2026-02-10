@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -13,6 +13,7 @@ import { COMPLIANCE_FRAMEWORKS, FrameworkID } from "@/lib/compliance-frameworks"
 import { analyzePolicy, AnalysisResult } from "@/lib/policy-engine";
 import { useAppSecStore } from '@/lib/appsec-store';
 import { usePlaybookStore } from '@/lib/playbook-store';
+import { useAstraStore } from '@/lib/store';
 import { MitreMatrix } from "@/components/intelligence/mitre-matrix";
 
 import { SecurityEventsFeed } from "@/components/intelligence/security-events-feed";
@@ -39,6 +40,7 @@ export default function IntelligencePage() {
     const { findings } = useAppSecStore();
     const { playbooks } = usePlaybookStore();
     const [adoptedInitiatives, setAdoptedInitiatives] = useState<string[]>([]);
+    const { signals } = useAstraStore();
 
     const toggleFramework = (id: FrameworkID) => {
         setSelectedFrameworks(prev =>
@@ -55,11 +57,25 @@ export default function IntelligencePage() {
         }, 1500);
     };
 
-    // Dynamic Strategy Generation
     const generateInitiatives = (): StrategicInitiative[] => {
         const initiatives: StrategicInitiative[] = [];
         const highVulns = findings.filter(f => f.severity === 'CRITICAL' || f.severity === 'HIGH').length;
         const activeIncidents = playbooks.filter(p => p.status === 'ACTIVE').length;
+
+        // Check for active signals (real-time threat context)
+        const activeThreatSignal = signals.length > 0 && signals[0].type === 'THREAT_DETECTED' ? signals[0].payload : null;
+
+        if (activeThreatSignal) {
+            initiatives.push({
+                id: 'init-realtime-response',
+                title: 'Immediate Threat Containment',
+                description: `High severity threat detected (${activeThreatSignal.description}). Activate isolation protocols for affected agent.`,
+                driver: 'Live Threat Signal',
+                impact: 'HIGH',
+                cost: '$',
+                status: 'PROPOSED'
+            });
+        }
 
         // 1. Vulnerability Driven
         if (highVulns > 0) {
@@ -112,6 +128,25 @@ export default function IntelligencePage() {
     };
 
     const initiatives = generateInitiatives();
+
+    // Signal Bus Integration
+    useEffect(() => {
+        if (signals.length > 0) {
+            const latest = signals[0];
+            if (latest.type === 'THREAT_DETECTED') {
+                // Dynamically propose a relevant initiative if not already present
+                const alertId = `dynamic-alert-${latest.timestamp}`;
+
+                // Only add if we haven't already suggested something for this specific threat burst
+                // (In a real app, this logic would be more sophisticated)
+                if (!initiatives.find(i => i.id === alertId)) {
+                    // This is where we would dynamically push to state. 
+                    // For now, let's just use the existence of a high-severity signal 
+                    // to trigger the "AI Recommendation" update in the UI below.
+                }
+            }
+        }
+    }, [signals, initiatives]);
 
     return (
         <div className="space-y-6 max-w-[1600px] mx-auto">
@@ -175,10 +210,19 @@ export default function IntelligencePage() {
                                             {playbooks.filter(p => p.status === 'ACTIVE').length} <span className="text-sm font-normal text-muted-foreground">Incidents</span>
                                         </div>
                                     </div>
-                                    <div className="p-4 bg-secondary/20 rounded-lg border border-border">
-                                        <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">AI Recommendation</div>
+                                    <div className={`p-4 rounded-lg border transition-colors duration-500 ${signals.length > 0 && signals[0].type === 'THREAT_DETECTED' ? 'bg-red-500/10 border-red-500/50' : 'bg-secondary/20 border-border'}`}>
+                                        <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1 flex justify-between">
+                                            <span>AI Recommendation</span>
+                                            {signals.length > 0 && signals[0].type === 'THREAT_DETECTED' && (
+                                                <span className="text-red-500 font-bold animate-pulse">LIVE THREAT DETECTED</span>
+                                            )}
+                                        </div>
                                         <p className="text-sm text-muted-foreground mt-1">
-                                            "Based on high vulnerability density, prioritize <span className="text-primary">AppSec automation</span> over policy documentation this quarter."
+                                            {signals.length > 0 && signals[0].type === 'THREAT_DETECTED' ? (
+                                                <span className="text-foreground font-medium">Critical Alert: Immediate containment required for <span className="text-red-500">{signals[0].payload.description}</span>.</span>
+                                            ) : (
+                                                <span>"Based on high vulnerability density, prioritize <span className="text-primary">AppSec automation</span> over policy documentation this quarter."</span>
+                                            )}
                                         </p>
                                     </div>
                                 </CardContent>

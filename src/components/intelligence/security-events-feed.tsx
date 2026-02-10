@@ -27,9 +27,12 @@ const SAMPLE_EVENTS = [
     { description: "Package installed via apt", ruleId: "2902", level: 3, agent: "ci-runner" },
 ];
 
+import { useAstraStore } from "@/lib/store";
+
 export function SecurityEventsFeed() {
     const [events, setEvents] = useState<SecurityEvent[]>([]);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const { dispatchSignal } = useAstraStore();
 
     useEffect(() => {
         // Initial Population
@@ -40,6 +43,16 @@ export function SecurityEventsFeed() {
         const interval = setInterval(() => {
             const newEvent = createRandomEvent(Date.now());
             setEvents(prev => [newEvent, ...prev.slice(0, 50)]); // Keep last 50
+
+            // EMITTER LOGIC: Dispatch Signal for High Severity Events
+            if (newEvent.level >= 10 && newEvent.status === 'fired') {
+                dispatchSignal('THREAT_DETECTED', {
+                    description: newEvent.description,
+                    level: newEvent.level,
+                    agent: newEvent.agent
+                });
+            }
+
         }, 2000);
 
         return () => clearInterval(interval);
