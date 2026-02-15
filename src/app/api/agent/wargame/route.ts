@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { generativeModel } from '@/lib/ai/engine';
+import { getAIProvider } from '@/lib/ai/engine';
 
 export interface WargameState {
     scenarioType: string;
@@ -80,11 +80,11 @@ ${state.playerActions.map((a, i) => `Turn ${i + 1}: ${a}`).join('\n')}
 Generate the threat actor's response and updated game state.
 `;
 
-        const result = await generativeModel.generateContent(RED_TEAM_SYSTEM_PROMPT.concat('\n\n').concat(gameContext));
+        const textResponse = await getAIProvider().generateContent(RED_TEAM_SYSTEM_PROMPT.concat('\n\n').concat(gameContext));
 
         // Parse AI response
-        let content = result.response.text();
-        let modelName = "gemini-flash";
+        let content = textResponse;
+        let modelName = process.env.AI_PROVIDER || "gemini-2.0-flash-001";
 
         let parsed;
         try {

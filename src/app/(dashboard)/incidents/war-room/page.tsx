@@ -25,6 +25,7 @@ import {
     Zap
 } from "lucide-react";
 import { SecureCommsWidget } from "@/components/war-room/secure-comms";
+import { consultCommandCenter } from "@/app/actions/war-room-ai";
 
 interface Message {
     id: string;
@@ -92,6 +93,8 @@ export default function WarRoomPage() {
         }
     }, [messages]);
 
+
+
     const sendMessage = async () => {
         if (!input.trim() || isTyping) return;
 
@@ -106,17 +109,37 @@ export default function WarRoomPage() {
         setInput('');
         setIsTyping(true);
 
-        // Simulate AI response
-        setTimeout(() => {
-            const aiResponse: Message = {
-                id: (Date.now() + 1).toString(),
-                role: 'assistant',
-                content: AI_RESPONSES[Math.floor(Math.random() * AI_RESPONSES.length)],
-                timestamp: new Date()
-            };
-            setMessages(prev => [...prev, aiResponse]);
+        try {
+            // Call Real AI Action
+            const result = await consultCommandCenter(
+                input,
+                MOCK_INCIDENT,
+                messages // Pass history for context
+            );
+
+            if (result.success) {
+                const aiResponse: Message = {
+                    id: (Date.now() + 1).toString(),
+                    role: 'assistant',
+                    content: result.content,
+                    timestamp: new Date()
+                };
+                setMessages(prev => [...prev, aiResponse]);
+            } else {
+                // Fallback error UI
+                const errorResponse: Message = {
+                    id: (Date.now() + 1).toString(),
+                    role: 'system', // Show as system alert
+                    content: `⚠️ **Communication Error**: ${result.error}`,
+                    timestamp: new Date()
+                };
+                setMessages(prev => [...prev, errorResponse]);
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
             setIsTyping(false);
-        }, 1500);
+        }
     };
 
     const togglePlaybookItem = (id: number) => {

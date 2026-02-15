@@ -1,6 +1,6 @@
 "use server";
 
-import { generativeModel, isAIConfigured } from '@/lib/ai/engine';
+import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
 
 export interface CounterDraftResult {
     success: boolean;
@@ -47,26 +47,23 @@ export async function generateCounterDraftAction(
         `;
 
         // 3. Call Google Engine
-        const result = await generativeModel.generateContent(
+        const textResponse = await getAIProvider().generateContent(
             `${systemPrompt}\n\n${userPrompt}`
         );
 
         // 4. Parse Result with Robustness
-        const response = result.response;
-        let textResponse = response.text();
-
-        // Clean up markdown code blocks if present
-        textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+        // const response = result.response; // Removed
+        let cleanResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
 
         let data;
         try {
-            data = JSON.parse(textResponse);
+            data = JSON.parse(cleanResponse);
         } catch (parseError) {
-            console.warn("JSON Parse Failed. Returning raw text.", textResponse);
+            console.warn("JSON Parse Failed. Returning raw text.", cleanResponse);
             // Fallback: Use the whole text as reasoning if parse fails
             data = {
                 counterDraft: "See reasoning below.",
-                reasoning: textResponse
+                reasoning: cleanResponse
             };
         }
 
