@@ -35,6 +35,8 @@ import { SecurityFeed } from "@/components/dashboard/security-feed";
 import { generateExecutiveReport } from "@/lib/export-utils";
 import { DecisionConsole } from '@/components/governance/decision-console';
 import { DataSourceConnector } from '@/components/dashboard/data-source-connector';
+import { VulnerabilityFeed } from "@/components/dashboard/vulnerability-feed";
+import { RemediationVelocity } from "@/components/dashboard/remediation-velocity";
 
 // Metric Card Component
 function MetricCard({
@@ -312,6 +314,12 @@ export default function DashboardPage() {
           trendValue="-5%"
           status="success"
         />
+      </section>
+
+      {/* Live Telemetry */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[350px]">
+        <RemediationVelocity />
+        <VulnerabilityFeed />
       </section>
 
       {/* Main Content Grid */}

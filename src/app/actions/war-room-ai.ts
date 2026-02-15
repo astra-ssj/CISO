@@ -1,6 +1,6 @@
 "use server";
 
-import { generativeModel, isAIConfigured } from '@/lib/ai/engine';
+import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
 
 export interface WarRoomResult {
     success: boolean;
@@ -41,9 +41,9 @@ export async function consultCommandCenter(
         Format your response in Markdown. Use bolding for key actions.`;
 
         // 3. Call AI
-        const chat = generativeModel.startChat({
-            history: [
-                { role: 'user', parts: [{ text: systemPrompt }] },
+        const chatSession = getAIProvider().createChatSession(
+            systemPrompt,
+            [
                 { role: 'model', parts: [{ text: "Acknowledged. War Room initialized. Awaiting sitrep." }] },
                 // simple history mapping
                 ...history.slice(-6).map((msg: any) => ({
@@ -51,10 +51,9 @@ export async function consultCommandCenter(
                     parts: [{ text: msg.content }]
                 }))
             ]
-        });
+        );
 
-        const result = await chat.sendMessage(message);
-        const responseText = result.response.text();
+        const responseText = await chatSession.sendMessage(message);
 
         return {
             success: true,

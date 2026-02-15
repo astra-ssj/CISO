@@ -1,6 +1,6 @@
 "use server";
 
-import { generativeModel, isAIConfigured } from '@/lib/ai/engine';
+import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
 
 // --- Type Definitions ---
 export interface AIResult {
@@ -20,8 +20,7 @@ export async function analyzeThreatBatchAction(events: any[]): Promise<AIResult>
         Task: You are a CISO. Summarize these security events into 2 concise sentences for an executive briefing. Focus on the most critical risks.
         `;
 
-        const result = await generativeModel.generateContent(prompt);
-        let content = result.response.text() || "No content generated.";
+        const content = await getAIProvider().generateContent(prompt) || "No content generated.";
 
         return { success: true, content: content };
     } catch (e: any) {
@@ -41,8 +40,7 @@ export async function generateRemediationPlanAction(threatId: string, descriptio
         Format as clear code blocks.
         `;
 
-        const result = await generativeModel.generateContent(prompt);
-        let content = result.response.text() || "";
+        const content = await getAIProvider().generateContent(prompt) || "";
 
         return { success: true, content: content };
     } catch (e: any) {
@@ -68,8 +66,7 @@ export async function draftPolicyAction(topic: string, specificRequirements?: st
         Keep it professional and concise.
         `;
 
-        const result = await generativeModel.generateContent(prompt);
-        let content = result.response.text() || "";
+        const content = await getAIProvider().generateContent(prompt) || "";
 
         return { success: true, content: content };
     } catch (e: any) {

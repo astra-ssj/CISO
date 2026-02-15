@@ -1,0 +1,33 @@
+
+> astra@0.1.0 dev
+> next dev
+
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/jaolikars/package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * /Users/jaolikars/Documents/AI test projects /AntiGravity apps/CISO/package-lock.json
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.250:3000
+- Environments: .env.local
+
+✓ Starting...
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+✓ Ready in 670ms
+⚠ Cross origin request detected from 127.0.0.1 to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+(node:31647) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+ GET /help 200 in 458ms (compile: 277ms, proxy.ts: 29ms, render: 152ms)
+ GET /login 200 in 97ms (compile: 76ms, proxy.ts: 7ms, render: 14ms)
+ GET / 200 in 58ms (compile: 20ms, proxy.ts: 1859µs, render: 37ms)
+ GET / 200 in 22ms (compile: 3ms, proxy.ts: 2ms, render: 17ms)
+[ASTRA CORE] AI Provider Selected: ANTHROPIC
+ POST /api/agent/chat 200 in 1312ms (compile: 95ms, proxy.ts: 6ms, render: 1211ms)
+[ASTRA CORE] AI Provider Selected: ANTHROPIC
+ POST /api/agent/chat 200 in 3.6s (compile: 3ms, proxy.ts: 5ms, render: 3.6s)
+[ASTRA CORE] AI Provider Selected: ANTHROPIC
+ POST /api/agent/chat 200 in 3.6s (compile: 3ms, proxy.ts: 4ms, render: 3.6s)

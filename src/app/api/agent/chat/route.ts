@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { generativeModel } from '@/lib/ai/engine';
+import { getAIProvider } from '@/lib/ai/engine';
 
 // System Prompt Definition
 const ASTRA_SYSTEM_PROMPT = `You are ASTRA (Authorized Security & Threat Response Agent), an advanced CISO AI assistant.
@@ -56,35 +56,29 @@ export async function POST(request: NextRequest) {
 - **Active Threats**: ${context?.activeThreats || 0}
 `;
 
-        // Using Ax AI
-        // Initialize Google Chat Session
+        // Initialize Chat Session via Unified Factory
         let chatHistory = history.map((msg: any) => ({
             role: msg.role === 'assistant' ? 'model' : 'user',
             parts: [{ text: msg.content }]
         }));
 
-        // Remove leading model messages if passing history directly (though here we prepend system prompt, so check subsequent history)
+        // Remove leading model messages if passing history directly
         if (chatHistory.length > 0 && chatHistory[0].role === 'model') {
             chatHistory = chatHistory.slice(1);
         }
 
-        const chat = generativeModel.startChat({
-            history: [
-                { role: 'user', parts: [{ text: ASTRA_SYSTEM_PROMPT }] },
-                { role: 'model', parts: [{ text: "Understood. I am Astra, ready to assist." }] },
-                ...chatHistory
-            ]
-        });
+        const provider = getAIProvider();
+        const chatSession = provider.createChatSession(ASTRA_SYSTEM_PROMPT, chatHistory);
 
-        // Send User Message with Context
         // Send User Message with Context (with Retry)
         const { runWithRetry } = await import('@/lib/ai/utils');
 
         const result = await runWithRetry(async () => {
-            return await chat.sendMessage(message + contextBlock);
+            // Unified interface returns string directly, not an object with .response.text()
+            return await chatSession.sendMessage(message + contextBlock);
         });
 
-        const responseText = result.response.text();
+        const responseText = result; // result is already string
 
         let finalContent = responseText;
 
@@ -102,11 +96,12 @@ export async function POST(request: NextRequest) {
 
                     // Simple follow-up using the same chat session
                     const followUpResult = await runWithRetry(async () => {
-                        return await chat.sendMessage(
+                        // Unified interface returns string directly
+                        return await chatSession.sendMessage(
                             `Tool Output: ${toolResult}\n\nIntepret this output and give me the bottom line.`
                         );
                     });
-                    finalContent += followUpResult.response.text();
+                    finalContent += followUpResult;
                 }
             }
         } catch (e) {
@@ -118,6 +113,8 @@ export async function POST(request: NextRequest) {
             content: finalContent,
             toolExecution
         });
+
+
 
     } catch (error: any) {
         console.error("Chat API Error:", error);
