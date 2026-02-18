@@ -1,151 +1,338 @@
-# Low-Level Design (LLD) - Astra CISO
+# Low-Level Design (LLD) — Astra CISO Platform
 
-## 1. Directory Structure & Modules
+**Version**: 2.0  
+**Date**: February 18, 2026
 
-The codebase follows a modular Next.js App Router structure.
+---
+
+## 1. Directory Structure
 
 ```
 src/
 ├── app/
-│   ├── (dashboard)/        # Protected routes (shell, navigation)
-│   ├── api/agent/          # AI Agent endpoints
-│   ├── layout.tsx          # Root layout
-│   └── page.tsx            # Landing/Auth page
+│   ├── (dashboard)/              # Protected dashboard routes (22 pages)
+│   │   ├── page.tsx              # Main command center
+│   │   ├── executive-brief/      # Board-ready executive dashboard
+│   │   ├── strategy/             # Strategy alignment + Defense Matrix
+│   │   ├── kpis/                 # KPI dashboard with file import
+│   │   ├── projects/             # OKR & project tracking
+│   │   ├── decisions/            # AI-assisted decision engine
+│   │   ├── risk/                 # Risk register (FAIR model)
+│   │   ├── governance/           # Policy governance + evidence vault
+│   │   ├── policies/             # Policy editor with Kanban
+│   │   ├── incidents/            # Incident timeline + war room
+│   │   ├── wargames/             # War games + AI + scenario builder
+│   │   ├── intelligence/         # Threat intel + ransomware monitoring
+│   │   ├── vendors/              # Vendor risk + CAIQ automation
+│   │   ├── tickets/              # Jira-integrated ticketing
+│   │   ├── budget/               # Budget & financial planning
+│   │   ├── reporting/            # Board deck generation
+│   │   ├── appsec/               # Application security posture
+│   │   ├── infrastructure/       # Infrastructure overview
+│   │   ├── privacy/              # Privacy controls
+│   │   ├── settings/             # Platform config
+│   │   ├── help/                 # Knowledge base
+│   │   └── layout.tsx            # Dashboard shell wrapper
+│   ├── api/
+│   │   ├── agent/                # AI agent routes (chat, wargame, policy, analyze)
+│   │   ├── auth/login/           # Authentication
+│   │   ├── intelligence/osint/   # OSINT intelligence
+│   │   ├── jira/                 # Jira integration proxy
+│   │   ├── kpi-upload/           # File upload + KPI extraction
+│   │   ├── notebook/chat/        # Notebook AI conversations
+│   │   ├── security/             # Audit + scan routes
+│   │   ├── vendors/caiq/         # CSA CAIQ automation
+│   │   └── integrations/trivy/   # Vulnerability scanning
+│   ├── actions/                  # Server actions (ai-ops, legal-ai, war-room-ai)
+│   ├── login/                    # Login page
+│   ├── globals.css               # Global styles + design tokens
+│   └── layout.tsx                # Root layout
 ├── components/
-│   ├── active-defense/     # Remediation modals, defensive UI
-│   ├── dashboard/          # Charts, KPI cards
-│   ├── federated/          # Global threat pulse
-│   ├── layout/             # Sidebar, Shell, Header
-│   ├── nexus/              # Nexus Graph visualization
-│   └── policies/           # Policy editor, Kanban, Graph
+│   ├── layout/                   # Shell, sidebar, navigation
+│   ├── dashboard/                # Posture gauge, vuln feed, threat map
+│   ├── executive/                # Investment heatmap, top risks, velocity gauge
+│   ├── strategy/                 # KPI row, OKR card, uploader, matrix
+│   ├── decisions/                # Decision card component
+│   ├── governance/               # Evidence vault
+│   ├── incidents/                # Incident timeline
+│   ├── intelligence/             # MITRE matrix, threat ticker, ransomware stats
+│   ├── nexus/                    # Infrastructure topology graph
+│   ├── notifications/            # Notification center
+│   ├── policies/                 # Policy editor, Kanban, dependency graph
+│   ├── reporting/                # Board deck generator, export button
+│   ├── risk/                     # Risk cards and visualizations
+│   ├── security/                 # Audit log viewer
+│   ├── visualizations/           # Access graph, traffic flow
+│   ├── ui/                       # Shadcn/ui primitives (Button, Card, Badge, etc.)
+│   └── war-room/                 # War room chat components
 ├── lib/
-│   ├── ai/                 # Ax Engine configuration
-│   └── stores/             # Zustand state stores
+│   ├── ai/                       # AI engine, OSINT, verification
+│   ├── auth/                     # RBAC, audit, session management
+│   ├── caiq/                     # CAIQ answer engine + knowledge base
+│   ├── connectors/               # GitHub connector
+│   ├── decision-engine/          # Decision types + routing logic
+│   ├── jira/                     # Jira connector, store, templates
+│   ├── kpi-engine/               # KPI computation, extraction, uploaded store
+│   ├── risk-engine/              # FAIR quantitative model
+│   ├── logging/                  # Sentinel logger
+│   ├── trivy/                    # Vulnerability scanner wrapper
+│   ├── store.ts                  # Main Zustand store
+│   ├── governance.ts             # Governance data & logic
+│   ├── compliance-frameworks.ts  # Framework control definitions
+│   ├── vendor-risk-store.ts      # Vendor risk Zustand store
+│   ├── risk-register-store.ts    # Risk register Zustand store
+│   ├── notification-store.ts     # Notifications Zustand store
+│   ├── okr-project-store.ts      # OKR/project tracking store
+│   ├── evidence-store.ts         # Evidence vault store
+│   ├── posture-score.ts          # Security posture calculator
+│   └── ...                       # Additional engines and utilities
+├── stores/                       # Legacy store location
+├── types/                        # TypeScript type definitions
+└── middleware.ts                 # Auth middleware (route protection)
 ```
 
-## 2. API Specifications (Backend)
+---
 
-All AI interaction happens via Next.js API Routes.
+## 2. API Specifications
 
-### 2.1 Chat Agent (`src/app/api/agent/chat`)
+### 2.1 AI Agent Routes
 
-- **Method**: POST
+#### POST `/api/agent/chat`
+
 - **Input**: `{ message: string, history: Message[], context?: string }`
-- **Output**: JSON (containing AI response text)
-- **Logic**:
-  1. Validates auth session.
-  2. Constructs `chatPrompt` with system instructions.
-  3. Appends user context (if provided).
-  4. Calls `ax.chat()` with `maxTokens: 1000`.
-  5. Returns response.
+- **Output**: `{ response: string, type: 'text' | 'structured' }`
+- **Logic**: Constructs CISO persona prompt → AI engine inference → parsed response
+- **Fallback**: Returns graceful error message if AI provider unavailable
 
-#### Sequence Diagram: Chat Request
+#### POST `/api/agent/wargame`
+
+- **Input**: `{ turnId: string, playerAction: string, currentGameState: State }`
+- **Output**: `{ narrative: string, metricsDelta: { budget, trust, morale } }`
+- **Logic**: Injects Red Team persona → evaluates player action → generates outcome
+
+#### POST `/api/agent/generate-policy`
+
+- **Input**: `{ title: string, type: string, strictness: 'high' | 'medium' | 'low' }`
+- **Output**: `{ content: string }` (markdown policy draft)
+
+#### POST `/api/agent/analyze-policy`
+
+- **Input**: `{ policyId: string, framework?: string }`
+- **Output**: `{ gaps: Gap[], recommendations: string[], score: number }`
+
+### 2.2 Integration Routes
+
+#### POST `/api/kpi-upload`
+
+- **Input**: `multipart/form-data` with `.pptx` or `.docx` file
+- **Output**: `{ kpis: ExtractedKPI[], kpiCount: number, extractedText: string }`
+- **Flow**: File → temp disk with extension → OfficeParser AST → `.toText()` → regex extractor
 
 ```mermaid
 sequenceDiagram
-    participant C as Client (UI)
-    participant API as API Route (/chat)
-    participant E as AxEngine
-    participant LLM as LLM Provider (Ollama/OpenAI)
+    participant C as Client
+    participant API as /api/kpi-upload
+    participant FS as Temp File System
+    participant OP as OfficeParser
+    participant EX as KPI Extractor
 
-    C->>API: POST /api/agent/chat {message}
-    activate API
-    API->>API: Validate Session
-    API->>E: ax.chat(prompt)
-    activate E
-    E->>E: Select Provider (Local/Cloud)
-    E->>LLM: Completion Request
-    activate LLM
-    LLM-->>E: Stream/Response
-    deactivate LLM
-    E-->>API: Parsed Response
-    deactivate E
-    API-->>C: JSON Response
-    deactivate API
+    C->>API: POST multipart/form-data (.pptx)
+    API->>FS: Write buffer to temp file
+    API->>OP: parseOffice(tempPath)
+    OP-->>API: AST result
+    API->>API: ast.toText()
+    API->>EX: extractKPIsFromText(text)
+    EX-->>API: ExtractedKPI[]
+    API->>FS: Delete temp file
+    API-->>C: JSON { kpis, kpiCount }
 ```
 
-### 2.2 Wargame Agent (`src/app/api/agent/wargame`)
+#### GET/POST `/api/jira`
 
-- **Method**: POST
-- **Input**: `{ turnId: string, playerAction: string, currentGameState: State }`
-- **Output**: JSON `{ narrative: string, metricsDelta: { budget: number, trust: number } }`
-- **Logic**:
-  1. Parses current game state.
-  2. Injects "Red Team" persona into the specific scenario prompt.
-  3. Evaluates player action against scenario logic (using LLM reasoning).
-  4. Generates outcome narrative and calculates metric impacts.
+- **GET**: Tests Jira connection → returns `{ connected: boolean }`
+- **POST**: Creates Jira issue → returns `{ id, key, url }` or falls back to local mode
+- **Auth**: Uses `JIRA_BASE_URL`, `JIRA_API_TOKEN`, `JIRA_EMAIL`, `JIRA_PROJECT_KEY`
 
-### 2.3 Policy Architect (`src/app/api/agent/generate-policy`)
+#### POST `/api/vendors/caiq`
 
-- **Method**: POST
-- **Input**: `{ title: string, type: string, strictness: 'high' | 'medium' | 'low' }`
-- **Output**: Markdown string (The draft policy).
-- **Core Prompt**: "You are an expert Policy Architect. Draft a NIST-compliant...".
+- **Input**: `{ vendorId: string, questionIds?: string[] }`
+- **Output**: `{ answers: CAIQAnswer[], completionRate: number }`
 
-## 3. Component Details (Frontend)
+#### POST `/api/intelligence/osint`
 
-### 3.1 Nexus Graph (`src/components/nexus/nexus-graph.tsx`)
+- **Input**: `{ query: string, sources?: string[] }`
+- **Output**: `{ threats: Threat[], indicators: IOC[], confidence: number }`
 
-- **Purpose**: Visualizes infrastructure topology and risks.
-- **State**:
-  - `nodes`: Array of business units, apps, and infra.
-  - `viewMode`: 'business' (logical) vs 'network' (traffic).
-  - `selectedNode`: Currently inspected entity.
-- **Rendering**:
-  - Uses SVG for connections (`<path>` elements).
-  - Uses `framer-motion` for node positioning and animations.
-  - **Defensive Coding**: Implements `(nodes || []).map` to prevent hydration errors.
+---
 
-### 3.2 Visual Policy Mapper (`src/components/policies/visual-mapper.tsx`)
+## 3. Core Data Models
 
-- **Purpose**: Shows how a single policy maps to frameworks (NIST/ISO) and technical controls.
-- **Logic**:
-  - Filters `policies` store by ID.
-  - flattens `policy.mappings` into a 3-tier hierarchy (Policy -> Framework -> Control).
-  - Renders as a directed graph.
-
-## 4. Data Models (TypeScript Interfaces)
-
-### 4.1 Policy
+### 3.1 KPI (Key Performance Indicator)
 
 ```typescript
-interface Policy {
-  id: string;
-  title: string;
-  status: 'draft' | 'active' | 'archived';
-  version: string;
-  lastUpdated: string;
-  author: string;
-  content: string; // Markdown
-  tags: string[];
-  dependencies: string[]; // IDs of other policies
+interface KPI {
+    id: string;
+    name: string;
+    value: number;
+    target: number;
+    unit: string;
+    category: 'RISK' | 'COMPLIANCE' | 'INCIDENT' | 'VULNERABILITY' |
+              'VENDOR' | 'PEOPLE' | 'BUDGET' | 'POSTURE';
+    health: 'GREEN' | 'AMBER' | 'RED';
+    trend: 'IMPROVING' | 'STABLE' | 'DECLINING';
+    benchmarkPercentile?: number;
+    sparklineData?: number[];
 }
 ```
 
-### 4.2 AI Configuration
+### 3.2 Jira Ticket Template
 
 ```typescript
-interface AxAIConfig {
-  name: 'ollama' | 'openai';
-  apiKey: string;
-  config: {
-    model: string;
-  };
+interface TicketTemplate {
+    id: string;
+    title: string;
+    category: 'incident' | 'risk' | 'infrastructure' | 'vendor' | 'strategic';
+    description: string;     // Markdown
+    priority: 'Critical' | 'High' | 'Medium' | 'Low';
+    labels: string[];
+    customFields: Record<string, string>;
+    suggestedAssignee: string;
 }
 ```
 
-## 5. AI Engine Internals (`src/lib/ai/engine.ts`)
+### 3.3 Decision
 
-- **Singleton Pattern**: Ensures only one `AxAI` client is instantiated per server process.
-- **Initialization Logic**:
+```typescript
+interface Decision {
+    id: string;
+    title: string;
+    category: string;
+    priority: 'critical' | 'high' | 'medium' | 'low';
+    impact: number;          // 1-100
+    confidence: number;      // 1-100
+    status: 'pending' | 'approved' | 'rejected' | 'deferred';
+    recommendation: string;
+    alternatives: Alternative[];
+}
+```
 
-  ```typescript
-  const USE_OLLAMA = process.env.NEXT_PUBLIC_USE_OLLAMA === 'true';
-  export const ax = new AxAI({
-    name: USE_OLLAMA ? 'ollama' : 'openai',
-    apiKey: USE_OLLAMA ? 'ollama' : process.env.OPENAI_API_KEY!,
-    config: { model: USE_OLLAMA ? 'llama3' : 'gpt-4o' }
-  });
-  ```
+### 3.4 Vendor Risk Assessment
 
-- **Error Handling**: Wraps calls to manage timeout or API unavailability (handled by Ax library, propagated to UI).
+```typescript
+interface VendorRisk {
+    id: string;
+    vendorName: string;
+    riskScore: number;       // 0-100
+    criticality: 'critical' | 'high' | 'medium' | 'low';
+    lastAssessment: string;  // ISO date
+    caiqStatus: 'pending' | 'in-progress' | 'completed';
+    findings: Finding[];
+    complianceStatus: Record<string, boolean>;
+}
+```
+
+### 3.5 RBAC Permission
+
+```typescript
+interface Permission {
+    resource: string;
+    actions: ('read' | 'write' | 'delete' | 'admin')[];
+}
+
+interface Role {
+    name: 'admin' | 'analyst' | 'viewer';
+    permissions: Permission[];
+}
+```
+
+---
+
+## 4. State Management Architecture
+
+All stores use **Zustand** with `persist` middleware for browser localStorage.
+
+```mermaid
+graph TD
+    subgraph "Persisted Stores"
+        MS["Main Store<br/>astra-store"]
+        JS["Jira Store<br/>astra-jira-tickets"]
+        KS["Uploaded KPI Store<br/>astra-uploaded-kpis"]
+        OS["OKR/Project Store<br/>astra-okr-projects"]
+        NS["Notification Store<br/>astra-notifications"]
+        RS["Risk Register<br/>astra-risk-register"]
+        VS["Vendor Risk Store<br/>astra-vendor-risk"]
+        ES["Evidence Store<br/>astra-evidence"]
+    end
+
+    subgraph "Computed (In-Memory)"
+        KE["KPI Engine<br/>computeAllKPIs()"]
+        RE["Risk Engine<br/>calculateFAIR()"]
+        DE["Decision Engine<br/>scoreDecision()"]
+    end
+
+    KE --> MS
+    RE --> RS
+    DE --> MS
+```
+
+---
+
+## 5. Security Middleware Flow
+
+```typescript
+// src/middleware.ts — simplified flow
+export function middleware(request: NextRequest) {
+    const { pathname } = request.nextUrl;
+
+    // 1. Skip public routes (/login, /api/auth/*, /_next/*, static assets)
+    if (isPublicRoute(pathname)) return NextResponse.next();
+
+    // 2. Check authentication cookie
+    const session = request.cookies.get('astra-session');
+    if (!session) return redirect('/login');
+
+    // 3. Validate session token
+    const valid = validateSession(session.value);
+    if (!valid) return redirect('/login');
+
+    // 4. Apply security headers
+    const response = NextResponse.next();
+    response.headers.set('X-Frame-Options', 'DENY');
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+    return response;
+}
+```
+
+---
+
+## 6. AI Engine Configuration
+
+```typescript
+// src/lib/ai/engine.ts — Multi-provider abstraction
+// Supports: Google Gemini, Anthropic Claude, Ollama (local)
+
+// Provider selection priority:
+// 1. GOOGLE_API_KEY → Gemini Pro
+// 2. ANTHROPIC_API_KEY → Claude 3 Haiku
+// 3. NEXT_PUBLIC_USE_OLLAMA → Ollama (Llama3)
+// 4. Fallback → Graceful error with mock/default responses
+```
+
+---
+
+## 7. KPI Extraction Pipeline
+
+```typescript
+// Phase 1: Known patterns (35+ regex)
+// Matches: MTTD, MTTR, compliance %, patch rates, budgets, etc.
+// Confidence: 60-95% based on context specificity
+
+// Phase 2: Generic fallback (if <3 matches)
+// Matches: "Label: Number" or "Number% text" anywhere
+// Confidence: 35% (lower, requires manual review)
+
+// Number extraction handles:
+// $4.2M, $500K, 92%, 4.2 hours, 12 days, plain integers
+```
