@@ -62,18 +62,23 @@ export async function POST(request: NextRequest) {
         const buffer = await file.arrayBuffer();
         console.log(`[CAIQ API] File: ${file.name}, Size: ${buffer.byteLength} bytes, Type: ${file.type}`);
 
-        const questions = parseQuestionnaire(buffer);
+        const questions = await parseQuestionnaire(buffer);
         console.log(`[CAIQ API] Detected ${questions.length} questions`);
 
         if (questions.length === 0) {
             // Log more detail to help debug
-            const XLSX = await import('xlsx');
-            const wb = XLSX.read(buffer, { type: 'array' });
-            const sheetInfo = wb.SheetNames.map(name => {
-                const sheet = wb.Sheets[name];
-                const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-                const colCount = Math.max(0, ...rows.slice(0, 5).map(r => (r ? r.length : 0)));
-                return `"${name}" (${rows.length} rows, ~${colCount} cols)`;
+            const ExcelJS = await import('exceljs');
+            const wb = new ExcelJS.default.Workbook();
+            await wb.xlsx.load(new Uint8Array(buffer) as any);
+            const sheetInfo = wb.worksheets.map(ws => {
+                let rowCount = 0;
+                let maxCols = 0;
+                ws.eachRow({ includeEmpty: false }, (row) => {
+                    rowCount++;
+                    const vals = row.values as any[];
+                    if (vals.length > maxCols) maxCols = vals.length;
+                });
+                return `"${ws.name}" (${rowCount} rows, ~${maxCols} cols)`;
             }).join(', ');
             console.error(`[CAIQ API] No questions found. Sheets: [${sheetInfo}]`);
 
@@ -105,8 +110,8 @@ export async function POST(request: NextRequest) {
         const result = computeResults(answered);
 
         // Step 5: Generate export Excel
-        const exportBuffer = exportToExcel(result);
-        const exportBase64 = Buffer.from(exportBuffer).toString('base64');
+        const exportBuffer = await exportToExcel(result);
+        const exportBase64 = exportBuffer.toString('base64');
 
         return NextResponse.json({
             success: true,

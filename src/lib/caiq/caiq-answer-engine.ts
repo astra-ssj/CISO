@@ -5,7 +5,7 @@
  * and optionally enhances with AI for 80-85% auto-fill coverage.
  */
 
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import {
     CAIQ_KNOWLEDGE_BASE,
     type CAIQEntry,
@@ -45,17 +45,25 @@ export interface CAIQProcessingResult {
  * Robust: scans multiple header rows, tries all sheets, uses
  * text-length heuristics when keyword matching fails.
  */
-export function parseQuestionnaire(buffer: ArrayBuffer): QuestionnaireQuestion[] {
-    const workbook = XLSX.read(buffer, { type: 'array', cellDates: true });
+export async function parseQuestionnaire(buffer: ArrayBuffer): Promise<QuestionnaireQuestion[]> {
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(new Uint8Array(buffer) as any);
 
     // Try each sheet until we find questions
-    for (const sheetName of workbook.SheetNames) {
-        const sheet = workbook.Sheets[sheetName];
-        const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+    for (const worksheet of workbook.worksheets) {
+        const rows: any[][] = [];
+        worksheet.eachRow({ includeEmpty: true }, (row) => {
+            rows.push(row.values as any[]);
+        });
+        // ExcelJS row.values is 1-indexed (index 0 is undefined), normalize
+        const normalizedRows = rows.map(r => {
+            const arr = Array.isArray(r) ? r.slice(1) : [];
+            return arr.map(cell => (cell === null || cell === undefined) ? '' : cell);
+        });
 
-        if (rows.length < 2) continue;
+        if (normalizedRows.length < 2) continue;
 
-        const result = extractQuestionsFromRows(rows);
+        const result = extractQuestionsFromRows(normalizedRows);
         if (result.length > 0) return result;
     }
 
@@ -451,56 +459,61 @@ export function computeResults(questions: AnsweredQuestion[]): CAIQProcessingRes
 /**
  * Export answered questions back to an Excel buffer.
  */
-export function exportToExcel(result: CAIQProcessingResult): ArrayBuffer {
-    const rows = result.questions.map(q => ({
-        'Question ID': q.questionId || '',
-        'Question': q.questionText,
-        'Yes/No': q.yesNo,
-        'Answer': q.answer,
-        'Confidence': q.confidence,
-        'Source': q.source,
-        'Evidence Reference': q.evidenceRef,
-    }));
+export async function exportToExcel(result: CAIQProcessingResult): Promise<Buffer> {
+    const wb = new ExcelJS.Workbook();
 
-    // Add summary sheet
-    const summaryRows = [
-        { 'Metric': 'Total Questions', 'Value': result.totalQuestions },
-        { 'Metric': 'Answered by Knowledge Base', 'Value': result.answeredByKB },
-        { 'Metric': 'Answered by AI', 'Value': result.answeredByAI },
-        { 'Metric': 'Unanswered (Manual Required)', 'Value': result.unanswered },
-        { 'Metric': 'Coverage %', 'Value': `${result.coveragePct}%` },
+    // Answers sheet
+    const wsAnswers = wb.addWorksheet('Answers');
+    wsAnswers.columns = [
+        { header: 'Question ID', key: 'questionId', width: 12 },
+        { header: 'Question', key: 'question', width: 60 },
+        { header: 'Yes/No', key: 'yesNo', width: 8 },
+        { header: 'Answer', key: 'answer', width: 80 },
+        { header: 'Confidence', key: 'confidence', width: 12 },
+        { header: 'Source', key: 'source', width: 15 },
+        { header: 'Evidence Reference', key: 'evidence', width: 40 },
     ];
+    result.questions.forEach(q => {
+        wsAnswers.addRow({
+            questionId: q.questionId || '',
+            question: q.questionText,
+            yesNo: q.yesNo,
+            answer: q.answer,
+            confidence: q.confidence,
+            source: q.source || '',
+            evidence: q.evidenceRef || '',
+        });
+    });
 
-    const wb = XLSX.utils.book_new();
-
-    const wsAnswers = XLSX.utils.json_to_sheet(rows);
-    // Set column widths
-    wsAnswers['!cols'] = [
-        { wch: 12 }, // Question ID
-        { wch: 60 }, // Question
-        { wch: 8 },  // Yes/No
-        { wch: 80 }, // Answer
-        { wch: 12 }, // Confidence
-        { wch: 15 }, // Source
-        { wch: 40 }, // Evidence
+    // Summary sheet
+    const wsSummary = wb.addWorksheet('Summary');
+    wsSummary.columns = [
+        { header: 'Metric', key: 'metric', width: 30 },
+        { header: 'Value', key: 'value', width: 15 },
     ];
-    XLSX.utils.book_append_sheet(wb, wsAnswers, 'Answers');
-
-    const wsSummary = XLSX.utils.json_to_sheet(summaryRows);
-    wsSummary['!cols'] = [{ wch: 30 }, { wch: 15 }];
-    XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+    wsSummary.addRow({ metric: 'Total Questions', value: result.totalQuestions });
+    wsSummary.addRow({ metric: 'Answered by Knowledge Base', value: result.answeredByKB });
+    wsSummary.addRow({ metric: 'Answered by AI', value: result.answeredByAI });
+    wsSummary.addRow({ metric: 'Unanswered (Manual Required)', value: result.unanswered });
+    wsSummary.addRow({ metric: 'Coverage %', value: `${result.coveragePct}%` });
 
     // Domain breakdown sheet
-    const domainRows = Object.entries(result.domainBreakdown).map(([domain, data]) => ({
-        'Domain': domain,
-        'Total Questions': data.total,
-        'Answered': data.answered,
-        'Coverage %': `${data.pct}%`,
-    }));
-    const wsDomains = XLSX.utils.json_to_sheet(domainRows);
-    wsDomains['!cols'] = [{ wch: 40 }, { wch: 15 }, { wch: 12 }, { wch: 12 }];
-    XLSX.utils.book_append_sheet(wb, wsDomains, 'Domain Breakdown');
+    const wsDomains = wb.addWorksheet('Domain Breakdown');
+    wsDomains.columns = [
+        { header: 'Domain', key: 'domain', width: 40 },
+        { header: 'Total Questions', key: 'total', width: 15 },
+        { header: 'Answered', key: 'answered', width: 12 },
+        { header: 'Coverage %', key: 'coverage', width: 12 },
+    ];
+    Object.entries(result.domainBreakdown).forEach(([domain, data]) => {
+        wsDomains.addRow({
+            domain,
+            total: data.total,
+            answered: data.answered,
+            coverage: `${data.pct}%`,
+        });
+    });
 
-    const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    return buf;
+    const buf = await wb.xlsx.writeBuffer();
+    return Buffer.from(buf);
 }
