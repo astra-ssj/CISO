@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { generatePolicyAsync } from '@/lib/intelligence-engine';
-import { ax, isAIReady } from '@/lib/ai/ax-engine';
+import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
 
 export async function POST(request: Request) {
     try {
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
         }
 
         const safeTopic = topic.slice(0, 100).replace(/[<>]/g, "");
-        const isReady = await isAIReady();
+        const isReady = isAIConfigured();
         const isRealProvider = isReady && useRealAI !== false;
 
         if (isRealProvider) {
@@ -33,20 +33,8 @@ Include the following sections:
 
 Format as a professional policy document.`;
 
-            // Use Ax Chat for generation
-            const response = await ax.chat({
-                chatPrompt: [
-                    { role: 'system', content: 'You are a Policy Drafting Expert.' },
-                    { role: 'user', content: prompt }
-                ]
-            }, { stream: false });
-
-            // Handle output type safely
-            const chatResponse = response as any;
-            const rawContent = chatResponse.results?.[0]?.content;
-            const content = rawContent || "No content generated.";
-
-            let modelName = "llama3";
+            const provider = getAIProvider();
+            const content = await provider.generateContent(prompt);
 
             return NextResponse.json({
                 title: `${safeTopic} Policy`,
@@ -58,8 +46,8 @@ Format as a professional policy document.`;
                     { id: 's1', title: 'AI-Generated Policy', content: content }
                 ],
                 mappings: [],
-                provider: 'AX (Llama 3)',
-                model: modelName
+                provider: process.env.AI_PROVIDER || 'GEMINI',
+                model: 'ai-policy-generator'
             });
         }
 

@@ -1,28 +1,56 @@
 import { NextResponse } from 'next/server';
-import { loginUser } from '@/lib/auth';
+import { createSession } from '@/lib/auth/session';
+import { logAction } from '@/lib/auth/audit';
+import { UserProfile, UserRole } from '@/lib/auth/rbac';
 
 export async function POST(request: Request) {
     try {
         const body = await request.json();
         const { username, password } = body;
 
-        // In a real app, check against a DB.
-        // For this architecture, we check against secure server-side env vars.
-        const ADMIN_USER = process.env.ADMIN_USER || 'admin';
-        const ADMIN_PASS = process.env.ADMIN_PASS || 'password';
+        // Mock User Database for Demo
+        let user: UserProfile | null = null;
 
-        const isValid = (username === ADMIN_USER && password === ADMIN_PASS) ||
-            (username === 'root' && password === 'toor');
+        if (username === 'ciso@astra.ai' && password === 'admin123') {
+            user = {
+                id: 'u-ciso-001',
+                email: 'ciso@astra.ai',
+                name: 'System Administrator',
+                role: 'CISO',
+                lastLogin: new Date().toISOString()
+            };
+        } else if (username === 'analyst@astra.ai' && password === 'user123') {
+            user = {
+                id: 'u-sec-002',
+                email: 'analyst@astra.ai',
+                name: 'Security Analyst',
+                role: 'SEC_ENGINEER', // Correct role mapping
+                lastLogin: new Date().toISOString()
+            };
+        } else if (username === 'auditor@astra.ai') {
+            user = {
+                id: 'u-audit-003',
+                email: 'auditor@astra.ai',
+                name: 'External Auditor',
+                role: 'AUDITOR',
+                lastLogin: new Date().toISOString()
+            };
+        }
 
-        if (!isValid) {
+        if (!user) {
             return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
         }
 
-        // Create Session
-        await loginUser({ username, role: 'admin' });
+        // 1. Create Secure Session
+        await createSession(user);
 
-        return NextResponse.json({ success: true });
+        // 2. Audit Log
+        const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
+        await logAction(user, 'LOGIN', 'User logged in successfully', { ip });
+
+        return NextResponse.json({ success: true, user });
+
     } catch (error) {
-        return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

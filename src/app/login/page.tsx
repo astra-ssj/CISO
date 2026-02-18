@@ -145,6 +145,16 @@ export default function LoginPage() {
                                     </span>
                                 </Button>
 
+                                <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-white/10">
+                                    <button type="button" onClick={() => { setUsername('ciso@astra.ai'); setPassword('admin123'); }} className="text-[10px] text-zinc-500 hover:text-primary transition-colors text-left">
+                                        &gt; Load CISO Profile
+                                    </button>
+                                    <button type="button" onClick={() => { setUsername('analyst@astra.ai'); setPassword('user123'); }} className="text-[10px] text-zinc-500 hover:text-primary transition-colors text-right">
+                                        &gt; Load Analyst Profile
+                                    </button>
+                                </div>
+
+
                                 <div className="text-[10px] text-center text-muted-foreground opacity-50">
                                     Contact System Administrator for Access Keys
                                 </div>

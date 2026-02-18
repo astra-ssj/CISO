@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
+import { IncidentTimeline, DEMO_TIMELINE, DEMO_SLA } from "@/components/incidents/incident-timeline";
 
 export default function IncidentsPage() {
     const { playbooks, startPlaybook, activePlaybookId, resolvePlaybook, createPlaybook } = usePlaybookStore();
@@ -131,6 +132,13 @@ export default function IncidentsPage() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Incident Timeline — Last Incident */}
+            <IncidentTimeline
+                events={DEMO_TIMELINE}
+                sla={DEMO_SLA}
+                incidentTitle="Brute Force Attack on Admin Portal"
+            />
 
             <h2 className="text-xl font-semibold mt-4 flex items-center gap-2">
                 <FileText className="h-5 w-5 text-primary" />

@@ -8,7 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { BrainCircuit, Upload, FileText, CheckCircle2, AlertTriangle, ShieldAlert, Zap, Target, TrendingUp, Plus, Lightbulb, Map } from "lucide-react";
+import { BrainCircuit, Upload, FileText, CheckCircle2, AlertTriangle, ShieldAlert, Zap, Target, TrendingUp, Plus, Lightbulb, Map, Globe, Loader2, Crosshair, Users, Shield } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { COMPLIANCE_FRAMEWORKS, FrameworkID } from "@/lib/compliance-frameworks";
 import { analyzePolicy, AnalysisResult } from "@/lib/policy-engine";
 import { useAppSecStore } from '@/lib/appsec-store';
@@ -18,6 +20,7 @@ import { MitreMatrix } from "@/components/intelligence/mitre-matrix";
 
 import { SecurityEventsFeed } from "@/components/intelligence/security-events-feed";
 import { SystemHealthWidget } from "@/components/intelligence/system-health";
+import type { ThreatBrief } from "@/lib/ai/osint-engine";
 
 interface StrategicInitiative {
     id: string;
@@ -41,6 +44,33 @@ export default function IntelligencePage() {
     const { playbooks } = usePlaybookStore();
     const [adoptedInitiatives, setAdoptedInitiatives] = useState<string[]>([]);
     const { signals } = useAstraStore();
+
+    // OSINT State
+    const [osintIndustry, setOsintIndustry] = useState("Financial Services");
+    const [osintRegion, setOsintRegion] = useState("Global");
+    const [osintFocus, setOsintFocus] = useState("");
+    const [osintBrief, setOsintBrief] = useState<ThreatBrief | null>(null);
+    const [osintLoading, setOsintLoading] = useState(false);
+    const [osintError, setOsintError] = useState("");
+
+    const handleGenerateBrief = async () => {
+        setOsintLoading(true);
+        setOsintError("");
+        try {
+            const res = await fetch("/api/intelligence/osint", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ industry: osintIndustry, region: osintRegion, focusAreas: osintFocus }),
+            });
+            if (!res.ok) throw new Error("Failed to generate brief");
+            const data = await res.json();
+            setOsintBrief(data);
+        } catch (e: any) {
+            setOsintError(e.message || "Unknown error");
+        } finally {
+            setOsintLoading(false);
+        }
+    };
 
     const toggleFramework = (id: FrameworkID) => {
         setSelectedFrameworks(prev =>
@@ -161,8 +191,9 @@ export default function IntelligencePage() {
             </div>
 
             <Tabs defaultValue="threats" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
+                <TabsList className="grid w-full grid-cols-4 lg:w-[800px]">
                     <TabsTrigger value="threats">Live Operations</TabsTrigger>
+                    <TabsTrigger value="osint">AI Threat Brief</TabsTrigger>
                     <TabsTrigger value="strategy">Strategic Planning</TabsTrigger>
                     <TabsTrigger value="policy">Policy Analysis</TabsTrigger>
                 </TabsList>
@@ -183,6 +214,190 @@ export default function IntelligencePage() {
 
                     {/* MITRE Matrix */}
                     <MitreMatrix />
+                </TabsContent>
+
+                {/* TAB: AI OSINT THREAT BRIEF */}
+                <TabsContent value="osint" className="mt-6 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Input Form */}
+                        <div className="md:col-span-1 space-y-4">
+                            <Card className="bg-card/40 border-primary/20">
+                                <CardHeader>
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <Globe className="h-5 w-5 text-cyan-400" />
+                                        Generate Threat Brief
+                                    </CardTitle>
+                                    <CardDescription>AI-powered threat landscape analysis using Anthropic/Gemini</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="osint-industry">Industry Sector</Label>
+                                        <select
+                                            id="osint-industry"
+                                            value={osintIndustry}
+                                            onChange={e => setOsintIndustry(e.target.value)}
+                                            className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm"
+                                        >
+                                            <option value="Financial Services">Financial Services</option>
+                                            <option value="Healthcare">Healthcare</option>
+                                            <option value="Technology">Technology</option>
+                                            <option value="Manufacturing">Manufacturing</option>
+                                            <option value="Retail">Retail</option>
+                                            <option value="Government">Government</option>
+                                            <option value="Energy">Energy & Utilities</option>
+                                            <option value="Education">Education</option>
+                                            <option value="Telecommunications">Telecommunications</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="osint-region">Region</Label>
+                                        <select
+                                            id="osint-region"
+                                            value={osintRegion}
+                                            onChange={e => setOsintRegion(e.target.value)}
+                                            className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm"
+                                        >
+                                            <option value="Global">Global</option>
+                                            <option value="North America">North America</option>
+                                            <option value="Europe (EMEA)">Europe (EMEA)</option>
+                                            <option value="Asia-Pacific">Asia-Pacific</option>
+                                            <option value="Middle East">Middle East</option>
+                                            <option value="Latin America">Latin America</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="osint-focus">Focus Areas (optional)</Label>
+                                        <Textarea
+                                            id="osint-focus"
+                                            placeholder="e.g. Ransomware, supply chain attacks, cloud security..."
+                                            value={osintFocus}
+                                            onChange={e => setOsintFocus(e.target.value)}
+                                            className="min-h-[60px]"
+                                        />
+                                    </div>
+                                    <Button
+                                        onClick={handleGenerateBrief}
+                                        disabled={osintLoading}
+                                        className="w-full"
+                                    >
+                                        {osintLoading ? (
+                                            <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Analyzing...</>
+                                        ) : (
+                                            <><BrainCircuit className="h-4 w-4 mr-2" /> Generate Threat Brief</>
+                                        )}
+                                    </Button>
+                                    {osintError && (
+                                        <p className="text-xs text-red-400">{osintError}</p>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* Results */}
+                        <div className="md:col-span-2">
+                            {!osintBrief ? (
+                                <div className="h-full flex flex-col items-center justify-center p-12 border border-dashed border-border/30 rounded-xl bg-card/10">
+                                    <Globe className="h-16 w-16 mb-4 opacity-20 text-muted-foreground" />
+                                    <h3 className="text-xl font-semibold text-muted-foreground mb-2">Threat Intelligence Ready</h3>
+                                    <p className="text-center max-w-md text-muted-foreground">Select your industry and region to generate an AI-powered threat landscape analysis with threat actors, TTPs, and MITRE ATT&CK mappings.</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
+                                    {/* Brief Header */}
+                                    <Card className="border-primary/30 bg-card/40">
+                                        <CardContent className="p-4">
+                                            <div className="flex items-start justify-between mb-3">
+                                                <div>
+                                                    <Badge variant="outline" className="mb-1 border-cyan-500/30 text-cyan-400">AI Generated</Badge>
+                                                    <h3 className="text-lg font-bold">Threat Landscape: {osintBrief.industry} — {osintBrief.region}</h3>
+                                                </div>
+                                                <span className={`text-xs font-bold px-2 py-1 rounded-full ${osintBrief.overallRiskLevel === 'critical' ? 'bg-red-500/10 text-red-400' :
+                                                        osintBrief.overallRiskLevel === 'high' ? 'bg-amber-500/10 text-amber-400' :
+                                                            'bg-blue-500/10 text-blue-400'
+                                                    }`}>
+                                                    {osintBrief.overallRiskLevel.toUpperCase()} RISK
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-muted-foreground">{osintBrief.summary}</p>
+                                            <div className="flex gap-4 mt-3 text-xs text-muted-foreground">
+                                                <span>Confidence: {osintBrief.confidence}%</span>
+                                                <span>Generated: {new Date(osintBrief.generatedAt).toLocaleString()}</span>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+
+                                    {/* Top Threats */}
+                                    <div className="space-y-2">
+                                        <h4 className="text-sm font-semibold flex items-center gap-2"><Crosshair className="h-4 w-4 text-red-400" /> Top Threats</h4>
+                                        {osintBrief.topThreats.map((threat, i) => (
+                                            <Card key={i} className="bg-card/30">
+                                                <CardContent className="p-3">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${threat.severity === 'critical' ? 'bg-red-500/10 text-red-400' :
+                                                                threat.severity === 'high' ? 'bg-amber-500/10 text-amber-400' :
+                                                                    'bg-blue-500/10 text-blue-400'
+                                                            }`}>{threat.severity}</span>
+                                                        <span className="text-sm font-medium">{threat.threat}</span>
+                                                    </div>
+                                                    <p className="text-xs text-muted-foreground mb-2">{threat.description}</p>
+                                                    <div className="flex flex-wrap gap-1 mb-1">
+                                                        {threat.mitreTechniques.map(t => (
+                                                            <span key={t} className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 font-mono">{t}</span>
+                                                        ))}
+                                                    </div>
+                                                    <div className="text-[10px] text-zinc-500">
+                                                        Mitigations: {threat.mitigations.join(" • ")}
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </div>
+
+                                    {/* Threat Actors */}
+                                    <div className="space-y-2">
+                                        <h4 className="text-sm font-semibold flex items-center gap-2"><Users className="h-4 w-4 text-amber-400" /> Threat Actors</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                            {osintBrief.threatActors.map((actor, i) => (
+                                                <Card key={i} className="bg-card/20">
+                                                    <CardContent className="p-3">
+                                                        <div className="flex items-center justify-between mb-1">
+                                                            <span className="text-sm font-medium">{actor.name}</span>
+                                                            <Badge variant="outline" className="text-[9px]">{actor.sophistication}</Badge>
+                                                        </div>
+                                                        <p className="text-xs text-muted-foreground mb-1">{actor.motivation}</p>
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {actor.targetSectors.map(s => (
+                                                                <span key={s} className="text-[9px] px-1 py-0.5 rounded bg-zinc-800 text-zinc-400">{s}</span>
+                                                            ))}
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Recommendations */}
+                                    <Card className="bg-card/20 border-emerald-500/20">
+                                        <CardHeader className="pb-2">
+                                            <CardTitle className="text-sm flex items-center gap-2">
+                                                <Shield className="h-4 w-4 text-emerald-400" /> Strategic Recommendations
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <ul className="space-y-2">
+                                                {osintBrief.recommendations.map((rec, i) => (
+                                                    <li key={i} className="flex items-start gap-2 text-xs">
+                                                        <CheckCircle2 className="h-3 w-3 text-emerald-400 mt-0.5 shrink-0" />
+                                                        <span className="text-muted-foreground">{rec}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </TabsContent>
 
                 {/* TAB: STRATEGIC PLANNING */}

@@ -1,129 +1,225 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import { ExecutiveBriefLayout } from "@/components/executive/executive-brief-layout";
-import { TopRisksCard, RiskItem } from "@/components/executive/top-risks-card";
-import { InvestmentHeatmap } from "@/components/executive/investment-heatmap";
-import { RevenueVelocityGauge, VelocityMetric } from "@/components/executive/revenue-velocity-gauge";
-import { StrategyPyramid, StrategyLevel } from "@/components/strategy/strategy-pyramid";
+import { useDecisionStore } from "@/lib/decision-engine/router";
+import { computeAllKPIs, KPI_CATEGORY_META, HEALTH_META } from "@/lib/kpi-engine/kpi-engine";
+import { useOKRProjectStore } from "@/lib/okr-project-store";
+import { PILLAR_META, URGENCY_META, Decision } from "@/lib/decision-engine/types";
+import {
+    ShieldAlert, TrendingUp, TrendingDown, Minus, Target,
+    AlertTriangle, CheckCircle, BarChart3, DollarSign,
+    ArrowUpRight, Zap, Clock
+} from "lucide-react";
 
-// Fallback Mock Data (Standard CISO Risks)
-const FALLBACK_RISKS: RiskItem[] = [
-    {
-        id: "1",
-        businessRisk: "Q3 European Expansion Delay",
-        technicalRootCause: "GDPR Compliance Gap in Legacy Customer DB",
-        trend: "up",
-        severity: "critical",
-        owner: "J. Smith (Legal/Eng)"
-    }
-];
+// ─── Sparkline mini-chart ───────────────────────────────────────
+function Sparkline({ data, color = "#10b981" }: { data: number[]; color?: string }) {
+    if (!data || data.length < 2) return null;
+    const min = Math.min(...data);
+    const max = Math.max(...data);
+    const range = max - min || 1;
+    const w = 80, h = 24;
+    const points = data.map((v, i) =>
+        `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * h}`
+    ).join(" ");
+    return (
+        <svg width={w} height={h} className="opacity-80">
+            <polyline points={points} fill="none" stroke={color} strokeWidth="1.5" />
+        </svg>
+    );
+}
 
-const MOCK_INVESTMENTS = [
-    { id: "1", category: "Legacy Firewall Maint.", spend: 85, riskReduction: 10, actualSpend: "$2.5M" }, // Over-investing
-    { id: "2", category: "Endpoint Protection", spend: 75, riskReduction: 85, actualSpend: "$2.1M" }, // Strategic
-    { id: "3", category: "Security Awareness", spend: 20, riskReduction: 30, actualSpend: "$400k" }, // Transactional
-    { id: "4", category: "Automated Patching", spend: 30, riskReduction: 80, actualSpend: "$800k" }, // Efficient
-    { id: "5", category: "Consulting Retainer", spend: 60, riskReduction: 40, actualSpend: "$1.5M" }, // Questionable
-];
-
-const MOCK_VELOCITY: VelocityMetric[] = [
-    { id: "1", processName: "New Vendor Onboarding", delay: "+12 Days", impact: "high", status: "blocked" },
-    { id: "2", processName: "DevOps Release Cycle", delay: "+4 Hours", impact: "low", status: "optimized" },
-    { id: "3", processName: "Remote Access Provisioning", delay: "+2 Days", impact: "medium", status: "slow" },
-    { id: "4", processName: "Cloud Resource Approval", delay: "+5 Days", impact: "medium", status: "slow" },
-];
-
+// ─── Executive Brief Page ───────────────────────────────────────
 export default function ExecutiveBriefPage() {
-    const [strategyLevel, setStrategyLevel] = useState<StrategyLevel>('kpi');
-    const [risks, setRisks] = useState<RiskItem[]>(FALLBACK_RISKS);
-    const [isLoading, setIsLoading] = useState(true);
+    const kpis = useMemo(() => computeAllKPIs(), []);
+    const { decisions, getStats } = useDecisionStore();
+    const { objectives, projects, getOverallOKRHealth } = useOKRProjectStore();
+    const stats = getStats();
 
-    useEffect(() => {
-        async function fetchTrivyData() {
-            try {
-                const res = await fetch('/api/integrations/trivy');
-                const data = await res.json();
+    // Derived data
+    const postureKPI = kpis.find(k => k.id === "kpi-posture-overall");
+    const postureScore = postureKPI?.value ?? 74;
 
-                if (data.Results) {
-                    const adaptedRisks = adaptTrivyToRisks(data);
-                    setRisks(adaptedRisks);
-                }
-            } catch (error) {
-                console.error("Failed to fetch Trivy data:", error);
-                // Keep fallback data
-            } finally {
-                setIsLoading(false);
-            }
-        }
+    const criticalDecisions = decisions
+        .filter(d => d.status === "PENDING" && (d.urgency === "CRITICAL" || d.urgency === "HIGH"))
+        .slice(0, 5);
 
-        fetchTrivyData();
-    }, []);
+    const spotlightKPIs = kpis.filter(k =>
+        ["kpi-risk-ale", "kpi-compliance-score", "kpi-incident-mttr", "kpi-vuln-patch", "kpi-budget-util", "kpi-posture-overall"]
+            .includes(k.id)
+    );
 
-    const getSummaryText = () => {
-        if (strategyLevel === 'okr') return "Strategic Alignment Analysis: Risks detected in critical dependencies.";
-        if (strategyLevel === 'kpi') return "Tactical Execution: Velocity Impacted by Vendor Onboarding delays.";
-        return "Operational Metrics: Supply Chain hygiene requires attention.";
-    };
+    const okrHealth = getOverallOKRHealth();
+    const okrHealthPct = objectives.length > 0 ? Math.round((okrHealth.onTrack / objectives.length) * 100) : 0;
+    const totalBudget = projects.reduce((s, p) => s + p.budgetAllocated, 0);
+    const spentBudget = projects.reduce((s, p) => s + p.budgetSpent, 0);
+    const budgetPct = totalBudget > 0 ? Math.round((spentBudget / totalBudget) * 100) : 0;
+
+    const trendIcon = (t: string) =>
+        t === "improving" ? <TrendingUp className="w-3 h-3 text-emerald-400" /> :
+            t === "declining" ? <TrendingDown className="w-3 h-3 text-red-400" /> :
+                <Minus className="w-3 h-3 text-zinc-500" />;
 
     return (
         <ExecutiveBriefLayout>
             <div className="flex flex-col gap-8 pb-20">
-                {/* Dynamic Briefing Header */}
-                <div className="border-l-2 border-emerald-500 pl-4 py-1">
-                    <div className="text-[10px] font-mono text-emerald-500 uppercase tracking-widest mb-1">
-                        Live Executive Summary
-                    </div>
-                    <p className="text-xl md:text-2xl font-light text-zinc-100">
-                        {getSummaryText()}
-                    </p>
+
+                {/* ── Hero Stats Row ── */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <HeroStat
+                        label="Security Posture"
+                        value={`${postureScore}%`}
+                        color={postureScore >= 80 ? "emerald" : postureScore >= 60 ? "amber" : "red"}
+                        sub="Composite score across all domains"
+                    />
+                    <HeroStat
+                        label="Pending Decisions"
+                        value={stats.pending.toString()}
+                        color={stats.pending > 3 ? "red" : stats.pending > 0 ? "amber" : "emerald"}
+                        sub={`${stats.avgConfidence}% avg AI confidence`}
+                    />
+                    <HeroStat
+                        label="OKR Health"
+                        value={`${okrHealthPct}%`}
+                        color={okrHealthPct >= 70 ? "emerald" : okrHealthPct >= 50 ? "amber" : "red"}
+                        sub={`${objectives.length} objectives tracked`}
+                    />
+                    <HeroStat
+                        label="Budget Utilization"
+                        value={`${budgetPct}%`}
+                        color={budgetPct > 90 ? "red" : budgetPct > 70 ? "amber" : "emerald"}
+                        sub={`$${(spentBudget / 1000).toFixed(0)}k / $${(totalBudget / 1000).toFixed(0)}k`}
+                    />
                 </div>
 
-                {/* The Command Surface */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 min-h-[600px]">
+                {/* ── Main Grid ── */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-                    {/* Column 1: Strategy Pyramid (The Controller) - Span 5 */}
-                    <div className="lg:col-span-5 relative flex flex-col">
-                        <div className="absolute top-0 right-0 z-10">
-                            <span className="text-[10px] text-zinc-500 font-mono">[INTERACTIVE MODEL]</span>
-                        </div>
-                        <div className="flex-1 rounded-2xl bg-gradient-to-b from-zinc-900/50 to-black border border-zinc-800/50 relative overflow-hidden">
-                            {/* Ambient Glow */}
-                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-emerald-500/10 blur-[100px] pointer-events-none" />
+                    {/* Column 1: Top Risks / Decisions — 5 cols */}
+                    <div className="lg:col-span-5 space-y-6">
+                        <SectionHeader icon={<AlertTriangle className="w-4 h-4 text-red-400" />} title="Critical Decisions Requiring Action" />
 
-                            <StrategyPyramid
-                                selectedLevel={strategyLevel}
-                                onSelectLevel={setStrategyLevel}
-                                counts={{ okr: 3, kpi: 12, metric: 48 }}
-                            />
-                        </div>
-                        <div className="mt-4 text-center">
-                            <p className="text-xs text-zinc-500 uppercase tracking-widest">
-                                Select a layer to filter intelligence
-                            </p>
+                        {criticalDecisions.length === 0 ? (
+                            <div className="text-center py-8 text-zinc-500 text-sm border border-dashed border-zinc-800 rounded-lg">
+                                <CheckCircle className="w-8 h-8 mx-auto mb-2 text-emerald-500/30" />
+                                No critical decisions pending
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {criticalDecisions.map(d => (
+                                    <RiskRow key={d.id} decision={d} />
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="pt-4 border-t border-zinc-800/50">
+                            <SectionHeader icon={<Target className="w-4 h-4 text-blue-400" />} title="Objective Progress" />
+                            <div className="space-y-3 mt-3">
+                                {objectives.map(obj => {
+                                    const progress = obj.keyResults.length > 0
+                                        ? Math.round(obj.keyResults.reduce((s, kr) => s + kr.currentValue / kr.targetValue * 100, 0) / obj.keyResults.length)
+                                        : 0;
+                                    return (
+                                        <div key={obj.id} className="p-3 rounded-lg bg-zinc-900/50 border border-zinc-800/50">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="text-sm font-medium text-zinc-200 truncate">{obj.title}</span>
+                                                <span className={`text-xs font-bold ${progress >= 70 ? "text-emerald-400" : progress >= 40 ? "text-amber-400" : "text-red-400"}`}>
+                                                    {progress}%
+                                                </span>
+                                            </div>
+                                            <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                                                <div
+                                                    className={`h-full rounded-full transition-all ${progress >= 70 ? "bg-emerald-500" : progress >= 40 ? "bg-amber-500" : "bg-red-500"}`}
+                                                    style={{ width: `${Math.min(progress, 100)}%` }}
+                                                />
+                                            </div>
+                                            <div className="flex gap-2 mt-2">
+                                                {obj.keyResults.slice(0, 3).map(kr => (
+                                                    <span key={kr.id} className="text-[10px] text-zinc-500 truncate">
+                                                        {kr.title}: {kr.currentValue}/{kr.targetValue}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
 
-                    {/* Column 2: Intelligence Stream (Risks & Velocity) - Span 4 */}
-                    <div className="lg:col-span-4 flex flex-col gap-8 border-l border-zinc-800/50 pl-0 lg:pl-8">
-                        {/* Top Risks */}
-                        <div className="flex-1 min-h-[300px]">
-                            {isLoading ? (
-                                <div className="text-xs text-zinc-500 animate-pulse">Scanning environment...</div>
-                            ) : (
-                                <TopRisksCard risks={risks} strategyLevel={strategyLevel} />
-                            )}
-                        </div>
+                    {/* Column 2: KPI Spotlight — 4 cols */}
+                    <div className="lg:col-span-4 space-y-4 lg:border-l lg:border-zinc-800/50 lg:pl-6">
+                        <SectionHeader icon={<BarChart3 className="w-4 h-4 text-cyan-400" />} title="KPI Spotlight" />
 
-                        {/* Velocity */}
-                        <div className="flex-1 min-h-[250px] border-t border-zinc-800/50 pt-8">
-                            <RevenueVelocityGauge metrics={MOCK_VELOCITY} />
-                        </div>
+                        {spotlightKPIs.map(kpi => (
+                            <div key={kpi.id} className="p-3 rounded-lg bg-zinc-900/30 border border-zinc-800/50 hover:border-zinc-700/50 transition-colors">
+                                <div className="flex items-center justify-between mb-1">
+                                    <span className="text-xs text-zinc-400">{kpi.name}</span>
+                                    <div className="flex items-center gap-1">
+                                        {trendIcon(kpi.trend)}
+                                        <span className={`text-[10px] font-mono ${kpi.health === "GREEN" ? "text-emerald-400" : kpi.health === "AMBER" ? "text-amber-400" : "text-red-400"}`}>
+                                            {HEALTH_META[kpi.health]?.label || kpi.health}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="flex items-end justify-between">
+                                    <div>
+                                        <span className="text-xl font-bold text-white">{kpi.value}</span>
+                                        <span className="text-xs text-zinc-500 ml-1">{kpi.unit}</span>
+                                        <span className="text-xs text-zinc-600 ml-2">target: {kpi.target}</span>
+                                    </div>
+                                    <Sparkline
+                                        data={kpi.sparkline}
+                                        color={kpi.health === "GREEN" ? "#10b981" : kpi.health === "AMBER" ? "#f59e0b" : "#ef4444"}
+                                    />
+                                </div>
+                                {kpi.boardTranslation && (
+                                    <div className="mt-2 text-[10px] text-zinc-500 italic border-t border-zinc-800/30 pt-1">
+                                        📋 Board: {kpi.boardTranslation}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
                     </div>
 
-                    {/* Column 3: Capital Efficiency (Investments) - Span 3 */}
-                    <div className="lg:col-span-3 border-l border-zinc-800/50 pl-0 lg:pl-8 h-full">
-                        <InvestmentHeatmap items={MOCK_INVESTMENTS} />
+                    {/* Column 3: Program & Budget — 3 cols */}
+                    <div className="lg:col-span-3 space-y-4 lg:border-l lg:border-zinc-800/50 lg:pl-6">
+                        <SectionHeader icon={<DollarSign className="w-4 h-4 text-amber-400" />} title="Program Health" />
+
+                        {projects.map(proj => {
+                            const pct = proj.budgetAllocated > 0
+                                ? Math.round((proj.budgetSpent / proj.budgetAllocated) * 100)
+                                : 0;
+                            const isOver = pct > 85;
+                            return (
+                                <div key={proj.id} className="p-3 rounded-lg bg-zinc-900/30 border border-zinc-800/50">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-xs font-medium text-zinc-300 truncate">{proj.title}</span>
+                                        <span className={`text-[10px] px-1.5 py-0.5 rounded ${proj.status === "IN_PROGRESS" ? "bg-blue-500/10 text-blue-400" : "bg-zinc-700/30 text-zinc-500"}`}>
+                                            {proj.status}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-xs mb-1">
+                                        <span className="text-zinc-500">Budget: ${(proj.budgetSpent / 1000).toFixed(0)}k / ${(proj.budgetAllocated / 1000).toFixed(0)}k</span>
+                                        <span className={isOver ? "text-red-400 font-bold" : "text-zinc-400"}>{pct}%</span>
+                                    </div>
+                                    <div className="h-1 bg-zinc-800 rounded-full overflow-hidden">
+                                        <div className={`h-full rounded-full ${isOver ? "bg-red-500" : "bg-blue-500"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                                    </div>
+                                </div>
+                            );
+                        })}
+
+                        {/* Decision Stats */}
+                        <div className="pt-4 border-t border-zinc-800/50">
+                            <SectionHeader icon={<Zap className="w-4 h-4 text-amber-400" />} title="Decision Velocity" />
+                            <div className="grid grid-cols-2 gap-3 mt-3">
+                                <MiniStat label="Total" value={stats.total} />
+                                <MiniStat label="Pending" value={stats.pending} highlight={stats.pending > 0} />
+                                <MiniStat label="Approved" value={stats.approved} />
+                                <MiniStat label="Avg Confidence" value={`${stats.avgConfidence}%`} />
+                            </div>
+                        </div>
                     </div>
 
                 </div>
@@ -132,31 +228,60 @@ export default function ExecutiveBriefPage() {
     );
 }
 
-// Adapter: Converts Trivy JSON to Executive Brief Risk Format
-function adaptTrivyToRisks(trivyData: any): RiskItem[] {
-    const risks: RiskItem[] = [];
+// ─── Sub-components ─────────────────────────────────────────────
 
-    // Safety check
-    if (!trivyData?.Results) return [];
+function HeroStat({ label, value, color, sub }: { label: string; value: string; color: "emerald" | "amber" | "red"; sub: string }) {
+    const colors = {
+        emerald: "from-emerald-500/10 to-transparent border-emerald-500/20 text-emerald-400",
+        amber: "from-amber-500/10 to-transparent border-amber-500/20 text-amber-400",
+        red: "from-red-500/10 to-transparent border-red-500/20 text-red-400",
+    };
+    return (
+        <div className={`p-4 rounded-xl bg-gradient-to-br ${colors[color]} border`}>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">{label}</div>
+            <div className={`text-3xl font-bold ${color === "emerald" ? "text-emerald-400" : color === "amber" ? "text-amber-400" : "text-red-400"}`}>
+                {value}
+            </div>
+            <div className="text-xs text-zinc-500 mt-1">{sub}</div>
+        </div>
+    );
+}
 
-    trivyData.Results.forEach((result: any, index: number) => {
-        if (result.Vulnerabilities) {
-            result.Vulnerabilities.forEach((vuln: any, vIndex: number) => {
-                risks.push({
-                    id: `${index}-${vIndex}`,
-                    // Transform "CVE-2023-..." into Business Language
-                    businessRisk: `Vulnerable Dependency: ${vuln.PkgName}`,
-                    technicalRootCause: `${vuln.VulnerabilityID}: ${vuln.Title || 'Unknown Issue'}`,
-                    trend: Math.random() > 0.5 ? "up" : "stable", // Simulated trend for now
-                    severity: (vuln.Severity || "medium").toLowerCase() as any,
-                    owner: "AppSec Team"
-                });
-            });
-        }
-    });
+function SectionHeader({ icon, title }: { icon: React.ReactNode; title: string }) {
+    return (
+        <div className="flex items-center gap-2">
+            {icon}
+            <h3 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider">{title}</h3>
+        </div>
+    );
+}
 
-    // Provide default if empty
-    if (risks.length === 0) return FALLBACK_RISKS;
+function RiskRow({ decision }: { decision: Decision }) {
+    const pillar = PILLAR_META[decision.pillar];
+    const urgency = URGENCY_META[decision.urgency];
+    return (
+        <div className={`p-3 rounded-lg border-l-2 bg-zinc-900/50 border border-zinc-800/50`} style={{ borderLeftColor: urgency.color }}>
+            <div className="flex items-center gap-2 mb-1">
+                <span className="text-sm">{pillar.icon}</span>
+                <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded`} style={{ color: urgency.color, backgroundColor: `${urgency.color}15` }}>
+                    {decision.urgency}
+                </span>
+                <span className="text-xs text-zinc-500 ml-auto flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {new Date(decision.createdAt).toLocaleDateString()}
+                </span>
+            </div>
+            <div className="text-sm font-medium text-zinc-200">{decision.title}</div>
+            <div className="text-xs text-zinc-500 mt-1">{decision.recommendation.summary}</div>
+        </div>
+    );
+}
 
-    return risks;
+function MiniStat({ label, value, highlight }: { label: string; value: string | number; highlight?: boolean }) {
+    return (
+        <div className="p-2 rounded bg-zinc-900/30 border border-zinc-800/30 text-center">
+            <div className={`text-lg font-bold ${highlight ? "text-amber-400" : "text-white"}`}>{value}</div>
+            <div className="text-[10px] text-zinc-500">{label}</div>
+        </div>
+    );
 }

@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export type RiskLevel = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
-export type ComplianceStandard = 'ISO_27001' | 'NIST_CSF' | 'SOC2' | 'GDPR';
+export type ComplianceStandard = 'ISO_27001' | 'NIST_CSF' | 'SOC2' | 'GDPR' | 'NIS2' | 'EU_AI_ACT';
 
 export interface DecisionRequest {
     id: string;

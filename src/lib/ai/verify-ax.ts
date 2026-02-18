@@ -1,38 +1,17 @@
-
-import { ax } from './ax-engine';
+import { getAIProvider, isAIConfigured } from './engine';
 
 async function main() {
-    console.log("Testing Ax + Ollama Connection...");
+    console.log("Testing AI Provider Connection...");
+    console.log("Configured:", isAIConfigured());
+    console.log("Provider:", process.env.AI_PROVIDER || 'GEMINI (default)');
+
     try {
-        const response = await ax.chat({
-            chatPrompt: [
-                { role: 'system', content: 'You are a test assistant.' },
-                { role: 'user', content: 'Say hello!' }
-            ]
-        }, { stream: false });
-
-        console.log("Response Type:", typeof response);
-        // console.log("Keys:", Object.keys(response));
-        // console.log("Full JSON:", JSON.stringify(response, null, 2));
-
-        // Inspect deeply
-        console.dir(response, { depth: null });
-
-        // Check if it's a stream
-        if ((response as any).result) {
-            console.log("Has .result found");
-            console.log((response as any).result);
-        }
-        if ((response as any).results) {
-            console.log("Has .results found");
-            console.log((response as any).results);
-        }
-
-        const casted = response as any;
-        console.log("Extracted Content:", casted.results?.[0]?.content);
-
+        const provider = getAIProvider();
+        const response = await provider.generateContent("Say hello in one sentence.");
+        console.log("Response:", response);
+        console.log("✅ AI Provider is working correctly!");
     } catch (e) {
-        console.error("Error:", e);
+        console.error("❌ Error:", e);
     }
 }
 
