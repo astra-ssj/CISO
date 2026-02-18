@@ -32,7 +32,13 @@ import {
     EyeOff,
     HelpCircle,
     Settings,
-    Target
+    Target,
+    Building2,
+    Bell,
+    BarChart3,
+    FolderKanban,
+    Zap,
+    TicketCheck
 } from 'lucide-react';
 import { useAstraStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -40,18 +46,24 @@ import { ChatInterface } from '@/components/ui/chat-interface';
 import { ThemeSwitcher } from '@/components/ui/theme-switcher';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { GlobalThreatPulse } from '@/components/federated/global-threat-pulse';
+import { NotificationCenter } from '@/components/notifications/notification-center';
 
 const navItems = [
     { name: 'Command Center', href: '/', icon: LayoutDashboard },
+    { name: 'Decision Center', href: '/decisions', icon: Zap },
+    { name: 'KPI Dashboard', href: '/kpis', icon: BarChart3 },
+    { name: 'Program Tracker', href: '/projects', icon: FolderKanban },
     { name: 'Executive Brief', href: '/executive-brief', icon: Presentation },
     { name: 'Strategy & OKRs', href: '/strategy', icon: Target },
     { name: 'Defense Matrix', href: '/strategy/matrix', icon: Shield },
     { name: 'Threat Intelligence', href: '/intelligence', icon: BrainCircuit },
     { name: 'Policy Engine', href: '/policies', icon: ScrollText },
     { name: 'Governance & Risk', href: '/governance', icon: FileText },
+    { name: 'Vendor Risk', href: '/vendors', icon: Building2 },
     { name: 'Incidents', href: '/incidents', icon: Siren },
     { name: 'AppSec Dashboard', href: '/appsec', icon: Shield },
     { name: 'Wargames', href: '/wargames', icon: Gamepad2 },
+    { name: 'Tickets', href: '/tickets', icon: TicketCheck },
     { name: 'Reporting', href: '/reporting', icon: FileBarChart },
     { name: 'Settings', href: '/settings', icon: Settings },
     { name: 'Help Center', href: '/help', icon: HelpCircle },
@@ -256,6 +268,10 @@ export function Shell({ children }: { children: React.ReactNode }) {
                             <div className="h-5 w-px bg-border mx-1 hidden md:block" />
 
                             <ThemeSwitcher />
+
+                            <div className="h-5 w-px bg-border mx-1" />
+
+                            <NotificationCenter />
 
                             <div className="h-5 w-px bg-border mx-1" />
 

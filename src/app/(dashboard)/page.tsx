@@ -1,5 +1,6 @@
 "use client";
-import { useState } from 'react';
+
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Activity,
@@ -14,7 +15,11 @@ import {
   TrendingUp,
   TrendingDown,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  Zap,
+  BrainCircuit,
+  BarChart3,
+  FolderKanban
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -32,11 +37,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { SecurityFeed } from "@/components/dashboard/security-feed";
-import { generateExecutiveReport } from "@/lib/export-utils";
 import { DecisionConsole } from '@/components/governance/decision-console';
 import { DataSourceConnector } from '@/components/dashboard/data-source-connector';
 import { VulnerabilityFeed } from "@/components/dashboard/vulnerability-feed";
 import { RemediationVelocity } from "@/components/dashboard/remediation-velocity";
+import { BoardReportExport } from "@/components/reporting/board-export-btn";
+import { TrafficFlow } from "@/components/visualizations/traffic-flow";
+import { GitHubConnector } from "@/lib/connectors/github";
+import { PostureGauge } from "@/components/dashboard/posture-gauge";
+import { BoardDeckGenerator } from "@/components/reporting/board-deck-generator";
+import { useDecisionStore } from '@/lib/decision-engine/router';
+import { DecisionCard } from '@/components/decisions/decision-card';
 
 // Metric Card Component
 function MetricCard({
@@ -157,6 +168,8 @@ function QuickActionCard({
 
 export default function DashboardPage() {
   const { complianceScore, activeThreats, decisionQueue, systemStatus, addDecisionRequest } = useAstraStore();
+  const v2Decisions = useDecisionStore(s => s.decisions);
+  const v2Pending = useMemo(() => v2Decisions.filter(d => d.status === 'PENDING'), [v2Decisions]);
 
   // Protocol Dialog State
   const [isProtocolOpen, setIsProtocolOpen] = useState(false);
@@ -166,23 +179,37 @@ export default function DashboardPage() {
   // Decision Console State
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
 
+  // Real Data State
+  const [trafficData, setTrafficData] = useState<any>(null); // Using any for simplicity in demo
+  const [githubStats, setGithubStats] = useState<any>(null);
+
+  useEffect(() => {
+    // Simulate fetching real data from GitHub Connector
+    const fetchData = async () => {
+      const gh = new GitHubConnector();
+      const stats = await gh.getStats();
+      setGithubStats(stats);
+
+      // Transform for traffic flow (simulated logic)
+      // In reality, this would map repo traffic or API calls
+      setTrafficData({
+        nodes: [
+          { id: 'internet', label: 'Public Internet', type: 'internet', x: 10, y: 50, status: 'active' },
+          { id: 'waf', label: 'Cloudflare WAF', type: 'security', x: 30, y: 50, status: 'active' }, // Real brand name
+          { id: 'lb', label: 'K8s Ingress', type: 'security', x: 45, y: 50, status: 'active' },
+          { id: 'app-1', label: 'GraphQL Gateway', type: 'app', x: 65, y: 30, status: 'active' },
+          { id: 'app-2', label: 'Auth Service', type: 'app', x: 65, y: 70, status: 'active' },
+          { id: 'db-primary', label: 'Postgres Primary', type: 'data', x: 85, y: 30, status: 'active' },
+          { id: 'db-cache', label: 'Redis Cluster', type: 'data', x: 85, y: 70, status: 'active' }
+        ]
+      });
+    };
+    fetchData();
+  }, []);
+
+
   const pendingDecisions = decisionQueue.filter(d => d.status === 'PENDING');
   const statusColor = systemStatus === 'NOMINAL' ? 'text-emerald-500' : 'text-red-500';
-
-  const handleDownloadReport = () => {
-    generateExecutiveReport({
-      date: new Date().toLocaleString(),
-      complianceScore: complianceScore,
-      activeRisks: 3,
-      openIncidents: activeThreats,
-      vendorRiskScore: 68,
-      topRisks: [
-        { title: "Supply Chain Attack via NPM", severity: "Critical" },
-        { title: "Legacy VPN Vulnerabilities", severity: "High" },
-        { title: "Shadow AI Usage", severity: "High" }
-      ]
-    });
-  };
 
   const handleSubmitProtocol = () => {
     if (!protocolTitle || !protocolDesc) return;
@@ -220,15 +247,7 @@ export default function DashboardPage() {
         <div className="flex gap-2">
           <DataSourceConnector />
 
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9"
-            onClick={handleDownloadReport}
-          >
-            <FileDown className="h-4 w-4 mr-2" />
-            Export Report
-          </Button>
+          <BoardReportExport />
 
           <Dialog open={isProtocolOpen} onOpenChange={setIsProtocolOpen}>
             <DialogTrigger asChild>
@@ -296,9 +315,9 @@ export default function DashboardPage() {
         />
         <MetricCard
           label="Active Threats"
-          value={activeThreats.toString()}
+          value={githubStats ? githubStats.openAlerts.toString() : activeThreats.toString()}
           icon={ShieldCheck}
-          status={activeThreats > 0 ? 'danger' : 'success'}
+          status={(githubStats?.openAlerts || activeThreats) > 0 ? 'danger' : 'success'}
         />
         <MetricCard
           label="Pending Reviews"
@@ -316,105 +335,76 @@ export default function DashboardPage() {
         />
       </section>
 
-      {/* Live Telemetry */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[350px]">
-        <RemediationVelocity />
-        <VulnerabilityFeed />
+      {/* Security Posture & Board Deck */}
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2">
+          <PostureGauge />
+        </div>
+        <BoardDeckGenerator />
       </section>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Quick Actions */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Quick Actions</h2>
-          </div>
+      {/* Live Telemetry & Traffic */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="h-[350px]">
+          <TrafficFlow data={trafficData} />
+        </div>
+        <div className="h-[350px]">
+          <VulnerabilityFeed />
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <QuickActionCard
-              title="War Games"
-              description="Run tabletop exercises and AI simulations"
-              icon={Terminal}
-              href="/wargames"
-              variant="primary"
-            />
-            <QuickActionCard
-              title="Budget Planner"
-              description="Analyze and optimize security spend"
-              icon={DollarSign}
-              href="/budget"
-            />
-            <QuickActionCard
-              title="Policy Engine"
-              description="Review and generate security policies"
-              icon={FileCheck}
-              href="/policies"
-            />
-            <QuickActionCard
-              title="Risk Assessment"
-              description="View governance and compliance status"
-              icon={ShieldQuestion}
-              href="/governance"
-            />
+      {/* Remediation Velocity (Moved down) */}
+      <section className="grid grid-cols-1">
+        <RemediationVelocity />
+      </section>
+
+      {/* Rapid Decisions — powered by v2 Decision Engine */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Zap className="h-5 w-5 text-amber-400" />
+            <h2 className="text-lg font-semibold">Rapid Decisions</h2>
+            {v2Pending.length > 0 && (
+              <span className="text-xs font-medium px-2 py-1 rounded-full bg-amber-500/10 text-amber-500">
+                {v2Pending.length} awaiting
+              </span>
+            )}
           </div>
+          <Link href="/decisions" className="text-xs text-primary hover:underline flex items-center gap-1">
+            View all <BrainCircuit className="h-3 w-3" />
+          </Link>
         </div>
 
-        {/* Security Feed */}
+        {v2Pending.length === 0 ? (
+          <Card className="bg-card/30 border-border/30">
+            <CardContent className="text-center py-8">
+              <ShieldCheck className="h-10 w-10 text-muted-foreground/20 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">All caught up — no pending decisions.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+            {v2Pending.slice(0, 3).map(decision => (
+              <DecisionCard key={decision.id} decision={decision} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Quick Actions + Feed */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-4">
+          <h2 className="text-lg font-semibold">Quick Actions</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <QuickActionCard title="War Games" description="Run tabletop exercises and AI simulations" icon={Terminal} href="/wargames" variant="primary" />
+            <QuickActionCard title="KPI Dashboard" description="20 auto-computed security metrics" icon={BarChart3} href="/kpis" />
+            <QuickActionCard title="Program Tracker" description="OKRs, projects, and budget tracking" icon={FolderKanban} href="/projects" />
+            <QuickActionCard title="Risk Assessment" description="View governance and compliance status" icon={ShieldQuestion} href="/governance" />
+          </div>
+        </div>
         <div className="lg:col-span-1">
           <SecurityFeed />
         </div>
-
-        {/* Pending Decisions */}
-        <Card className="lg:col-span-2 border-border">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold">Rapid Decisions</CardTitle>
-              {pendingDecisions.length > 0 && (
-                <span className="text-xs font-medium px-2 py-1 rounded-full bg-amber-500/10 text-amber-600">
-                  {pendingDecisions.length} pending
-                </span>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            {pendingDecisions.length === 0 ? (
-              <div className="text-center py-12">
-                <ShieldCheck className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">All caught up. No pending decisions.</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {pendingDecisions.map((request) => (
-                  <div
-                    key={request.id}
-                    onClick={() => setSelectedRequestId(request.id)}
-                    className="p-4 rounded-lg border border-border hover:border-primary/30 hover:bg-secondary/30 transition-all cursor-pointer group"
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="text-xs font-mono text-muted-foreground">{request.id}</span>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${request.riskLevel === 'CRITICAL'
-                        ? 'bg-red-500/10 text-red-600'
-                        : request.riskLevel === 'HIGH'
-                          ? 'bg-amber-500/10 text-amber-600'
-                          : 'bg-blue-500/10 text-blue-600'
-                        }`}>
-                        {request.riskLevel}
-                      </span>
-                    </div>
-                    <div className="font-medium text-foreground group-hover:text-primary transition-colors">
-                      {request.title}
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1.5 flex items-center gap-2">
-                      <span>Requester: {request.requester}</span>
-                      <span>•</span>
-                      <span>{new Date(request.timestamp).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
 
       <DecisionConsole

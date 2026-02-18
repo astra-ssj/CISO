@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { ax } from '@/lib/ai/ax-engine';
+import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
 
 export async function POST(req: Request) {
     try {
         const { messages, context } = await req.json();
 
         // 1. Build System Instruction from Context
-        let systemInstruction = `You are Astra, an advanced AI Security Analyst powered by Llama-3 (Local).
+        let systemInstruction = `You are Astra, an advanced AI Security Analyst.
 You are currently assisting the CISO in the "${context.page || 'Unknown'}" module.
 Current Time: ${context.timestamp || new Date().toISOString()}.
 
@@ -15,7 +15,6 @@ PLATFORM CAPABILITIES (Use this for Help/Support):
 - **Strategy Pyramid**: Strategic initiatives are prioritized by AI based on threat signals. You can "Adopt" initiatives to track them.
 - **Policy Engine**: Upload docs to check against ISO/NIST. Uses gap analysis to find missing controls.
 - **Connectivity**: The "Signal Bus" connects modules. A "Critical" alert in Intelligence automatically promotes initiatives in Strategy.
-- **Local AI**: All processing is done locally via Ollama for privacy.
 `;
 
         if (context.selectedNode) {
@@ -31,39 +30,29 @@ PLATFORM CAPABILITIES (Use this for Help/Support):
 
         systemInstruction += `\nBe concise, professional, and actionable. Use markdown for formatting.`;
 
-        // 2. Start Chat Session using Ax
-        // Ax handles the conversation history and prompt construction cleanly.
-        // We create a new chat session for this request (stateless API style or handling history manually)
+        if (!isAIConfigured()) {
+            return NextResponse.json({
+                response: "AI provider is not configured. Please set GOOGLE_API_KEY or ANTHROPIC_API_KEY in your .env.local file."
+            });
+        }
 
-        // Prepare history for Ax (Standard OpenAI/Ax format: { role: 'user'|'assistant', content: string })
-        // Note: The frontend sends 'assistant', Google wanted 'model'. Ax wants 'assistant'.
-        const axHistory = messages.slice(0, -1).map((m: any) => ({
-            role: m.role,
-            content: m.content
+        // 2. Create Chat Session using the unified provider
+        const provider = getAIProvider();
+
+        // Build history for the AI provider
+        const history = messages.slice(0, -1).map((m: any) => ({
+            role: m.role === 'assistant' ? 'model' : m.role,
+            parts: [{ text: m.content }]
         }));
 
         const lastMessage = messages[messages.length - 1];
 
-        // 3. Send Message
-        const response = await ax.chat({
-            chatPrompt: [
-                { role: 'system', content: systemInstruction },
-                ...axHistory,
-                { role: 'user', content: lastMessage.content }
-            ]
-        }, { stream: false });
+        const session = provider.createChatSession(systemInstruction, history);
+        const content = await session.sendMessage(lastMessage.content);
 
-        // 4. Return result
-        // Ax response structure: { results: [{ content: "..." }] }
-        // Type guard or cast since response can be a stream
-        const chatResponse = response as any;
-        const content = chatResponse.results?.[0]?.content;
         return NextResponse.json({
             response: content || "No response generated."
         });
-
-
-
 
     } catch (error: any) {
         console.error("AI Error Details:", error);

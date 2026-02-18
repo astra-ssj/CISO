@@ -464,7 +464,7 @@ export function NexusGraph() {
                                         <span className="text-sm text-zinc-400">Packet Drop Rate</span>
                                         <span className={cn(
                                             "font-mono font-bold",
-                                            getNode(selectedNode)?.networkStats?.dropRate === '0%' ? "text-emerald-500" : "text-red-500"
+                                            getNode(selectedNodeId)?.networkStats?.dropRate === '0%' ? "text-emerald-500" : "text-red-500"
                                         )}>
                                             {getNode(selectedNodeId)?.networkStats?.dropRate}
                                         </span>

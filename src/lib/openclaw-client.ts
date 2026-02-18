@@ -137,20 +137,43 @@ export class OpenClawClient {
 
     /**
      * Agentic Policy Analysis
-     * Simulates scanning a policy against active standards.
+     * Calls real AI-powered API for policy analysis, with graceful fallback.
      */
     async analyzePolicy(policyContent: string, standards: string[]): Promise<{
         riskScore: number;
         gaps: string[];
         recommendations: string[];
+        aiPowered?: boolean;
     }> {
-        await this.delay(2000); // Simulate processing
+        try {
+            const response = await fetch('/api/agent/analyze-policy', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ policyContent, standards })
+            });
 
+            if (response.ok) {
+                const data = await response.json();
+                return {
+                    riskScore: data.score ?? data.riskScore ?? 50,
+                    gaps: data.identifiedGaps?.map((g: any) =>
+                        typeof g === 'string' ? g : `${g.controlId || g.framework}: ${g.description}`
+                    ) || [],
+                    recommendations: data.recommendations || data.strongPoints || [],
+                    aiPowered: data.aiPowered ?? false
+                };
+            }
+
+            console.warn(`[OpenClaw] Policy API returned ${response.status}, using fallback.`);
+        } catch (error) {
+            console.warn('[OpenClaw] Policy API unavailable, using local fallback.', error);
+        }
+
+        // Graceful fallback: local keyword-based analysis
         const gaps: string[] = [];
         const recommendations: string[] = [];
-        let riskScore = 15; // Baseline risk
+        let riskScore = 15;
 
-        // Mock Analysis Logic based on content keywords
         if (!policyContent.toLowerCase().includes('password complexity')) {
             gaps.push('Missing Password Complexity Requirements');
             recommendations.push('Add clause: "Passwords must be 12+ chars with mixed case/symbols"');
@@ -167,11 +190,7 @@ export class OpenClawClient {
             riskScore += 15;
         }
 
-        return {
-            riskScore: Math.min(riskScore, 100),
-            gaps,
-            recommendations
-        };
+        return { riskScore: Math.min(riskScore, 100), gaps, recommendations, aiPowered: false };
     }
 }
 
