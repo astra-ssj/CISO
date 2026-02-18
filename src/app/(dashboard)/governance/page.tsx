@@ -4,10 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDynamicControls, calculateComplianceScore } from "@/lib/governance";
 import { usePolicyStore } from "@/lib/policy-store";
 import { usePlaybookStore } from "@/lib/playbook-store";
-import { CheckCircle, XCircle, FileText, Scale } from "lucide-react";
+import { CheckCircle, XCircle, FileText, Scale, FileUp, Shield } from "lucide-react";
 import { ComplianceHeatmap } from "@/components/governance/compliance-heatmap";
 import { AuditManager } from "@/components/governance/audit-manager";
 import { ContractAnalysis } from "@/components/governance/contract-analysis";
+import { EvidenceVault } from "@/components/governance/evidence-vault";
 import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -40,6 +41,10 @@ export default function GovernancePage() {
                     <TabsTrigger value="compliance" className="gap-2">
                         <FileText className="h-4 w-4" />
                         Compliance Controls
+                    </TabsTrigger>
+                    <TabsTrigger value="evidence" className="gap-2">
+                        <FileUp className="h-4 w-4" />
+                        Evidence Vault
                     </TabsTrigger>
                     <TabsTrigger value="legal" className="gap-2">
                         <Scale className="h-4 w-4" />
@@ -107,6 +112,10 @@ export default function GovernancePage() {
                             </div>
                         </CardContent>
                     </Card>
+                </TabsContent>
+
+                <TabsContent value="evidence" className="space-y-6 animate-fade-in">
+                    <EvidenceVault />
                 </TabsContent>
 
                 <TabsContent value="legal" className="space-y-6 animate-fade-in">
