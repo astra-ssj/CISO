@@ -107,7 +107,7 @@ export function SecurityEventsFeed() {
                             <motion.div
                                 key={evt.id}
                                 initial={{ opacity: 0, x: -20, backgroundColor: "rgba(var(--primary), 0.1)" }}
-                                animate={{ opacity: 1, x: 0, backgroundColor: "transparent" }}
+                                animate={{ opacity: 1, x: 0, backgroundColor: "rgba(var(--primary), 0)" }}
                                 exit={{ opacity: 0 }}
                                 className="grid grid-cols-12 gap-2 p-2 text-[11px] font-mono border-b border-border/50 hover:bg-muted/30 transition-colors items-center"
                             >

@@ -30,7 +30,9 @@ import {
     BookOpen,
     Eye,
     EyeOff,
-    HelpCircle
+    HelpCircle,
+    Settings,
+    Target
 } from 'lucide-react';
 import { useAstraStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -42,6 +44,7 @@ import { GlobalThreatPulse } from '@/components/federated/global-threat-pulse';
 const navItems = [
     { name: 'Command Center', href: '/', icon: LayoutDashboard },
     { name: 'Executive Brief', href: '/executive-brief', icon: Presentation },
+    { name: 'Strategy & OKRs', href: '/strategy', icon: Target },
     { name: 'Defense Matrix', href: '/strategy/matrix', icon: Shield },
     { name: 'Threat Intelligence', href: '/intelligence', icon: BrainCircuit },
     { name: 'Policy Engine', href: '/policies', icon: ScrollText },
@@ -50,6 +53,7 @@ const navItems = [
     { name: 'AppSec Dashboard', href: '/appsec', icon: Shield },
     { name: 'Wargames', href: '/wargames', icon: Gamepad2 },
     { name: 'Reporting', href: '/reporting', icon: FileBarChart },
+    { name: 'Settings', href: '/settings', icon: Settings },
     { name: 'Help Center', href: '/help', icon: HelpCircle },
 ];
 

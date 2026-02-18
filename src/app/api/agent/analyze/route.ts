@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { analyzeRequestAsync } from '@/lib/intelligence-engine';
-import { ax, isAIReady } from '@/lib/ai/ax-engine'; // Use new Ax engine
+import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
 
-// Define expected output shape for Ax
+// Define expected output shape
 interface AnalysisResult {
     riskScore: number;
     riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
@@ -31,13 +31,14 @@ export async function POST(request: Request) {
             );
         }
 
-        // Check if we should use real AI provider
-        const isReady = await isAIReady();
+        // Check availability
+        const isReady = isAIConfigured();
         const isRealProvider = isReady && useRealAI !== false;
 
         if (isRealProvider) {
-            // Use Ax for structured analysis
-            const prompt = `Analyze this security request and provide a risk assessment:
+            const provider = getAIProvider();
+
+            const prompt = `Analyze this security request and provide a risk assessment in JSON format.
 
 **Title**: ${title}
 **Description**: ${description}
@@ -46,50 +47,44 @@ export async function POST(request: Request) {
 Task:
 1. Assign a Risk Score (0-100) and Level.
 2. Identify compliance gaps based on standards.
-3. Recommend actions.`;
+3. Recommend actions.
 
-            // Ax 'run' method roughly equivalent to structured generation
-            // Note: Actual Ax API for structured output might be .json() or similar depending on library version.
-            // Assuming .chat() with instructions or a specific .run() helper. 
-            // If strictly typed output is needed, we often guide Llama 3 via prompt or JSON mode.
-            // Ax usually supports .run<T>(prompt) or similar.
+Output Schema:
+{
+  "riskScore": number,
+  "riskLevel": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
+  "flaggedKeywords": string[],
+  "complianceGaps": string[],
+  "recommendedActions": string[]
+}`;
 
-            // Using standard chat with JSON instruction for Llama 3 (strongest method)
-            const response = await ax.chat({
-                chatPrompt: [
-                    { role: 'system', content: 'You are a Risk Analysis AI. Return JSON only.' },
-                    { role: 'user', content: prompt + "\n\nRespond ONLY with valid JSON matching the schema." }
-                ]
-            }, { stream: false });
-
-            // Allow manual parse or Ax parse
             let analysis: AnalysisResult;
-            const chatResponse = response as any;
-            const content = chatResponse.results?.[0]?.content;
 
             try {
-                // simple parse if response.text is the string
-                analysis = content ? JSON.parse(content) : {
-                    riskScore: 0, riskLevel: 'LOW', flaggedKeywords: [], complianceGaps: [], recommendedActions: ["No content generated"]
-                };
+                analysis = await provider.generateStructuredContent(prompt);
             } catch (e) {
-                // Fallback if JSON is messy (Llama 3 is usually good)
-                console.warn("JSON Parse failed, using default", e);
-                analysis = {
-                    riskScore: 50,
-                    riskLevel: 'MEDIUM',
-                    flaggedKeywords: ['ParseError'],
-                    complianceGaps: [],
-                    recommendedActions: [content || "Analysis complete but unstructured."]
-                };
+                console.error("AI Generation failed, falling back to mock", e);
+                // Silent fallback or error? Let's fallback for robustness
+                const analysisResult = await analyzeRequestAsync(
+                    title,
+                    description,
+                    {
+                        activeStandards: context?.activeStandards || [],
+                        policies: context?.policies || []
+                    }
+                );
+                return NextResponse.json({
+                    ...analysisResult,
+                    provider: 'MOCK (Fallback)',
+                    model: 'intelligence-engine-v1'
+                });
             }
 
             return NextResponse.json({
                 ...analysis,
                 generatedArtifacts: [],
-                provider: 'AX (Llama 3)',
-                model: 'llama3',
-                tokensUsed: 0
+                provider: process.env.AI_PROVIDER || 'GEMINI',
+                model: 'unified-model'
             });
         }
 
@@ -130,10 +125,10 @@ Task:
 export async function GET() {
     return NextResponse.json({
         providers: [
-            { name: 'OLLAMA', available: process.env.NEXT_PUBLIC_USE_OLLAMA === 'true' },
-            { name: 'OPENAI', available: !!process.env.OPENAI_API_KEY }
+            { name: 'GEMINI', available: !!process.env.GOOGLE_API_KEY },
+            { name: 'ANTHROPIC', available: !!process.env.ANTHROPIC_API_KEY }
         ],
-        active: process.env.NEXT_PUBLIC_USE_OLLAMA === 'true' ? 'OLLAMA' : 'OPENAI'
+        active: process.env.AI_PROVIDER || 'GEMINI'
     });
 }
 

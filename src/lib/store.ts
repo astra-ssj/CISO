@@ -27,6 +27,34 @@ export interface DecisionRequest {
     }[];
 }
 
+export interface KeyResult {
+    id: string;
+    description: string;
+    progress: number; // 0-100
+    target: number;
+    current: number;
+    unit: string;
+}
+
+export interface OKR {
+    id: string;
+    title: string;
+    description: string;
+    status: 'ON_TRACK' | 'AT_RISK' | 'OFF_TRACK';
+    progress: number; // Calculated from KRs
+    keyResults: KeyResult[];
+}
+
+export interface KPI {
+    id: string;
+    title: string;
+    value: number;
+    target: number;
+    unit: string;
+    trend: 'up' | 'down' | 'neutral';
+    status: 'success' | 'warning' | 'danger';
+}
+
 import { AgentMessage, openClaw } from './openclaw-client';
 
 export type ChatMessage = AgentMessage;
@@ -41,6 +69,8 @@ interface AstraState {
     activeStandards: ComplianceStandard[];
     decisionQueue: DecisionRequest[];
     chatHistory: ChatMessage[];
+    okrs: OKR[];
+    kpis: KPI[];
 
     // Actions
     addDecisionRequest: (request: Omit<DecisionRequest, 'id' | 'status'>) => void;
@@ -50,6 +80,16 @@ interface AstraState {
     updateComplianceScore: (score: number) => void;
     sendQuery: (query: string) => void;
     clearChat: () => void;
+
+    // Strategy Actions
+    addOKR: (okr: Omit<OKR, 'id' | 'progress'>) => void;
+    updateOKR: (id: string, updates: Partial<OKR>) => void;
+    deleteOKR: (id: string) => void;
+    addKeyResult: (okrId: string, kr: Omit<KeyResult, 'id'>) => void;
+    updateKeyResult: (okrId: string, krId: string, updates: Partial<KeyResult>) => void;
+    addKPI: (kpi: Omit<KPI, 'id'>) => void;
+    updateKPI: (id: string, updates: Partial<KPI>) => void;
+    deleteKPI: (id: string) => void;
     // Auth
     // Auth & RBAC
     currentUser: {
@@ -111,6 +151,79 @@ export const useAstraStore = create<AstraState>()(
                     timestamp: Date.now()
                 }
             ],
+            okrs: [
+                {
+                    id: 'OKR-1',
+                    title: 'Achieve Zero Trust Architecture',
+                    description: 'Implement full ZTA across all critical infrastructure by Q4.',
+                    status: 'ON_TRACK',
+                    progress: 45,
+                    keyResults: [
+                        { id: 'KR-1', description: 'Deploy mTLS to all microservices', progress: 60, current: 60, target: 100, unit: '%' },
+                        { id: 'KR-2', description: 'Enforce device posture checks', progress: 30, current: 300, target: 1000, unit: 'users' }
+                    ]
+                }
+            ],
+            kpis: [
+                { id: 'KPI-1', title: 'Mean Time to Remediation', value: 4.5, target: 4.0, unit: 'hrs', trend: 'down', status: 'warning' },
+                { id: 'KPI-2', title: 'Security Training Coverage', value: 92, target: 95, unit: '%', trend: 'up', status: 'success' },
+                { id: 'KPI-3', title: 'Cloud Misconfigurations', value: 12, target: 0, unit: 'count', trend: 'down', status: 'success' },
+                { id: 'KPI-4', title: 'Vendor Risk Score', value: 68, target: 80, unit: '/100', trend: 'neutral', status: 'warning' },
+            ],
+
+            // OKR Actions
+            addOKR: (okr) => set(state => ({
+                okrs: [...state.okrs, { ...okr, id: `OKR-${Date.now()}`, progress: 0 }]
+            })),
+
+            updateOKR: (id, updates) => set(state => ({
+                okrs: state.okrs.map(o => o.id === id ? { ...o, ...updates } : o)
+            })),
+
+            deleteOKR: (id) => set(state => ({
+                okrs: state.okrs.filter(o => o.id !== id)
+            })),
+
+            addKeyResult: (okrId, kr) => set(state => ({
+                okrs: state.okrs.map(o => {
+                    if (o.id !== okrId) return o;
+                    const newKR = { ...kr, id: `KR-${Date.now()}` };
+                    const updatedKRs = [...o.keyResults, newKR];
+                    // Recalculate progress
+                    const totalProgress = updatedKRs.reduce((acc, k) => acc + k.progress, 0);
+                    return {
+                        ...o,
+                        keyResults: updatedKRs,
+                        progress: Math.round(totalProgress / updatedKRs.length)
+                    };
+                })
+            })),
+
+            updateKeyResult: (okrId, krId, updates) => set(state => ({
+                okrs: state.okrs.map(o => {
+                    if (o.id !== okrId) return o;
+                    const updatedKRs = o.keyResults.map(k => k.id === krId ? { ...k, ...updates } : k);
+                    const totalProgress = updatedKRs.reduce((acc, k) => acc + k.progress, 0);
+                    return {
+                        ...o,
+                        keyResults: updatedKRs,
+                        progress: Math.round(totalProgress / updatedKRs.length)
+                    };
+                })
+            })),
+
+            // KPI Actions
+            addKPI: (kpi) => set(state => ({
+                kpis: [...state.kpis, { ...kpi, id: `KPI-${Date.now()}` }]
+            })),
+
+            updateKPI: (id, updates) => set(state => ({
+                kpis: state.kpis.map(k => k.id === id ? { ...k, ...updates } : k)
+            })),
+
+            deleteKPI: (id) => set(state => ({
+                kpis: state.kpis.filter(k => k.id !== id)
+            })),
 
             addDecisionRequest: (request) => {
                 const id = `REQ-${Date.now()}`;

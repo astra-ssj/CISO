@@ -11,6 +11,7 @@ export interface UnifiedChatSession {
 export interface UnifiedAIProvider {
     createChatSession(systemInstruction: string, history: any[]): UnifiedChatSession;
     generateContent(prompt: string): Promise<string>;
+    generateStructuredContent(prompt: string, schema?: any): Promise<any>;
 }
 
 // ------------------------------------------------------------------
@@ -26,27 +27,10 @@ class GeminiProvider implements UnifiedAIProvider {
     }
 
     createChatSession(systemInstruction: string, history: any[]): UnifiedChatSession {
-        // Map history to Google format
-        // Note: Google's SDK expects { role: 'user' | 'model', parts: [{ text: string }] }
-        // We assume 'history' passed in is already closer to our internal format or generic.
-        // For now, adhering to the existing transformation logic in route.ts, 
-        // but ideally this mapping should happen HERE. 
-        // However, to minimize breakage, we will assume route.ts handles the specific mapping 
-        // OR we adapt here. 
-        // *Decision*: Let's keep route.ts logic for now, but the provider just takes the GenerativeModel.
-
         const model = this.client.getGenerativeModel({
             model: this.modelName,
             systemInstruction
         });
-
-        // We accept pre-formatted history relevant to the specific provider? 
-        // No, the interface implies a generic history. 
-        // For simplicity in this iteration, we will let the route handle the specific history formatting 
-        // and just pass it through, OR we define a standard internal history format.
-        // Let's assume the caller passes Google-formatted history for Gemini and we'll fix route.ts to match.
-        // actually, looking at route.ts, it maps to Google format. 
-        // let's accept 'any[]' and cast it.
 
         const chat = model.startChat({
             history: history as any[]
@@ -64,6 +48,24 @@ class GeminiProvider implements UnifiedAIProvider {
         const model = this.client.getGenerativeModel({ model: this.modelName });
         const result = await model.generateContent(prompt);
         return result.response.text();
+    }
+
+    async generateStructuredContent(prompt: string, schema?: any): Promise<any> {
+        const model = this.client.getGenerativeModel({
+            model: this.modelName,
+            generationConfig: { responseMimeType: "application/json" }
+        });
+
+        const result = await model.generateContent(prompt + "\n\nRespond locally in JSON.");
+        const text = result.response.text();
+
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            console.error("Gemini JSON parse failed, attempting cleanup", e);
+            const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
+            return JSON.parse(cleaned);
+        }
     }
 }
 
@@ -118,6 +120,29 @@ class AnthropicProvider implements UnifiedAIProvider {
             .filter(block => block.type === 'text')
             .map(block => block.text)
             .join('\n');
+    }
+
+    async generateStructuredContent(prompt: string, schema?: any): Promise<any> {
+        // Claude doesn't have a strict JSON mode flag like Gemini/OpenAI yet in the SDK 
+        // effectively, but we prompt-engineer it.
+        const response = await this.client.messages.create({
+            model: this.modelName,
+            max_tokens: 4096,
+            system: "You are a data extraction AI. Respond ONLY with valid JSON. Do not include markdown formatting.",
+            messages: [{ role: 'user', content: prompt }]
+        });
+
+        const text = response.content
+            .filter(block => block.type === 'text')
+            .map(block => block.text)
+            .join('\n');
+
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
+            return JSON.parse(cleaned);
+        }
     }
 }
 

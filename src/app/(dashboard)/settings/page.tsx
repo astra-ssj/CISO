@@ -44,7 +44,10 @@ function AIProviderConfig() {
         fetch('/api/agent/analyze')
             .then(res => res.json())
             .then(data => {
-                setProviders(data.providers || ['MOCK', 'OPENAI', 'ANTHROPIC', 'GOOGLE']);
+                const providerList = Array.isArray(data.providers)
+                    ? data.providers.map((p: any) => typeof p === 'string' ? p : p.name)
+                    : ['MOCK', 'OPENAI', 'ANTHROPIC', 'GOOGLE'];
+                setProviders(providerList);
                 setActiveProvider(data.active || 'MOCK');
                 setIsLoading(false);
             })
@@ -104,6 +107,12 @@ function AIProviderConfig() {
             description: 'Gemini 2.0 Flash for fast responses.',
             icon: '🔵',
             color: 'bg-blue-500'
+        },
+        OLLAMA: {
+            name: 'Ollama (Local)',
+            description: 'Local inference running on your machine.',
+            icon: '🦙',
+            color: 'bg-zinc-500'
         }
     };
 
@@ -160,9 +169,9 @@ function AIProviderConfig() {
                 <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 border border-border">
                     <div className="flex items-center gap-3">
                         <div className={`h-3 w-3 rounded-full ${activeProvider === 'MOCK' ? 'bg-gray-500' :
-                                testResult === 'success' ? 'bg-emerald-500 animate-pulse' :
-                                    testResult === 'error' ? 'bg-red-500' :
-                                        'bg-amber-500'
+                            testResult === 'success' ? 'bg-emerald-500 animate-pulse' :
+                                testResult === 'error' ? 'bg-red-500' :
+                                    'bg-amber-500'
                             }`} />
                         <div>
                             <div className="font-medium text-sm">
@@ -236,8 +245,8 @@ function AIProviderConfig() {
                             key={key}
                             onClick={() => setActiveProvider(key)}
                             className={`p-3 rounded-lg border text-left transition-all ${activeProvider === key
-                                    ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                                    : 'border-border hover:border-primary/30 hover:bg-secondary/30'
+                                ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                                : 'border-border hover:border-primary/30 hover:bg-secondary/30'
                                 }`}
                         >
                             <div className="flex items-center gap-2 mb-1">
