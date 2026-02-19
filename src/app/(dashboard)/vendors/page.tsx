@@ -11,11 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVendorRiskStore, VendorCategory, VendorRiskTier, VendorStatus } from "@/lib/vendor-risk-store";
 import { CAIQ_DOMAINS, type AnsweredQuestion, type ConfidenceLevel } from "@/lib/caiq/caiq-knowledge-base";
+import KnowledgeTransfer from "@/components/caiq/KnowledgeTransfer";
 import {
     Building2, ShieldAlert, Search, Plus, AlertTriangle, CheckCircle,
     Clock, XCircle, TrendingUp, Users, FileWarning, ChevronDown, ChevronUp,
     Upload, FileSpreadsheet, Brain, Zap, Download, Loader2, Edit3,
-    Check, BarChart3, Sparkles, Shield
+    Check, BarChart3, Sparkles, Shield, RefreshCw
 } from "lucide-react";
 
 // ────────────────────────────────────────────
@@ -240,6 +241,9 @@ export default function VendorsPage() {
                     </TabsTrigger>
                     <TabsTrigger value="caiq" className="gap-2 data-[state=active]:bg-violet-500/20">
                         <FileSpreadsheet className="h-4 w-4" /> CAIQ Automation
+                    </TabsTrigger>
+                    <TabsTrigger value="transfer" className="gap-2 data-[state=active]:bg-cyan-500/20">
+                        <RefreshCw className="h-4 w-4" /> Knowledge Transfer
                     </TabsTrigger>
                 </TabsList>
 
@@ -594,8 +598,8 @@ export default function VendorsPage() {
                                     <button
                                         onClick={() => setCaiqMode('template')}
                                         className={`flex-1 p-3 rounded-lg border text-left transition-all ${caiqMode === 'template'
-                                                ? 'border-blue-500/40 bg-blue-500/10'
-                                                : 'border-zinc-800/50 hover:border-zinc-700/50'
+                                            ? 'border-blue-500/40 bg-blue-500/10'
+                                            : 'border-zinc-800/50 hover:border-zinc-700/50'
                                             }`}
                                     >
                                         <div className="flex items-center gap-2 mb-1">
@@ -609,8 +613,8 @@ export default function VendorsPage() {
                                     <button
                                         onClick={() => setCaiqMode('ai')}
                                         className={`flex-1 p-3 rounded-lg border text-left transition-all ${caiqMode === 'ai'
-                                                ? 'border-violet-500/40 bg-violet-500/10'
-                                                : 'border-zinc-800/50 hover:border-zinc-700/50'
+                                            ? 'border-violet-500/40 bg-violet-500/10'
+                                            : 'border-zinc-800/50 hover:border-zinc-700/50'
                                             }`}
                                     >
                                         <div className="flex items-center gap-2 mb-1">
@@ -825,8 +829,8 @@ export default function VendorsPage() {
                                                         </td>
                                                         <td className="p-3">
                                                             <span className={`text-xs font-mono font-bold ${q.yesNo === 'Yes' ? 'text-emerald-400' :
-                                                                    q.yesNo === 'No' ? 'text-red-400' :
-                                                                        q.yesNo === 'N/A' ? 'text-zinc-500' : 'text-zinc-700'
+                                                                q.yesNo === 'No' ? 'text-red-400' :
+                                                                    q.yesNo === 'N/A' ? 'text-zinc-500' : 'text-zinc-700'
                                                                 }`}>{q.yesNo || '—'}</span>
                                                         </td>
                                                         <td className="p-3 max-w-[400px]">
@@ -862,8 +866,8 @@ export default function VendorsPage() {
                                                         </td>
                                                         <td className="p-3 text-center">
                                                             <span className={`text-[10px] px-2 py-0.5 rounded ${q.source === 'knowledge-base' ? 'bg-blue-500/10 text-blue-400' :
-                                                                    q.source === 'ai' ? 'bg-violet-500/10 text-violet-400' :
-                                                                        'bg-zinc-700/30 text-zinc-500'
+                                                                q.source === 'ai' ? 'bg-violet-500/10 text-violet-400' :
+                                                                    'bg-zinc-700/30 text-zinc-500'
                                                                 }`}>
                                                                 {q.source === 'knowledge-base' ? 'KB' : q.source === 'ai' ? 'AI' : 'Manual'}
                                                             </span>
@@ -905,6 +909,13 @@ export default function VendorsPage() {
                             <p className="text-zinc-600 text-xs mt-1">Supports CAIQ, SIG Lite, and custom vendor questionnaires</p>
                         </div>
                     )}
+                </TabsContent>
+
+                {/* ═══════════════════════════════════════ */}
+                {/* TAB 3: Knowledge Transfer               */}
+                {/* ═══════════════════════════════════════ */}
+                <TabsContent value="transfer" className="space-y-6 mt-6">
+                    <KnowledgeTransfer />
                 </TabsContent>
             </Tabs>
         </div>

@@ -96,13 +96,52 @@ export const useJiraStore = create<JiraStoreState>()(
                 tickets: state.tickets.filter(t => t.id !== id),
             })),
 
-            submitTicket: (id) => set(state => ({
-                tickets: state.tickets.map(t =>
-                    t.id === id
-                        ? { ...t, status: 'SUBMITTED' as const, updatedAt: new Date().toISOString() }
-                        : t
-                ),
-            })),
+            submitTicket: async (id) => {
+                // 1. Optimistic Update
+                set(state => ({
+                    tickets: state.tickets.map(t =>
+                        t.id === id
+                            ? { ...t, status: 'SUBMITTED' as const, syncStatus: 'SYNCING' as const }
+                            : t
+                    ),
+                }));
+
+                const ticket = get().tickets.find(t => t.id === id);
+                if (!ticket) return;
+
+                try {
+                    // 2. Call API
+                    const response = await fetch('/api/jira', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(ticket),
+                    });
+
+                    const data = await response.json();
+
+                    // 3. Update with Result
+                    set(state => ({
+                        tickets: state.tickets.map(t =>
+                            t.id === id
+                                ? {
+                                    ...t,
+                                    syncStatus: data.success ? 'SYNCED' : 'FAILED',
+                                    jiraKey: data.key || t.jiraKey,
+                                    updatedAt: new Date().toISOString()
+                                }
+                                : t
+                        ),
+                    }));
+                } catch (error) {
+                    set(state => ({
+                        tickets: state.tickets.map(t =>
+                            t.id === id
+                                ? { ...t, syncStatus: 'FAILED', updatedAt: new Date().toISOString() }
+                                : t
+                        ),
+                    }));
+                }
+            },
 
             updateSyncStatus: (id, status, jiraKey) => set(state => ({
                 tickets: state.tickets.map(t =>

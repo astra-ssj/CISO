@@ -41,6 +41,7 @@ import {
     TicketCheck
 } from 'lucide-react';
 import { useAstraStore } from '@/lib/store';
+import { signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { ChatInterface } from '@/components/ui/chat-interface';
 import { ThemeSwitcher } from '@/components/ui/theme-switcher';
@@ -73,7 +74,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const { logout } = useAstraStore();
+    const { } = useAstraStore();
 
     if (!isSidebarOpen) {
         // Mobile sidebar closed state logic if needed, or just standard return
@@ -186,10 +187,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                                         variant="ghost"
                                         size="sm"
                                         className="w-full h-9 justify-center text-red-400 hover:text-red-500 hover:bg-red-500/10"
-                                        onClick={() => {
-                                            logout();
-                                            window.location.href = '/login';
-                                        }}
+                                        onClick={() => signOut({ callbackUrl: '/login' })}
                                     >
                                         <LogOut className="h-4 w-4" />
                                     </Button>
@@ -201,10 +199,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                                 variant="ghost"
                                 size="sm"
                                 className="w-full h-9 justify-start text-red-400 hover:text-red-500 hover:bg-red-500/10"
-                                onClick={() => {
-                                    logout();
-                                    window.location.href = '/login';
-                                }}
+                                onClick={() => signOut({ callbackUrl: '/login' })}
                             >
                                 <LogOut className="h-4 w-4 mr-2" />
                                 <span className="text-xs">Log Out</span>

@@ -2,18 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAstraStore } from '@/lib/store';
+import { signIn, useSession } from 'next-auth/react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ShieldAlert, Terminal, Lock, Cpu, Fingerprint, ChevronRight } from 'lucide-react';
+import { ShieldAlert, Terminal, Lock, Fingerprint, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function LoginPage() {
     const router = useRouter();
-    const { login, isAuthenticated } = useAstraStore();
+    const { data: session, status } = useSession();
 
     // Form State
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -23,8 +23,8 @@ export default function LoginPage() {
     const [terminalLines, setTerminalLines] = useState<string[]>([]);
 
     useEffect(() => {
-        if (isAuthenticated) router.push('/');
-    }, [isAuthenticated, router]);
+        if (status === 'authenticated') router.push('/');
+    }, [status, router]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -32,13 +32,13 @@ export default function LoginPage() {
         setIsLoading(true);
 
         try {
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
+            const result = await signIn('credentials', {
+                email,
+                password,
+                redirect: false,
             });
 
-            if (res.ok) {
+            if (result?.ok) {
                 setLoginStage('DECRYPTING');
 
                 // Initiate simulated decryption sequence (Visuals only)
@@ -57,9 +57,8 @@ export default function LoginPage() {
                             setTimeout(() => {
                                 setLoginStage('ACCESS_GRANTED');
                                 setTimeout(() => {
-                                    login(); // Sync client store state
                                     router.push('/');
-                                    router.refresh(); // Refresh to catch cookie via middleware
+                                    router.refresh();
                                 }, 1000);
                             }, 800);
                         }
@@ -68,7 +67,7 @@ export default function LoginPage() {
                 });
             } else {
                 setError("ACCESS DENIED. Invalid Credentials.");
-                setTerminalLines(prev => [...prev, `[ERROR] Failed login attempt for user: ${username}`]);
+                setTerminalLines(prev => [...prev, `[ERROR] Failed login attempt for user: ${email}`]);
                 setIsLoading(false);
             }
         } catch (err) {
@@ -110,11 +109,12 @@ export default function LoginPage() {
                                     <div className="relative">
                                         <Terminal className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                         <Input
-                                            placeholder="IDENTITY"
+                                            placeholder="EMAIL"
+                                            type="email"
                                             className="pl-10 bg-secondary/10 border-primary/20 text-primary font-mono placeholder:text-muted-foreground/50 h-10"
-                                            value={username}
-                                            onChange={(e) => setUsername(e.target.value)}
-                                            autoComplete="off"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            autoComplete="email"
                                         />
                                     </div>
                                     <div className="relative">
@@ -146,10 +146,10 @@ export default function LoginPage() {
                                 </Button>
 
                                 <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-white/10">
-                                    <button type="button" onClick={() => { setUsername('ciso@astra.ai'); setPassword('admin123'); }} className="text-[10px] text-zinc-500 hover:text-primary transition-colors text-left">
+                                    <button type="button" onClick={() => { setEmail('ciso@astra.ai'); setPassword('password123'); }} className="text-[10px] text-zinc-500 hover:text-primary transition-colors text-left">
                                         &gt; Load CISO Profile
                                     </button>
-                                    <button type="button" onClick={() => { setUsername('analyst@astra.ai'); setPassword('user123'); }} className="text-[10px] text-zinc-500 hover:text-primary transition-colors text-right">
+                                    <button type="button" onClick={() => { setEmail('analyst@astra.ai'); setPassword('analyst123'); }} className="text-[10px] text-zinc-500 hover:text-primary transition-colors text-right">
                                         &gt; Load Analyst Profile
                                     </button>
                                 </div>

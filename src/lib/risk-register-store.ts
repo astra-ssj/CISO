@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import { calculateRisk, type RiskScenario, type RiskAnalysisResult } from '@/lib/risk-engine/fair';
 
 // ────────────────────────────────────────────
@@ -25,21 +24,7 @@ export interface RiskEntry {
 }
 
 // ────────────────────────────────────────────
-// Store
-// ────────────────────────────────────────────
-
-interface RiskRegisterStore {
-    entries: RiskEntry[];
-    addEntry: (scenario: RiskScenario, owner: string, notes: string) => void;
-    updateEntry: (id: string, updates: Partial<Pick<RiskEntry, 'owner' | 'notes' | 'status'>>) => void;
-    removeEntry: (id: string) => void;
-    recalculate: (id: string, updatedScenario: RiskScenario) => void;
-    getTopRisks: (count: number) => RiskEntry[];
-    getAverageScore: () => number;
-}
-
-// ────────────────────────────────────────────
-// Demo Data — matches FAIR engine's RiskScenario interface
+// Fallback Demo Data (used when API is unavailable)
 // ────────────────────────────────────────────
 
 const DEMO_SCENARIOS: { scenario: RiskScenario; owner: string; notes: string; status: RiskEntry['status']; history: RiskHistoryPoint[] }[] = [
@@ -148,60 +133,104 @@ function buildEntry(data: typeof DEMO_SCENARIOS[0]): RiskEntry {
     };
 }
 
+// ────────────────────────────────────────────
+// Store — API-backed with fallback
+// ────────────────────────────────────────────
+
+interface RiskRegisterStore {
+    entries: RiskEntry[];
+    isLoading: boolean;
+    hasFetched: boolean;
+    fetchEntries: () => Promise<void>;
+    addEntry: (scenario: RiskScenario, owner: string, notes: string) => void;
+    updateEntry: (id: string, updates: Partial<Pick<RiskEntry, 'owner' | 'notes' | 'status'>>) => void;
+    removeEntry: (id: string) => void;
+    recalculate: (id: string, updatedScenario: RiskScenario) => void;
+    getTopRisks: (count: number) => RiskEntry[];
+    getAverageScore: () => number;
+}
+
 export const useRiskRegisterStore = create<RiskRegisterStore>()(
-    persist(
-        (set, get) => ({
-            entries: DEMO_SCENARIOS.map(buildEntry),
+    (set, get) => ({
+        entries: DEMO_SCENARIOS.map(buildEntry), // Start with demo data as fallback
+        isLoading: false,
+        hasFetched: false,
 
-            addEntry: (scenario, owner, notes) => {
-                const analysis = calculateRisk(scenario);
-                const today = new Date().toISOString().split('T')[0];
-                set((state) => ({
-                    entries: [...state.entries, {
-                        id: scenario.id || `RS-${Date.now()}`,
-                        scenario, analysis, owner, notes,
-                        status: 'OPEN' as const,
-                        history: [{ date: today, score: analysis.riskScore, ale: analysis.annualizedLossExpectancy }],
-                        createdAt: today, updatedAt: today
-                    }]
-                }));
-            },
+        fetchEntries: async () => {
+            if (get().hasFetched) return;
+            set({ isLoading: true });
 
-            updateEntry: (id, updates) => set((state) => ({
-                entries: state.entries.map(e =>
-                    e.id === id ? { ...e, ...updates, updatedAt: new Date().toISOString().split('T')[0] } : e
-                )
-            })),
+            try {
+                const res = await fetch('/api/risks');
+                if (!res.ok) throw new Error('API unavailable');
 
-            removeEntry: (id) => set((state) => ({
-                entries: state.entries.filter(e => e.id !== id)
-            })),
+                const data = await res.json();
 
-            recalculate: (id, updatedScenario) => set((state) => {
-                const analysis = calculateRisk(updatedScenario);
-                const today = new Date().toISOString().split('T')[0];
-                return {
-                    entries: state.entries.map(e => {
-                        if (e.id !== id) return e;
-                        return {
-                            ...e, scenario: updatedScenario, analysis, updatedAt: today,
-                            history: [...e.history, { date: today, score: analysis.riskScore, ale: analysis.annualizedLossExpectancy }]
-                        };
-                    })
-                };
-            }),
-
-            getTopRisks: (count) => [...get().entries]
-                .filter(e => e.status !== 'CLOSED')
-                .sort((a, b) => b.analysis.riskScore - a.analysis.riskScore)
-                .slice(0, count),
-
-            getAverageScore: () => {
-                const entries = get().entries.filter(e => e.status !== 'CLOSED');
-                if (entries.length === 0) return 0;
-                return Math.round(entries.reduce((sum, e) => sum + e.analysis.riskScore, 0) / entries.length);
+                // Only replace if API returned data
+                if (Array.isArray(data) && data.length > 0) {
+                    // Re-run FAIR analysis on fetched data
+                    const entries: RiskEntry[] = data.map((entry: any) => ({
+                        ...entry,
+                        analysis: calculateRisk(entry.scenario),
+                    }));
+                    set({ entries, hasFetched: true, isLoading: false });
+                } else {
+                    // No DB data yet — keep demo data
+                    set({ hasFetched: true, isLoading: false });
+                }
+            } catch (error) {
+                console.warn('Risk Register: Using fallback demo data', error);
+                set({ hasFetched: true, isLoading: false });
             }
+        },
+
+        addEntry: (scenario, owner, notes) => {
+            const analysis = calculateRisk(scenario);
+            const today = new Date().toISOString().split('T')[0];
+            set((state) => ({
+                entries: [...state.entries, {
+                    id: scenario.id || `RS-${Date.now()}`,
+                    scenario, analysis, owner, notes,
+                    status: 'OPEN' as const,
+                    history: [{ date: today, score: analysis.riskScore, ale: analysis.annualizedLossExpectancy }],
+                    createdAt: today, updatedAt: today
+                }]
+            }));
+        },
+
+        updateEntry: (id, updates) => set((state) => ({
+            entries: state.entries.map(e =>
+                e.id === id ? { ...e, ...updates, updatedAt: new Date().toISOString().split('T')[0] } : e
+            )
+        })),
+
+        removeEntry: (id) => set((state) => ({
+            entries: state.entries.filter(e => e.id !== id)
+        })),
+
+        recalculate: (id, updatedScenario) => set((state) => {
+            const analysis = calculateRisk(updatedScenario);
+            const today = new Date().toISOString().split('T')[0];
+            return {
+                entries: state.entries.map(e => {
+                    if (e.id !== id) return e;
+                    return {
+                        ...e, scenario: updatedScenario, analysis, updatedAt: today,
+                        history: [...e.history, { date: today, score: analysis.riskScore, ale: analysis.annualizedLossExpectancy }]
+                    };
+                })
+            };
         }),
-        { name: 'aegis-risk-register-store' }
-    )
+
+        getTopRisks: (count) => [...get().entries]
+            .filter(e => e.status !== 'CLOSED')
+            .sort((a, b) => b.analysis.riskScore - a.analysis.riskScore)
+            .slice(0, count),
+
+        getAverageScore: () => {
+            const entries = get().entries.filter(e => e.status !== 'CLOSED');
+            if (entries.length === 0) return 0;
+            return Math.round(entries.reduce((sum, e) => sum + e.analysis.riskScore, 0) / entries.length);
+        }
+    })
 );
