@@ -10,7 +10,7 @@ services:
     environment:
       NODE_ENV: production
       # Database (SQLite in persisted volume)
-      DATABASE_URL: "file:/app/data/dev.db"
+      DATABASE_URL: "file:/app/data/astra-ciso.db"
       # Auth (set in .env or override in deployment)
       AUTH_SECRET: ${AUTH_SECRET:-change-me-in-production}
       JWT_SECRET: ${JWT_SECRET:-${AUTH_SECRET:-change-me-in-production}}
@@ -26,7 +26,9 @@ services:
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     volumes:
+      # Writable data dir for SQLite (required when read_only: true)
       - astra-ciso-data:/app/data
+    read_only: true
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
       interval: 30s

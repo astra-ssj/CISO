@@ -64,7 +64,7 @@ The app is served at [http://localhost:3000](http://localhost:3000). Data (e.g. 
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `NODE_ENV` | Runtime mode | `production` (in Docker) |
-| `DATABASE_URL` | Prisma DB URL (SQLite path in container) | `file:/app/data/dev.db` |
+| `DATABASE_URL` | Prisma DB URL (SQLite path in container) | `file:/app/data/astra-ciso.db` |
 | `AUTH_SECRET` | Auth/session secret | Set in production |
 | `JWT_SECRET` | JWT signing secret | Falls back to `AUTH_SECRET` |
 | `AI_PROVIDER` | Primary AI provider | `GEMINI` |

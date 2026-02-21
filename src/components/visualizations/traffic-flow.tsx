@@ -152,6 +152,10 @@ export function TrafficFlow({ data }: TrafficFlowProps) {
 
                     const color = path.type === 'http' ? '#3b82f6' : path.type === 'secure' ? '#10b981' : '#f59e0b';
 
+                    // Stable durations from index (avoids hydration mismatch from Math.random())
+                    const dur1 = 1.5 + ((i * 0.13) % 1);
+                    const dur2 = 2 + ((i * 0.17) % 1);
+
                     return (
                         <g key={i}>
                             {/* Base Path */}
@@ -160,7 +164,7 @@ export function TrafficFlow({ data }: TrafficFlowProps) {
                             {/* Animated Traffic Particle */}
                             <circle r="2" fill={color}>
                                 <animateMotion
-                                    dur={`${1.5 + Math.random()}s`}
+                                    dur={`${dur1}s`}
                                     repeatCount="indefinite"
                                     path={d}
                                     keyPoints="0;1"
@@ -170,7 +174,7 @@ export function TrafficFlow({ data }: TrafficFlowProps) {
                             </circle>
                             <circle r="1" fill={color} opacity="0.5">
                                 <animateMotion
-                                    dur={`${2 + Math.random()}s`}
+                                    dur={`${dur2}s`}
                                     begin="0.5s"
                                     repeatCount="indefinite"
                                     path={d}
