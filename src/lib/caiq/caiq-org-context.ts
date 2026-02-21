@@ -209,7 +209,7 @@ function mergeOrgControls(evidence: OrgControl[], policy: OrgControl[]): OrgCont
 }
 
 // -----------------------------------------------------------------------------
-// Answer overrides: any persisted CAIQ answers (e.g. manual overrides)
+// Answer overrides: persisted CAIQ answers (e.g. manual overrides)
 // -----------------------------------------------------------------------------
 
 const CAIQ_OVERRIDES_STORAGE_KEY = 'aegis-caiq-answer-overrides';
@@ -271,8 +271,9 @@ function getEvidenceForQuestionInternal(
 
 /**
  * Builds a complete OrganizationContext from Astra-CISO stores and environment.
- * Uses sensible defaults when stores are empty or unavailable so the CAIQ engine
- * can run with minimal configuration.
+ * Uses evidence store, policy store, env vars (ASTRA_ORG_NAME, ASTRA_INDUSTRY, etc.),
+ * and localStorage answer overrides. Uses sensible defaults when stores are empty.
+ * @returns OrganizationContext for the CAIQ answer engine
  */
 export async function buildOrgContext(): Promise<OrganizationContext> {
   const frameworks = getActiveFrameworkIds().map(frameworkIdToCAIQName);
@@ -316,11 +317,12 @@ export async function buildOrgContext(): Promise<OrganizationContext> {
 // -----------------------------------------------------------------------------
 
 /**
- * Filters org controls that are relevant to a specific CAIQ domain using the
- * knowledge base mappings.
- *
- * - When called with (domain, orgControls), returns the filtered list (sync).
- * - When called with (domain) only, builds context and returns controls for that domain (async).
+ * Filters organization controls relevant to a CAIQ domain using KB framework mappings.
+ * Overload: (domain, orgControls) returns filtered list synchronously;
+ * (domain) builds context and returns controls for that domain asynchronously.
+ * @param domain - CAIQ domain code (e.g. IAM, CEK, DSP)
+ * @param orgControls - Optional pre-fetched org controls; if omitted, builds context first
+ * @returns Filtered OrgControl[] or Promise of same
  */
 export function getRelevantControls(domain: CAIQDomain, orgControls: OrgControl[]): OrgControl[];
 export function getRelevantControls(domain: CAIQDomain): Promise<OrgControl[]>;
@@ -353,6 +355,8 @@ export function getRelevantControls(
 /**
  * Returns evidence identifiers (ids or names) from the evidence store that are
  * relevant to the given CAIQ question via framework/control mappings in the KB.
+ * @param questionId - CAIQ question ID (e.g. IAM-01, CEK-03)
+ * @returns Array of evidence item ids or names
  */
 export function getEvidenceForQuestion(questionId: string): string[] {
   const items = safeGetEvidenceItems();

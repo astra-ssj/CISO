@@ -68,14 +68,23 @@ export interface TransferResult {
  * Scans for question + answer columns using header detection
  * and text-length heuristics.
  */
+/** Row of cells (string or empty); from Excel 1-based values slice(1). */
+type ExcelCellRow = (string | number | null | undefined)[];
+
 export async function parseSourceFile(buffer: ArrayBuffer): Promise<SourceQA[]> {
     const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(new Uint8Array(buffer) as any);
+    await workbook.xlsx.load(Buffer.from(buffer) as unknown as Parameters<ExcelJS.Workbook['xlsx']['load']>[0]);
 
     for (const worksheet of workbook.worksheets) {
-        const rows: any[][] = [];
+        const rows: ExcelCellRow[] = [];
         worksheet.eachRow({ includeEmpty: true }, (row) => {
-            rows.push((row.values as any[]).slice(1).map(c => c ?? ''));
+            const raw = row.values as unknown;
+            const arr = Array.isArray(raw) ? raw.slice(1) : [];
+            rows.push(
+                arr.map((c: unknown): string | number | null | undefined =>
+                    c === null || c === undefined ? '' : (c as string | number)
+                )
+            );
         });
 
         if (rows.length < 2) continue;
@@ -86,7 +95,7 @@ export async function parseSourceFile(buffer: ArrayBuffer): Promise<SourceQA[]> 
     return [];
 }
 
-function extractSourceQAs(rows: any[][]): SourceQA[] {
+function extractSourceQAs(rows: ExcelCellRow[]): SourceQA[] {
     const questionKw = ['question', 'control question', 'caiq', 'requirement', 'description',
         'security question', 'assessment question', 'control specification',
         'control objective', 'control activity', 'criteria', 'query'];
@@ -99,7 +108,7 @@ function extractSourceQAs(rows: any[][]): SourceQA[] {
     // Scan first 15 rows for header row
     const maxScan = Math.min(rows.length, 15);
     for (let h = 0; h < maxScan; h++) {
-        const cells = rows[h].map(c => String(c).toLowerCase().trim());
+        const cells = rows[h].map((c: string | number | null | undefined) => String(c ?? '').toLowerCase().trim());
         const nonEmpty = cells.filter(c => c.length > 0);
         if (nonEmpty.length < 2) continue;
 
@@ -131,8 +140,12 @@ function extractSourceQAs(rows: any[][]): SourceQA[] {
 }
 
 function collectSourceQAs(
-    rows: any[][], startRow: number,
-    qCol: number, aCol: number, idCol: number, ynCol: number
+    rows: ExcelCellRow[],
+    startRow: number,
+    qCol: number,
+    aCol: number,
+    idCol: number,
+    ynCol: number
 ): SourceQA[] {
     const results: SourceQA[] = [];
     for (let i = startRow; i < rows.length; i++) {
@@ -153,7 +166,7 @@ function collectSourceQAs(
     return results;
 }
 
-function findWideTextColumn(rows: any[][], startRow: number, excludeCol: number): number {
+function findWideTextColumn(rows: ExcelCellRow[], startRow: number, excludeCol: number): number {
     const sampleEnd = Math.min(rows.length, startRow + 20);
     const colCount = Math.max(...rows.slice(startRow, sampleEnd).map(r => r.length));
     let bestCol = -1, bestAvg = 0;
@@ -170,7 +183,7 @@ function findWideTextColumn(rows: any[][], startRow: number, excludeCol: number)
     return bestAvg > 15 ? bestCol : -1;
 }
 
-function heuristicExtractQAs(rows: any[][]): SourceQA[] {
+function heuristicExtractQAs(rows: ExcelCellRow[]): SourceQA[] {
     const colCount = Math.max(...rows.slice(0, 30).map(r => r?.length || 0));
     const avgLengths: { col: number; avg: number }[] = [];
 
@@ -208,12 +221,18 @@ function inferYesNo(answer: string): string {
  */
 export async function parseTargetFile(buffer: ArrayBuffer): Promise<TargetQuestion[]> {
     const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(new Uint8Array(buffer) as any);
+    await workbook.xlsx.load(Buffer.from(buffer) as unknown as Parameters<ExcelJS.Workbook['xlsx']['load']>[0]);
 
     for (const worksheet of workbook.worksheets) {
-        const rows: any[][] = [];
+        const rows: ExcelCellRow[] = [];
         worksheet.eachRow({ includeEmpty: true }, (row) => {
-            rows.push((row.values as any[]).slice(1).map(c => c ?? ''));
+            const raw = row.values as unknown;
+            const arr = Array.isArray(raw) ? raw.slice(1) : [];
+            rows.push(
+                arr.map((c: unknown): string | number | null | undefined =>
+                    c === null || c === undefined ? '' : (c as string | number)
+                )
+            );
         });
 
         if (rows.length < 2) continue;
@@ -224,7 +243,7 @@ export async function parseTargetFile(buffer: ArrayBuffer): Promise<TargetQuesti
     return [];
 }
 
-function extractTargetQuestions(rows: any[][]): TargetQuestion[] {
+function extractTargetQuestions(rows: ExcelCellRow[]): TargetQuestion[] {
     const questionKw = ['question', 'control question', 'caiq', 'requirement', 'description',
         'security question', 'assessment question', 'control specification',
         'control objective', 'control activity', 'criteria', 'query'];
@@ -232,7 +251,7 @@ function extractTargetQuestions(rows: any[][]): TargetQuestion[] {
 
     const maxScan = Math.min(rows.length, 15);
     for (let h = 0; h < maxScan; h++) {
-        const cells = rows[h].map(c => String(c).toLowerCase().trim());
+        const cells = rows[h].map((c: string | number | null | undefined) => String(c ?? '').toLowerCase().trim());
         const nonEmpty = cells.filter(c => c.length > 0);
         if (nonEmpty.length < 2) continue;
 
@@ -605,7 +624,7 @@ export async function processTransfer(
     const t1 = tier1Match(index, targetQs);
     console.log(`[CAIQ Transfer] Tier 1: ${t1.matched.length} matched, ${t1.unmatched.length} remaining`);
 
-    let allAnswers = [...t1.matched];
+    const allAnswers = [...t1.matched];
     let remaining = t1.unmatched;
 
     // Step 4: Tier 2 — AI Semantic (if AI available)

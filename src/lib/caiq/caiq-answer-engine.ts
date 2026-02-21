@@ -15,7 +15,6 @@ import type {
   CAIQGenerateOptions,
   CAIQKnowledgeEntry,
   CAIQStats,
-  ConfidenceTier,
   CAIQGeneratedBy,
   CAIQAnswerType,
   CAIQDomain,
@@ -35,6 +34,9 @@ import { z } from 'zod';
 // Engine options (thresholds, optional secondary AI)
 // -----------------------------------------------------------------------------
 
+/**
+ * Configuration options for the CAIQ Answer Engine (thresholds, fallback AI, provider name).
+ */
 export interface CAIQAnswerEngineOptions {
   /** Minimum semantic similarity to use a KB entry (default 0.80). */
   semanticMatchThreshold?: number;
@@ -77,6 +79,12 @@ type AIResponse = z.infer<typeof aiResponseSchema>;
 // CAIQAnswerEngine
 // -----------------------------------------------------------------------------
 
+/**
+ * CAIQ Answer Engine — 4-tier confidence pipeline for CSA CAIQ questionnaire automation.
+ * Tier 1: Exact KB match (0.95–0.99). Tier 2: Semantic KB match (0.80–0.95).
+ * Tier 3: AI-generated (0.60–0.80). Tier 4: Flagged for human review (0.0).
+ * Uses circuit breaker for AI fallback and logs each answer to the audit trail.
+ */
 export class CAIQAnswerEngine {
   private readonly kbEntries: CAIQKnowledgeEntry[];
   private readonly matcher: CAIQSemanticMatcher;
@@ -84,6 +92,13 @@ export class CAIQAnswerEngine {
   private readonly orgContext: OrganizationContext;
   private readonly opts: CAIQAnswerEngineOptions & Readonly<typeof DEFAULT_ENGINE_OPTIONS>;
 
+  /**
+   * Creates an answer engine with a knowledge base, AI provider, and organization context.
+   * @param knowledgeBaseEntries - Full list of CAIQ knowledge base entries
+   * @param aiEngine - Unified AI provider (Gemini, Claude, or Ollama)
+   * @param orgContext - Organization context (name, industry, controls, evidence links, overrides)
+   * @param options - Optional thresholds and secondary AI for fallback
+   */
   constructor(
     knowledgeBaseEntries: CAIQKnowledgeEntry[],
     aiEngine: UnifiedAIProvider,
@@ -241,7 +256,10 @@ export class CAIQAnswerEngine {
   }
 
   /**
-   * Merge org-specific overrides and evidence links into a KB entry's answer.
+   * Merges organization-specific answer overrides and evidence links into a KB entry.
+   * Used for Tier 1 and Tier 2 answers before returning.
+   * @param entry - Knowledge base entry to apply context to
+   * @returns Final answer text and combined evidence refs (base + org)
    */
   applyOrgContext(entry: CAIQKnowledgeEntry): {
     answer: string;
@@ -355,7 +373,7 @@ Be concise and specific. Use low speculation. Produce a consistent, auditor-grad
       try {
         const result = await fn(engine);
         return result;
-      } catch (err) {
+      } catch {
         setCircuitState(name, 'open');
         return null;
       }

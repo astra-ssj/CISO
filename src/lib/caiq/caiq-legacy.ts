@@ -30,18 +30,27 @@ export interface CAIQProcessingResult {
   domainBreakdown: Record<string, { total: number; answered: number; pct: number }>;
 }
 
+/** Excel row: 1-based index 0 is often empty; cells are string/number/date/null. */
+type ExcelRow = (string | number | null | undefined)[];
+
 export async function parseQuestionnaire(buffer: ArrayBuffer): Promise<QuestionnaireQuestion[]> {
   const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.load(new Uint8Array(buffer) as any);
+  await workbook.xlsx.load(Buffer.from(buffer) as unknown as Parameters<ExcelJS.Workbook['xlsx']['load']>[0]);
 
   for (const worksheet of workbook.worksheets) {
-    const rows: any[][] = [];
+    const rows: ExcelRow[] = [];
     worksheet.eachRow({ includeEmpty: true }, (row) => {
-      rows.push(row.values as any[]);
+      const raw = row.values as unknown;
+      const arr = Array.isArray(raw) ? raw.slice(1) : [];
+      rows.push(
+        arr.map((cell: unknown): string | number | null | undefined =>
+          cell === null || cell === undefined ? '' : (cell as string | number)
+        )
+      );
     });
     const normalizedRows = rows.map((r) => {
       const arr = Array.isArray(r) ? r.slice(1) : [];
-      return arr.map((cell) => (cell === null || cell === undefined ? '' : cell));
+      return arr.map((cell) => (cell === null || cell === undefined ? '' : String(cell)));
     });
 
     if (normalizedRows.length < 2) continue;
@@ -53,7 +62,7 @@ export async function parseQuestionnaire(buffer: ArrayBuffer): Promise<Questionn
   return [];
 }
 
-function extractQuestionsFromRows(rows: any[][]): QuestionnaireQuestion[] {
+function extractQuestionsFromRows(rows: string[][]): QuestionnaireQuestion[] {
   const questionKeywords = [
     'question', 'control question', 'caiq', 'requirement', 'description', 'query',
     'control specification', 'security question', 'assessment question', 'audit question',
@@ -68,7 +77,7 @@ function extractQuestionsFromRows(rows: any[][]): QuestionnaireQuestion[] {
     const row = rows[headerRow];
     if (!row || !Array.isArray(row)) continue;
 
-    const cells = row.map((c: any) => String(c ?? '').toLowerCase().trim());
+    const cells = row.map((c: string) => c.toLowerCase().trim());
     const nonEmpty = cells.filter((c) => c.length > 0);
     if (nonEmpty.length < 2) continue;
 
@@ -163,7 +172,7 @@ function extractQuestionsFromRows(rows: any[][]): QuestionnaireQuestion[] {
 }
 
 function collectQuestions(
-  rows: any[][],
+  rows: string[][],
   dataStartRow: number,
   questionCol: number,
   idCol: number

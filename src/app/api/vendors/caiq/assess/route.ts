@@ -15,6 +15,7 @@ import { CAIQValidator } from '@/lib/caiq/caiq-validator';
 import { getKnowledgeBase } from '@/lib/caiq/caiq-knowledge-base';
 import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
 import { getAllCircuitBreakerMetrics } from '@/lib/ai/circuit-breaker';
+import { setCAIQMetrics } from '@/lib/caiq/caiq-metrics';
 import type { OrganizationContext, CAIQAnswerSet } from '@/lib/caiq/types';
 import type { ValidationResult } from '@/lib/caiq/types';
 
@@ -134,6 +135,11 @@ export async function POST(request: NextRequest) {
               result.answers,
               orgContext
             );
+            setCAIQMetrics({
+              lastAssessmentAt: new Date().toISOString(),
+              coveragePercent: Math.round(result.stats.estimatedAccuracy * 100),
+              answersPendingReview: result.answers.filter((a) => a.needsReview).length,
+            });
             controller.enqueue(
               encoder.encode(
                 `event: result\ndata: ${JSON.stringify({
@@ -178,6 +184,12 @@ export async function POST(request: NextRequest) {
       result.answers,
       orgContext
     );
+
+    setCAIQMetrics({
+      lastAssessmentAt: new Date().toISOString(),
+      coveragePercent: Math.round(result.stats.estimatedAccuracy * 100),
+      answersPendingReview: result.answers.filter((a) => a.needsReview).length,
+    });
 
     return NextResponse.json({
       answers: result.answers,

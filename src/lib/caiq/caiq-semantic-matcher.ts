@@ -139,6 +139,9 @@ function cosineSimilarity(a: number[], b: number[]): number {
 // Semantic matcher class
 // =============================================================================
 
+/**
+ * Options for semantic similarity search (threshold and result limit).
+ */
 export interface FindSimilarOptions {
   /** Minimum cosine similarity to include (default 0.1). */
   threshold?: number;
@@ -149,6 +152,7 @@ export interface FindSimilarOptions {
 /**
  * Lightweight semantic matching engine using TF-IDF and cosine similarity.
  * All processing is local; no external API calls (data sovereignty compliant).
+ * Used to find KB entries similar to a question for Tier 2 answers and transfer.
  */
 export class CAIQSemanticMatcher {
   private entries: CAIQKnowledgeEntry[] = [];
@@ -158,9 +162,8 @@ export class CAIQSemanticMatcher {
   private docTokenMaps: Map<number, Map<string, number>> = new Map();
 
   /**
-   * Builds the matcher from the full knowledge base. Call this once with
-   * all CAIQKnowledgeEntry[] (e.g. from getKnowledgeBase()).
-   *
+   * Builds the matcher from the full knowledge base. Call once with all
+   * CAIQKnowledgeEntry[] (e.g. from getKnowledgeBase()).
    * @param entries - Full list of knowledge base entries
    */
   constructor(entries: CAIQKnowledgeEntry[]) {

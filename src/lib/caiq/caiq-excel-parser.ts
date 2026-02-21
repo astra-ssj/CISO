@@ -236,7 +236,7 @@ export class CAIQExcelParser {
   ): Promise<ParsedCAIQWorkbook> {
     const workbook = new ExcelJS.Workbook();
     try {
-      await workbook.xlsx.load(buffer as any);
+      await workbook.xlsx.load(buffer as unknown as Parameters<ExcelJS.Workbook['xlsx']['load']>[0]);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       if (/password|protected|encrypt/i.test(msg)) {
@@ -343,7 +343,7 @@ export class CAIQExcelParser {
   ): Promise<Buffer> {
     const workbook = new ExcelJS.Workbook();
     try {
-      await workbook.xlsx.load(originalBuffer as any);
+      await workbook.xlsx.load(originalBuffer as unknown as Parameters<ExcelJS.Workbook['xlsx']['load']>[0]);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       if (/password|protected|encrypt/i.test(msg)) {
@@ -420,7 +420,7 @@ export class CAIQExcelParser {
       }
     }
 
-    addAstraCISOMetadataSheet(workbook, answers, columnMap);
+    addAstraCISOMetadataSheet(workbook, answers);
 
     const outBuffer = await workbook.xlsx.writeBuffer();
     return Buffer.from(outBuffer);
@@ -543,8 +543,7 @@ function applyConfidenceTint(cell: ExcelJS.Cell, confidence: number): void {
 
 function addAstraCISOMetadataSheet(
   workbook: ExcelJS.Workbook,
-  answers: CAIQAnswer[],
-  _columnMap: ColumnMap
+  answers: CAIQAnswer[]
 ): void {
   const name = 'Astra-CISO Metadata';
   let sheet = workbook.getWorksheet(name);

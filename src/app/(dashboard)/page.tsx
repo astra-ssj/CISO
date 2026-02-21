@@ -19,7 +19,8 @@ import {
   Zap,
   BrainCircuit,
   BarChart3,
-  FolderKanban
+  FolderKanban,
+  ClipboardCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -183,6 +184,20 @@ export default function DashboardPage() {
   const [trafficData, setTrafficData] = useState<any>(null); // Using any for simplicity in demo
   const [githubStats, setGithubStats] = useState<any>(null);
 
+  // CAIQ metrics (from API)
+  const [caiqMetrics, setCaiqMetrics] = useState<{
+    lastAssessmentAt: string | null;
+    coveragePercent: number;
+    answersPendingReview: number;
+  } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/vendors/caiq/metrics')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => data && setCaiqMetrics(data))
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     // Simulate fetching real data from GitHub Connector
     const fetchData = async () => {
@@ -332,6 +347,26 @@ export default function DashboardPage() {
           trend="down"
           trendValue="-5%"
           status="success"
+        />
+        <MetricCard
+          label="Last CAIQ Assessment"
+          value={caiqMetrics?.lastAssessmentAt
+            ? new Date(caiqMetrics.lastAssessmentAt).toLocaleDateString()
+            : '—'}
+          icon={ClipboardCheck}
+          status="neutral"
+        />
+        <MetricCard
+          label="CAIQ Coverage"
+          value={caiqMetrics ? `${caiqMetrics.coveragePercent}%` : '—'}
+          icon={FileCheck}
+          status={caiqMetrics && caiqMetrics.coveragePercent >= 80 ? 'success' : caiqMetrics && caiqMetrics.coveragePercent > 0 ? 'warning' : 'neutral'}
+        />
+        <MetricCard
+          label="Answers Pending Review"
+          value={caiqMetrics ? caiqMetrics.answersPendingReview.toString() : '—'}
+          icon={Activity}
+          status={caiqMetrics && caiqMetrics.answersPendingReview > 0 ? 'warning' : 'neutral'}
         />
       </section>
 

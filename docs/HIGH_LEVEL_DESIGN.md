@@ -138,10 +138,90 @@ graph TB
 | **KPI Extractor** | `lib/kpi-engine/kpi-extractor.ts` | Regex/heuristic extraction from PPTX/DOCX (35+ patterns) |
 | **Risk Engine** | `lib/risk-engine/fair.ts` | FAIR-model quantitative risk analysis (ALE, SLE, ARO) |
 | **Decision Engine** | `lib/decision-engine/router.ts` | Rule-based scoring with confidence and impact modeling |
-| **CAIQ Engine** | `lib/caiq/caiq-answer-engine.ts` | Automated CSA CAIQ questionnaire responses |
+| **CAIQ Engine** | `lib/caiq/caiq-answer-engine.ts` | Automated CSA CAIQ questionnaire responses (4-tier pipeline) |
 | **OSINT Engine** | `lib/ai/osint-engine.ts` | Open-source intelligence gathering and analysis |
 
-### 3.4 State Stores (10+ Zustand Stores)
+### 3.4 CAIQ Module Architecture
+
+The CAIQ (Consensus Assessments Initiative Questionnaire) module automates CSA CAIQ v4 vendor assessments with a 4-tier confidence pipeline and optional validation/export.
+
+```mermaid
+graph TB
+    subgraph "Input"
+        EXCEL["CAIQ v4 Excel<br/>Upload"]
+        ORG["Organization Context<br/>Stores + Env"]
+    end
+
+    subgraph "CAIQ Pipeline"
+        PARSER["CAIQ Excel Parser<br/>caiq-excel-parser.ts"]
+        KB["Knowledge Base<br/>caiq-knowledge-base.ts"]
+        MATCHER["Semantic Matcher<br/>caiq-semantic-matcher.ts<br/>TF-IDF local"]
+        ENGINE["Answer Engine<br/>caiq-answer-engine.ts"]
+        CB["Circuit Breaker<br/>circuit-breaker.ts"]
+        AI["AI Provider<br/>Gemini / Claude / Ollama"]
+        VALID["Validator<br/>caiq-validator.ts"]
+        EXPORT["Export<br/>caiq-export.ts"]
+    end
+
+    subgraph "4-Tier Confidence"
+        T1["Tier 1: Exact KB match<br/>0.95–0.99"]
+        T2["Tier 2: Semantic KB match<br/>0.80–0.95"]
+        T3["Tier 3: AI-generated<br/>0.60–0.80"]
+        T4["Tier 4: Flagged<br/>0.0"]
+    end
+
+    EXCEL --> PARSER
+    ORG --> ENGINE
+    PARSER --> ENGINE
+    KB --> ENGINE
+    KB --> MATCHER
+    MATCHER --> ENGINE
+    ENGINE --> T1
+    ENGINE --> T2
+    ENGINE --> CB
+    CB --> AI
+    AI --> T3
+    ENGINE --> T4
+    T1 --> VALID
+    T2 --> VALID
+    T3 --> VALID
+    T4 --> VALID
+    VALID --> EXPORT
+```
+
+**4-tier confidence system**
+
+| Tier | Name | Source | Confidence | Description |
+|------|------|--------|------------|-------------|
+| 1 | EXACT_MATCH | Knowledge base by question ID | 0.95–0.99 | Direct KB hit; org overrides and evidence applied. |
+| 2 | SEMANTIC_MATCH | KB via TF-IDF/cosine similarity | 0.80–0.95 | Local matcher (`CAIQSemanticMatcher`); no external API. |
+| 3 | AI_GENERATED | Primary or fallback AI | 0.60–0.80 | Circuit breaker gates calls; fallback provider optional. |
+| 4 | FLAGGED | — | 0.0 | Human must answer; no KB or AI result. |
+
+**Circuit breaker pattern**
+
+- **Purpose**: Avoid cascading failures when the AI provider is down or rate-limited.
+- **State**: Per-provider state is `closed` (healthy), `open` (failing; no calls), or `half-open` (probing).
+- **Usage**: Answer engine and validator check `getCircuitState(provider)` before calling AI. On failure, `setCircuitState(provider, 'open')` is called; optional secondary provider is tried.
+- **Health**: Health check API exposes `getAllCircuitBreakerMetrics()` for AI availability.
+
+**CAIQ component list**
+
+| Component | File | Purpose |
+|-----------|------|---------|
+| **Types** | `lib/caiq/types.ts` | CAIQ domains, answer types, confidence tiers, OrgContext, ParsedCAIQ*, ValidationResult |
+| **Knowledge Base** | `lib/caiq/caiq-knowledge-base.ts` | CAIQ v4 KB entries, getEntryByQuestionId, getEntriesByDomain |
+| **Excel Parser** | `lib/caiq/caiq-excel-parser.ts` | Parse/write CAIQ v4 Excel; column detection; existing answers |
+| **Semantic Matcher** | `lib/caiq/caiq-semantic-matcher.ts` | Local TF-IDF + cosine similarity for Tier 2 |
+| **Answer Engine** | `lib/caiq/caiq-answer-engine.ts` | 4-tier pipeline; org context; circuit breaker; audit |
+| **Validator** | `lib/caiq/caiq-validator.ts` | Alignment, consistency, evidence, framework mapping, AI self-check |
+| **Org Context** | `lib/caiq/caiq-org-context.ts` | buildOrgContext from stores + env; getRelevantControls; getEvidenceForQuestion |
+| **Export** | `lib/caiq/caiq-export.ts` | exportToCAIQExcel (v4); exportToAuditPDF |
+| **Transfer Engine** | `lib/caiq/caiq-transfer-engine.ts` | Source-to-target Q&A transfer (3-tier match + AI) |
+| **Metrics** | `lib/caiq/caiq-metrics.ts` | In-memory last assessment, coverage, pending review |
+| **Circuit Breaker** | `lib/ai/circuit-breaker.ts` | get/set circuit state per AI provider; health metrics |
+
+### 3.5 State Stores (10+ Zustand Stores)
 
 | Store | File | Persistence |
 |-------|------|-------------|

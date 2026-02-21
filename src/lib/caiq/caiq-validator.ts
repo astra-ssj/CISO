@@ -6,7 +6,6 @@
 
 import type {
   CAIQAnswer,
-  CAIQAnswerType,
   CAIQDomain,
   FrameworkMapping,
   OrganizationContext,
@@ -140,6 +139,9 @@ function getDomainFromQuestionId(questionId: string): CAIQDomain | null {
 // CAIQValidator options
 // -----------------------------------------------------------------------------
 
+/**
+ * Options for the CAIQ validator (review threshold, circuit breaker, AI provider).
+ */
 export interface CAIQValidatorOptions {
   /** Confidence below this value sets needsReview = true (default 0.6). */
   reviewThreshold?: number;
@@ -159,22 +161,34 @@ const DEFAULT_OPTIONS: Required<Omit<CAIQValidatorOptions, 'aiProvider'>> & { ai
 // CAIQValidator class
 // -----------------------------------------------------------------------------
 
+/**
+ * CAIQ Validator — Runs alignment, cross-consistency, evidence completeness,
+ * framework mapping, and optional AI self-check on CAIQ answers. Computes
+ * validatedConfidence and sets needsReview when checks fail or confidence is low.
+ */
 export class CAIQValidator {
   private readonly opts: CAIQValidatorOptions & typeof DEFAULT_OPTIONS;
 
+  /**
+   * Creates a validator with optional thresholds and AI provider.
+   * @param options - Review threshold, circuit breaker behavior, and optional AI for self-check
+   */
   constructor(options?: CAIQValidatorOptions) {
     this.opts = { ...DEFAULT_OPTIONS, ...options };
   }
 
   /**
-   * Run all validation checks on a batch of answers and return validation results.
-   * validatedConfidence is computed from original confidence minus penalties;
-   * if any critical check fails, confidence is capped at 0.59 to force human review.
+   * Runs all validation checks on a batch of answers and returns one ValidationResult per answer.
+   * validatedConfidence = original confidence minus penalty per failed check; critical failures cap at 0.59.
+   * @param answers - CAIQ answers to validate
+   * @param orgContext - Organization context (used for evidence/control context if needed)
+   * @returns Array of validation results with checks and needsReview flag
    */
   async validateBatch(
     answers: CAIQAnswer[],
     orgContext: OrganizationContext
   ): Promise<ValidationResult[]> {
+    void orgContext; // reserved for future org-scoped validation
     const answerMap = new Map(answers.map((a) => [a.questionId, a]));
     const byDomain = new Map<CAIQDomain, CAIQAnswer[]>();
     for (const a of answers) {
@@ -188,7 +202,7 @@ export class CAIQValidator {
 
     const results: ValidationResult[] = [];
     for (const answer of answers) {
-      const result = await this.validateOne(answer, answerMap, byDomain, orgContext);
+      const result = await this.validateOne(answer, answerMap, byDomain);
       results.push(result);
     }
     return results;
@@ -197,8 +211,7 @@ export class CAIQValidator {
   private async validateOne(
     answer: CAIQAnswer,
     answerMap: Map<string, CAIQAnswer>,
-    byDomain: Map<CAIQDomain, CAIQAnswer[]>,
-    _orgContext: OrganizationContext
+    byDomain: Map<CAIQDomain, CAIQAnswer[]>
   ): Promise<ValidationResult> {
     const checks: ValidationCheck[] = [];
     let failedCount = 0;
@@ -350,7 +363,6 @@ export class CAIQValidator {
 
     for (const rule of rules) {
       const whenIds = rule.whenQuestionIds;
-      const thisIsTrigger = whenIds.includes(answer.questionId);
       const triggerAnswers = domainAnswers.filter((a) => whenIds.includes(a.questionId));
       const anyTriggerYes = triggerAnswers.some(
         (a) => a.answerType === 'YES' || a.answerType === 'CONDITIONAL'
@@ -494,7 +506,7 @@ If aligned and specificEnough are true and issues is empty, the answer passes. O
           ? 'AI reviewer found answer aligned and specific.'
           : `AI reviewer issues: ${(parsed.issues || []).join('; ') || 'aligned/specificEnough false'}.`,
       };
-    } catch (err) {
+    } catch {
       setCircuitState(AI_SELF_CHECK_PROVIDER, 'open');
       return {
         name: 'AI Self-Check',

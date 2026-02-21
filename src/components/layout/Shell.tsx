@@ -38,7 +38,9 @@ import {
     BarChart3,
     FolderKanban,
     Zap,
-    TicketCheck
+    TicketCheck,
+    ClipboardCheck,
+    FileSearch
 } from 'lucide-react';
 import { useAstraStore } from '@/lib/store';
 import { signOut } from 'next-auth/react';
@@ -61,6 +63,8 @@ const navItems = [
     { name: 'Policy Engine', href: '/policies', icon: ScrollText },
     { name: 'Governance & Risk', href: '/governance', icon: FileText },
     { name: 'Vendor Risk', href: '/vendors', icon: Building2 },
+    { name: 'CAIQ Assessment', href: '/vendors/caiq', icon: ClipboardCheck },
+    { name: 'CAIQ Review Queue', href: '/vendors/caiq-review', icon: FileSearch },
     { name: 'Incidents', href: '/incidents', icon: Siren },
     { name: 'AppSec Dashboard', href: '/appsec', icon: Shield },
     { name: 'Wargames', href: '/wargames', icon: Gamepad2 },
