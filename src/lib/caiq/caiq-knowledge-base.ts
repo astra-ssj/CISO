@@ -3284,10 +3284,944 @@ export const CAIQ_KB_IAM: CAIQKnowledgeEntry[] = [
 ];
 
 // =============================================================================
+// IPY — Interoperability & Portability (IPY-01 through IPY-04)
+// =============================================================================
+
+export const CAIQ_KB_IPY: CAIQKnowledgeEntry[] = [
+  {
+    questionId: 'IPY-01.1',
+    domain: 'IPY',
+    question:
+      'Are interoperability and portability policies and procedures established, documented, approved, communicated, applied, evaluated, and maintained, including requirements for communications between application interfaces, information processing interoperability, application development portability, and information/data exchange, usage, portability, integrity, and persistence? Are they reviewed and updated at least annually?',
+    keywords: [
+      'interoperability',
+      'portability',
+      'policies',
+      'procedures',
+      'application interfaces',
+      'data exchange',
+      'data portability',
+      'annual review',
+    ],
+    baseAnswer:
+      'Yes. Interoperability and portability policies and procedures are established and maintained, covering communications between application interfaces, information processing interoperability, application development portability, and information/data exchange, usage, portability, integrity, and persistence. They are documented, approved, communicated to relevant teams, and evaluated through reviews and exercises. Policies are reviewed and updated at least annually and when architecture or vendor landscape changes.',
+    evidenceRequired: [
+      'Interoperability and portability policy',
+      'Data exchange and portability procedures',
+      'Annual policy review and revision records',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.1', description: 'Policies for information security' },
+      { framework: 'NIST CSF 2.0', controlId: 'GV.OC-01', description: 'Organizational cybersecurity policy' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'IPY-02.1',
+    domain: 'IPY',
+    question:
+      'Are application interface(s) provided so that cloud service customers can programmatically retrieve their data to enable interoperability and portability?',
+    keywords: [
+      'application interface',
+      'API',
+      'programmatic',
+      'retrieve data',
+      'interoperability',
+      'portability',
+      'customer data',
+    ],
+    baseAnswer:
+      'Yes. Application interfaces (e.g., APIs, export tools) are provided so that cloud service customers can programmatically retrieve their data. Interfaces are documented, versioned, and support standard formats to enable interoperability and portability. Data export capabilities are available within contractual and technical limits; procedures and SLAs for bulk export are defined.',
+    evidenceRequired: [
+      'API or data export documentation',
+      'Data retrieval and export procedures',
+      'Customer-facing portability capabilities',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.24', description: 'Use of cryptography' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.DS-01', description: 'Data-at-rest protection' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'IPY-03.1',
+    domain: 'IPY',
+    question:
+      'Are cryptographically secure and standardized network protocols implemented for the management, import, and export of data?',
+    keywords: [
+      'cryptographically secure',
+      'standardized',
+      'network protocols',
+      'import',
+      'export',
+      'data management',
+    ],
+    baseAnswer:
+      'Yes. Cryptographically secure and standardized network protocols are used for the management, import, and export of data. TLS or equivalent secures data in transit; protocols and versions are aligned with organizational standards and industry practice. Key management and certificate practices support the security of these channels.',
+    evidenceRequired: [
+      'Network and data transfer security standards',
+      'Encryption-in-transit configuration',
+      'Protocol and version documentation',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.24', description: 'Use of cryptography' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.DS-02', description: 'Data-in-transit protection' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'IPY-04.1',
+    domain: 'IPY',
+    question:
+      'Do agreements include provisions specifying cloud service customer access to data upon contract termination, including data format, length of time data will be stored, scope of data retained and made available, and data deletion policy?',
+    keywords: [
+      'contract termination',
+      'data access',
+      'data format',
+      'data retention',
+      'data deletion',
+      'agreements',
+    ],
+    baseAnswer:
+      'Yes. Agreements include provisions specifying customer access to data upon contract termination. Provisions cover data format, length of time data will be stored and made available, scope of data retained and provided to the customer, and data deletion policy. These are documented in contracts or data processing agreements and communicated to customers.',
+    evidenceRequired: [
+      'Contract/DPA clauses on post-termination data access',
+      'Data return and deletion procedures',
+      'Retention and deletion timelines',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.23', description: 'Information security for use of cloud services' },
+      { framework: 'NIST CSF 2.0', controlId: 'GV.OC-01', description: 'Organizational cybersecurity policy' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+];
+
+// =============================================================================
+// IVS — Infrastructure & Virtualization Security (IVS-01 through IVS-09)
+// =============================================================================
+
+export const CAIQ_KB_IVS: CAIQKnowledgeEntry[] = [
+  {
+    questionId: 'IVS-01.1',
+    domain: 'IVS',
+    question:
+      'Are infrastructure and virtualization security policies and procedures established, documented, approved, communicated, applied, evaluated, and maintained? Are they reviewed and updated at least annually?',
+    keywords: [
+      'infrastructure',
+      'virtualization',
+      'security policies',
+      'procedures',
+      'documented',
+      'annual review',
+    ],
+    baseAnswer:
+      'Yes. Infrastructure and virtualization security policies and procedures are established and maintained, covering hardening, segmentation, monitoring, and change management for host, guest, hypervisor, and cloud control plane. They are approved by security and infrastructure leadership, communicated to operations and engineering, and evaluated through audits and reviews. Policies are reviewed and updated at least annually.',
+    evidenceRequired: [
+      'Infrastructure and virtualization security policy',
+      'Hardening and baseline procedures',
+      'Annual policy review evidence',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.1', description: 'Policies for information security' },
+      { framework: 'ISO 27001:2022', controlId: 'A.8.9', description: 'Configuration management' },
+      { framework: 'NIST CSF 2.0', controlId: 'GV.OC-01', description: 'Organizational cybersecurity policy' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.IP-01', description: 'Baseline configuration' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'IVS-02.1',
+    domain: 'IVS',
+    question:
+      'Are availability, quality, and adequate capacity of resources planned and monitored in order to deliver the required system performance as determined by the business?',
+    keywords: [
+      'availability',
+      'capacity',
+      'resources',
+      'system performance',
+      'planning',
+      'monitoring',
+    ],
+    baseAnswer:
+      'Yes. Availability, quality, and adequate capacity of infrastructure resources are planned and monitored to deliver required system performance. Capacity planning is aligned to business needs; monitoring covers utilization, performance, and availability metrics. Thresholds and scaling policies are defined; incidents and trends are reviewed to adjust capacity and resilience.',
+    evidenceRequired: [
+      'Capacity and availability planning documentation',
+      'Monitoring and performance metrics',
+      'Scaling or resilience procedures',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.9', description: 'Configuration management' },
+      { framework: 'NIST CSF 2.0', controlId: 'ID.AM-02', description: 'Software platforms and applications' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'IVS-03.1',
+    domain: 'IVS',
+    question:
+      'Are communications between environments monitored, encrypted, and restricted to only authenticated and authorized connections as justified by the business? Are these configurations reviewed at least annually and supported by documented justification of all allowed services, protocols, ports, and compensating controls?',
+    keywords: [
+      'environments',
+      'network segmentation',
+      'encrypted',
+      'authenticated',
+      'authorized',
+      'protocols',
+      'ports',
+      'compensating controls',
+    ],
+    baseAnswer:
+      'Yes. Communications between environments are monitored, encrypted, and restricted to authenticated and authorized connections as justified by the business. Allowed services, protocols, and ports are documented with business justification; compensating controls are recorded where exceptions exist. Configurations are reviewed at least annually and after significant changes.',
+    evidenceRequired: [
+      'Network segmentation and firewall documentation',
+      'Allowed services/protocols/ports with justification',
+      'Annual configuration review evidence',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.22', description: 'Segregation in networks' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.Net-01', description: 'Network integrity' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'IVS-04.1',
+    domain: 'IVS',
+    question:
+      'Are host and guest OS, hypervisor, or infrastructure control plane hardened according to their respective best practices and supported by technical controls as part of a security baseline?',
+    keywords: [
+      'hardening',
+      'host',
+      'guest',
+      'hypervisor',
+      'control plane',
+      'security baseline',
+      'best practices',
+    ],
+    baseAnswer:
+      'Yes. Host and guest OS, hypervisor, and infrastructure control plane are hardened according to applicable best practices (e.g., CIS benchmarks, vendor guidance) and supported by technical controls as part of a defined security baseline. Baselines are documented and applied to new and existing systems; deviations require risk acceptance and are tracked.',
+    evidenceRequired: [
+      'Hardening baseline or standard (e.g., CIS)',
+      'Configuration evidence for key systems',
+      'Exception and risk acceptance records',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.9', description: 'Configuration management' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.IP-01', description: 'Baseline configuration' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'IVS-05.1',
+    domain: 'IVS',
+    question:
+      'Are production and non-production environments separated?',
+    keywords: [
+      'production',
+      'non-production',
+      'separation',
+      'environments',
+    ],
+    baseAnswer:
+      'Yes. Production and non-production environments are separated through logical or physical isolation. Access, change, and data policies differ between environments; non-production does not contain live sensitive data unless appropriately protected and justified. Separation is documented and enforced through network, identity, and configuration controls.',
+    evidenceRequired: [
+      'Environment separation policy or architecture',
+      'Network and access controls between environments',
+      'Data handling rules per environment',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.22', description: 'Segregation in networks' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.IR-01', description: 'Incident response plan' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'IVS-06.1',
+    domain: 'IVS',
+    question:
+      'Are applications and infrastructures designed, developed, deployed, and configured such that CSP and CSC (tenant) user access and intra-tenant access is appropriately segmented and segregated, monitored, and restricted from other tenants?',
+    keywords: [
+      'tenant',
+      'segmentation',
+      'segregation',
+      'multi-tenant',
+      'access',
+      'isolation',
+    ],
+    baseAnswer:
+      'Yes. Applications and infrastructure are designed and operated so that CSP and tenant user access and intra-tenant access are appropriately segmented and segregated from other tenants. Logical isolation, identity boundaries, and network controls enforce tenant separation; access and activity are monitored. Design and configuration are reviewed for tenant isolation.',
+    evidenceRequired: [
+      'Multi-tenant architecture and isolation design',
+      'Access and network controls for tenant separation',
+      'Monitoring of tenant boundaries',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.22', description: 'Segregation in networks' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.AA-03', description: 'Access is managed' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'IVS-07.1',
+    domain: 'IVS',
+    question:
+      'Are secure and encrypted communication channels used when migrating servers, services, applications, or data to cloud environments, and do such channels use only up-to-date and approved protocols?',
+    keywords: [
+      'migration',
+      'cloud',
+      'encrypted',
+      'secure channel',
+      'protocols',
+    ],
+    baseAnswer:
+      'Yes. Secure and encrypted communication channels are used when migrating servers, services, applications, or data to cloud environments. Only up-to-date and approved protocols (e.g., TLS 1.2+) are used; migration procedures document channel requirements and verification. Key and certificate management supports migration security.',
+    evidenceRequired: [
+      'Cloud migration security procedure',
+      'Encryption and protocol standards for migration',
+      'Migration runbooks or checklists',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.24', description: 'Use of cryptography' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.DS-02', description: 'Data-in-transit protection' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'IVS-08.1',
+    domain: 'IVS',
+    question:
+      'Are high-risk environments identified and documented?',
+    keywords: [
+      'high-risk',
+      'environments',
+      'identified',
+      'documented',
+      'risk',
+    ],
+    baseAnswer:
+      'Yes. High-risk environments are identified and documented based on criteria such as data sensitivity, exposure, regulatory requirements, and threat landscape. Documentation includes risk rationale, compensating controls, and ownership. High-risk environments receive enhanced monitoring, access controls, and review; the inventory is updated periodically.',
+    evidenceRequired: [
+      'High-risk environment inventory or register',
+      'Criteria and risk rationale',
+      'Enhanced controls for high-risk environments',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.6.1', description: 'Screening' },
+      { framework: 'NIST CSF 2.0', controlId: 'GV.RM-01', description: 'Cybersecurity risk management' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'IVS-09.1',
+    domain: 'IVS',
+    question:
+      'Are processes, procedures, and defense-in-depth techniques defined, implemented, and evaluated for protection, detection, and timely response to network-based attacks?',
+    keywords: [
+      'defense-in-depth',
+      'network',
+      'protection',
+      'detection',
+      'response',
+      'attacks',
+    ],
+    baseAnswer:
+      'Yes. Processes, procedures, and defense-in-depth techniques are defined and implemented for protection, detection, and timely response to network-based attacks. Controls include perimeter and segmentation, IDS/IPS, monitoring, and incident response; they are evaluated through testing, exercises, and reviews. Updates are made in response to threats and lessons learned.',
+    evidenceRequired: [
+      'Network security and defense-in-depth procedure',
+      'IDS/IPS or equivalent and monitoring evidence',
+      'Testing or exercise results',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.22', description: 'Segregation in networks' },
+      { framework: 'NIST CSF 2.0', controlId: 'DE.CM-01', description: 'Network monitored' },
+      { framework: 'NIST CSF 2.0', controlId: 'RS.RP-01', description: 'Response plan executed' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+];
+
+// =============================================================================
+// LOG — Logging & Monitoring (LOG-01 through LOG-13)
+// Critical for incident response. References: centralized log management,
+// log retention, real-time alerting, tamper-evident/immutable audit fabric.
+// =============================================================================
+
+export const CAIQ_KB_LOG: CAIQKnowledgeEntry[] = [
+  {
+    questionId: 'LOG-01.1',
+    domain: 'LOG',
+    question:
+      'Are logging and monitoring policies and procedures established, documented, approved, communicated, applied, evaluated, and maintained? Are they reviewed and updated at least annually?',
+    keywords: [
+      'logging',
+      'monitoring',
+      'policies',
+      'procedures',
+      'documented',
+      'annual review',
+    ],
+    baseAnswer:
+      'Yes. Logging and monitoring policies and procedures are established and maintained, covering what is logged, where logs are stored, centralized log management, retention, access, and alerting. They are approved by security and operations leadership, communicated to relevant teams, and evaluated through audits and reviews. Policies are reviewed and updated at least annually and when the threat environment or systems change.',
+    evidenceRequired: [
+      'Logging and monitoring policy',
+      'Centralized log management and retention procedures',
+      'Annual policy review evidence',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.1', description: 'Policies for information security' },
+      { framework: 'ISO 27001:2022', controlId: 'A.8.15', description: 'Logging' },
+      { framework: 'NIST CSF 2.0', controlId: 'GV.OC-01', description: 'Organizational cybersecurity policy' },
+      { framework: 'NIST CSF 2.0', controlId: 'DE.CM-01', description: 'Network monitored' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'LOG-02.1',
+    domain: 'LOG',
+    question:
+      'Are processes, procedures, and technical measures defined, implemented, and evaluated to ensure the security and retention of audit logs?',
+    keywords: [
+      'audit logs',
+      'retention',
+      'security',
+      'processes',
+      'technical measures',
+    ],
+    baseAnswer:
+      'Yes. Processes, procedures, and technical measures are in place to ensure the security and retention of audit logs. Log retention policies define retention periods aligned to legal, regulatory, and incident response needs; logs are stored in a centralized log management environment with access controls and integrity protection. Tamper-evident or immutable storage (e.g., append-only, WORM) is used where required to support an immutable audit fabric and forensics.',
+    evidenceRequired: [
+      'Log retention policy and retention periods',
+      'Centralized log management and storage design',
+      'Tamper-evident or immutable log storage evidence',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.15', description: 'Logging' },
+      { framework: 'ISO 27001:2022', controlId: 'A.8.16', description: 'Monitoring activities' },
+      { framework: 'NIST CSF 2.0', controlId: 'DE.CM-01', description: 'Network monitored' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.PT-01', description: 'Audit and log records' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Align retention with legal/compliance and incident response; tamper-evident or immutable logging supports our immutable audit fabric and is often expected by auditors.',
+  },
+  {
+    questionId: 'LOG-03.1',
+    domain: 'LOG',
+    question:
+      'Are security-related events within applications and the underlying infrastructure identified and monitored, and is a system defined and implemented to generate alerts to responsible stakeholders based on such events and corresponding metrics?',
+    keywords: [
+      'security events',
+      'monitoring',
+      'alerts',
+      'stakeholders',
+      'metrics',
+      'real-time',
+    ],
+    baseAnswer:
+      'Yes. Security-related events within applications and infrastructure are identified and monitored. A centralized logging and SIEM (or equivalent) capability aggregates events and supports real-time alerting to responsible stakeholders based on defined rules, thresholds, and metrics. Alert playbooks and escalation paths are documented; alert tuning and false-positive reduction are performed periodically.',
+    evidenceRequired: [
+      'SIEM or centralized monitoring architecture',
+      'Real-time alerting rules and playbooks',
+      'Evidence of alert delivery and stakeholder response',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.16', description: 'Monitoring activities' },
+      { framework: 'NIST CSF 2.0', controlId: 'DE.CM-01', description: 'Network monitored' },
+      { framework: 'NIST CSF 2.0', controlId: 'DE.AE-01', description: 'Anomalies and events analyzed' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Centralized log management and real-time alerting are core to incident response; auditors expect evidence of alert definition, delivery, and response.',
+  },
+  {
+    questionId: 'LOG-04.1',
+    domain: 'LOG',
+    question:
+      'Is access to audit logs restricted to authorized personnel, and are records maintained that provide unique access accountability?',
+    keywords: [
+      'audit log access',
+      'authorized personnel',
+      'accountability',
+      'access control',
+    ],
+    baseAnswer:
+      'Yes. Access to audit logs is restricted to authorized personnel based on role and need. Access is logged and attributable to unique identities, providing accountability for who accessed or exported log data. Privileged access to log storage and SIEM is controlled and reviewed periodically.',
+    evidenceRequired: [
+      'Log access control policy and role matrix',
+      'Access logs for log repository or SIEM',
+      'Periodic access review evidence',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.15', description: 'Logging' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.AA-03', description: 'Access is managed' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'LOG-05.1',
+    domain: 'LOG',
+    question:
+      'Are security audit logs monitored to detect activity outside of typical or expected patterns, and is a defined process established and followed to review and take appropriate and timely actions on detected anomalies?',
+    keywords: [
+      'anomaly detection',
+      'audit logs',
+      'unusual activity',
+      'review process',
+      'timely action',
+    ],
+    baseAnswer:
+      'Yes. Security audit logs are monitored to detect activity outside typical or expected patterns. Analytics, rules, or behavioral baselines support anomaly detection; a defined process ensures anomalies are reviewed and appropriate, timely actions are taken (e.g., escalation, investigation, containment). Outcomes are documented and feed into tuning and incident response.',
+    evidenceRequired: [
+      'Anomaly detection and review procedure',
+      'Examples of detected anomalies and actions taken',
+      'Tuning or playbook updates',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.16', description: 'Monitoring activities' },
+      { framework: 'NIST CSF 2.0', controlId: 'DE.AE-01', description: 'Anomalies and events analyzed' },
+      { framework: 'NIST CSF 2.0', controlId: 'RS.AN-01', description: 'Notifications from detection' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'LOG-06.1',
+    domain: 'LOG',
+    question:
+      'Is a reliable time source used across all relevant information processing systems?',
+    keywords: [
+      'time source',
+      'NTP',
+      'time synchronization',
+      'reliable',
+    ],
+    baseAnswer:
+      'Yes. A reliable time source (e.g., NTP from authoritative stratum) is used across all relevant information processing systems. Time synchronization is configured and monitored; clock drift is corrected. Consistent time supports accurate correlation of logs and events across systems for monitoring and incident response.',
+    evidenceRequired: [
+      'Time synchronization policy or standard',
+      'NTP or equivalent configuration evidence',
+      'Monitoring of time source health',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.15', description: 'Logging' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.PT-01', description: 'Audit and log records' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'LOG-07.1',
+    domain: 'LOG',
+    question:
+      'Is it established, documented, and implemented which information, metadata, and system events should be logged? Is the scope reviewed and updated at least annually or whenever there is a change in the threat environment?',
+    keywords: [
+      'log scope',
+      'events',
+      'metadata',
+      'documented',
+      'threat environment',
+    ],
+    baseAnswer:
+      'Yes. The scope of what is logged (information, metadata, system events) is established, documented, and implemented. Logging requirements cover security-relevant events (e.g., authentication, access, changes, errors) and are aligned with centralized log management and retention. The scope is reviewed and updated at least annually and when the threat environment or systems change.',
+    evidenceRequired: [
+      'Logging scope or requirements document',
+      'Inventory of logged sources and event types',
+      'Annual or change-driven scope review',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.15', description: 'Logging' },
+      { framework: 'NIST CSF 2.0', controlId: 'DE.CM-01', description: 'Network monitored' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'LOG-08.1',
+    domain: 'LOG',
+    question:
+      'Are audit records generated containing relevant security information?',
+    keywords: [
+      'audit records',
+      'security information',
+      'audit trail',
+    ],
+    baseAnswer:
+      'Yes. Audit records are generated containing relevant security information (e.g., user, action, resource, outcome, timestamp). Record content and format support investigation, compliance, and monitoring; they are ingested into centralized log management for retention, analysis, and alerting.',
+    evidenceRequired: [
+      'Audit record format or schema',
+      'Examples of security-relevant audit records',
+      'Integration with centralized logging',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.15', description: 'Logging' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.PT-01', description: 'Audit and log records' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'LOG-09.1',
+    domain: 'LOG',
+    question:
+      'Does the information system protect audit records from unauthorized access, modification, and deletion?',
+    keywords: [
+      'audit records',
+      'protection',
+      'unauthorized access',
+      'modification',
+      'deletion',
+      'tamper-evident',
+    ],
+    baseAnswer:
+      'Yes. The information system protects audit records from unauthorized access, modification, and deletion. Access is restricted and logged; write/delete permissions are limited to authorized roles. Tamper-evident or immutable storage (e.g., append-only, WORM, integrity verification) is used where appropriate to support an immutable audit fabric and resist tampering.',
+    evidenceRequired: [
+      'Access and integrity controls for log storage',
+      'Tamper-evident or immutable log storage design',
+      'Evidence of protection (e.g., access controls, hashing)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.15', description: 'Logging' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.PT-01', description: 'Audit and log records' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Tamper-evident or immutable logging is directly relevant to our immutable audit fabric; auditors often ask for technical controls that prevent log alteration.',
+  },
+  {
+    questionId: 'LOG-10.1',
+    domain: 'LOG',
+    question:
+      'Is a monitoring and internal reporting capability established and maintained over the operations of cryptographic, encryption, and key management policies, processes, procedures, and controls?',
+    keywords: [
+      'cryptographic',
+      'key management',
+      'monitoring',
+      'internal reporting',
+    ],
+    baseAnswer:
+      'Yes. Monitoring and internal reporting are established over the operations of cryptographic, encryption, and key management policies, processes, procedures, and controls. Key usage, compliance checks, and exceptions are logged and reported; findings are reviewed and feed into risk and control improvement.',
+    evidenceRequired: [
+      'Key management monitoring and reporting procedure',
+      'Reports or dashboards on key operations',
+      'Review and escalation evidence',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.24', description: 'Use of cryptography' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.DS-01', description: 'Data-at-rest protection' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'LOG-11.1',
+    domain: 'LOG',
+    question:
+      'Are key lifecycle management events logged and monitored to enable auditing and reporting on usage of cryptographic keys?',
+    keywords: [
+      'key lifecycle',
+      'logged',
+      'monitored',
+      'auditing',
+      'reporting',
+    ],
+    baseAnswer:
+      'Yes. Key lifecycle management events (e.g., generation, activation, rotation, suspension, revocation, destruction) are logged and monitored. Logs support auditing and reporting on key usage and compliance; they are retained per policy and available to authorized personnel and auditors.',
+    evidenceRequired: [
+      'Key lifecycle logging configuration',
+      'Sample reports or audit evidence',
+      'Retention alignment with policy',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.24', description: 'Use of cryptography' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.DS-01', description: 'Data-at-rest protection' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'LOG-12.1',
+    domain: 'LOG',
+    question:
+      'Is physical access monitored and logged using an auditable access control system?',
+    keywords: [
+      'physical access',
+      'monitored',
+      'logged',
+      'access control',
+      'auditable',
+    ],
+    baseAnswer:
+      'Yes. Physical access to relevant facilities is monitored and logged using an auditable access control system (e.g., badge readers, visitor logs). Logs are retained and reviewed; access is restricted to authorized individuals and aligned with physical security policy.',
+    evidenceRequired: [
+      'Physical access control and logging procedure',
+      'Access control system logs or samples',
+      'Retention and review evidence',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.7.4', description: 'Physical security monitoring' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.PS-01', description: 'Physical environment' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'LOG-13.1',
+    domain: 'LOG',
+    question:
+      'Are processes, procedures, and technical measures defined, implemented, and evaluated for the reporting of anomalies and failures of the monitoring system and to provide immediate notification to the accountable party?',
+    keywords: [
+      'monitoring system',
+      'anomalies',
+      'failures',
+      'reporting',
+      'immediate notification',
+    ],
+    baseAnswer:
+      'Yes. Processes, procedures, and technical measures are in place for reporting anomalies and failures of the monitoring system (e.g., log pipeline, SIEM, collectors) and for immediate notification to the accountable party. Health checks, alerting on monitoring failures, and escalation paths are defined and tested so that gaps in visibility are detected and addressed promptly.',
+    evidenceRequired: [
+      'Monitoring system health and failure procedure',
+      'Alerting for monitoring/SIEM failures',
+      'Evidence of notification and response',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.16', description: 'Monitoring activities' },
+      { framework: 'NIST CSF 2.0', controlId: 'DE.AE-01', description: 'Anomalies and events analyzed' },
+      { framework: 'NIST CSF 2.0', controlId: 'RS.CO-01', description: 'Incident response coordination' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Ensuring the monitoring system itself is monitored and that failures trigger immediate notification is critical for sustained incident response capability.',
+  },
+];
+
+// =============================================================================
+// SEF — Security Incident Management, E-Discovery & Cloud Forensics (SEF-01 through SEF-08)
+// reviewerNotes cross-reference Astra-CISO incident features: war room, timeline, AI copilot, secure comms.
+// =============================================================================
+
+export const CAIQ_KB_SEF: CAIQKnowledgeEntry[] = [
+  {
+    questionId: 'SEF-01.1',
+    domain: 'SEF',
+    question:
+      'Are policies and procedures for Security Incident Management, E-Discovery, and Cloud Forensics established, documented, approved, communicated, applied, evaluated, and maintained? Are they reviewed and updated at least annually?',
+    keywords: [
+      'incident management',
+      'e-discovery',
+      'cloud forensics',
+      'policies',
+      'procedures',
+      'annual review',
+    ],
+    baseAnswer:
+      'Yes. Policies and procedures for security incident management, e-discovery, and cloud forensics are established and maintained. They cover incident classification, response phases, evidence preservation, e-discovery readiness, and forensics in cloud environments. They are approved, communicated, and evaluated through exercises and reviews; they are reviewed and updated at least annually.',
+    evidenceRequired: [
+      'Incident management and forensics policy',
+      'E-discovery and cloud forensics procedures',
+      'Annual policy review evidence',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.26', description: 'Response to information security incidents' },
+      { framework: 'NIST CSF 2.0', controlId: 'RS.CO-01', description: 'Incident response coordination' },
+      { framework: 'NIST CSF 2.0', controlId: 'RS.RP-01', description: 'Response plan executed' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Astra-CISO supports this with incident management workflows, war room, and timeline; ensure policy references align with platform capabilities.',
+  },
+  {
+    questionId: 'SEF-02.1',
+    domain: 'SEF',
+    question:
+      'Are policies and procedures for the timely management of security incidents established, documented, approved, communicated, applied, evaluated, and maintained? Are they reviewed and updated at least annually?',
+    keywords: [
+      'timely',
+      'security incidents',
+      'management',
+      'policies',
+      'procedures',
+      'annual review',
+    ],
+    baseAnswer:
+      'Yes. Policies and procedures for the timely management of security incidents are established and maintained. They define roles, escalation, SLAs (e.g., detection to containment), and communication; they are reviewed and updated at least annually. Timelines and war-room coordination support timely response; metrics (e.g., MTTD, MTTR) are tracked.',
+    evidenceRequired: [
+      'Incident management procedure with SLAs',
+      'Role and escalation documentation',
+      'Annual review and metric evidence',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.26', description: 'Response to information security incidents' },
+      { framework: 'NIST CSF 2.0', controlId: 'RS.RP-01', description: 'Response plan executed' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Astra-CISO incident timeline and war room support timely coordination and visibility; reference these in evidence (e.g., timeline of events, commander role).',
+  },
+  {
+    questionId: 'SEF-03.1',
+    domain: 'SEF',
+    question:
+      'Is a security incident response plan established, documented, approved, communicated, applied, evaluated, and maintained, including relevant internal departments, impacted cloud service customers, and other business-critical relationships (such as supply chain) that may be impacted?',
+    keywords: [
+      'incident response plan',
+      'internal departments',
+      'customers',
+      'supply chain',
+      'business-critical',
+    ],
+    baseAnswer:
+      'Yes. A security incident response plan is established and maintained, covering relevant internal departments, impacted cloud service customers, and other business-critical relationships (e.g., supply chain). The plan defines roles (e.g., incident commander), communication channels, escalation, and customer/partner notification. It is documented, approved, communicated, and applied during incidents and exercises.',
+    evidenceRequired: [
+      'Incident response plan document',
+      'Stakeholder and customer notification procedures',
+      'Evidence of use in exercises or incidents',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.26', description: 'Response to information security incidents' },
+      { framework: 'NIST CSF 2.0', controlId: 'RS.RP-01', description: 'Response plan executed' },
+      { framework: 'NIST CSF 2.0', controlId: 'RS.CO-01', description: 'Incident response coordination' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Astra-CISO war room and incident commander assignment map directly to IR plan roles; timeline and secure comms support coordination with internal and external stakeholders.',
+  },
+  {
+    questionId: 'SEF-04.1',
+    domain: 'SEF',
+    question:
+      'Are incident response plans tested and updated as necessary at planned intervals or upon significant organizational or environmental changes for effectiveness?',
+    keywords: [
+      'incident response',
+      'test',
+      'update',
+      'planned intervals',
+      'effectiveness',
+    ],
+    baseAnswer:
+      'Yes. Incident response plans are tested at planned intervals (e.g., tabletop or technical exercises) and updated upon significant organizational or environmental changes. Test results and lessons learned are documented; plan updates are versioned and communicated. Effectiveness is evaluated through after-action reviews and metrics.',
+    evidenceRequired: [
+      'Exercise schedule and test evidence',
+      'After-action reviews or lessons learned',
+      'Plan revision history',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.26', description: 'Response to information security incidents' },
+      { framework: 'NIST CSF 2.0', controlId: 'RS.RP-01', description: 'Response plan executed' },
+      { framework: 'NIST CSF 2.0', controlId: 'RS.IM-01', description: 'Response plan updated' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Astra-CISO war games and incident scenarios can support exercise evidence; timeline and war room usage during tests can be cited.',
+  },
+  {
+    questionId: 'SEF-05.1',
+    domain: 'SEF',
+    question:
+      'Are information security incident metrics established and monitored?',
+    keywords: [
+      'incident metrics',
+      'MTTR',
+      'MTTD',
+      'monitored',
+    ],
+    baseAnswer:
+      'Yes. Information security incident metrics are established and monitored (e.g., number of incidents, MTTD, MTTR, severity distribution, recurrence). Metrics are tracked in a consistent manner, reported to management, and used for improvement. Dashboards or periodic reports support visibility and accountability.',
+    evidenceRequired: [
+      'Definition of incident metrics',
+      'Dashboards or reports (e.g., MTTD, MTTR)',
+      'Management review or use in improvement',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.26', description: 'Response to information security incidents' },
+      { framework: 'NIST CSF 2.0', controlId: 'RS.MA-01', description: 'Incident response metrics' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Astra-CISO tracks incident KPIs (e.g., MTTR, resolution rate) and posture score; incident metrics from the platform can be used as evidence.',
+  },
+  {
+    questionId: 'SEF-06.1',
+    domain: 'SEF',
+    question:
+      'Are processes, procedures, and technical measures defined, implemented, and evaluated to triage security-related events and support business processes?',
+    keywords: [
+      'triage',
+      'security events',
+      'processes',
+      'procedures',
+      'technical measures',
+    ],
+    baseAnswer:
+      'Yes. Processes, procedures, and technical measures are defined and implemented to triage security-related events. Triage criteria (e.g., severity, impact) and routing are documented; events are classified and escalated appropriately. Effectiveness is evaluated through metrics and reviews; triage outcomes feed incident response and monitoring tuning.',
+    evidenceRequired: [
+      'Triage procedure and criteria',
+      'Evidence of triage and classification',
+      'Escalation and routing documentation',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.26', description: 'Response to information security incidents' },
+      { framework: 'NIST CSF 2.0', controlId: 'RS.AN-01', description: 'Notifications from detection' },
+      { framework: 'NIST CSF 2.0', controlId: 'RS.AN-02', description: 'Impact understood' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Astra-CISO incident severity and status workflow, plus timeline events, support triage and impact assessment; war room supports coordinated triage.',
+  },
+  {
+    questionId: 'SEF-07.1',
+    domain: 'SEF',
+    question:
+      'Are processes, procedures, and technical measures defined and implemented for security breach notifications? Are security breaches and assumed security breaches, including relevant supply chain breaches, reported per applicable SLAs, laws, and regulations?',
+    keywords: [
+      'breach notification',
+      'security breach',
+      'SLAs',
+      'laws',
+      'regulations',
+      'supply chain',
+    ],
+    baseAnswer:
+      'Yes. Processes, procedures, and technical measures for security breach notifications are defined and implemented. Breaches and assumed breaches (including supply chain) are reported per applicable SLAs, laws, and regulations (e.g., GDPR, sector rules). Notification timelines, recipients (regulators, customers, partners), and content are documented; compliance is monitored and audited.',
+    evidenceRequired: [
+      'Breach notification procedure',
+      'Regulatory and contractual requirements mapping',
+      'Evidence of notification or drill',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.26', description: 'Response to information security incidents' },
+      { framework: 'NIST CSF 2.0', controlId: 'RS.CO-02', description: 'Incident reporting' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Astra-CISO incident workflow and timeline support tracking of breach detection and notification; war room and secure comms support coordination with legal and regulators.',
+  },
+  {
+    questionId: 'SEF-08.1',
+    domain: 'SEF',
+    question:
+      'Are points of contact maintained for applicable regulation authorities, national and local law enforcement, and other legal or jurisdictional authorities?',
+    keywords: [
+      'points of contact',
+      'regulators',
+      'law enforcement',
+      'legal',
+      'jurisdictional',
+    ],
+    baseAnswer:
+      'Yes. Points of contact for applicable regulation authorities, national and local law enforcement, and other legal or jurisdictional authorities are maintained. The contact list is reviewed and updated periodically; it is available to incident response and legal teams. Use during incidents or drills is documented as appropriate.',
+    evidenceRequired: [
+      'Authority and law enforcement contact list or procedure',
+      'Review and update evidence',
+      'Accessibility to IR and legal teams',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.26', description: 'Response to information security incidents' },
+      { framework: 'NIST CSF 2.0', controlId: 'RS.CO-02', description: 'Incident reporting' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Astra-CISO incident management (war room, timeline, secure comms) can reference where external contact escalation is documented and used.',
+  },
+];
+
+// =============================================================================
 // Combined knowledge base and accessor
 // =============================================================================
 
-/** All knowledge base entries from AIS, AAC, BCR, CCC, CEK, DSP, GRC, HRS, and IAM domains. */
+/** All knowledge base entries from AIS, AAC, BCR, CCC, CEK, DSP, GRC, HRS, IAM, IPY, IVS, LOG, and SEF domains. */
 const ALL_KB_ENTRIES: CAIQKnowledgeEntry[] = [
   ...CAIQ_KB_AIS,
   ...CAIQ_KB_AAC,
@@ -3298,6 +4232,10 @@ const ALL_KB_ENTRIES: CAIQKnowledgeEntry[] = [
   ...CAIQ_KB_GRC,
   ...CAIQ_KB_HRS,
   ...CAIQ_KB_IAM,
+  ...CAIQ_KB_IPY,
+  ...CAIQ_KB_IVS,
+  ...CAIQ_KB_LOG,
+  ...CAIQ_KB_SEF,
 ];
 
 /**
@@ -3344,6 +4282,13 @@ const DOMAIN_DISPLAY_NAMES: Record<string, string> = {
   CCC: 'Change Control & Configuration Management',
   CEK: 'Cryptography, Encryption & Key Management',
   DSP: 'Data Security & Privacy Lifecycle Management',
+  GRC: 'Governance, Risk & Compliance',
+  HRS: 'Human Resources Security',
+  IAM: 'Identity & Access Management',
+  IPY: 'Interoperability & Portability',
+  IVS: 'Infrastructure & Virtualization Security',
+  LOG: 'Logging & Monitoring',
+  SEF: 'Security Incident Management, E-Discovery & Cloud Forensics',
 };
 
 function expectedAnswerTypeToYesNo(
