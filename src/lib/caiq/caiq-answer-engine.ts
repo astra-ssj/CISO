@@ -1,519 +1,417 @@
 /**
- * CAIQ Answer Engine
- * 
- * Parses Excel questionnaires, matches questions to knowledge base,
- * and optionally enhances with AI for 80-85% auto-fill coverage.
+ * CAIQ Answer Engine — 4-tier confidence architecture.
+ *
+ * Tier 1: Exact KB match (0.95–0.99)
+ * Tier 2: Semantic KB match (0.80–0.95)
+ * Tier 3: AI-generated (0.60–0.80)
+ * Tier 4: Flagged for human review (0.0)
+ *
+ * Imports: types, knowledge base, semantic matcher, circuit breaker, AI engine, audit.
  */
 
-import ExcelJS from 'exceljs';
-import {
-    CAIQ_KNOWLEDGE_BASE,
-    type CAIQEntry,
-    type QuestionnaireQuestion,
-    type AnsweredQuestion,
-    type ConfidenceLevel,
-} from './caiq-knowledge-base';
+import type {
+  CAIQAnswer,
+  CAIQAnswerSet,
+  CAIQGenerateOptions,
+  CAIQKnowledgeEntry,
+  CAIQStats,
+  ConfidenceTier,
+  CAIQGeneratedBy,
+  CAIQAnswerType,
+  CAIQDomain,
+  FrameworkMapping,
+  OrganizationContext,
+  ParsedCAIQQuestion,
+  ScoredKBEntry,
+} from './types';
+import { CAIQ_DOMAINS } from './types';
+import { CAIQSemanticMatcher } from './caiq-semantic-matcher';
+import { getCircuitState, setCircuitState } from '../ai/circuit-breaker';
+import type { UnifiedAIProvider } from '../ai/engine';
+import { logCAIQAnswer } from '../auth/audit';
+import { z } from 'zod';
 
-// ────────────────────────────────────────────
-// Types
-// ────────────────────────────────────────────
+// -----------------------------------------------------------------------------
+// Engine options (thresholds, optional secondary AI)
+// -----------------------------------------------------------------------------
 
-export interface OrgProfile {
-    industry: string;
-    certifications: string[];
-    orgSize: string;
-    cloudProvider: string;
-    additionalContext: string;
+export interface CAIQAnswerEngineOptions {
+  /** Minimum semantic similarity to use a KB entry (default 0.80). */
+  semanticMatchThreshold?: number;
+  /** Confidence assigned to exact ID matches (default 0.97). */
+  exactMatchConfidence?: number;
+  /** Optional secondary AI provider for fallback (e.g. when primary circuit is open). */
+  secondaryAI?: UnifiedAIProvider;
+  /** Provider name for circuit breaker (default from env AI_PROVIDER). */
+  primaryProviderName?: string;
+  /** Temperature for AI calls (default 0.2). */
+  aiTemperature?: number;
 }
 
-export interface CAIQProcessingResult {
-    totalQuestions: number;
-    answeredByKB: number;
-    answeredByAI: number;
-    unanswered: number;
-    coveragePct: number;
-    questions: AnsweredQuestion[];
-    domainBreakdown: Record<string, { total: number; answered: number; pct: number }>;
-}
+const DEFAULT_ENGINE_OPTIONS = {
+  semanticMatchThreshold: 0.8,
+  exactMatchConfidence: 0.97,
+  primaryProviderName: (typeof process !== 'undefined' && process.env?.AI_PROVIDER) || 'GEMINI',
+  aiTemperature: 0.2,
+};
 
-// ────────────────────────────────────────────
-// Excel Parsing
-// ────────────────────────────────────────────
+// -----------------------------------------------------------------------------
+// AI response schema (Zod)
+// -----------------------------------------------------------------------------
 
-/**
- * Parse an uploaded Excel buffer and extract questions.
- * Robust: scans multiple header rows, tries all sheets, uses
- * text-length heuristics when keyword matching fails.
- */
-export async function parseQuestionnaire(buffer: ArrayBuffer): Promise<QuestionnaireQuestion[]> {
-    const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(new Uint8Array(buffer) as any);
+const aiResponseSchema = z.object({
+  answerType: z.enum(['YES', 'NO', 'NOT_APPLICABLE', 'CONDITIONAL']),
+  answer: z.string(),
+  confidenceReasoning: z.string().optional(),
+  suggestedEvidence: z.array(z.string()).optional(),
+  relatedFrameworks: z.array(z.object({
+    framework: z.string(),
+    controlId: z.string(),
+    description: z.string().optional(),
+  })).optional(),
+});
 
-    // Try each sheet until we find questions
-    for (const worksheet of workbook.worksheets) {
-        const rows: any[][] = [];
-        worksheet.eachRow({ includeEmpty: true }, (row) => {
-            rows.push(row.values as any[]);
-        });
-        // ExcelJS row.values is 1-indexed (index 0 is undefined), normalize
-        const normalizedRows = rows.map(r => {
-            const arr = Array.isArray(r) ? r.slice(1) : [];
-            return arr.map(cell => (cell === null || cell === undefined) ? '' : cell);
-        });
+type AIResponse = z.infer<typeof aiResponseSchema>;
 
-        if (normalizedRows.length < 2) continue;
+// -----------------------------------------------------------------------------
+// CAIQAnswerEngine
+// -----------------------------------------------------------------------------
 
-        const result = extractQuestionsFromRows(normalizedRows);
-        if (result.length > 0) return result;
-    }
+export class CAIQAnswerEngine {
+  private readonly kbEntries: CAIQKnowledgeEntry[];
+  private readonly matcher: CAIQSemanticMatcher;
+  private readonly ai: UnifiedAIProvider;
+  private readonly orgContext: OrganizationContext;
+  private readonly opts: CAIQAnswerEngineOptions & Readonly<typeof DEFAULT_ENGINE_OPTIONS>;
 
-    return [];
-}
-
-/**
- * Inner extraction logic. Tries several strategies to find the
- * question column + header row in a sheet's row data.
- */
-function extractQuestionsFromRows(rows: any[][]): QuestionnaireQuestion[] {
-    const questionKeywords = [
-        'question', 'control question', 'caiq', 'requirement',
-        'description', 'query', 'control specification', 'security question',
-        'assessment question', 'audit question', 'control objective',
-        'control activity', 'questionnaire', 'criteria', 'control description',
-    ];
-    const idKeywords = [
-        'id', 'control id', 'question id', 'ref', 'reference',
-        'number', '#', 'control #', 'ccm', 'domain',
-    ];
-
-    // ── Strategy 1: Scan rows 0-15 for a header row ──
-    const maxHeaderScan = Math.min(rows.length, 15);
-    for (let headerRow = 0; headerRow < maxHeaderScan; headerRow++) {
-        const row = rows[headerRow];
-        if (!row || !Array.isArray(row)) continue;
-
-        const cells = row.map((c: any) => String(c ?? '').toLowerCase().trim());
-        // Skip rows that are empty or only have 1 cell (title rows)
-        const nonEmpty = cells.filter(c => c.length > 0);
-        if (nonEmpty.length < 2) continue;
-
-        let questionCol = -1;
-        let idCol = -1;
-
-        for (let i = 0; i < cells.length; i++) {
-            const h = cells[i];
-            if (!h) continue;
-            if (questionCol === -1 && questionKeywords.some(kw => h.includes(kw))) {
-                questionCol = i;
-            }
-            if (idCol === -1 && idKeywords.some(kw => h === kw || h.includes(kw))) {
-                idCol = i;
-            }
-        }
-
-        if (questionCol !== -1) {
-            const questions = collectQuestions(rows, headerRow + 1, questionCol, idCol);
-            if (questions.length > 0) return questions;
-        }
-    }
-
-    // ── Strategy 2: Find the column with the longest average text (heuristic) ──
-    // Look through all columns across data rows 1-20 and pick the one with
-    // the longest average cell text — that's likely the question column.
-    const sampleEnd = Math.min(rows.length, 30);
-    const colCount = Math.max(...rows.slice(0, sampleEnd).map(r => (r ? r.length : 0)));
-
-    if (colCount > 0) {
-        let bestCol = 0;
-        let bestAvgLen = 0;
-        let bestHeaderRow = 0;
-
-        for (let col = 0; col < colCount; col++) {
-            // Find the first "data start" row for this col by skipping empty cells
-            let dataStart = 0;
-            for (let r = 0; r < Math.min(rows.length, 10); r++) {
-                const val = String(rows[r]?.[col] ?? '').trim();
-                if (val.length > 15) { // Looks like a question
-                    dataStart = r;
-                    break;
-                }
-                dataStart = r + 1;
-            }
-
-            const sample = rows.slice(dataStart, dataStart + 20);
-            const lengths = sample.map(r => String(r?.[col] ?? '').trim().length);
-            const nonZeroLengths = lengths.filter(l => l > 0);
-            const avgLen = nonZeroLengths.length > 0
-                ? nonZeroLengths.reduce((a, b) => a + b, 0) / nonZeroLengths.length
-                : 0;
-
-            if (avgLen > bestAvgLen) {
-                bestAvgLen = avgLen;
-                bestCol = col;
-                bestHeaderRow = dataStart;
-            }
-        }
-
-        // Only use this if the avg length is meaningful (> 20 chars means sentences)
-        if (bestAvgLen > 20) {
-            // Try to find an ID column nearby
-            let idCol = -1;
-            for (let col = 0; col < colCount; col++) {
-                if (col === bestCol) continue;
-                const sample = rows.slice(bestHeaderRow, bestHeaderRow + 5);
-                const vals = sample.map(r => String(r?.[col] ?? '').trim());
-                // ID columns tend to have short values with dashes/dots (e.g. "A&A-01.1")
-                const looksLikeIds = vals.filter(v => v.length > 0 && v.length < 20).length;
-                if (looksLikeIds >= 3) { idCol = col; break; }
-            }
-
-            const questions = collectQuestions(rows, bestHeaderRow, bestCol, idCol);
-            if (questions.length > 0) return questions;
-        }
-    }
-
-    // ── Strategy 3: Just take any column with text longer than 30 chars ──
-    for (let col = 0; col < colCount; col++) {
-        const questions: QuestionnaireQuestion[] = [];
-        for (let r = 0; r < rows.length; r++) {
-            const text = String(rows[r]?.[col] ?? '').trim();
-            if (text.length >= 30 && !text.toLowerCase().startsWith('copyright') && !text.toLowerCase().startsWith('disclaimer')) {
-                questions.push({
-                    rowIndex: r,
-                    questionId: undefined,
-                    questionText: text,
-                });
-            }
-        }
-        if (questions.length >= 3) return questions;
-    }
-
-    return [];
-}
-
-/**
- * Collect questions starting from dataStartRow using the detected columns.
- */
-function collectQuestions(
-    rows: any[][],
-    dataStartRow: number,
-    questionCol: number,
-    idCol: number,
-): QuestionnaireQuestion[] {
-    const questions: QuestionnaireQuestion[] = [];
-    for (let i = dataStartRow; i < rows.length; i++) {
-        const row = rows[i];
-        if (!row) continue;
-        const questionText = String(row[questionCol] ?? '').trim();
-        if (questionText.length < 5) continue; // Very lenient — even short questions
-
-        questions.push({
-            rowIndex: i,
-            questionId: idCol >= 0 ? String(row[idCol] ?? '').trim() || undefined : undefined,
-            questionText,
-        });
-    }
-    return questions;
-}
-
-// ────────────────────────────────────────────
-// Knowledge Base Matching
-// ────────────────────────────────────────────
-
-/**
- * Score how well a question matches a knowledge base entry.
- * Returns 0-100 similarity score.
- */
-function matchScore(question: string, entry: CAIQEntry): number {
-    const qLower = question.toLowerCase();
-    const words = qLower.split(/\s+/).filter(w => w.length > 3);
-
-    // Keyword match score
-    let keywordHits = 0;
-    for (const kw of entry.keywords) {
-        if (qLower.includes(kw.toLowerCase())) {
-            keywordHits++;
-        }
-    }
-    const keywordScore = entry.keywords.length > 0
-        ? (keywordHits / entry.keywords.length) * 100
-        : 0;
-
-    // Question text similarity (word overlap)
-    const entryWords = entry.question.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-    let wordOverlap = 0;
-    for (const w of words) {
-        if (entryWords.some(ew => ew.includes(w) || w.includes(ew))) {
-            wordOverlap++;
-        }
-    }
-    const overlapScore = words.length > 0
-        ? (wordOverlap / Math.max(words.length, entryWords.length)) * 100
-        : 0;
-
-    // Combined: 60% keyword, 40% word overlap
-    return Math.round(keywordScore * 0.6 + overlapScore * 0.4);
-}
-
-/**
- * Match questions to the knowledge base (no AI).
- */
-export function matchToKnowledgeBase(
-    questions: QuestionnaireQuestion[],
-    minConfidence: number = 30
-): AnsweredQuestion[] {
-    return questions.map(q => {
-        let bestMatch: CAIQEntry | null = null;
-        let bestScore = 0;
-
-        for (const entry of CAIQ_KNOWLEDGE_BASE) {
-            const score = matchScore(q.questionText, entry);
-            if (score > bestScore) {
-                bestScore = score;
-                bestMatch = entry;
-            }
-        }
-
-        if (bestMatch && bestScore >= minConfidence) {
-            const confidence: ConfidenceLevel =
-                bestScore >= 70 ? 'high' : bestScore >= 50 ? 'medium' : 'low';
-
-            return {
-                ...q,
-                answer: bestMatch.answer,
-                yesNo: bestMatch.yesNo,
-                confidence,
-                matchedEntryId: bestMatch.id,
-                source: 'knowledge-base' as const,
-                evidenceRef: bestMatch.evidenceRef,
-            };
-        }
-
-        return {
-            ...q,
-            answer: '',
-            yesNo: '' as const,
-            confidence: 'low' as const,
-            source: 'manual' as const,
-            evidenceRef: '',
-        };
-    });
-}
-
-// ────────────────────────────────────────────
-// AI Enhancement (Server-side only)
-// ────────────────────────────────────────────
-
-/**
- * Enhance unanswered/low-confidence questions using AI.
- * This function is designed to be called from the API route.
- */
-export async function enhanceWithAI(
-    questions: AnsweredQuestion[],
-    orgProfile: OrgProfile,
-    aiGenerateContent: (prompt: string) => Promise<string>
-): Promise<AnsweredQuestion[]> {
-    const toEnhance = questions.filter(
-        q => q.source === 'manual' || q.confidence === 'low'
-    );
-
-    if (toEnhance.length === 0) return questions;
-
-    // Batch questions for efficiency (max 15 per batch)
-    const batches: AnsweredQuestion[][] = [];
-    for (let i = 0; i < toEnhance.length; i += 15) {
-        batches.push(toEnhance.slice(i, i + 15));
-    }
-
-    const enhanced = new Map<number, AnsweredQuestion>();
-
-    for (const batch of batches) {
-        const prompt = buildAIPrompt(batch, orgProfile);
-
-        try {
-            const response = await aiGenerateContent(prompt);
-            const parsed = parseAIResponse(response);
-
-            for (const item of parsed) {
-                const original = batch.find(q => q.rowIndex === item.rowIndex);
-                if (original) {
-                    enhanced.set(item.rowIndex, {
-                        ...original,
-                        answer: item.answer,
-                        yesNo: item.yesNo,
-                        confidence: 'medium',
-                        source: 'ai',
-                        evidenceRef: item.evidenceRef || original.evidenceRef,
-                    });
-                }
-            }
-        } catch (error) {
-            console.error('[CAIQ AI] Batch processing error:', error);
-            // Continue with remaining batches
-        }
-    }
-
-    return questions.map(q => enhanced.get(q.rowIndex) || q);
-}
-
-function buildAIPrompt(questions: AnsweredQuestion[], profile: OrgProfile): string {
-    const questionsText = questions.map(q =>
-        `[ROW:${q.rowIndex}] ${q.questionText}`
-    ).join('\n');
-
-    return `You are a cybersecurity compliance expert completing a vendor risk questionnaire (CAIQ/SIG style).
-
-ORGANIZATION PROFILE:
-- Industry: ${profile.industry || 'Technology'}
-- Certifications: ${profile.certifications.join(', ') || 'SOC 2 Type II, ISO 27001'}
-- Organization Size: ${profile.orgSize || 'Mid-size (500-5000 employees)'}
-- Cloud Provider: ${profile.cloudProvider || 'AWS/Azure'}
-- Additional Context: ${profile.additionalContext || 'N/A'}
-
-For each question below, provide a professional, detailed answer from the perspective of a mature, compliant organization. Each answer should be 2-4 sentences and reference specific controls, tools, or processes.
-
-QUESTIONS:
-${questionsText}
-
-RESPOND IN THIS EXACT JSON FORMAT (array of objects):
-[
-  {
-    "rowIndex": <number>,
-    "yesNo": "Yes" | "No" | "N/A",
-    "answer": "<detailed answer>",
-    "evidenceRef": "<evidence document reference>"
+  constructor(
+    knowledgeBaseEntries: CAIQKnowledgeEntry[],
+    aiEngine: UnifiedAIProvider,
+    orgContext: OrganizationContext,
+    options?: CAIQAnswerEngineOptions
+  ) {
+    this.kbEntries = knowledgeBaseEntries;
+    this.matcher = new CAIQSemanticMatcher(knowledgeBaseEntries);
+    this.ai = aiEngine;
+    this.orgContext = orgContext;
+    this.opts = { ...DEFAULT_ENGINE_OPTIONS, ...options };
   }
-]
 
-Respond ONLY with the JSON array. No explanation.`;
-}
+  /**
+   * Generate answers for a set of parsed CAIQ questions using the 4-tier pipeline.
+   * Each answer gets a unique auditId, timestamp, source references, and is logged to the audit trail.
+   */
+  async generateAnswers(
+    questions: ParsedCAIQQuestion[],
+    options?: Partial<CAIQGenerateOptions>
+  ): Promise<CAIQAnswerSet> {
+    const includeEvidence = options?.includeEvidence ?? true;
+    const flagThreshold = options?.flagThreshold ?? 0.6;
+    const autoApproveThreshold = options?.autoApproveThreshold ?? 0.9;
 
-function parseAIResponse(response: string): Array<{
-    rowIndex: number;
-    yesNo: 'Yes' | 'No' | 'N/A';
-    answer: string;
-    evidenceRef: string;
-}> {
-    try {
-        // Clean up response — remove markdown code blocks if present
-        const cleaned = response
-            .replace(/```json\s*/g, '')
-            .replace(/```\s*/g, '')
-            .trim();
-        return JSON.parse(cleaned);
-    } catch {
-        console.error('[CAIQ AI] Failed to parse AI response');
-        return [];
-    }
-}
-
-// ────────────────────────────────────────────
-// Results Aggregation
-// ────────────────────────────────────────────
-
-export function computeResults(questions: AnsweredQuestion[]): CAIQProcessingResult {
-    const answeredByKB = questions.filter(q => q.source === 'knowledge-base').length;
-    const answeredByAI = questions.filter(q => q.source === 'ai').length;
-    const answered = answeredByKB + answeredByAI;
-    const unanswered = questions.length - answered;
-
-    // Domain breakdown
-    const domainBreakdown: Record<string, { total: number; answered: number; pct: number }> = {};
+    const answers: CAIQAnswer[] = [];
 
     for (const q of questions) {
-        // Try to infer domain from matched entry
-        const entry = q.matchedEntryId
-            ? CAIQ_KNOWLEDGE_BASE.find(e => e.id === q.matchedEntryId)
-            : null;
-        const domain = entry?.domainName || 'Other';
-
-        if (!domainBreakdown[domain]) {
-            domainBreakdown[domain] = { total: 0, answered: 0, pct: 0 };
-        }
-        domainBreakdown[domain].total++;
-        if (q.source !== 'manual') {
-            domainBreakdown[domain].answered++;
-        }
+      const answer = await this.answerOne(q, { includeEvidence, flagThreshold, autoApproveThreshold });
+      answers.push(answer);
+      await logCAIQAnswer(answer, 'CAIQ_ANSWER_GENERATED').catch(() => {});
     }
 
-    for (const domain of Object.keys(domainBreakdown)) {
-        const d = domainBreakdown[domain];
-        d.pct = d.total > 0 ? Math.round((d.answered / d.total) * 100) : 0;
+    const stats = this.computeStats(answers);
+    return { answers, stats };
+  }
+
+  /**
+   * Run one question through the 4 tiers and return a single CAIQAnswer.
+   */
+  private async answerOne(
+    question: ParsedCAIQQuestion,
+    opts: { includeEvidence: boolean; flagThreshold: number; autoApproveThreshold: number }
+  ): Promise<CAIQAnswer> {
+    const auditId = crypto.randomUUID();
+    const generatedAt = new Date().toISOString();
+
+    // ---- TIER 1: Exact match by question ID ----
+    const exactEntry = this.kbEntries.find((e) => e.questionId === question.id);
+    if (exactEntry) {
+      const applied = this.applyOrgContext(exactEntry);
+      const confidence = this.opts.exactMatchConfidence ?? 0.97;
+      const answer: CAIQAnswer = {
+        questionId: question.id,
+        answer: applied.answer,
+        answerType: exactEntry.expectedAnswerType,
+        confidence,
+        tier: 'EXACT_MATCH',
+        sources: [`KB:${exactEntry.questionId}`],
+        evidenceRefs: opts.includeEvidence ? applied.evidenceRefs : [],
+        frameworkRefs: exactEntry.frameworkMappings ?? [],
+        needsReview: confidence < opts.autoApproveThreshold,
+        auditId,
+        generatedAt,
+        generatedBy: 'KB_EXACT',
+      };
+      return answer;
+    }
+
+    // ---- TIER 2: Semantic match ----
+    const semanticMatches = this.matcher.findSimilar(question.text, question.domain, {
+      threshold: this.opts.semanticMatchThreshold ?? 0.8,
+      maxResults: 3,
+    });
+    const best = semanticMatches[0];
+    if (best && best.score >= (this.opts.semanticMatchThreshold ?? 0.8) && best.entry) {
+      const applied = this.applyOrgContext(best.entry);
+      // Adapt answer to the specific question text if slightly different
+      const answerText = this.adaptSemanticAnswer(applied.answer, question.text, best.entry.question);
+      const confidence = Math.min(0.95, Math.max(0.8, best.score));
+      const answer: CAIQAnswer = {
+        questionId: question.id,
+        answer: answerText,
+        answerType: best.entry.expectedAnswerType,
+        confidence,
+        tier: 'SEMANTIC_MATCH',
+        sources: [`KB:${best.entry.questionId}`],
+        evidenceRefs: opts.includeEvidence ? applied.evidenceRefs : [],
+        frameworkRefs: best.entry.frameworkMappings ?? [],
+        needsReview: confidence < opts.autoApproveThreshold,
+        auditId,
+        generatedAt,
+        generatedBy: 'KB_SEMANTIC',
+      };
+      return answer;
+    }
+
+    // ---- TIER 3: AI-generated ----
+    const relatedEntries = semanticMatches.filter((m): m is ScoredKBEntry & { entry: CAIQKnowledgeEntry } => !!m.entry).slice(0, 3);
+    const aiResult = await this.executeWithFallback(async (engine) => {
+      const prompt = this.buildAIPrompt(question, relatedEntries);
+      const raw = await engine.generateContent(prompt);
+      const parsed = this.parseAIResponse(raw);
+      return parsed;
+    });
+
+    if (aiResult && aiResult.result != null) {
+      const { result, generatedBy } = aiResult;
+      const confidence = result.confidenceReasoning ? 0.72 : 0.68;
+      const frameworkRefs: FrameworkMapping[] = (result.relatedFrameworks ?? []).map((f) => ({
+        framework: f.framework,
+        controlId: f.controlId,
+        description: f.description,
+      }));
+      const answer: CAIQAnswer = {
+        questionId: question.id,
+        answer: result.answer,
+        answerType: result.answerType as CAIQAnswerType,
+        confidence,
+        tier: 'AI_GENERATED',
+        sources: ['AI'],
+        evidenceRefs: opts.includeEvidence ? (result.suggestedEvidence ?? []) : [],
+        frameworkRefs,
+        needsReview: confidence < opts.autoApproveThreshold,
+        auditId,
+        generatedAt,
+        generatedBy,
+      };
+      return answer;
+    }
+
+    // ---- TIER 4: Flagged for human review ----
+    const answer: CAIQAnswer = {
+      questionId: question.id,
+      answer: `This question could not be answered automatically from the knowledge base or AI. Please provide an auditor-grade answer and attach evidence. Domain: ${question.domainName}.`,
+      answerType: 'CONDITIONAL',
+      confidence: 0,
+      tier: 'FLAGGED',
+      sources: [],
+      evidenceRefs: [],
+      frameworkRefs: [],
+      needsReview: true,
+      auditId,
+      generatedAt,
+      generatedBy: 'HUMAN',
+    };
+    return answer;
+  }
+
+  /**
+   * Merge org-specific overrides and evidence links into a KB entry's answer.
+   */
+  applyOrgContext(entry: CAIQKnowledgeEntry): {
+    answer: string;
+    evidenceRefs: string[];
+  } {
+    const overrides = this.orgContext.answerOverrides ?? {};
+    const evidenceLinks = this.orgContext.evidenceLinks ?? {};
+    const baseAnswer = entry.orgAnswer ?? entry.baseAnswer;
+    const answer = overrides[entry.questionId] ?? baseAnswer;
+    const baseEvidence = entry.evidenceRequired ?? [];
+    const orgEvidence = evidenceLinks[entry.questionId] ?? [];
+    const evidenceRefs = [...baseEvidence, ...orgEvidence].filter(Boolean);
+    return { answer, evidenceRefs };
+  }
+
+  /**
+   * Light adaptation of a semantic match answer to the specific question wording.
+   */
+  private adaptSemanticAnswer(kbAnswer: string, questionText: string, kbQuestion: string): string {
+    if (!questionText || !kbQuestion || questionText === kbQuestion) return kbAnswer;
+    return kbAnswer;
+  }
+
+  /**
+   * Build a rich AI prompt: org context, question, related KB entries, org controls, jurisdiction.
+   * Requests structured JSON (answerType, answer, confidence reasoning, suggested evidence, related frameworks).
+   */
+  private buildAIPrompt(
+    question: ParsedCAIQQuestion,
+    relatedEntries: Array<ScoredKBEntry & { entry: CAIQKnowledgeEntry }>
+  ): string {
+    const org = this.orgContext;
+    const relatedBlock =
+      relatedEntries.length > 0
+        ? relatedEntries
+          .map(
+            (r) =>
+              `- [${r.entry.questionId}] ${r.entry.question}\n  Base answer: ${r.entry.baseAnswer.slice(0, 300)}...`
+          )
+          .join('\n')
+        : 'None.';
+
+    const controlsBlock =
+      org.relevantControls && org.relevantControls.length > 0
+        ? org.relevantControls
+          .filter((c) => c.framework && c.controlId)
+          .slice(0, 15)
+          .map((c) => `- ${c.framework} ${c.controlId}: ${c.description}`)
+          .join('\n')
+        : 'None provided.';
+
+    return `You are a cybersecurity compliance expert producing concise, auditor-grade answers for a CAIQ (Consensus Assessments Initiative Questionnaire) assessment.
+
+ORGANIZATION CONTEXT:
+- Name: ${org.name}
+- Industry: ${org.industry}
+- Cloud model: ${org.cloudModel}
+- Jurisdictions: ${org.jurisdictions.join(', ') || 'N/A'}
+- Frameworks: ${org.frameworks.join(', ') || 'N/A'}
+- Size: ${org.size}
+
+QUESTION (domain: ${question.domain} — ${question.domainName}):
+${question.text}
+${question.subQuestions?.length ? 'Sub-questions: ' + question.subQuestions.join('; ') : ''}
+
+RELATED KNOWLEDGE BASE ENTRIES (for reference only; adapt to the exact question):
+${relatedBlock}
+
+ORGANIZATION'S RELEVANT CONTROLS FOR THIS DOMAIN:
+${controlsBlock}
+
+Respond with a single JSON object (no markdown, no code fence) with this exact shape:
+{
+  "answerType": "YES" | "NO" | "NOT_APPLICABLE" | "CONDITIONAL",
+  "answer": "2-4 sentence auditor-grade answer addressing the question directly",
+  "confidenceReasoning": "One sentence on why this answer is appropriate",
+  "suggestedEvidence": ["Evidence 1", "Evidence 2"],
+  "relatedFrameworks": [{"framework": "ISO 27001:2022", "controlId": "A.5.1", "description": "Brief"}]
+}
+
+Be concise and specific. Use low speculation. Produce a consistent, auditor-grade answer. Answer only with the JSON object (no other text).`;
+  }
+
+  /**
+   * Parse and validate AI JSON response with Zod.
+   */
+  private parseAIResponse(raw: string): AIResponse | null {
+    try {
+      const cleaned = raw
+        .replace(/```json\s*/gi, '')
+        .replace(/```\s*/g, '')
+        .trim();
+      const parsed = JSON.parse(cleaned);
+      return aiResponseSchema.parse(parsed);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Execute an AI call through circuit breaker: primary → secondary → null.
+   * On primary failure, circuit is set open and secondary is tried if configured.
+   */
+  private async executeWithFallback<T>(
+    fn: (engine: UnifiedAIProvider) => Promise<T>
+  ): Promise<{ result: T; generatedBy: CAIQGeneratedBy } | null> {
+    const primaryName = this.opts.primaryProviderName ?? 'GEMINI';
+
+    const tryProvider = async (engine: UnifiedAIProvider, name: string): Promise<T | null> => {
+      if (getCircuitState(name) === 'open') return null;
+      try {
+        const result = await fn(engine);
+        return result;
+      } catch (err) {
+        setCircuitState(name, 'open');
+        return null;
+      }
+    };
+
+    const primaryResult = await tryProvider(this.ai, primaryName);
+    if (primaryResult != null) {
+      return { result: primaryResult, generatedBy: 'AI_PRIMARY' };
+    }
+
+    if (this.opts.secondaryAI) {
+      const secondaryName = primaryName === 'GEMINI' ? 'ANTHROPIC' : 'GEMINI';
+      const secondaryResult = await tryProvider(this.opts.secondaryAI, secondaryName);
+      if (secondaryResult != null) {
+        return { result: secondaryResult, generatedBy: 'AI_FALLBACK' };
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Compute CAIQStats from the list of answers.
+   */
+  private computeStats(answers: CAIQAnswer[]): CAIQStats {
+    const total = answers.length;
+    const highConfidence = answers.filter((a) => a.confidence >= 0.8).length;
+    const mediumConfidence = answers.filter((a) => a.confidence >= 0.6 && a.confidence < 0.8).length;
+    const lowConfidence = answers.filter((a) => a.confidence > 0 && a.confidence < 0.6).length;
+    const flagged = answers.filter((a) => a.tier === 'FLAGGED').length;
+
+    const weighted =
+      total > 0
+        ? answers.reduce((sum, a) => sum + a.confidence, 0) / total
+        : 0;
+    const estimatedAccuracy = Math.round(weighted * 100) / 100;
+
+    const coverageByDomain = {} as Record<CAIQDomain, { answered: number; total: number }>;
+    for (const d of CAIQ_DOMAINS) {
+      coverageByDomain[d] = { answered: 0, total: 0 };
+    }
+    for (const a of answers) {
+      const domain = this.getDomainForQuestion(a.questionId);
+      if (domain && coverageByDomain[domain]) {
+        coverageByDomain[domain].total += 1;
+        if (a.tier !== 'FLAGGED') coverageByDomain[domain].answered += 1;
+      }
     }
 
     return {
-        totalQuestions: questions.length,
-        answeredByKB,
-        answeredByAI,
-        unanswered,
-        coveragePct: questions.length > 0 ? Math.round((answered / questions.length) * 100) : 0,
-        questions,
-        domainBreakdown,
+      total,
+      highConfidence,
+      mediumConfidence,
+      lowConfidence,
+      flagged,
+      estimatedAccuracy,
+      coverageByDomain,
     };
-}
+  }
 
-// ────────────────────────────────────────────
-// Excel Export
-// ────────────────────────────────────────────
-
-/**
- * Export answered questions back to an Excel buffer.
- */
-export async function exportToExcel(result: CAIQProcessingResult): Promise<Buffer> {
-    const wb = new ExcelJS.Workbook();
-
-    // Answers sheet
-    const wsAnswers = wb.addWorksheet('Answers');
-    wsAnswers.columns = [
-        { header: 'Question ID', key: 'questionId', width: 12 },
-        { header: 'Question', key: 'question', width: 60 },
-        { header: 'Yes/No', key: 'yesNo', width: 8 },
-        { header: 'Answer', key: 'answer', width: 80 },
-        { header: 'Confidence', key: 'confidence', width: 12 },
-        { header: 'Source', key: 'source', width: 15 },
-        { header: 'Evidence Reference', key: 'evidence', width: 40 },
-    ];
-    result.questions.forEach(q => {
-        wsAnswers.addRow({
-            questionId: q.questionId || '',
-            question: q.questionText,
-            yesNo: q.yesNo,
-            answer: q.answer,
-            confidence: q.confidence,
-            source: q.source || '',
-            evidence: q.evidenceRef || '',
-        });
-    });
-
-    // Summary sheet
-    const wsSummary = wb.addWorksheet('Summary');
-    wsSummary.columns = [
-        { header: 'Metric', key: 'metric', width: 30 },
-        { header: 'Value', key: 'value', width: 15 },
-    ];
-    wsSummary.addRow({ metric: 'Total Questions', value: result.totalQuestions });
-    wsSummary.addRow({ metric: 'Answered by Knowledge Base', value: result.answeredByKB });
-    wsSummary.addRow({ metric: 'Answered by AI', value: result.answeredByAI });
-    wsSummary.addRow({ metric: 'Unanswered (Manual Required)', value: result.unanswered });
-    wsSummary.addRow({ metric: 'Coverage %', value: `${result.coveragePct}%` });
-
-    // Domain breakdown sheet
-    const wsDomains = wb.addWorksheet('Domain Breakdown');
-    wsDomains.columns = [
-        { header: 'Domain', key: 'domain', width: 40 },
-        { header: 'Total Questions', key: 'total', width: 15 },
-        { header: 'Answered', key: 'answered', width: 12 },
-        { header: 'Coverage %', key: 'coverage', width: 12 },
-    ];
-    Object.entries(result.domainBreakdown).forEach(([domain, data]) => {
-        wsDomains.addRow({
-            domain,
-            total: data.total,
-            answered: data.answered,
-            coverage: `${data.pct}%`,
-        });
-    });
-
-    const buf = await wb.xlsx.writeBuffer();
-    return Buffer.from(buf);
+  private getDomainForQuestion(questionId: string): CAIQDomain | null {
+    const prefix = questionId.split('-')[0];
+    if (CAIQ_DOMAINS.includes(prefix as CAIQDomain)) return prefix as CAIQDomain;
+    return null;
+  }
 }

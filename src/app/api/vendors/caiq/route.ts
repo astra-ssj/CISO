@@ -12,7 +12,7 @@ import {
     computeResults,
     exportToExcel,
     type OrgProfile,
-} from '@/lib/caiq/caiq-answer-engine';
+} from '@/lib/caiq/caiq-legacy';
 import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
 
 export async function POST(request: NextRequest) {
