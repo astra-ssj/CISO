@@ -171,3 +171,17 @@ model IncidentEvent {
   payload     String   // JSON string
   timestamp   DateTime @default(now())
 }
+
+// -----------------------------------------------------------------------------
+// 5. Immutable audit fabric (append-only; never update or delete)
+// -----------------------------------------------------------------------------
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  timestamp  DateTime @default(now())
+  actor      String   // userId or 'SYSTEM'
+  action     String   // event type
+  resource   String   // e.g. 'caiq:AIS-01.1'
+  resourceId String?
+  metadata   String?  // JSON
+}
