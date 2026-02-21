@@ -275,6 +275,10 @@ export interface ParsedCAIQQuestion {
   domainName: string;
   text: string;
   subQuestions?: string[];
+  /** Set when parsed from Excel; used to write answers back to the correct row. */
+  rowNumber?: number;
+  /** Set when parsed from Excel; sheet name for write-back. */
+  sheetName?: string;
 }
 
 export const parsedCAIQQuestionSchema = z.object({
@@ -283,4 +287,50 @@ export const parsedCAIQQuestionSchema = z.object({
   domainName: z.string(),
   text: z.string(),
   subQuestions: z.array(z.string()).optional(),
+  rowNumber: z.number().optional(),
+  sheetName: z.string().optional(),
 });
+
+// =============================================================================
+// CAIQ Excel parser types (ColumnMap, ExistingAnswer, ParsedCAIQSheet, ParsedCAIQWorkbook)
+// =============================================================================
+
+export interface ColumnMap {
+  controlId: number;
+  questionText: number;
+  yesColumn?: number;
+  noColumn?: number;
+  naColumn?: number;
+  conditionalColumn?: number;
+  answerDetail?: number;
+  evidenceColumn?: number;
+  singleResponse?: number;
+  headerRow: number;
+  dataStartRow: number;
+}
+
+export interface ExistingAnswer {
+  questionId: string;
+  answerType: CAIQAnswerType;
+  detail?: string;
+  evidence?: string;
+  rowNumber: number;
+}
+
+export interface ParsedCAIQSheet {
+  name: string;
+  index: number;
+  questions: ParsedCAIQQuestion[];
+}
+
+export type CAIQExcelFormat = 'SEPARATE_COLUMNS' | 'SINGLE_DROPDOWN' | 'MIXED';
+
+export interface ParsedCAIQWorkbook {
+  fileName: string;
+  sheets: ParsedCAIQSheet[];
+  columnMap: ColumnMap;
+  questions: ParsedCAIQQuestion[];
+  existingAnswers: Map<string, ExistingAnswer>;
+  unanswered: ParsedCAIQQuestion[];
+  format: CAIQExcelFormat;
+}
