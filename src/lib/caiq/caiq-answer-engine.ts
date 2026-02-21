@@ -100,21 +100,28 @@ export class CAIQAnswerEngine {
   /**
    * Generate answers for a set of parsed CAIQ questions using the 4-tier pipeline.
    * Each answer gets a unique auditId, timestamp, source references, and is logged to the audit trail.
+   * Optional onProgress(currentIndex, total, lastAnswer) for streaming progress (e.g. SSE).
    */
   async generateAnswers(
     questions: ParsedCAIQQuestion[],
-    options?: Partial<CAIQGenerateOptions>
+    options?: Partial<CAIQGenerateOptions> & {
+      onProgress?: (current: number, total: number, lastAnswer: CAIQAnswer) => void;
+    }
   ): Promise<CAIQAnswerSet> {
     const includeEvidence = options?.includeEvidence ?? true;
     const flagThreshold = options?.flagThreshold ?? 0.6;
     const autoApproveThreshold = options?.autoApproveThreshold ?? 0.9;
+    const onProgress = options?.onProgress;
 
     const answers: CAIQAnswer[] = [];
+    const total = questions.length;
 
-    for (const q of questions) {
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i]!;
       const answer = await this.answerOne(q, { includeEvidence, flagThreshold, autoApproveThreshold });
       answers.push(answer);
       await logCAIQAnswer(answer, 'CAIQ_ANSWER_GENERATED').catch(() => {});
+      onProgress?.(i + 1, total, answer);
     }
 
     const stats = this.computeStats(answers);

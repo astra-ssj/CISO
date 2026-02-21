@@ -12,11 +12,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVendorRiskStore, VendorCategory, VendorRiskTier, VendorStatus } from "@/lib/vendor-risk-store";
 import { CAIQ_DOMAINS, type AnsweredQuestion, type ConfidenceLevel } from "@/lib/caiq/caiq-knowledge-base";
 import KnowledgeTransfer from "@/components/caiq/KnowledgeTransfer";
+import Link from "next/link";
 import {
     Building2, ShieldAlert, Search, Plus, AlertTriangle, CheckCircle,
     Clock, XCircle, TrendingUp, Users, FileWarning, ChevronDown, ChevronUp,
     Upload, FileSpreadsheet, Brain, Zap, Download, Loader2, Edit3,
-    Check, BarChart3, Sparkles, Shield, RefreshCw
+    Check, BarChart3, Sparkles, Shield, RefreshCw, ExternalLink
 } from "lucide-react";
 
 // ────────────────────────────────────────────
@@ -518,19 +519,26 @@ export default function VendorsPage() {
                                     <p className="text-sm text-zinc-400">Upload a vendor risk questionnaire and auto-fill 80-85% of answers with AI</p>
                                 </div>
                             </div>
-                            <div className="flex gap-6 mt-4">
-                                <div className="flex items-center gap-2 text-xs text-zinc-400">
-                                    <Sparkles className="h-3.5 w-3.5 text-violet-400" />
-                                    <span>CSA CAIQ v4 Knowledge Base (11 domains)</span>
+                            <div className="flex flex-wrap items-center justify-between gap-4 mt-4">
+                                <div className="flex gap-6">
+                                    <div className="flex items-center gap-2 text-xs text-zinc-400">
+                                        <Sparkles className="h-3.5 w-3.5 text-violet-400" />
+                                        <span>CSA CAIQ v4 Knowledge Base (11 domains)</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-xs text-zinc-400">
+                                        <Brain className="h-3.5 w-3.5 text-indigo-400" />
+                                        <span>AI-Enhanced contextual answers</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-xs text-zinc-400">
+                                        <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-400" />
+                                        <span>Excel import & export</span>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2 text-xs text-zinc-400">
-                                    <Brain className="h-3.5 w-3.5 text-indigo-400" />
-                                    <span>AI-Enhanced contextual answers</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-xs text-zinc-400">
-                                    <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-400" />
-                                    <span>Excel import & export</span>
-                                </div>
+                                <Link href="/vendors/caiq" className="inline-flex items-center gap-2 text-sm text-violet-400 hover:text-violet-300">
+                                    <Shield className="h-4 w-4" />
+                                    Tiered assessment (4-tier engine)
+                                    <ExternalLink className="h-3.5 w-3.5" />
+                                </Link>
                             </div>
                         </div>
                     </div>
