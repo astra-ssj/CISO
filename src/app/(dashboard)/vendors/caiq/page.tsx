@@ -153,18 +153,6 @@ export default function CAIQAssessmentPage() {
   const setReviewItems = useCAIQReviewStore((s) => s.setItems);
   const setReviewStats = useCAIQReviewStore((s) => s.setStats);
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      setIsDragging(false);
-      const f = e.dataTransfer.files?.[0];
-      if (f && (f.name.toLowerCase().endsWith(".xlsx") || f.name.toLowerCase().endsWith(".xls"))) {
-        handleFileSelect(f);
-      }
-    },
-    [handleFileSelect]
-  );
-
   const handleFileSelect = useCallback((f: File) => {
     setFile(f);
     setParseError(null);
@@ -181,6 +169,18 @@ export default function CAIQAssessmentPage() {
       .catch((err) => setParseError(err instanceof Error ? err.message : "Parse failed"))
       .finally(() => setParseLoading(false));
   }, []);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      const f = e.dataTransfer.files?.[0];
+      if (f && (f.name.toLowerCase().endsWith(".xlsx") || f.name.toLowerCase().endsWith(".xls"))) {
+        handleFileSelect(f);
+      }
+    },
+    [handleFileSelect]
+  );
 
   const handleStartAssessment = useCallback(() => {
     if (!file || !parseResult) return;

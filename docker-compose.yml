@@ -1,0 +1,39 @@
+services:
+  astra-ciso:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: astra-ciso:latest
+    container_name: astra-ciso
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      # Database (SQLite in persisted volume)
+      DATABASE_URL: "file:/app/data/dev.db"
+      # Auth (set in .env or override in deployment)
+      AUTH_SECRET: ${AUTH_SECRET:-change-me-in-production}
+      JWT_SECRET: ${JWT_SECRET:-${AUTH_SECRET:-change-me-in-production}}
+      # Optional: app branding / health
+      VERSION: ${VERSION:-0.1.0}
+      ASTRA_ORG_NAME: ${ASTRA_ORG_NAME:-}
+      ASTRA_JURISDICTION: ${ASTRA_JURISDICTION:-}
+      ASTRA_INDUSTRY: ${ASTRA_INDUSTRY:-}
+      ASTRA_ORG_SIZE: ${ASTRA_ORG_SIZE:-}
+      ASTRA_CLOUD_MODEL: ${ASTRA_CLOUD_MODEL:-}
+      # Optional: AI providers
+      AI_PROVIDER: ${AI_PROVIDER:-GEMINI}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    volumes:
+      - astra-ciso-data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+volumes:
+  astra-ciso-data:

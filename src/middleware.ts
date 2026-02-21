@@ -41,6 +41,7 @@ export async function middleware(request: NextRequest) {
         path === '/login' ||
         path === '/manifest.json' ||
         path.startsWith('/api/auth') || // Allow login/logout endpoints
+        path === '/api/health' || // Allow health checks (Docker, load balancers)
         path.match(/\.(png|jpg|jpeg|gif|ico|svg)$/);
 
     if (!isPublicPath) {

@@ -1,0 +1,29 @@
+# Dependencies and build output
+node_modules
+.next
+out
+*.tsbuildinfo
+
+# Git and IDE
+.git
+.gitignore
+.cursor
+.vscode
+*.md
+!README.md
+
+# Env (inject at runtime)
+.env
+.env.*
+!.env.example
+
+# Tests and tooling
+coverage
+.nyc_output
+*.log
+npm-debug.log*
+.DS_Store
+
+# Prisma dev db (use volume in Docker)
+*.db
+*.db-journal
