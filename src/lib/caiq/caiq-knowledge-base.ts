@@ -4218,10 +4218,1002 @@ export const CAIQ_KB_SEF: CAIQKnowledgeEntry[] = [
 ];
 
 // =============================================================================
+// STA — Supply Chain Management, Transparency & Accountability (STA-01 through STA-14)
+// References: vendor risk management, third-party audits, SBOMs where relevant.
+// =============================================================================
+
+export const CAIQ_KB_STA: CAIQKnowledgeEntry[] = [
+  {
+    questionId: 'STA-01.1',
+    domain: 'STA',
+    question:
+      'Are policies and procedures for the application of the Shared Security Responsibility Model (SSRM) within the organization established, documented, approved, communicated, applied, evaluated, and maintained? Are they reviewed and updated at least annually?',
+    keywords: [
+      'Shared Security Responsibility Model',
+      'SSRM',
+      'policies',
+      'procedures',
+      'documented',
+      'annual review',
+    ],
+    baseAnswer:
+      'Yes. Policies and procedures for the application of the Shared Security Responsibility Model (SSRM) are established and maintained. They define how security responsibilities are shared between the organization and customers/partners and are approved, communicated, and evaluated. They are reviewed and updated at least annually.',
+    evidenceRequired: [
+      'SSRM or shared responsibility policy',
+      'Procedure documentation',
+      'Annual policy review evidence',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.1', description: 'Policies for information security' },
+      { framework: 'NIST CSF 2.0', controlId: 'GV.OC-01', description: 'Organizational cybersecurity policy' },
+      { framework: 'NIST CSF 2.0', controlId: 'GV.SC-01', description: 'Cybersecurity supply chain risk management' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'STA-02.1',
+    domain: 'STA',
+    question:
+      'Is the SSRM applied, documented, implemented, and managed throughout the supply chain for the cloud service offering?',
+    keywords: [
+      'SSRM',
+      'supply chain',
+      'cloud service',
+      'documented',
+      'implemented',
+      'managed',
+    ],
+    baseAnswer:
+      'Yes. The SSRM is applied, documented, implemented, and managed throughout the supply chain for the cloud service offering. Responsibilities are defined for the organization and for supply chain partners; documentation is maintained and communicated to relevant parties.',
+    evidenceRequired: [
+      'SSRM documentation covering supply chain',
+      'Implementation evidence across service offering',
+      'Communication or training records',
+    ],
+    frameworkMappings: [
+      { framework: 'NIST CSF 2.0', controlId: 'GV.SC-01', description: 'Cybersecurity supply chain risk management' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'STA-03.1',
+    domain: 'STA',
+    question:
+      'Is SSRM guidance provided to the cloud service customer (CSC) detailing information about the SSRM applicability throughout the supply chain?',
+    keywords: [
+      'SSRM guidance',
+      'CSC',
+      'cloud service customer',
+      'supply chain',
+      'transparency',
+    ],
+    baseAnswer:
+      'Yes. SSRM guidance is provided to the cloud service customer, detailing how the SSRM applies throughout the supply chain. This is typically included in security documentation, FAQs, or contractual annexes so customers understand shared versus provider responsibilities.',
+    evidenceRequired: [
+      'Customer-facing SSRM or shared responsibility documentation',
+      'Evidence of distribution or publication',
+    ],
+    frameworkMappings: [
+      { framework: 'NIST CSF 2.0', controlId: 'GV.SC-01', description: 'Cybersecurity supply chain risk management' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'STA-04.1',
+    domain: 'STA',
+    question:
+      'Is the shared ownership and applicability of all CSA CCM controls delineated according to the SSRM for the cloud service offering?',
+    keywords: [
+      'shared ownership',
+      'CCM controls',
+      'SSRM',
+      'cloud service offering',
+      'delineate',
+    ],
+    baseAnswer:
+      'Yes. The shared ownership and applicability of CSA CCM controls are delineated for the cloud service offering according to the SSRM. A control-by-control or domain-level mapping is maintained showing which party (provider, customer, or shared) is responsible for each control.',
+    evidenceRequired: [
+      'CCM/control responsibility matrix or mapping',
+      'SSRM documentation referencing CCM',
+    ],
+    frameworkMappings: [
+      { framework: 'NIST CSF 2.0', controlId: 'GV.SC-01', description: 'Cybersecurity supply chain risk management' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'STA-05.1',
+    domain: 'STA',
+    question:
+      'Is SSRM documentation reviewed and validated for all cloud service offerings the organization uses?',
+    keywords: [
+      'SSRM documentation',
+      'review',
+      'validate',
+      'cloud service offerings',
+      'third-party services',
+    ],
+    baseAnswer:
+      'Yes. SSRM documentation for all cloud service offerings the organization uses is reviewed and validated. This applies to both provider-owned offerings and consumed third-party services; validation is performed periodically or when offerings change.',
+    evidenceRequired: [
+      'Inventory of cloud service offerings',
+      'SSRM review or validation evidence',
+    ],
+    frameworkMappings: [
+      { framework: 'NIST CSF 2.0', controlId: 'GV.SC-01', description: 'Cybersecurity supply chain risk management' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Vendor risk management processes often drive this review; link to third-party risk assessments where the organization consumes cloud services.',
+  },
+  {
+    questionId: 'STA-06.1',
+    domain: 'STA',
+    question:
+      'Are the portions of the SSRM for which the organization is responsible implemented, operated, and audited or assessed?',
+    keywords: [
+      'SSRM',
+      'implemented',
+      'operated',
+      'audited',
+      'assessed',
+      'organization responsibility',
+    ],
+    baseAnswer:
+      'Yes. The portions of the SSRM for which the organization is responsible are implemented, operated, and subject to audit or assessment. Internal and/or external audits (e.g., SOC 2, ISO 27001) cover these controls; evidence of implementation and assessment is maintained.',
+    evidenceRequired: [
+      'Audit or assessment reports (e.g., SOC 2, ISO 27001)',
+      'Evidence of implementation of provider-owned SSRM controls',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.34', description: 'Independent review of information security' },
+      { framework: 'NIST CSF 2.0', controlId: 'GV.SC-01', description: 'Cybersecurity supply chain risk management' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Third-party audits (SOC 2 Type II, ISO 27001 certification) are commonly used to demonstrate assessment of the organization’s SSRM responsibilities.',
+  },
+  {
+    questionId: 'STA-07.1',
+    domain: 'STA',
+    question:
+      'Is an inventory of all supply chain relationships developed and maintained?',
+    keywords: [
+      'inventory',
+      'supply chain',
+      'relationships',
+      'vendor',
+      'maintained',
+    ],
+    baseAnswer:
+      'Yes. An inventory of all supply chain relationships is developed and maintained. It includes key vendors, subcontractors, and partners that can affect security or delivery of the service; the inventory is updated when relationships change and is used for vendor risk management.',
+    evidenceRequired: [
+      'Supply chain or vendor inventory',
+      'Update process or review evidence',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.19', description: 'Information and communication technology supply chain' },
+      { framework: 'NIST CSF 2.0', controlId: 'GV.SC-01', description: 'Cybersecurity supply chain risk management' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Vendor risk management and third-party risk registers typically maintain this inventory; can be linked to SBOM or software supply chain data where applicable.',
+  },
+  {
+    questionId: 'STA-08.1',
+    domain: 'STA',
+    question:
+      'Does the organization periodically review risk factors associated with all organizations within its supply chain?',
+    keywords: [
+      'risk factors',
+      'supply chain',
+      'periodic review',
+      'vendor risk',
+      'third-party risk',
+    ],
+    baseAnswer:
+      'Yes. The organization periodically reviews risk factors associated with all organizations within its supply chain. Vendor risk assessments, security questionnaires (e.g., CAIQ), and ongoing monitoring are used; findings are documented and remediation or risk acceptance is tracked.',
+    evidenceRequired: [
+      'Vendor/supply chain risk assessment procedure',
+      'Evidence of periodic reviews (e.g., risk ratings, assessment summaries)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.19', description: 'Information and communication technology supply chain' },
+      { framework: 'NIST CSF 2.0', controlId: 'GV.SC-01', description: 'Cybersecurity supply chain risk management' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Vendor risk management program and third-party audits (e.g., CAIQ, SIG) support this; SBOMs and dependency reviews can inform software supply chain risk.',
+  },
+  {
+    questionId: 'STA-09.1',
+    domain: 'STA',
+    question:
+      'Do service agreements between the cloud service provider and cloud service customers incorporate mutually agreed provisions covering scope, information security requirements (including SSRM), change management, logging and monitoring, incident management, right to audit and third-party assessment, service termination, and interoperability?',
+    keywords: [
+      'service agreements',
+      'CSP',
+      'CSC',
+      'information security',
+      'right to audit',
+      'third-party assessment',
+    ],
+    baseAnswer:
+      'Yes. Service agreements incorporate mutually agreed provisions covering scope and characteristics of the relationship, information security requirements (including SSRM), change management, logging and monitoring capabilities, incident management and communication procedures, right to audit and third-party assessment, service termination, and interoperability as applicable.',
+    evidenceRequired: [
+      'Template or sample service agreement with security provisions',
+      'Evidence of inclusion in customer contracts',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.19', description: 'Information and communication technology supply chain' },
+      { framework: 'NIST CSF 2.0', controlId: 'GV.SC-01', description: 'Cybersecurity supply chain risk management' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Right to audit and third-party assessment clauses are frequently requested by enterprise customers and auditors.',
+  },
+  {
+    questionId: 'STA-10.1',
+    domain: 'STA',
+    question:
+      'Are supply chain agreements between the cloud service provider and cloud service customers (or between the organization and its suppliers) reviewed at least annually?',
+    keywords: [
+      'supply chain agreements',
+      'review',
+      'annually',
+      'contracts',
+      'CSP',
+      'CSC',
+    ],
+    baseAnswer:
+      'Yes. Supply chain agreements are reviewed at least annually. Reviews confirm that security and compliance provisions remain adequate; changes in scope, risk, or regulation trigger updates. Review outcomes and any amendments are documented.',
+    evidenceRequired: [
+      'Procedure for agreement review',
+      'Evidence of annual reviews (e.g., schedule, sign-off)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.19', description: 'Information and communication technology supply chain' },
+      { framework: 'NIST CSF 2.0', controlId: 'GV.SC-01', description: 'Cybersecurity supply chain risk management' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'STA-11.1',
+    domain: 'STA',
+    question:
+      'Is a process defined and implemented for conducting internal assessments to confirm conformance and effectiveness of standards, policies, procedures, and service level agreement activities at least annually?',
+    keywords: [
+      'internal assessments',
+      'conformance',
+      'effectiveness',
+      'SLA',
+      'annually',
+      'standards',
+      'policies',
+    ],
+    baseAnswer:
+      'Yes. A process for conducting internal assessments to confirm conformance and effectiveness of standards, policies, procedures, and SLA activities is defined and implemented. Assessments are performed at least annually; results are used for corrective action and continuous improvement.',
+    evidenceRequired: [
+      'Internal assessment procedure',
+      'Evidence of annual internal assessments (e.g., checklists, reports)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.34', description: 'Independent review of information security' },
+      { framework: 'NIST CSF 2.0', controlId: 'GV.OC-01', description: 'Organizational cybersecurity policy' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Third-party audits (e.g., SOC 2, ISO 27001) can complement internal assessments; document how internal and external assessments align.',
+  },
+  {
+    questionId: 'STA-12.1',
+    domain: 'STA',
+    question:
+      'Are policies implemented requiring all cloud service providers throughout the supply chain to comply with information security, confidentiality, access control, privacy, audit, personnel policy, and service level requirements and standards?',
+    keywords: [
+      'policies',
+      'supply chain',
+      'CSP',
+      'comply',
+      'information security',
+      'privacy',
+      'audit',
+      'personnel',
+    ],
+    baseAnswer:
+      'Yes. Policies require all cloud service providers throughout the supply chain to comply with information security, confidentiality, access control, privacy, audit, personnel policy, and service level requirements and standards. These requirements are flowed down in contracts and monitored via vendor risk management and third-party audits.',
+    evidenceRequired: [
+      'Policy specifying supply chain security and compliance requirements',
+      'Evidence of flow-down (e.g., contract clauses, vendor questionnaires)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.19', description: 'Information and communication technology supply chain' },
+      { framework: 'NIST CSF 2.0', controlId: 'GV.SC-01', description: 'Cybersecurity supply chain risk management' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'STA-13.1',
+    domain: 'STA',
+    question:
+      'Does the organization periodically review its supply chain partners\' IT governance policies and procedures?',
+    keywords: [
+      'supply chain partners',
+      'IT governance',
+      'policies',
+      'procedures',
+      'periodic review',
+    ],
+    baseAnswer:
+      'Yes. The organization periodically reviews supply chain partners’ IT governance policies and procedures. Reviews may be part of vendor risk assessments, questionnaire responses (e.g., CAIQ), or contractually required audits; findings are documented and tracked.',
+    evidenceRequired: [
+      'Procedure or criteria for reviewing partner governance',
+      'Evidence of periodic reviews (e.g., assessment dates, summaries)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.19', description: 'Information and communication technology supply chain' },
+      { framework: 'NIST CSF 2.0', controlId: 'GV.SC-01', description: 'Cybersecurity supply chain risk management' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Third-party audits (SOC 2, ISO 27001) and CAIQ/SIG responses from partners are common evidence; SBOM and dependency reviews support software supply chain transparency.',
+  },
+  {
+    questionId: 'STA-14.1',
+    domain: 'STA',
+    question:
+      'Is a process defined and implemented for conducting security assessments periodically for all organizations within the supply chain?',
+    keywords: [
+      'security assessments',
+      'supply chain',
+      'periodically',
+      'vendor assessment',
+      'third-party',
+    ],
+    baseAnswer:
+      'Yes. A process for conducting security assessments of all organizations within the supply chain is defined and implemented. Assessments are performed periodically (e.g., annually or risk-based); methods include questionnaires, document review, and on-site or remote audits. Results are used for risk decisions and remediation.',
+    evidenceRequired: [
+      'Supply chain security assessment procedure',
+      'Evidence of periodic assessments (e.g., CAIQ, SIG, audit reports)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.19', description: 'Information and communication technology supply chain' },
+      { framework: 'NIST CSF 2.0', controlId: 'GV.SC-01', description: 'Cybersecurity supply chain risk management' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Vendor risk management and third-party audits are key; SBOMs and software composition analysis support assessment of software supply chain risk.',
+  },
+];
+
+// =============================================================================
+// TVM — Threat & Vulnerability Management (TVM-01 through TVM-10)
+// reviewerNotes reference Astra-CISO Trivy integration where relevant.
+// =============================================================================
+
+export const CAIQ_KB_TVM: CAIQKnowledgeEntry[] = [
+  {
+    questionId: 'TVM-01.1',
+    domain: 'TVM',
+    question:
+      'Are policies and procedures to identify, report, and prioritize the remediation of vulnerabilities established, documented, approved, communicated, applied, evaluated, and maintained in order to protect systems against vulnerability exploitation? Are they reviewed and updated at least annually?',
+    keywords: [
+      'vulnerability',
+      'remediation',
+      'policies',
+      'procedures',
+      'prioritize',
+      'annual review',
+    ],
+    baseAnswer:
+      'Yes. Policies and procedures to identify, report, and prioritize vulnerability remediation are established and maintained. They define roles, SLAs (e.g., critical within 7 days, high within 30 days), and escalation; they are reviewed and updated at least annually to reflect risk and operational changes.',
+    evidenceRequired: [
+      'Threat and vulnerability management policy',
+      'Remediation SLA or procedure',
+      'Annual policy review evidence',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.8', description: 'Management of technical vulnerabilities' },
+      { framework: 'NIST CSF 2.0', controlId: 'GV.OC-01', description: 'Organizational cybersecurity policy' },
+      { framework: 'NIST CSF 2.0', controlId: 'DE.CM-08', description: 'Vulnerability scans' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Astra-CISO integrates Trivy for vulnerability scanning; policy and SLAs can be supported by Trivy scan results and remediation tracking.',
+  },
+  {
+    questionId: 'TVM-02.1',
+    domain: 'TVM',
+    question:
+      'Are policies and procedures to protect against malware on managed assets established, documented, approved, communicated, applied, evaluated, and maintained? Are they reviewed and updated at least annually?',
+    keywords: [
+      'malware',
+      'protection',
+      'managed assets',
+      'policies',
+      'procedures',
+      'annual review',
+    ],
+    baseAnswer:
+      'Yes. Policies and procedures to protect against malware on managed assets are established and maintained. They cover anti-malware deployment, signature updates, scanning frequency, and response to detections; they are reviewed and updated at least annually.',
+    evidenceRequired: [
+      'Malware protection policy or procedure',
+      'Evidence of deployment and updates (e.g., endpoint protection, signatures)',
+      'Annual policy review evidence',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.23', description: 'Filtering' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.PT-02', description: 'Software and data integrity' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'TVM-03.1',
+    domain: 'TVM',
+    question:
+      'Are processes, procedures, and technical measures defined, implemented, and evaluated to enable both scheduled and emergency responses to vulnerability identifications, based on identified risk?',
+    keywords: [
+      'scheduled',
+      'emergency',
+      'vulnerability',
+      'response',
+      'risk-based',
+      'remediation',
+    ],
+    baseAnswer:
+      'Yes. Processes, procedures, and technical measures enable both scheduled and emergency responses to vulnerability identifications based on risk. Critical and high-severity issues trigger emergency patching or mitigation; standard cycles handle routine updates. Risk criteria and response timelines are documented.',
+    evidenceRequired: [
+      'Vulnerability response procedure (scheduled and emergency)',
+      'Risk criteria and SLA documentation',
+      'Evidence of emergency or scheduled remediation',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.8', description: 'Management of technical vulnerabilities' },
+      { framework: 'NIST CSF 2.0', controlId: 'DE.CM-08', description: 'Vulnerability scans' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Trivy integration in Astra-CISO supports vulnerability identification; output can drive both scheduled and emergency remediation workflows.',
+  },
+  {
+    questionId: 'TVM-04.1',
+    domain: 'TVM',
+    question:
+      'Are processes, procedures, and technical measures defined, implemented, and evaluated to update detection tools, threat signatures, and indicators of compromise on a weekly or more frequent basis?',
+    keywords: [
+      'detection tools',
+      'threat signatures',
+      'indicators of compromise',
+      'IOC',
+      'weekly',
+      'updates',
+    ],
+    baseAnswer:
+      'Yes. Processes, procedures, and technical measures ensure that detection tools, threat signatures, and indicators of compromise are updated on a weekly or more frequent basis. Automated update mechanisms and monitoring are in place; exceptions are documented and remediated.',
+    evidenceRequired: [
+      'Procedure for signature/IOC updates',
+      'Evidence of update frequency (e.g., logs, dashboards)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.8', description: 'Management of technical vulnerabilities' },
+      { framework: 'NIST CSF 2.0', controlId: 'DE.CM-08', description: 'Vulnerability scans' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'TVM-05.1',
+    domain: 'TVM',
+    question:
+      'Are processes, procedures, and technical measures defined, implemented, and evaluated to identify updates for applications which use third-party or open-source libraries according to the organization\'s vulnerability management policy?',
+    keywords: [
+      'third-party',
+      'open-source',
+      'libraries',
+      'dependencies',
+      'updates',
+      'vulnerability management',
+      'SBOM',
+    ],
+    baseAnswer:
+      'Yes. Processes, procedures, and technical measures identify updates for applications that use third-party or open-source libraries in line with the vulnerability management policy. Software composition analysis (SCA), dependency scanning, and SBOMs are used where applicable; findings are prioritized and remediated per policy.',
+    evidenceRequired: [
+      'SCA or dependency scanning procedure',
+      'Evidence of library/dependency vulnerability identification (e.g., scan reports, SBOM)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.8', description: 'Management of technical vulnerabilities' },
+      { framework: 'NIST CSF 2.0', controlId: 'DE.CM-08', description: 'Vulnerability scans' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Astra-CISO Trivy integration performs filesystem and dependency vulnerability scanning; Trivy output can be used as evidence for third-party and open-source library vulnerability identification and remediation.',
+  },
+  {
+    questionId: 'TVM-06.1',
+    domain: 'TVM',
+    question:
+      'Are processes, procedures, and technical measures defined, implemented, and evaluated for the periodic performance of penetration testing by independent third parties?',
+    keywords: [
+      'penetration testing',
+      'independent',
+      'third party',
+      'periodic',
+      'pentest',
+    ],
+    baseAnswer:
+      'Yes. Processes, procedures, and technical measures support the periodic performance of penetration testing by independent third parties. Scope, frequency, and rules of engagement are defined; tests are conducted at least annually or as required by risk or regulation. Findings are remediated and retested as appropriate.',
+    evidenceRequired: [
+      'Penetration testing policy or procedure',
+      'Evidence of periodic third-party penetration tests (e.g., scope, report summary)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.8', description: 'Management of technical vulnerabilities' },
+      { framework: 'NIST CSF 2.0', controlId: 'DE.TS-01', description: 'Technical testing' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'TVM-07.1',
+    domain: 'TVM',
+    question:
+      'Are processes, procedures, and technical measures defined, implemented, and evaluated for the detection of vulnerabilities on organizationally managed assets at least monthly?',
+    keywords: [
+      'vulnerability detection',
+      'managed assets',
+      'monthly',
+      'scanning',
+      'assessment',
+    ],
+    baseAnswer:
+      'Yes. Processes, procedures, and technical measures enable the detection of vulnerabilities on organizationally managed assets at least monthly. Vulnerability scanning (e.g., infrastructure, containers, dependencies) is performed on a defined schedule; results are reviewed and remediated per policy.',
+    evidenceRequired: [
+      'Vulnerability scanning procedure and schedule',
+      'Evidence of at least monthly scans (e.g., scan reports, dashboard)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.8', description: 'Management of technical vulnerabilities' },
+      { framework: 'NIST CSF 2.0', controlId: 'DE.CM-08', description: 'Vulnerability scans' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Astra-CISO Trivy integration supports vulnerability scanning (filesystem and dependency); scan frequency and results can be used to demonstrate at least monthly detection on relevant assets.',
+  },
+  {
+    questionId: 'TVM-08.1',
+    domain: 'TVM',
+    question:
+      'Is a risk-based model used for effective prioritization of vulnerability remediation using an industry-recognized framework?',
+    keywords: [
+      'risk-based',
+      'prioritization',
+      'vulnerability remediation',
+      'industry framework',
+      'CVSS',
+      'SSVC',
+    ],
+    baseAnswer:
+      'Yes. A risk-based model for prioritization of vulnerability remediation is used, aligned with an industry-recognized framework (e.g., CVSS, SSVC, or internal risk matrix). Criticality, exploitability, and asset criticality are considered; prioritization is documented and applied consistently.',
+    evidenceRequired: [
+      'Prioritization methodology or procedure (e.g., CVSS thresholds, risk matrix)',
+      'Evidence of application (e.g., triage records, remediation order)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.8', description: 'Management of technical vulnerabilities' },
+      { framework: 'NIST CSF 2.0', controlId: 'ID.RA-01', description: 'Asset vulnerabilities identified' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Trivy output in Astra-CISO includes severity (e.g., CRITICAL, HIGH) that can be used within a risk-based prioritization model.',
+  },
+  {
+    questionId: 'TVM-09.1',
+    domain: 'TVM',
+    question:
+      'Is a process defined and implemented for tracking and reporting vulnerability identification and remediation activities that includes stakeholder notification?',
+    keywords: [
+      'tracking',
+      'reporting',
+      'vulnerability',
+      'remediation',
+      'stakeholder notification',
+    ],
+    baseAnswer:
+      'Yes. A process for tracking and reporting vulnerability identification and remediation activities is defined and implemented. Stakeholders (e.g., security, engineering, management) are notified as defined; tracking may use a ticketing system, dashboard, or dedicated VM platform. Status and metrics are reported periodically.',
+    evidenceRequired: [
+      'Vulnerability tracking and reporting procedure',
+      'Evidence of tracking (e.g., tickets, dashboard) and stakeholder communication',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.8', description: 'Management of technical vulnerabilities' },
+      { framework: 'NIST CSF 2.0', controlId: 'DE.CM-08', description: 'Vulnerability scans' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Astra-CISO can surface Trivy scan results and remediation status; integration supports tracking and reporting for stakeholder visibility.',
+  },
+  {
+    questionId: 'TVM-10.1',
+    domain: 'TVM',
+    question:
+      'Are metrics for vulnerability identification and remediation established, monitored, and reported at defined intervals?',
+    keywords: [
+      'metrics',
+      'vulnerability',
+      'identification',
+      'remediation',
+      'monitored',
+      'reported',
+    ],
+    baseAnswer:
+      'Yes. Metrics for vulnerability identification and remediation are established, monitored, and reported at defined intervals (e.g., open critical/high count, mean time to remediate, scan coverage). Metrics are used for management visibility and continuous improvement.',
+    evidenceRequired: [
+      'Definition of vulnerability management metrics',
+      'Evidence of monitoring and reporting (e.g., dashboards, periodic reports)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.8', description: 'Management of technical vulnerabilities' },
+      { framework: 'NIST CSF 2.0', controlId: 'DE.CM-08', description: 'Vulnerability scans' },
+    ],
+    expectedAnswerType: 'YES',
+    reviewerNotes:
+      'Trivy integration in Astra-CISO can contribute to vulnerability metrics (e.g., counts by severity, trend over time) for reporting.',
+  },
+];
+
+// =============================================================================
+// UEM — Universal Endpoint Management (UEM-01 through UEM-14)
+// =============================================================================
+
+export const CAIQ_KB_UEM: CAIQKnowledgeEntry[] = [
+  {
+    questionId: 'UEM-01.1',
+    domain: 'UEM',
+    question:
+      'Are policies and procedures for all endpoints established, documented, approved, communicated, applied, evaluated, and maintained? Are they reviewed and updated at least annually?',
+    keywords: [
+      'endpoints',
+      'policies',
+      'procedures',
+      'documented',
+      'annual review',
+    ],
+    baseAnswer:
+      'Yes. Policies and procedures for all endpoints are established and maintained, covering configuration, security controls, and acceptable use. They are approved, communicated, and evaluated; they are reviewed and updated at least annually.',
+    evidenceRequired: [
+      'Endpoint security or UEM policy',
+      'Procedure documentation',
+      'Annual policy review evidence',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.5.1', description: 'Policies for information security' },
+      { framework: 'NIST CSF 2.0', controlId: 'GV.OC-01', description: 'Organizational cybersecurity policy' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.AC-01', description: 'Identities and credentials managed' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'UEM-02.1',
+    domain: 'UEM',
+    question:
+      'Is a list of approved services, applications, and sources of applications (stores) acceptable for use by endpoints when accessing or storing organization-managed data defined, documented, applied, and evaluated?',
+    keywords: [
+      'approved',
+      'applications',
+      'stores',
+      'endpoints',
+      'organization data',
+      'allowlist',
+    ],
+    baseAnswer:
+      'Yes. A list of approved services, applications, and application sources (e.g., app stores) for endpoints that access or store organization-managed data is defined, documented, and applied. Exceptions require approval; the list is evaluated and updated periodically.',
+    evidenceRequired: [
+      'Approved application or software list',
+      'Procedure for updates and exceptions',
+      'Evidence of application (e.g., MDM, policy enforcement)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.9', description: 'Configuration management' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.IP-01', description: 'Baseline configuration' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'UEM-03.1',
+    domain: 'UEM',
+    question:
+      'Is a process for the validation of the endpoint device\'s compatibility with operating systems and applications defined and implemented?',
+    keywords: [
+      'compatibility',
+      'endpoint',
+      'operating system',
+      'applications',
+      'validation',
+    ],
+    baseAnswer:
+      'Yes. A process for validating endpoint device compatibility with operating systems and applications is defined and implemented. Compatibility is checked before deployment or major upgrades; incompatible or unsupported configurations are not used for sensitive workloads or are isolated.',
+    evidenceRequired: [
+      'Compatibility validation procedure or standard',
+      'Evidence of validation (e.g., compatibility matrix, test results)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.9', description: 'Configuration management' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.IP-01', description: 'Baseline configuration' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'UEM-04.1',
+    domain: 'UEM',
+    question:
+      'Is an inventory of all endpoints used to store and access company data maintained?',
+    keywords: [
+      'inventory',
+      'endpoints',
+      'company data',
+      'asset management',
+    ],
+    baseAnswer:
+      'Yes. An inventory of all endpoints used to store and access company data is maintained. The inventory is updated when devices are provisioned or decommissioned; it is used for asset management, patching, and security oversight.',
+    evidenceRequired: [
+      'Endpoint inventory (e.g., asset register, MDM/UEM inventory)',
+      'Update process or evidence of currency',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.1', description: 'Inventory of information and other associated assets' },
+      { framework: 'NIST CSF 2.0', controlId: 'ID.AM-01', description: 'Physical devices and systems' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'UEM-05.1',
+    domain: 'UEM',
+    question:
+      'Are processes, procedures, and technical measures defined, implemented, and evaluated to enforce policies and controls for all endpoints permitted to access systems and/or store, transmit, or process organizational data?',
+    keywords: [
+      'enforce',
+      'policies',
+      'controls',
+      'endpoints',
+      'organizational data',
+      'MDM',
+      'UEM',
+    ],
+    baseAnswer:
+      'Yes. Processes, procedures, and technical measures enforce policies and controls for all endpoints that access systems or store, transmit, or process organizational data. MDM/UEM or equivalent tools apply configuration and policy; compliance is monitored and non-compliant devices are remediated or restricted.',
+    evidenceRequired: [
+      'Endpoint policy enforcement procedure',
+      'Evidence of technical controls (e.g., MDM/UEM configuration, compliance reports)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.9', description: 'Configuration management' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.AC-01', description: 'Identities and credentials managed' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'UEM-06.1',
+    domain: 'UEM',
+    question:
+      'Are all relevant interactive-use endpoints configured to require an automatic lock screen?',
+    keywords: [
+      'lock screen',
+      'automatic',
+      'interactive',
+      'endpoints',
+      'screen lock',
+    ],
+    baseAnswer:
+      'Yes. All relevant interactive-use endpoints are configured to require an automatic lock screen after a defined period of inactivity. Timeout settings are defined in policy and enforced via MDM or group policy; exceptions are documented and limited.',
+    evidenceRequired: [
+      'Policy or standard for screen lock (e.g., timeout)',
+      'Evidence of configuration (e.g., MDM settings, GPO)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.16', description: 'Monitoring activities' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.AC-01', description: 'Identities and credentials managed' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'UEM-07.1',
+    domain: 'UEM',
+    question:
+      'Are changes to endpoint operating systems, patch levels, and/or applications managed through the company\'s change management processes?',
+    keywords: [
+      'change management',
+      'endpoint',
+      'operating system',
+      'patch',
+      'applications',
+    ],
+    baseAnswer:
+      'Yes. Changes to endpoint operating systems, patch levels, and applications are managed through the company’s change management processes. Patching may be automated or scheduled with approval; significant changes follow change control including testing and rollback where applicable.',
+    evidenceRequired: [
+      'Change management procedure applicable to endpoints',
+      'Evidence of managed changes (e.g., patch records, change tickets)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.9', description: 'Configuration management' },
+      { framework: 'ISO 27001:2022', controlId: 'A.5.8', description: 'Management of technical vulnerabilities' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.IP-01', description: 'Baseline configuration' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'UEM-08.1',
+    domain: 'UEM',
+    question:
+      'Is information protected from unauthorized disclosure on managed endpoint devices with storage encryption?',
+    keywords: [
+      'storage encryption',
+      'endpoint',
+      'unauthorized disclosure',
+      'device encryption',
+      'FDE',
+    ],
+    baseAnswer:
+      'Yes. Information on managed endpoint devices is protected from unauthorized disclosure using storage encryption (e.g., full-disk or file-level encryption). Encryption is required by policy and enforced via MDM or deployment standards; key management is defined.',
+    evidenceRequired: [
+      'Policy requiring endpoint storage encryption',
+      'Evidence of deployment (e.g., BitLocker, FileVault, MDM encryption status)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.24', description: 'Use of cryptography' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.DS-01', description: 'Data-at-rest protection' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'UEM-09.1',
+    domain: 'UEM',
+    question:
+      'Are managed endpoints configured with anti-malware detection and prevention technology and services?',
+    keywords: [
+      'anti-malware',
+      'endpoint',
+      'detection',
+      'prevention',
+      'EDR',
+      'AV',
+    ],
+    baseAnswer:
+      'Yes. Managed endpoints are configured with anti-malware detection and prevention technology and services. Signature and behavioral protection are enabled and kept up to date; detection and response procedures are in place.',
+    evidenceRequired: [
+      'Anti-malware policy or standard',
+      'Evidence of deployment and updates (e.g., EDR/AV console, coverage report)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.23', description: 'Filtering' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.PT-02', description: 'Software and data integrity' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'UEM-10.1',
+    domain: 'UEM',
+    question:
+      'Are managed endpoints configured with properly configured software firewalls?',
+    keywords: [
+      'software firewall',
+      'host firewall',
+      'endpoint',
+      'configured',
+    ],
+    baseAnswer:
+      'Yes. Managed endpoints are configured with properly configured software (host) firewalls. Default-deny or least-permissive rules are applied where feasible; configuration is standardized and monitored.',
+    evidenceRequired: [
+      'Host firewall standard or baseline',
+      'Evidence of configuration (e.g., GPO, MDM, compliance report)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.22', description: 'Segregation in networks' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.Net-01', description: 'Network integrity' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'UEM-11.1',
+    domain: 'UEM',
+    question:
+      'Are managed endpoints configured with Data Loss Prevention (DLP) technologies and rules in accordance with a risk assessment?',
+    keywords: [
+      'DLP',
+      'data loss prevention',
+      'endpoint',
+      'risk assessment',
+    ],
+    baseAnswer:
+      'Yes. Managed endpoints are configured with DLP technologies and rules in accordance with a risk assessment. DLP may include endpoint agents, network or cloud DLP, or both; rules align with data classification and business need. Effectiveness is evaluated periodically.',
+    evidenceRequired: [
+      'DLP policy or standard',
+      'Risk assessment or coverage scope',
+      'Evidence of DLP deployment (e.g., agent status, policy summary)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.12', description: 'Data leakage prevention' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.DS-01', description: 'Data-at-rest protection' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'UEM-12.1',
+    domain: 'UEM',
+    question:
+      'Are remote geo-location capabilities enabled for all managed mobile endpoints?',
+    keywords: [
+      'geo-location',
+      'mobile',
+      'endpoints',
+      'remote',
+      'location',
+    ],
+    baseAnswer:
+      'Yes. Remote geo-location capabilities are enabled for all managed mobile endpoints where supported by the device and use case. Location may be used for loss/theft response, asset tracking, or policy enforcement; privacy and legal considerations are addressed in policy.',
+    evidenceRequired: [
+      'Policy for mobile geo-location',
+      'Evidence of capability (e.g., MDM feature enabled, documentation)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.1', description: 'Inventory of information and other associated assets' },
+      { framework: 'NIST CSF 2.0', controlId: 'ID.AM-01', description: 'Physical devices and systems' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'UEM-13.1',
+    domain: 'UEM',
+    question:
+      'Are processes, procedures, and technical measures defined, implemented, and evaluated to enable the deletion of company data remotely on managed endpoint devices?',
+    keywords: [
+      'remote wipe',
+      'remote delete',
+      'company data',
+      'endpoint',
+      'MDM',
+    ],
+    baseAnswer:
+      'Yes. Processes, procedures, and technical measures enable the remote deletion of company data on managed endpoint devices (e.g., remote wipe or selective wipe). Capability is tested and available for loss, theft, or offboarding scenarios; procedures define when and how wipe is initiated.',
+    evidenceRequired: [
+      'Remote wipe procedure or policy',
+      'Evidence of capability (e.g., MDM remote wipe feature, test evidence)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.9', description: 'Configuration management' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.DS-01', description: 'Data-at-rest protection' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+  {
+    questionId: 'UEM-14.1',
+    domain: 'UEM',
+    question:
+      'Are processes, procedures, and technical and/or contractual measures defined, implemented, and evaluated to maintain proper security of third-party endpoints with access to organizational assets?',
+    keywords: [
+      'third-party endpoints',
+      'BYOD',
+      'contractors',
+      'security',
+      'contractual',
+    ],
+    baseAnswer:
+      'Yes. Processes, procedures, and technical and/or contractual measures maintain proper security of third-party endpoints with access to organizational assets. Requirements may include minimum security controls, acceptable use, and access scope; compliance is verified via policy, MDM for BYOD, or contract and audits.',
+    evidenceRequired: [
+      'Policy or procedure for third-party endpoint security',
+      'Evidence of implementation (e.g., BYOD policy, contractor device requirements, contract clauses)',
+    ],
+    frameworkMappings: [
+      { framework: 'ISO 27001:2022', controlId: 'A.8.9', description: 'Configuration management' },
+      { framework: 'NIST CSF 2.0', controlId: 'PR.AC-01', description: 'Identities and credentials managed' },
+    ],
+    expectedAnswerType: 'YES',
+  },
+];
+
+// =============================================================================
 // Combined knowledge base and accessor
 // =============================================================================
 
-/** All knowledge base entries from AIS, AAC, BCR, CCC, CEK, DSP, GRC, HRS, IAM, IPY, IVS, LOG, and SEF domains. */
+/** All knowledge base entries from all 17 CAIQ v4 domains. */
 const ALL_KB_ENTRIES: CAIQKnowledgeEntry[] = [
   ...CAIQ_KB_AIS,
   ...CAIQ_KB_AAC,
@@ -4236,7 +5228,33 @@ const ALL_KB_ENTRIES: CAIQKnowledgeEntry[] = [
   ...CAIQ_KB_IVS,
   ...CAIQ_KB_LOG,
   ...CAIQ_KB_SEF,
+  ...CAIQ_KB_STA,
+  ...CAIQ_KB_TVM,
+  ...CAIQ_KB_UEM,
 ];
+
+/**
+ * Expected question count per CAIQ v4 domain. Use to validate completeness of the knowledge base.
+ * Sum of all values = total CAIQ v4 questions in this KB.
+ */
+export const CAIQ_DOMAIN_STATS: Record<CAIQDomain, number> = {
+  AIS: 5,
+  AAC: 4,
+  BCR: 22,
+  CCC: 9,
+  CEK: 22,
+  DSP: 19,
+  GRC: 8,
+  HRS: 13,
+  IAM: 16,
+  IPY: 4,
+  IVS: 9,
+  LOG: 13,
+  SEF: 8,
+  STA: 14,
+  TVM: 10,
+  UEM: 14,
+};
 
 /**
  * Returns the full CAIQ knowledge base (all domains) for matching and answer generation.
@@ -4247,10 +5265,25 @@ export function getKnowledgeBase(): CAIQKnowledgeEntry[] {
 }
 
 /**
+ * Returns the knowledge base entry for a given question ID, or undefined if not found.
+ */
+export function getEntryByQuestionId(id: string): CAIQKnowledgeEntry | undefined {
+  return ALL_KB_ENTRIES.find((e) => e.questionId === id);
+}
+
+/**
  * Returns knowledge base entries for a specific domain.
  */
-export function getKnowledgeBaseByDomain(domain: CAIQDomain): CAIQKnowledgeEntry[] {
+export function getEntriesByDomain(domain: CAIQDomain): CAIQKnowledgeEntry[] {
   return ALL_KB_ENTRIES.filter((e) => e.domain === domain);
+}
+
+/**
+ * Returns knowledge base entries for a specific domain.
+ * @deprecated Use getEntriesByDomain instead.
+ */
+export function getKnowledgeBaseByDomain(domain: CAIQDomain): CAIQKnowledgeEntry[] {
+  return getEntriesByDomain(domain);
 }
 
 // =============================================================================
@@ -4289,6 +5322,9 @@ const DOMAIN_DISPLAY_NAMES: Record<string, string> = {
   IVS: 'Infrastructure & Virtualization Security',
   LOG: 'Logging & Monitoring',
   SEF: 'Security Incident Management, E-Discovery & Cloud Forensics',
+  STA: 'Supply Chain Management, Transparency & Accountability',
+  TVM: 'Threat & Vulnerability Management',
+  UEM: 'Universal Endpoint Management',
 };
 
 function expectedAnswerTypeToYesNo(
