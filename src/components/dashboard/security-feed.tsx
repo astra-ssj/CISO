@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, FileText, Globe, Shield, Sparkles, RefreshCw } from "lucide-react";
+import { FileText, Globe, Shield, Sparkles, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { analyzeThreatBatchAction } from "@/app/actions/ai-ops";
 import { motion, AnimatePresence } from "framer-motion";
@@ -90,7 +90,7 @@ export function SecurityFeed() {
                                 <Sparkles className="w-4 h-4 text-purple-400 absolute top-3 left-3" />
                                 <div className="pl-6">
                                     <span className="font-bold text-purple-400 not-italic block mb-1 text-xs uppercase tracking-wider">Executive Summary</span>
-                                    "{briefing}"
+                                    &quot;{briefing}&quot;
                                 </div>
                                 <button
                                     onClick={() => setBriefing(null)}

@@ -1,6 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { SEED_POLICIES } from './policy-data';
 
 export type PolicyStatus = 'DRAFT' | 'IN_REVIEW' | 'APPROVED' | 'ACTIVE' | 'RETIRED';
 
@@ -26,8 +24,7 @@ export interface Policy {
     lastUpdated: string;
     sections: PolicySection[];
     mappings: FrameworkMapping[];
-    // New Fields for Governance 2.0
-    dependencies: string[]; // IDs of policies this ones depends on
+    dependencies: string[];
     acknowledgment: {
         status: 'ACTIVE' | 'PENDING' | 'COMPLETED';
         totalUsers: number;
@@ -42,31 +39,82 @@ export interface Policy {
     }[];
 }
 
+const API = '/api/policies';
+
 interface PolicyState {
     policies: Policy[];
-    addPolicy: (policy: Policy) => void;
-    updatePolicy: (id: string, updates: Partial<Policy>) => void;
-    deletePolicy: (id: string) => void;
+    isLoading: boolean;
+    hasFetched: boolean;
+    fetchPolicies: () => Promise<void>;
+    addPolicy: (policy: Policy) => Promise<Policy | void>;
+    updatePolicy: (id: string, updates: Partial<Policy>) => Promise<void>;
+    deletePolicy: (id: string) => Promise<void>;
     getPoliciesByStatus: (status: PolicyStatus) => Policy[];
     getPolicyById: (id: string) => Policy | undefined;
 }
 
-export const usePolicyStore = create<PolicyState>()(
-    persist(
-        (set, get) => ({
-            policies: SEED_POLICIES,
-            addPolicy: (policy) => set((state) => ({ policies: [...state.policies, policy] })),
-            updatePolicy: (id, updates) =>
-                set((state) => ({
-                    policies: state.policies.map((p) => (p.id === id ? { ...p, ...updates } : p)),
-                })),
-            deletePolicy: (id) =>
-                set((state) => ({ policies: state.policies.filter((p) => p.id !== id) })),
-            getPoliciesByStatus: (status) => get().policies.filter((p) => p.status === status),
-            getPolicyById: (id) => get().policies.find((p) => p.id === id),
-        }),
-        {
-            name: 'astra-content-store'
+export const usePolicyStore = create<PolicyState>()((set, get) => ({
+    policies: [],
+    isLoading: false,
+    hasFetched: false,
+
+    fetchPolicies: async () => {
+        if (get().hasFetched) return;
+        set({ isLoading: true });
+        try {
+            const res = await fetch(API);
+            if (!res.ok) throw new Error(await res.text());
+            const data = await res.json();
+            set({ policies: Array.isArray(data) ? data : [], hasFetched: true, isLoading: false });
+        } catch (e) {
+            console.warn('Policies fetch failed', e);
+            set({ hasFetched: true, isLoading: false });
         }
-    )
-);
+    },
+
+    addPolicy: async (policy) => {
+        try {
+            const res = await fetch(API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(policy),
+            });
+            if (!res.ok) throw new Error(await res.text());
+            const created = await res.json();
+            set((s) => ({ policies: [created, ...s.policies], hasFetched: true }));
+            return created as Policy;
+        } catch (e) {
+            console.warn('Policy add failed', e);
+        }
+    },
+
+    updatePolicy: async (id, updates) => {
+        try {
+            const res = await fetch(`${API}/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates),
+            });
+            if (!res.ok) throw new Error(await res.text());
+            const updated = await res.json();
+            set((s) => ({
+                policies: s.policies.map((p) => (p.id === id ? { ...p, ...updated } : p)),
+            }));
+        } catch (e) {
+            console.warn('Policy update failed', e);
+        }
+    },
+
+    deletePolicy: async (id) => {
+        try {
+            const res = await fetch(`${API}/${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error(await res.text());
+            set((s) => ({ policies: s.policies.filter((p) => p.id !== id) }));
+        } catch (e) {
+            console.warn('Policy delete failed', e);
+        }
+    },
+
+    getPoliciesByStatus: (status) => get().policies.filter((p) => p.status === status),
+    getPolicyById: (id) => get().policies.find((p) => p.id === id),
+}));

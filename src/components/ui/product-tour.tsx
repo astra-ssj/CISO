@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { X, ChevronRight, Check } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface TourStep {
     targetId?: string; // ID of the element to highlight (optional for modal steps)

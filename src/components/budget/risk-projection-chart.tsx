@@ -15,8 +15,6 @@ export function RiskProjectionChart({ budget }: RiskProjectionChartProps) {
     // Calculate projected risk based on budget inputs
     // Logic: Higher spend = Lower risk (diminishing returns)
     const data = useMemo(() => {
-        const totalInvestment = Object.values(budget).reduce((a, b) => a + b, 0);
-
         // Base risk scenario (without investment)
         const baseRisk = 85;
 

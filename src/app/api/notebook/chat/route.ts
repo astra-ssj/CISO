@@ -40,8 +40,8 @@ PLATFORM CAPABILITIES (Use this for Help/Support):
         const provider = getAIProvider();
 
         // Build history for the AI provider
-        const history = messages.slice(0, -1).map((m: any) => ({
-            role: m.role === 'assistant' ? 'model' : m.role,
+        const history = messages.slice(0, -1).map((m: { role: string; content: string }) => ({
+            role: m.role === 'assistant' ? 'model' as const : (m.role as 'user' | 'system'),
             parts: [{ text: m.content }]
         }));
 
@@ -54,10 +54,11 @@ PLATFORM CAPABILITIES (Use this for Help/Support):
             response: content || "No response generated."
         });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("AI Error Details:", error);
+        const details = error instanceof Error ? error.message : String(error);
         return NextResponse.json(
-            { error: "AI Processing Failed", details: error.message },
+            { error: "AI Processing Failed", details },
             { status: 500 }
         );
     }

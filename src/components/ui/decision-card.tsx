@@ -1,7 +1,7 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, CheckCircle, XCircle, Info } from "lucide-react";
+import { CheckCircle, XCircle, Info } from "lucide-react";
 import { ComplianceBadge } from "@/components/ui/compliance-badge";
 import { ComplianceStandard, RiskLevel } from "@/lib/store";
 

@@ -10,7 +10,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import {
     type Decision, type DecisionPillar, type DecisionUrgency, type DecisionStatus,
-    type DecisionFilter, type Recommendation, type ConfidenceScore,
+    type DecisionFilter, type ConfidenceScore,
     filterDecisions, getConfidenceLabel
 } from './types';
 

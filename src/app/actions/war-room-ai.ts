@@ -1,6 +1,6 @@
 "use server";
 
-import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
+import { getAIProvider, isAIConfigured, type ChatHistoryEntry } from '@/lib/ai/engine';
 
 export interface WarRoomResult {
     success: boolean;
@@ -10,10 +10,18 @@ export interface WarRoomResult {
     timestamp: Date;
 }
 
+export interface IncidentContext {
+    id?: string;
+    title?: string;
+    severity?: string;
+    status?: string;
+    [key: string]: unknown;
+}
+
 export async function consultCommandCenter(
     message: string,
-    incidentContext: any,
-    history: any[]
+    incidentContext: IncidentContext,
+    history: { role: string; content: string }[]
 ): Promise<WarRoomResult> {
 
     // 1. Safety Check
@@ -46,7 +54,7 @@ export async function consultCommandCenter(
             [
                 { role: 'model', parts: [{ text: "Acknowledged. War Room initialized. Awaiting sitrep." }] },
                 // simple history mapping
-                ...history.slice(-6).map((msg: any) => ({
+                ...history.slice(-6).map((msg): ChatHistoryEntry => ({
                     role: msg.role === 'user' ? 'user' : 'model',
                     parts: [{ text: msg.content }]
                 }))
@@ -62,11 +70,12 @@ export async function consultCommandCenter(
             timestamp: new Date()
         };
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("War Room AI Error:", error);
 
+        const message = error instanceof Error ? error.message : String(error);
         // 4. Quota Fallback (The Feature we verified)
-        if (error.message?.includes("429") || error.message?.includes("Quota exceeded")) {
+        if (message.includes("429") || message.includes("Quota exceeded")) {
             console.warn("Quota exceeded. Returning mock fallback.");
             return {
                 success: true,
@@ -80,7 +89,7 @@ export async function consultCommandCenter(
             success: false,
             role: 'assistant',
             content: "Error: Communication link severed.",
-            error: error.message,
+            error: message,
             timestamp: new Date()
         };
     }

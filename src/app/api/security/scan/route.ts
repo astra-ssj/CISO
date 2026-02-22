@@ -11,9 +11,10 @@ export async function POST() {
             timestamp: new Date().toISOString(),
             report
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
         return NextResponse.json(
-            { success: false, error: error.message },
+            { success: false, error: message },
             { status: 500 }
         );
     }

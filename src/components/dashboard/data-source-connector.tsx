@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Database, CheckCircle2, Loader2, Server, Cloud, Shield, Terminal, Key, Globe, Lock, Workflow } from "lucide-react";
+import { Database, Loader2, Server, Cloud, Shield, Key, Globe, Lock, Workflow } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -22,7 +22,7 @@ interface DataSource {
     name: string;
     type: 'CLOUD' | 'SIEM' | 'IDP' | 'CODE';
     status: 'DISCONNECTED' | 'CONFIGURING' | 'CONNECTING' | 'CONNECTED';
-    icon: any;
+    icon: React.ComponentType<{ className?: string }>;
     description: string;
     telemetry?: {
         rpm: number; // Requests per minute
@@ -110,7 +110,7 @@ const INITIAL_SOURCES: DataSource[] = [
 export function DataSourceConnector() {
     const [isOpen, setIsOpen] = useState(false);
     const [sources, setSources] = useState<DataSource[]>(INITIAL_SOURCES);
-    const [activeSourceId, setActiveSourceId] = useState<string | null>(null); // For configuring
+    const [, setActiveSourceId] = useState<string | null>(null);
     const [logs, setLogs] = useState<string[]>([]);
     const [connectingId, setConnectingId] = useState<string | null>(null);
 

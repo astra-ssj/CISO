@@ -18,7 +18,6 @@ import {
     AlertTriangle,
     CheckCircle,
     Clock,
-    Printer,
     Share2,
     Mail,
     Folder,

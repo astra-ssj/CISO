@@ -17,7 +17,7 @@ interface ViewEngineState {
     context: ViewContext;
 
     // Actions
-    setDimension: (dimension: keyof ViewContext, value: any) => void;
+    setDimension: (dimension: keyof ViewContext, value: ViewContext[keyof ViewContext]) => void;
     resetContext: () => void;
 }
 

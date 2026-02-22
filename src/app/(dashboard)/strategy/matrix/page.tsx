@@ -14,7 +14,7 @@ import {
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
-import { Download, Info, Plus, Shield, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { Download, Plus, Shield, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -261,7 +261,7 @@ export default function DefenseMatrixPage() {
                             </div>
                             <div className="grid gap-2">
                                 <Label>Severity</Label>
-                                <Select value={threatSeverity} onValueChange={(v: any) => setThreatSeverity(v)}>
+                                <Select value={threatSeverity} onValueChange={(v) => setThreatSeverity(v as "Critical" | "High" | "Medium")}>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="Critical">Critical</SelectItem>
@@ -315,7 +315,7 @@ export default function DefenseMatrixPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-2">
                                     <Label>Type</Label>
-                                    <Select value={sgType} onValueChange={(v: any) => setSgType(v)}>
+                                    <Select value={sgType} onValueChange={(v) => setSgType(v as "Technology" | "Process" | "People")}>
                                         <SelectTrigger><SelectValue /></SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="Technology">Technology</SelectItem>

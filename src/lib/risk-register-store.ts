@@ -142,10 +142,10 @@ interface RiskRegisterStore {
     isLoading: boolean;
     hasFetched: boolean;
     fetchEntries: () => Promise<void>;
-    addEntry: (scenario: RiskScenario, owner: string, notes: string) => void;
-    updateEntry: (id: string, updates: Partial<Pick<RiskEntry, 'owner' | 'notes' | 'status'>>) => void;
-    removeEntry: (id: string) => void;
-    recalculate: (id: string, updatedScenario: RiskScenario) => void;
+    addEntry: (scenario: RiskScenario, owner: string, notes: string) => Promise<void>;
+    updateEntry: (id: string, updates: Partial<Pick<RiskEntry, 'owner' | 'notes' | 'status'>>) => Promise<void>;
+    removeEntry: (id: string) => Promise<void>;
+    recalculate: (id: string, updatedScenario: RiskScenario) => Promise<void>;
     getTopRisks: (count: number) => RiskEntry[];
     getAverageScore: () => number;
 }
@@ -169,7 +169,7 @@ export const useRiskRegisterStore = create<RiskRegisterStore>()(
                 // Only replace if API returned data
                 if (Array.isArray(data) && data.length > 0) {
                     // Re-run FAIR analysis on fetched data
-                    const entries: RiskEntry[] = data.map((entry: any) => ({
+                    const entries: RiskEntry[] = data.map((entry: RiskEntry) => ({
                         ...entry,
                         analysis: calculateRisk(entry.scenario),
                     }));
@@ -184,43 +184,64 @@ export const useRiskRegisterStore = create<RiskRegisterStore>()(
             }
         },
 
-        addEntry: (scenario, owner, notes) => {
-            const analysis = calculateRisk(scenario);
-            const today = new Date().toISOString().split('T')[0];
-            set((state) => ({
-                entries: [...state.entries, {
-                    id: scenario.id || `RS-${Date.now()}`,
-                    scenario, analysis, owner, notes,
-                    status: 'OPEN' as const,
-                    history: [{ date: today, score: analysis.riskScore, ale: analysis.annualizedLossExpectancy }],
-                    createdAt: today, updatedAt: today
-                }]
-            }));
+        addEntry: async (scenario, owner, notes) => {
+            try {
+                const res = await fetch('/api/risks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ scenario, owner, notes }),
+                });
+                if (!res.ok) throw new Error(await res.text());
+                const entry = await res.json() as RiskEntry;
+                set((state) => ({ entries: [entry, ...state.entries], hasFetched: true }));
+            } catch (err) {
+                console.warn('Risk Register: add failed', err);
+            }
         },
 
-        updateEntry: (id, updates) => set((state) => ({
-            entries: state.entries.map(e =>
-                e.id === id ? { ...e, ...updates, updatedAt: new Date().toISOString().split('T')[0] } : e
-            )
-        })),
+        updateEntry: async (id, updates) => {
+            try {
+                const res = await fetch(`/api/risks/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updates),
+                });
+                if (!res.ok) throw new Error(await res.text());
+                const entry = await res.json() as RiskEntry;
+                set((state) => ({
+                    entries: state.entries.map(e => e.id === id ? { ...e, ...entry } : e),
+                }));
+            } catch (err) {
+                console.warn('Risk Register: update failed', err);
+            }
+        },
 
-        removeEntry: (id) => set((state) => ({
-            entries: state.entries.filter(e => e.id !== id)
-        })),
+        removeEntry: async (id) => {
+            try {
+                const res = await fetch(`/api/risks/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error(await res.text());
+                set((state) => ({ entries: state.entries.filter(e => e.id !== id) }));
+            } catch (err) {
+                console.warn('Risk Register: remove failed', err);
+            }
+        },
 
-        recalculate: (id, updatedScenario) => set((state) => {
-            const analysis = calculateRisk(updatedScenario);
-            const today = new Date().toISOString().split('T')[0];
-            return {
-                entries: state.entries.map(e => {
-                    if (e.id !== id) return e;
-                    return {
-                        ...e, scenario: updatedScenario, analysis, updatedAt: today,
-                        history: [...e.history, { date: today, score: analysis.riskScore, ale: analysis.annualizedLossExpectancy }]
-                    };
-                })
-            };
-        }),
+        recalculate: async (id, updatedScenario) => {
+            try {
+                const res = await fetch(`/api/risks/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ scenario: updatedScenario }),
+                });
+                if (!res.ok) throw new Error(await res.text());
+                const entry = await res.json() as RiskEntry;
+                set((state) => ({
+                    entries: state.entries.map(e => e.id === id ? entry : e),
+                }));
+            } catch (err) {
+                console.warn('Risk Register: recalculate failed', err);
+            }
+        },
 
         getTopRisks: (count) => [...get().entries]
             .filter(e => e.status !== 'CLOSED')

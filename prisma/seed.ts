@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { PrismaLibSql } from '@prisma/adapter-libsql'
 import { createClient } from '@libsql/client'
+import bcrypt from 'bcryptjs'
 import 'dotenv/config'
 
 const libsql = createClient({
@@ -13,14 +14,42 @@ const prisma = new PrismaClient({ adapter })
 async function main() {
     console.log('🌱 Starting seed...')
 
-    // 1. Create Users
+    // Passwords for NextAuth credentials (min 6 chars for auth.ts zod)
+    const cisoHash = await bcrypt.hash('admin123', 10)
+    const analystHash = await bcrypt.hash('user123', 10)
+    const auditorHash = await bcrypt.hash('auditor123', 10)
+
+    // 1. Create Users (with hashed passwords for NextAuth)
     const ciso = await prisma.user.upsert({
         where: { email: 'ciso@astra.ai' },
-        update: {},
+        update: { password: cisoHash },
         create: {
             email: 'ciso@astra.ai',
             name: 'Sarah Connor',
             role: 'CISO',
+            password: cisoHash,
+        },
+    })
+
+    await prisma.user.upsert({
+        where: { email: 'analyst@astra.ai' },
+        update: { password: analystHash },
+        create: {
+            email: 'analyst@astra.ai',
+            name: 'Security Analyst',
+            role: 'SEC_ENGINEER',
+            password: analystHash,
+        },
+    })
+
+    await prisma.user.upsert({
+        where: { email: 'auditor@astra.ai' },
+        update: { password: auditorHash },
+        create: {
+            email: 'auditor@astra.ai',
+            name: 'External Auditor',
+            role: 'AUDITOR',
+            password: auditorHash,
         },
     })
 
@@ -53,6 +82,121 @@ async function main() {
             frameworks: JSON.stringify(['NIST_CSF_2_0', 'ISO_27001']),
             controls: JSON.stringify(['PR.AC-1', 'A.9.2']),
         },
+    })
+
+    // 4. Vendors (simple list)
+    await prisma.vendor.createMany({
+        data: [
+            { name: 'AWS (Amazon Web Services)', serviceDescription: 'Core Cloud Infrastructure Provider', tier: 'TIER_1_CRITICAL', status: 'ACTIVE', lastAssessmentDate: '2025-11-15', inherentRiskScore: 92, contactEmail: 'aws-support@amazon.com' },
+            { name: 'Slack', serviceDescription: 'Internal Communication Platform', tier: 'TIER_2_HIGH', status: 'ACTIVE', lastAssessmentDate: '2026-01-10', inherentRiskScore: 65, contactEmail: 'security@slack.com' },
+        ],
+    })
+
+    // 5. Vendor Risk (rich)
+    const vRisk = await prisma.vendorRisk.create({
+        data: {
+            name: 'CloudScale AWS',
+            category: 'CLOUD_INFRASTRUCTURE',
+            description: 'Primary cloud infrastructure provider.',
+            status: 'APPROVED',
+            riskTier: 'MEDIUM',
+            riskScore: 42,
+            dataAccess: JSON.stringify(['PII', 'FINANCIAL', 'OPERATIONAL']),
+            complianceCertifications: JSON.stringify(['SOC 2 Type II', 'ISO 27001']),
+            contractExpiry: '2027-03-15',
+            lastAssessment: '2026-01-10',
+            contactName: 'Sarah Chen',
+            contactEmail: 'sarah@cloudscale.example',
+            notes: 'Tier 1 critical vendor.',
+        },
+    })
+    await prisma.vendorAssessment.create({
+        data: { vendorRiskId: vRisk.id, date: '2026-01-10', score: 42, findings: JSON.stringify(['Shared responsibility gaps']), assessor: 'Internal Audit' },
+    })
+
+    // 6. Evidence
+    await prisma.evidence.createMany({
+        data: [
+            { name: 'Information Security Policy v3.1', type: 'POLICY', fileName: 'infosec-policy-v3.1.pdf', fileSize: 245000, controlIds: JSON.stringify(['A.5.1', 'GV.OC-01']), framework: 'ISO_27001_2022', status: 'VERIFIED', uploadDate: '2026-01-15', uploadedBy: 'CISO Office', notes: 'Annual review completed.' },
+            { name: 'SOC 2 Type II Report 2025', type: 'REPORT', fileName: 'soc2-typeii-2025.pdf', fileSize: 1800000, controlIds: JSON.stringify(['PR.AA-01', 'PR.DS-01']), framework: 'NIST_CSF_2_0', status: 'VERIFIED', uploadDate: '2025-12-20', expiryDate: '2026-12-20', uploadedBy: 'External Auditor', notes: 'No exceptions.' },
+        ],
+    })
+
+    // 7. Objectives & Projects
+    await prisma.objective.create({
+        data: {
+            title: 'Reduce aggregate risk exposure by 30%',
+            description: 'Lower total ALE through targeted risk treatments.',
+            quarter: 'Q1',
+            year: 2026,
+            owner: 'CISO',
+            status: 'ON_TRACK',
+            keyResults: JSON.stringify([
+                { id: 'KR-001-1', title: 'Achieve 95% patch SLA compliance', targetValue: 95, currentValue: 82, unit: '%', isAutoTracked: true, status: 'AT_RISK' },
+                { id: 'KR-001-2', title: 'Complete FAIR analysis for top 20 assets', targetValue: 20, currentValue: 14, unit: 'count', isAutoTracked: false, status: 'ON_TRACK' },
+            ]),
+            linkedRisks: JSON.stringify(['RS-001']),
+        },
+    })
+    await prisma.project.create({
+        data: {
+            title: 'Zero Trust Network Migration',
+            description: 'Implement zero trust architecture.',
+            owner: 'CISO',
+            status: 'IN_PROGRESS',
+            priority: 'CRITICAL',
+            budgetAllocated: 450000,
+            budgetSpent: 185000,
+            linkedObjectives: JSON.stringify(['OBJ-001']),
+            linkedRisks: JSON.stringify(['RS-001']),
+            startDate: '2026-01-15',
+            targetEndDate: '2026-09-30',
+            tags: JSON.stringify(['infrastructure', 'zero-trust']),
+            phases: JSON.stringify([
+                { id: 'P1', title: 'Identity & Access Foundation', startDate: '2026-01-15', endDate: '2026-03-31', status: 'IN_PROGRESS', progress: 72, milestones: [] },
+            ]),
+        },
+    })
+
+    // 8. Notifications & Alert Rules
+    await prisma.notification.createMany({
+        data: [
+            { type: 'THREAT', title: 'Critical CVE Detected', message: 'CVE-2026-1234 found in express@4.18.2 — RCE. CVSS 9.8.', severity: 'CRITICAL', read: false, timestamp: Date.now() - 300000, actionUrl: '/appsec' },
+            { type: 'COMPLIANCE', title: 'NIST CSF Compliance', message: 'Overall compliance score above 70%.', severity: 'INFO', read: true, timestamp: Date.now() - 86400000 },
+        ],
+    })
+    await prisma.alertRule.createMany({
+        data: [
+            { name: 'Critical CVE Alert', condition: 'cvss_score > threshold', threshold: 9.0, enabled: true, notificationType: 'THREAT' },
+            { name: 'Compliance Score Drop', condition: 'compliance_score < threshold', threshold: 70, enabled: true, notificationType: 'COMPLIANCE' },
+        ],
+    })
+
+    // 9. Playbooks
+    await prisma.playbook.createMany({
+        data: [
+            {
+                title: 'Ransomware Response Protocol',
+                description: 'SOP for containment and eradication of ransomware.',
+                severity: 'CRITICAL',
+                status: 'READY',
+                phases: JSON.stringify([
+                    { id: 'phase-1', title: '1. Identification & Analysis', status: 'PENDING', steps: [{ id: '1.1', instruction: 'Isolate affected systems immediately.', type: 'CHECKBOX', isCompleted: false }] },
+                    { id: 'phase-2', title: '2. Containment', status: 'PENDING', steps: [{ id: '2.1', instruction: 'Disable compromised user accounts.', type: 'CHECKBOX', isCompleted: false }] },
+                ]),
+                evidenceLog: JSON.stringify([]),
+            },
+            {
+                title: 'DDoS Mitigation',
+                description: 'Response plan for volumetric and application layer DoS.',
+                severity: 'HIGH',
+                status: 'READY',
+                phases: JSON.stringify([
+                    { id: 'phase-1', title: '1. Assessment', status: 'PENDING', steps: [{ id: '1.1', instruction: 'Verify if traffic is attack or legitimate surge.', type: 'CHECKBOX', isCompleted: false }] },
+                ]),
+                evidenceLog: JSON.stringify([]),
+            },
+        ],
     })
 
     console.log('✅ Seed complete!')

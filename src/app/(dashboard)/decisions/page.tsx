@@ -6,9 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useDecisionStore } from "@/lib/decision-engine/router";
 import { DecisionCard } from "@/components/decisions/decision-card";
-import { PILLAR_META, URGENCY_META, type DecisionPillar } from "@/lib/decision-engine/types";
+import { PILLAR_META, type DecisionPillar } from "@/lib/decision-engine/types";
 import {
-    BrainCircuit, CheckCircle2, Clock, XCircle, Filter,
+    BrainCircuit, CheckCircle2, Clock, Filter,
     ArrowUpDown, Gauge, Zap
 } from "lucide-react";
 

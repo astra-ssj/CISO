@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { User, Server, Database, Shield, Lock, Key, AlertTriangle, CheckCircle, FileKey } from 'lucide-react';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { User, Database, Shield, Key, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // --- Types ---

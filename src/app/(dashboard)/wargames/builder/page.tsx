@@ -1,21 +1,20 @@
 "use client";
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useId, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, Save, Play, Download, ArrowLeft } from 'lucide-react';
-import { Scenario, GameStep, GameChoice } from "@/lib/wargames-data";
+import { Plus, Trash2, Save, Download, ArrowLeft } from 'lucide-react';
+import { Scenario, GameStep } from "@/lib/wargames-data";
 import Link from 'next/link';
 
 export default function ScenarioBuilderPage() {
+    const scenarioId = useId().replace(/:/g, '');
     const [scenario, setScenario] = useState<Scenario>({
-        id: `custom_${Date.now()}`,
+        id: `custom_${scenarioId}`,
         title: "New Simulation",
         description: "Describe the threat scenario...",
         difficulty: "MEDIUM",
@@ -33,11 +32,11 @@ export default function ScenarioBuilderPage() {
 
     const [activeStepId, setActiveStepId] = useState<string>("start");
 
-    const updateScenario = (field: keyof Scenario, value: any) => {
+    const updateScenario = (field: keyof Scenario, value: Scenario[keyof Scenario]) => {
         setScenario(prev => ({ ...prev, [field]: value }));
     };
 
-    const updateStep = (stepId: string, field: keyof GameStep, value: any) => {
+    const updateStep = (stepId: string, field: keyof GameStep, value: GameStep[keyof GameStep]) => {
         setScenario(prev => ({
             ...prev,
             steps: {
@@ -87,7 +86,7 @@ export default function ScenarioBuilderPage() {
         updateStep(stepId, 'choices', [...currentStep.choices, newChoice]);
     };
 
-    const updateChoice = (stepId: string, choiceIndex: number, field: keyof GameChoice, value: any) => {
+    const updateChoice = (stepId: string, choiceIndex: number, field: keyof GameChoice, value: GameChoice[keyof GameChoice]) => {
         const currentStep = scenario.steps[stepId];
         const newChoices = [...currentStep.choices];
         newChoices[choiceIndex] = { ...newChoices[choiceIndex], [field]: value };

@@ -1,13 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useOOBStore, OOBContact, OOBMessage } from "@/lib/oob-store";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { useOOBStore } from "@/lib/oob-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { RadioTower, Lock, Send, ShieldCheck, WifiOff, Minimize2, User, Loader2 } from "lucide-react";
+import { RadioTower, Lock, Send, ShieldCheck, WifiOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function SecureCommsWidget() {
@@ -132,7 +130,7 @@ export function SecureCommsWidget() {
                                         <Lock className="h-4 w-4 text-emerald-500" />
                                         {activeContact.name}
                                     </h2>
-                                    <p className="text-xs text-emerald-700">{activeContact.role} // ID: {activeContact.id.toUpperCase()}</p>
+                                    <p className="text-xs text-emerald-700">{activeContact.role}{" // ID: "}{activeContact.id.toUpperCase()}</p>
                                 </div>
                             </div>
 

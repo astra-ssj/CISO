@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useOKRProjectStore } from "@/lib/okr-project-store";
 import { computeAllKPIs, KPI_CATEGORY_META, HEALTH_META } from "@/lib/kpi-engine/kpi-engine";
 import {
-    Target, TrendingUp, TrendingDown, Minus, Plus, Shield, BarChart3,
-    CheckCircle, AlertTriangle, X
+    Target, TrendingUp, TrendingDown, Minus, Plus, Shield, BarChart3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,7 +25,8 @@ function Sparkline({ data, color = "#10b981" }: { data: number[]; color?: string
 }
 
 export default function StrategyPage() {
-    const { objectives, projects, addObjective, getOverallOKRHealth } = useOKRProjectStore();
+    const { objectives, addObjective, getOverallOKRHealth, fetchOKR } = useOKRProjectStore();
+    useEffect(() => { fetchOKR(); }, [fetchOKR]);
     const kpis = useMemo(() => computeAllKPIs(), []);
 
     // Modal states

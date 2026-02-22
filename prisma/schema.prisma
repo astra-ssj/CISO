@@ -129,20 +129,24 @@ model RiskHistory {
 // -----------------------------------------------------------------------------
 
 model Policy {
-  id          String   @id @default(cuid())
-  title       String
-  content     String   
-  version     String   @default("1.0.0")
-  status      String   @default("DRAFT")
-  
-  authorId    String
-  author      User     @relation(fields: [authorId], references: [id])
-  
-  // Compliance Mapping - SQLite workarounds
-  frameworks  String   // JSON string
-  controls    String   // JSON string
-  
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  title         String
+  content       String   @default("")
+  version       String   @default("1.0.0")
+  status        String   @default("DRAFT")
+  type          String?  // ISMS | PRIVACY | AI_GOV | ACCESS | INCIDENT
+  owner         String?  // display owner name (optional; authorId is canonical)
+  authorId      String?
+  author        User?    @relation(fields: [authorId], references: [id])
+  frameworks    String   @default("[]") // JSON
+  controls      String   @default("[]") // JSON
+  sections      String?  // JSON array of PolicySection
+  mappings      String?  // JSON array of FrameworkMapping
+  dependencies  String?  // JSON array of policy ids
+  acknowledgment String? // JSON object
+  changelog     String?  // JSON array
+  lastUpdated   String?  // ISO string for display
+  updatedAt     DateTime @updatedAt
 }
 
 // -----------------------------------------------------------------------------
@@ -173,7 +177,162 @@ model IncidentEvent {
 }
 
 // -----------------------------------------------------------------------------
-// 5. Immutable audit fabric (append-only; never update or delete)
+// 5. Vendors (simple list — risk page)
+// -----------------------------------------------------------------------------
+
+model Vendor {
+  id                  String   @id @default(cuid())
+  name                String
+  serviceDescription  String
+  tier                String   // TIER_1_CRITICAL | TIER_2_HIGH | TIER_3_MEDIUM | TIER_4_LOW
+  status              String   // ACTIVE | PENDING_ASSESSMENT | REJECTED | DEPRECATED
+  lastAssessmentDate  String
+  inherentRiskScore   Int
+  contactEmail        String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// 6. Vendor Risk (rich assessments — vendors page)
+// -----------------------------------------------------------------------------
+
+model VendorRisk {
+  id                     String   @id @default(cuid())
+  name                   String
+  category               String
+  description            String
+  status                 String
+  riskTier               String
+  riskScore              Int
+  dataAccess             String   // JSON array
+  complianceCertifications String // JSON array
+  contractExpiry         String
+  lastAssessment         String
+  contactName            String
+  contactEmail           String
+  notes                  String
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  assessmentHistory      VendorAssessment[]
+}
+
+model VendorAssessment {
+  id          String     @id @default(cuid())
+  vendorRiskId String
+  vendorRisk  VendorRisk @relation(fields: [vendorRiskId], references: [id], onDelete: Cascade)
+  date        String
+  score       Int
+  findings    String     // JSON array
+  assessor    String
+  createdAt   DateTime   @default(now())
+}
+
+// -----------------------------------------------------------------------------
+// 7. Evidence (governance vault)
+// -----------------------------------------------------------------------------
+
+model Evidence {
+  id          String   @id @default(cuid())
+  name        String
+  type        String
+  fileName    String
+  fileSize    Int
+  controlIds  String   // JSON array
+  framework   String
+  status      String
+  uploadDate  String
+  expiryDate  String?
+  uploadedBy  String
+  notes       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// 8. OKR & Projects (strategy)
+// -----------------------------------------------------------------------------
+
+model Objective {
+  id           String   @id @default(cuid())
+  title        String
+  description  String
+  quarter      String
+  year         Int
+  owner        String
+  status       String
+  keyResults   String   // JSON array of KeyResult
+  linkedRisks  String?  // JSON array of risk ids
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Project {
+  id               String   @id @default(cuid())
+  title            String
+  description      String
+  owner            String
+  status           String
+  priority         String
+  budgetAllocated  Int
+  budgetSpent      Int
+  linkedObjectives String   // JSON array
+  linkedRisks      String   // JSON array
+  startDate        String
+  targetEndDate    String
+  tags             String   // JSON array
+  phases           String   // JSON array of ProjectPhase
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// 9. Notifications & Alert Rules
+// -----------------------------------------------------------------------------
+
+model Notification {
+  id         String   @id @default(cuid())
+  type       String
+  title      String
+  message    String
+  severity   String
+  read       Boolean  @default(false)
+  timestamp  Int      // Unix ms
+  actionUrl  String?
+  createdAt  DateTime @default(now())
+}
+
+model AlertRule {
+  id                String   @id @default(cuid())
+  name              String
+  condition         String
+  threshold         Float
+  enabled           Boolean  @default(true)
+  notificationType  String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// 10. Playbooks (incident response)
+// -----------------------------------------------------------------------------
+
+model Playbook {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  severity    String
+  status      String   @default("READY")
+  phases      String   // JSON array of PlaybookPhase
+  startTime   Int?     // Unix ms
+  endTime     Int?
+  evidenceLog String   // JSON array of { timestamp, message }
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// 11. Immutable audit fabric (append-only; never update or delete)
 // -----------------------------------------------------------------------------
 
 model AuditLog {

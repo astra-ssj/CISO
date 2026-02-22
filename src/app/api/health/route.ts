@@ -64,7 +64,7 @@ export async function GET() {
 
         const httpStatus = status === 'unhealthy' ? 503 : 200;
         return NextResponse.json(body, { status: httpStatus });
-    } catch (err) {
+    } catch {
         // Health endpoint must never crash: return 503 with minimal safe body
         const body = {
             status: 'unhealthy' as const,

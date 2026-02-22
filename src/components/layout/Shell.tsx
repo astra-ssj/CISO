@@ -7,41 +7,30 @@ import { cn } from '@/lib/utils';
 import {
     ShieldAlert,
     LayoutDashboard,
-    FileCheck,
     Siren,
-    Bug,
     Menu,
-    Activity,
     BrainCircuit,
-    Lock,
     ScrollText,
     LogOut,
-    Network,
     Shield,
     FileText,
     ChevronLeft,
     ChevronRight,
     Gamepad2,
     Sparkles,
-    GitBranch,
     FileBarChart,
     Presentation,
-    Triangle,
-    BookOpen,
-    Eye,
-    EyeOff,
     HelpCircle,
     Settings,
     Target,
     Building2,
-    Bell,
     BarChart3,
     FolderKanban,
     Zap,
     TicketCheck,
 } from 'lucide-react';
 import { useAstraStore } from '@/lib/store';
-import { signOut } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { ChatInterface } from '@/components/ui/chat-interface';
 import { ThemeSwitcher } from '@/components/ui/theme-switcher';
@@ -74,7 +63,19 @@ export function Shell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const { } = useAstraStore();
+    const { data: session } = useSession();
+    const { login, logout } = useAstraStore();
+
+    // Keep store in sync with NextAuth session (single source of truth)
+    useEffect(() => {
+        if (session?.user) {
+            const role = (session.user as { role?: string }).role ?? 'VIEWER';
+            const name = session.user.name ?? undefined;
+            login(role as 'CISO' | 'SEC_ENGINEER' | 'AUDITOR' | 'VIEWER', name);
+        } else {
+            logout();
+        }
+    }, [session?.user, session?.user?.role, session?.user?.name, login, logout]);
 
     if (!isSidebarOpen) {
         // Mobile sidebar closed state logic if needed, or just standard return

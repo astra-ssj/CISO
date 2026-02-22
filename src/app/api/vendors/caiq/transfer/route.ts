@@ -21,6 +21,7 @@ import {
     type TransferredAnswer,
 } from '@/lib/caiq/caiq-transfer-engine';
 import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
+import { validateFileSize } from '@/lib/api-validation';
 
 export async function POST(request: NextRequest) {
     try {
@@ -83,6 +84,8 @@ export async function POST(request: NextRequest) {
                     { status: 400 }
                 );
             }
+            const sizeErr = validateFileSize(file);
+            if (sizeErr) return sizeErr;
         }
 
         console.log(`[CAIQ Transfer] Source: ${sourceFile.name} (${sourceFile.size}B), Target: ${targetFile.name} (${targetFile.size}B)`);
@@ -115,10 +118,11 @@ export async function POST(request: NextRequest) {
             },
             answers: result.answers,
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('[CAIQ Transfer] Error:', error);
+        const message = error instanceof Error ? error.message : 'Failed to process knowledge transfer';
         return NextResponse.json(
-            { error: error.message || 'Failed to process knowledge transfer' },
+            { error: message },
             { status: 500 }
         );
     }

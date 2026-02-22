@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 // ────────────────────────────────────────────
 // Types
@@ -28,92 +27,136 @@ export interface AlertRule {
     notificationType: NotificationType;
 }
 
-// ────────────────────────────────────────────
-// Store
-// ────────────────────────────────────────────
+const API = '/api/notifications';
 
 interface NotificationStore {
     notifications: Notification[];
     alertRules: AlertRule[];
-    addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void;
-    markRead: (id: string) => void;
-    markAllRead: () => void;
-    clearAll: () => void;
-    removeNotification: (id: string) => void;
+    isLoading: boolean;
+    hasFetched: boolean;
+    fetchNotifications: () => Promise<void>;
+    addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => Promise<void>;
+    markRead: (id: string) => Promise<void>;
+    markAllRead: () => Promise<void>;
+    clearAll: () => Promise<void>;
+    removeNotification: (id: string) => Promise<void>;
     getUnreadCount: () => number;
-    toggleAlertRule: (id: string) => void;
+    toggleAlertRule: (id: string) => Promise<void>;
 }
 
-const DEMO_NOTIFICATIONS: Notification[] = [
-    {
-        id: 'n-001', type: 'THREAT', title: 'Critical CVE Detected',
-        message: 'CVE-2026-1234 found in express@4.18.2 — Remote Code Execution. CVSS 9.8.',
-        severity: 'CRITICAL', read: false, timestamp: Date.now() - 300000, actionUrl: '/appsec'
+export const useNotificationStore = create<NotificationStore>()((set, get) => ({
+    notifications: [],
+    alertRules: [],
+    isLoading: false,
+    hasFetched: false,
+
+    fetchNotifications: async () => {
+        if (get().hasFetched) return;
+        set({ isLoading: true });
+        try {
+            const res = await fetch(API);
+            if (!res.ok) throw new Error(await res.text());
+            const data = await res.json();
+            set({
+                notifications: data.notifications ?? [],
+                alertRules: data.alertRules ?? [],
+                hasFetched: true,
+                isLoading: false,
+            });
+        } catch (e) {
+            console.warn('Notifications fetch failed', e);
+            set({ hasFetched: true, isLoading: false });
+        }
     },
-    {
-        id: 'n-002', type: 'COMPLIANCE', title: 'NIST CSF Compliance Dropped',
-        message: 'Overall compliance score dropped below 70% threshold. 3 new non-compliant controls detected.',
-        severity: 'HIGH', read: false, timestamp: Date.now() - 1800000, actionUrl: '/governance'
+
+    addNotification: async (notification) => {
+        try {
+            const res = await fetch(API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    notification: {
+                        ...notification,
+                        timestamp: Date.now(),
+                    },
+                }),
+            });
+            if (!res.ok) throw new Error(await res.text());
+            const created = await res.json();
+            set((s) => ({
+                notifications: [created, ...s.notifications].slice(0, 100),
+                hasFetched: true,
+            }));
+        } catch (e) {
+            console.warn('Notification add failed', e);
+        }
     },
-    {
-        id: 'n-003', type: 'VENDOR', title: 'Vendor Contract Expiring',
-        message: 'DataFlow Analytics contract expires in 30 days. Assessment overdue — risk score: 68/100.',
-        severity: 'MEDIUM', read: false, timestamp: Date.now() - 3600000, actionUrl: '/vendors'
+
+    markRead: async (id) => {
+        try {
+            await fetch(`${API}/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ read: true }),
+            });
+            set((s) => ({
+                notifications: s.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
+            }));
+        } catch (e) {
+            console.warn('Notification markRead failed', e);
+        }
     },
-    {
-        id: 'n-004', type: 'INCIDENT', title: 'New Incident Declared',
-        message: 'Suspicious login activity detected from unexpected geography. IR playbook triggered.',
-        severity: 'HIGH', read: true, timestamp: Date.now() - 7200000, actionUrl: '/incidents'
+
+    markAllRead: async () => {
+        try {
+            await fetch(API, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ markAllRead: true }),
+            });
+            set((s) => ({
+                notifications: s.notifications.map((n) => ({ ...n, read: true })),
+            }));
+        } catch (e) {
+            console.warn('Notifications markAllRead failed', e);
+        }
     },
-    {
-        id: 'n-005', type: 'AI_INSIGHT', title: 'AI Policy Recommendation',
-        message: 'Astra identified 3 gaps in your Data Protection Policy against GDPR Article 32.',
-        severity: 'INFO', read: true, timestamp: Date.now() - 14400000, actionUrl: '/policies'
+
+    clearAll: async () => {
+        try {
+            await fetch(API, { method: 'DELETE' });
+            set({ notifications: [] });
+        } catch (e) {
+            console.warn('Notifications clearAll failed', e);
+        }
     },
-];
 
-const DEFAULT_ALERT_RULES: AlertRule[] = [
-    { id: 'ar-001', name: 'Critical CVE Alert', condition: 'cvss_score > threshold', threshold: 9.0, enabled: true, notificationType: 'THREAT' },
-    { id: 'ar-002', name: 'Compliance Score Drop', condition: 'compliance_score < threshold', threshold: 70, enabled: true, notificationType: 'COMPLIANCE' },
-    { id: 'ar-003', name: 'Vendor Risk Escalation', condition: 'vendor_risk_score > threshold', threshold: 75, enabled: true, notificationType: 'VENDOR' },
-    { id: 'ar-004', name: 'Incident Declared', condition: 'incident_created', threshold: 0, enabled: true, notificationType: 'INCIDENT' },
-];
+    removeNotification: async (id) => {
+        try {
+            await fetch(`${API}/${id}`, { method: 'DELETE' });
+            set((s) => ({ notifications: s.notifications.filter((n) => n.id !== id) }));
+        } catch (e) {
+            console.warn('Notification remove failed', e);
+        }
+    },
 
-export const useNotificationStore = create<NotificationStore>()(
-    persist(
-        (set, get) => ({
-            notifications: DEMO_NOTIFICATIONS,
-            alertRules: DEFAULT_ALERT_RULES,
+    getUnreadCount: () => get().notifications.filter((n) => !n.read).length,
 
-            addNotification: (notification) => set((state) => ({
-                notifications: [{
-                    ...notification,
-                    id: `n-${Date.now()}`,
-                    timestamp: Date.now(),
-                    read: false
-                }, ...state.notifications].slice(0, 100) // Keep max 100
-            })),
-
-            markRead: (id) => set((state) => ({
-                notifications: state.notifications.map(n => n.id === id ? { ...n, read: true } : n)
-            })),
-
-            markAllRead: () => set((state) => ({
-                notifications: state.notifications.map(n => ({ ...n, read: true }))
-            })),
-
-            clearAll: () => set({ notifications: [] }),
-
-            removeNotification: (id) => set((state) => ({
-                notifications: state.notifications.filter(n => n.id !== id)
-            })),
-
-            getUnreadCount: () => get().notifications.filter(n => !n.read).length,
-
-            toggleAlertRule: (id) => set((state) => ({
-                alertRules: state.alertRules.map(r => r.id === id ? { ...r, enabled: !r.enabled } : r)
-            })),
-        }),
-        { name: 'aegis-notification-store' }
-    )
-);
+    toggleAlertRule: async (id) => {
+        const rule = get().alertRules.find((r) => r.id === id);
+        if (!rule) return;
+        const enabled = !rule.enabled;
+        try {
+            await fetch(`${API}/alert-rules/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ enabled }),
+            });
+            set((s) => ({
+                alertRules: s.alertRules.map((r) => (r.id === id ? { ...r, enabled } : r)),
+            }));
+        } catch (e) {
+            console.warn('AlertRule toggle failed', e);
+        }
+    },
+}));

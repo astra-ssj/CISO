@@ -51,9 +51,6 @@ export function calculateRisk(scenario: RiskScenario): RiskAnalysisResult {
     // We use a logarithmic scale because ALE can range from $100 to $100B
     // Base 10 log. $1M ALE might be a score of 50. $1B ALE might be 90.
     // Score = (log10(ALE) / log10(Max_Reference_ALE)) * 100
-    // Let's assume Max Reference ALE is $100M for this organization size context
-    const MAX_REF_ALE = 100_000_000;
-
     let rawScore = 0;
     if (ale > 0) {
         // Shift log to handle small values better? 

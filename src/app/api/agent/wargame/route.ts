@@ -83,8 +83,8 @@ Generate the threat actor's response and updated game state.
         const textResponse = await getAIProvider().generateContent(RED_TEAM_SYSTEM_PROMPT.concat('\n\n').concat(gameContext));
 
         // Parse AI response
-        let content = textResponse;
-        let modelName = process.env.AI_PROVIDER || "gemini-2.0-flash-001";
+        const content = textResponse;
+        const modelName = process.env.AI_PROVIDER || "gemini-2.0-flash-001";
 
         let parsed;
         try {

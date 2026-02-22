@@ -104,19 +104,22 @@ Output Schema:
             model: 'intelligence-engine-v1'
         });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Agent Analysis Failed:", error);
 
-        const status = error.status || 500;
+        const err = error as { status?: number; message?: string };
+        const status = err.status ?? 500;
         let message = 'Internal Server Error during analysis.';
 
-        if (status === 429 || error.message?.includes('429')) {
+        if (status === 429 || (typeof err.message === 'string' && err.message.includes('429'))) {
             message = 'AI Rate Limit Exceeded. Please try again in a moment.';
+        } else if (err.message) {
+            message = err.message;
         }
 
         return NextResponse.json(
-            { error: message, details: error.message },
-            { status: status }
+            { error: message, details: err.message },
+            { status }
         );
     }
 }

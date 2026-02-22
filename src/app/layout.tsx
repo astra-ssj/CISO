@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { OmniChat } from "@/components/ia/omni-chat";
@@ -19,13 +20,18 @@ export const metadata: Metadata = {
   description: "Advanced Governance, Risk, and Compliance Decision System",
 };
 
-export default function RootLayout({
+// Required for CSP nonce: each request gets a fresh nonce from middleware.
+export const dynamic = "force-dynamic";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = await headers();
+  const nonce = headersList.get("x-nonce") ?? "";
   return (
-    <html lang="en">
+    <html lang="en" nonce={nonce}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >

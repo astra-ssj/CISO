@@ -3,13 +3,12 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { BrainCircuit, Upload, FileText, CheckCircle2, AlertTriangle, ShieldAlert, Zap, Target, TrendingUp, Plus, Lightbulb, Map, Globe, Loader2, Crosshair, Users, Shield } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { BrainCircuit, Upload, FileText, CheckCircle2, AlertTriangle, ShieldAlert, Target, TrendingUp, Plus, Lightbulb, Globe, Loader2, Crosshair, Users, Shield } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { COMPLIANCE_FRAMEWORKS, FrameworkID } from "@/lib/compliance-frameworks";
 import { analyzePolicy, AnalysisResult } from "@/lib/policy-engine";
@@ -41,7 +40,8 @@ export default function IntelligencePage() {
 
     // Strategic Planning State
     const { findings } = useAppSecStore();
-    const { playbooks } = usePlaybookStore();
+    const { playbooks, fetchPlaybooks } = usePlaybookStore();
+    useEffect(() => { fetchPlaybooks(); }, [fetchPlaybooks]);
     const [adoptedInitiatives, setAdoptedInitiatives] = useState<string[]>([]);
     const { signals } = useAstraStore();
 
@@ -65,8 +65,8 @@ export default function IntelligencePage() {
             if (!res.ok) throw new Error("Failed to generate brief");
             const data = await res.json();
             setOsintBrief(data);
-        } catch (e: any) {
-            setOsintError(e.message || "Unknown error");
+        } catch (e: unknown) {
+            setOsintError(e instanceof Error ? e.message : "Unknown error");
         } finally {
             setOsintLoading(false);
         }
@@ -95,11 +95,12 @@ export default function IntelligencePage() {
         // Check for active signals (real-time threat context)
         const activeThreatSignal = signals.length > 0 && signals[0].type === 'THREAT_DETECTED' ? signals[0].payload : null;
 
-        if (activeThreatSignal) {
+        if (activeThreatSignal && typeof activeThreatSignal === 'object' && 'description' in activeThreatSignal) {
+            const payload = activeThreatSignal as { description?: string };
             initiatives.push({
                 id: 'init-realtime-response',
                 title: 'Immediate Threat Containment',
-                description: `High severity threat detected (${activeThreatSignal.description}). Activate isolation protocols for affected agent.`,
+                description: `High severity threat detected (${payload.description ?? 'Unknown'}). Activate isolation protocols for affected agent.`,
                 driver: 'Live Threat Signal',
                 impact: 'HIGH',
                 cost: '$',
@@ -434,9 +435,9 @@ export default function IntelligencePage() {
                                         </div>
                                         <p className="text-sm text-muted-foreground mt-1">
                                             {signals.length > 0 && signals[0].type === 'THREAT_DETECTED' ? (
-                                                <span className="text-foreground font-medium">Critical Alert: Immediate containment required for <span className="text-red-500">{signals[0].payload.description}</span>.</span>
+                                                <span className="text-foreground font-medium">Critical Alert: Immediate containment required for <span className="text-red-500">{(signals[0].payload as { description?: string })?.description ?? 'threat'}</span>.</span>
                                             ) : (
-                                                <span>"Based on high vulnerability density, prioritize <span className="text-primary">AppSec automation</span> over policy documentation this quarter."</span>
+                                                <span>&quot;Based on high vulnerability density, prioritize <span className="text-primary">AppSec automation</span> over policy documentation this quarter.&quot;</span>
                                             )}
                                         </p>
                                     </div>

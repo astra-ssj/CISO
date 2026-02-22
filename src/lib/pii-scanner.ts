@@ -63,9 +63,8 @@ export const scanContent = (text: string): ScanResult => {
             let context = undefined;
 
             // For certain types like simplified Passport regex, strict context is needed to avoid false positives
-            if (checkContext) {
-                // @ts-ignore
-                context = findContext(index, type as any);
+            if (checkContext && type in CONTEXT_KEYWORDS) {
+                context = findContext(index, type as keyof typeof CONTEXT_KEYWORDS);
                 if (!context && type === 'PASSPORT_US') return; // Skip 9-digit numbers if no passport context
             }
 

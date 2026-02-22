@@ -49,16 +49,13 @@ export function GlobalThreatPulse() {
         if (signals.length > 0) {
             const latest = signals[0];
             if (latest.type === 'THREAT_DETECTED') {
-                // Flash the new threat immediately
-                setMode('events');
-                // You could dynamically insert this into the EVENTS array here if needed,
-                // but for V1 just ensuring the mode switches back to events is a good visual indicator.
+                const id = setTimeout(() => setMode('events'), 0);
+                return () => clearTimeout(id);
             }
         }
     }, [signals]);
 
     const event = EVENTS[currentIndex];
-    const leader = LEADERBOARD[0];
 
     return (
         <div className="w-full bg-zinc-950/80 border-b border-zinc-800 h-8 flex items-center overflow-hidden relative backdrop-blur-md">

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Cloud, Server, Database, ShieldCheck, Globe, Wifi, Activity, ArrowRight, Lock, Zap } from 'lucide-react';
+import { useRef } from 'react';
+import { motion } from 'framer-motion';
+import { Server, Database, ShieldCheck, Globe, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // --- Types ---
@@ -13,15 +13,6 @@ interface TrafficNode {
     x: number; // Percentage 0-100
     y: number; // Percentage 0-100
     status: 'active' | 'idle' | 'warning';
-}
-
-interface TrafficParticle {
-    id: string;
-    source: string;
-    target: string;
-    type: 'http' | 'sql' | 'secure';
-    speed: number;
-    delay: number;
 }
 
 // --- Configuration ---
@@ -39,10 +30,16 @@ function NodeIcon({ type, className }: { type: TrafficNode['type'], className?: 
     }
 }
 
+interface TrafficPath {
+    from: string;
+    to: string;
+    type: 'http' | 'sql' | 'secure';
+}
+
 interface TrafficFlowProps {
     data?: {
         nodes: TrafficNode[];
-        paths: any[];
+        paths: TrafficPath[];
     };
 }
 
@@ -70,27 +67,7 @@ export function TrafficFlow({ data }: TrafficFlowProps) {
     const nodes = data?.nodes || DEFAULT_NODES;
     const paths = data?.paths || DEFAULT_PATHS;
 
-    const [activeParticles, setActiveParticles] = useState<TrafficParticle[]>([]);
     const containerRef = useRef<HTMLDivElement>(null);
-
-    // Generate random traffic
-    useEffect(() => {
-        const interval = setInterval(() => {
-            const types: TrafficParticle['type'][] = ['http', 'secure', 'sql'];
-            const newParticle: TrafficParticle = {
-                id: Math.random().toString(36).substr(2, 9),
-                source: 'internet',
-                target: 'db-primary', // Simplified flow for now
-                type: types[Math.floor(Math.random() * types.length)],
-                speed: 2 + Math.random() * 2,
-                delay: 0,
-            };
-            // setActiveParticles(prev => [...prev.slice(-20), newParticle]); 
-            // In a real implementation, we'd manage particle lifecycle. 
-            // For Framer Motion, we can just render the paths and animate the stroke.
-        }, 1000);
-        return () => clearInterval(interval);
-    }, []);
 
     // Helper to get coordinates
     const getPos = (id: string) => {

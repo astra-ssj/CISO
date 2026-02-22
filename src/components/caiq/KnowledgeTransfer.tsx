@@ -8,9 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { TransferredAnswer } from '@/lib/caiq/caiq-transfer-engine';
 import {
-    Upload, FileSpreadsheet, Brain, Sparkles, Download, Loader2, Edit3,
+    Upload, FileSpreadsheet, Sparkles, Download, Loader2, Edit3,
     Check, X, ArrowRight, AlertTriangle, CheckCircle, Eye,
-    ChevronDown, ChevronUp, Filter, BarChart3, RefreshCw, ExternalLink,
+    ChevronDown, ChevronUp, Filter, RefreshCw, ExternalLink,
 } from 'lucide-react';
 
 // ────────────────────────────────────────────
@@ -73,10 +73,10 @@ export default function KnowledgeTransfer({ onNavigateToReviewQueue }: Knowledge
 
     const handleFileDrop = useCallback((e: React.DragEvent, type: 'source' | 'target') => {
         e.preventDefault();
-        type === 'source' ? setIsDraggingSource(false) : setIsDraggingTarget(false);
+        if (type === 'source') setIsDraggingSource(false); else setIsDraggingTarget(false);
         const file = e.dataTransfer.files[0];
         if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.csv'))) {
-            type === 'source' ? setSourceFile(file) : setTargetFile(file);
+            if (type === 'source') setSourceFile(file); else setTargetFile(file);
             setError(null);
         } else {
             setError('Please upload .xlsx, .xls, or .csv files.');
@@ -102,8 +102,8 @@ export default function KnowledgeTransfer({ onNavigateToReviewQueue }: Knowledge
             setStats(data.stats);
             setAnswers(data.answers);
             setStep('review');
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Upload failed');
             setStep('upload');
         }
     };
@@ -166,8 +166,8 @@ export default function KnowledgeTransfer({ onNavigateToReviewQueue }: Knowledge
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Export failed');
         } finally {
             setExporting(false);
         }

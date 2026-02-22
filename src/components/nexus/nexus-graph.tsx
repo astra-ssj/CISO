@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Globe, Server, Box, Activity, ZoomIn, ZoomOut, Filter, Search, Shield, Zap, Network, Eye, ShieldAlert, ShieldCheck, AlertTriangle, Database, Layers, MousePointer2, Scale } from 'lucide-react';
+import { Globe, Server, Activity, Network, ShieldAlert, ShieldCheck, AlertTriangle, Database, Layers, Scale } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RemediationModal } from '../active-defense/remediation-modal';
 import { DataIngestionPanel } from './ingestion/data-ingestion-panel';
@@ -129,7 +129,7 @@ export function NexusGraph() {
     const [viewMode, setViewMode] = useState<ViewMode>('business');
     const [nodes, setNodes] = useState(INITIAL_NODES);
     const [isRemediationOpen, setIsRemediationOpen] = useState(false);
-    const [showCompliance, setShowCompliance] = useState(false);
+    const [showCompliance] = useState(false);
 
     // Unification Store
     const { activeConstraints, selectedNodeId, setSelectedNodeId } = useUnificationStore();
@@ -140,7 +140,7 @@ export function NexusGraph() {
     // Helper to find node coordinates
     const getNode = (id: string) => nodes.find(n => n.id === id);
 
-    const handleNewDiscovery = (newNodes: any[]) => {
+    const handleNewDiscovery = (newNodes: GraphNode[]) => {
         setNodes(prev => [...prev, ...newNodes]);
     };
 

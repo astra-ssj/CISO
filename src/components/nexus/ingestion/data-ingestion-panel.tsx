@@ -1,12 +1,22 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, FileText, CheckCircle2, Loader2, Database, Network } from 'lucide-react';
+import { Upload, FileText, CheckCircle2, Database, Network } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+interface DiscoveryNode {
+    id: string;
+    label: string;
+    type: 'business' | 'app' | 'infra' | 'risk';
+    x: number;
+    y: number;
+    value?: string;
+    status?: 'healthy' | 'warning' | 'critical';
+}
+
 interface IngestionPanelProps {
-    onDiscoveryComplete: (newNodes: any[]) => void;
+    onDiscoveryComplete: (newNodes: DiscoveryNode[]) => void;
 }
 
 export function DataIngestionPanel({ onDiscoveryComplete }: IngestionPanelProps) {

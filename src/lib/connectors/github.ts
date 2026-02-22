@@ -1,4 +1,3 @@
-import { logAction } from '@/lib/auth/audit';
 
 export interface SecurityVulnerability {
     id: string;

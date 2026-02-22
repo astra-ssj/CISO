@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Policy, PolicySection, PolicyStatus } from "@/lib/policy-store";
-import { Plus, Trash2, Info, BookOpen, X } from "lucide-react";
+import { Plus, Trash2, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PolicyEditorProps {
@@ -37,20 +37,24 @@ export function PolicyEditor({ initialPolicy, onSave, onCancel }: PolicyEditorPr
         { id: 's3', title: 'Roles & Responsibilities', content: '' } // Governance-First default
     ]);
 
-    // Enforce Draft on Creation
+    // Enforce Draft on Creation (defer to avoid setState in effect)
     useEffect(() => {
         if (!isEditing) {
-            setStatus("DRAFT");
-            setVersion("0.1.0");
+            const id = setTimeout(() => {
+                setStatus("DRAFT");
+                setVersion("0.1.0");
+            }, 0);
+            return () => clearTimeout(id);
         }
     }, [isEditing]);
 
     // Set first section as active by default if none selected
     useEffect(() => {
         if (!activeSectionId && sections.length > 0) {
-            setActiveSectionId(sections[0].id);
+            const id = setTimeout(() => setActiveSectionId(sections[0].id), 0);
+            return () => clearTimeout(id);
         }
-    }, [sections]);
+    }, [sections, activeSectionId]);
 
     const handleAddSection = () => {
         const newId = `s${Date.now()}`;
@@ -134,7 +138,7 @@ export function PolicyEditor({ initialPolicy, onSave, onCancel }: PolicyEditorPr
                     </div>
                     <div className="space-y-2">
                         <Label>Type</Label>
-                        <Select value={type} onValueChange={(v: any) => setType(v)}>
+                        <Select value={type} onValueChange={(v) => setType(v as Policy['type'])}>
                             <SelectTrigger>
                                 <SelectValue />
                             </SelectTrigger>
@@ -161,7 +165,7 @@ export function PolicyEditor({ initialPolicy, onSave, onCancel }: PolicyEditorPr
                     <div className="space-y-2">
                         <Label>Status & Version</Label>
                         <div className="flex gap-2 items-center">
-                            <Select value={status} onValueChange={(v: any) => setStatus(v)} disabled={!isEditing}>
+                            <Select value={status} onValueChange={(v) => setStatus(v as PolicyStatus)} disabled={!isEditing}>
                                 <SelectTrigger className="w-[180px]">
                                     <SelectValue />
                                 </SelectTrigger>
@@ -177,7 +181,7 @@ export function PolicyEditor({ initialPolicy, onSave, onCancel }: PolicyEditorPr
                         </div>
                         {isEditing && (
                             <div className="flex items-center space-x-2 mt-1">
-                                <Checkbox id="inc-ver" checked={incrementVersion} onCheckedChange={(c: any) => setIncrementVersion(c)} />
+                                <Checkbox id="inc-ver" checked={incrementVersion} onCheckedChange={(c: boolean | 'indeterminate') => setIncrementVersion(c === true)} />
                                 <label htmlFor="inc-ver" className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                                     Increment Patch Version
                                 </label>
@@ -206,7 +210,7 @@ export function PolicyEditor({ initialPolicy, onSave, onCancel }: PolicyEditorPr
                     </div>
 
                     <div className="space-y-4 policy-sections-container">
-                        {sections.map((section, index) => (
+                        {sections.map((section) => (
                             <div
                                 key={section.id}
                                 className={cn(

@@ -18,7 +18,7 @@ import {
     SelectValue
 } from "@/components/ui/select";
 import { useState } from "react";
-import { ArrowRight, ShieldAlert } from "lucide-react";
+import { ShieldAlert } from "lucide-react";
 
 // Mock Data structure mimicking NetObserv IPFIX/Loki export
 interface NetFlow {

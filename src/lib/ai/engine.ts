@@ -8,10 +8,16 @@ export interface UnifiedChatSession {
     sendMessage(message: string): Promise<string>;
 }
 
+export interface ChatHistoryEntry {
+    role: 'user' | 'assistant' | 'model' | 'system';
+    content?: string;
+    parts?: { text?: string }[];
+}
+
 export interface UnifiedAIProvider {
-    createChatSession(systemInstruction: string, history: any[]): UnifiedChatSession;
+    createChatSession(systemInstruction: string, history: ChatHistoryEntry[]): UnifiedChatSession;
     generateContent(prompt: string): Promise<string>;
-    generateStructuredContent(prompt: string, schema?: any): Promise<any>;
+    generateStructuredContent<T = unknown>(prompt: string, schema?: unknown): Promise<T>;
 }
 
 // ------------------------------------------------------------------
@@ -26,14 +32,18 @@ class GeminiProvider implements UnifiedAIProvider {
         this.modelName = modelName;
     }
 
-    createChatSession(systemInstruction: string, history: any[]): UnifiedChatSession {
+    createChatSession(systemInstruction: string, history: ChatHistoryEntry[]): UnifiedChatSession {
         const model = this.client.getGenerativeModel({
             model: this.modelName,
             systemInstruction
         });
 
+        const geminiHistory = history.map((msg) => ({
+            role: msg.role === 'assistant' ? 'model' as const : 'user' as const,
+            parts: [{ text: msg.content ?? msg.parts?.[0]?.text ?? '' }]
+        }));
         const chat = model.startChat({
-            history: history as any[]
+            history: geminiHistory
         });
 
         return {
@@ -50,7 +60,7 @@ class GeminiProvider implements UnifiedAIProvider {
         return result.response.text();
     }
 
-    async generateStructuredContent(prompt: string, schema?: any): Promise<any> {
+    async generateStructuredContent<T = unknown>(prompt: string): Promise<T> {
         const model = this.client.getGenerativeModel({
             model: this.modelName,
             generationConfig: { responseMimeType: "application/json" }
@@ -60,11 +70,11 @@ class GeminiProvider implements UnifiedAIProvider {
         const text = result.response.text();
 
         try {
-            return JSON.parse(text);
-        } catch (e) {
-            console.error("Gemini JSON parse failed, attempting cleanup", e);
+            return JSON.parse(text) as T;
+        } catch (err) {
+            console.error("Gemini JSON parse failed, attempting cleanup", err);
             const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
-            return JSON.parse(cleaned);
+            return JSON.parse(cleaned) as T;
         }
     }
 }
@@ -81,10 +91,10 @@ class AnthropicProvider implements UnifiedAIProvider {
         this.modelName = modelName;
     }
 
-    createChatSession(systemInstruction: string, history: any[]): UnifiedChatSession {
-        let internalHistory = history.map((msg: any) => ({
+    createChatSession(systemInstruction: string, history: ChatHistoryEntry[]): UnifiedChatSession {
+        const internalHistory: { role: 'user' | 'assistant'; content: string }[] = history.map((msg) => ({
             role: (msg.role === 'model' ? 'assistant' : msg.role) as 'user' | 'assistant',
-            content: msg.parts?.[0]?.text || ''
+            content: msg.parts?.[0]?.text ?? msg.content ?? ''
         }));
 
         return {
@@ -122,7 +132,7 @@ class AnthropicProvider implements UnifiedAIProvider {
             .join('\n');
     }
 
-    async generateStructuredContent(prompt: string, schema?: any): Promise<any> {
+    async generateStructuredContent<T = unknown>(prompt: string): Promise<T> {
         // Claude doesn't have a strict JSON mode flag like Gemini/OpenAI yet in the SDK 
         // effectively, but we prompt-engineer it.
         const response = await this.client.messages.create({
@@ -138,10 +148,10 @@ class AnthropicProvider implements UnifiedAIProvider {
             .join('\n');
 
         try {
-            return JSON.parse(text);
-        } catch (e) {
+            return JSON.parse(text) as T;
+        } catch {
             const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
-            return JSON.parse(cleaned);
+            return JSON.parse(cleaned) as T;
         }
     }
 }

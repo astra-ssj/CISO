@@ -1,5 +1,4 @@
 
-import { GenerateContentResult } from "@google/generative-ai";
 
 /**
  * Retries an async operation with exponential backoff if it fails with a 429 error.
@@ -19,12 +18,13 @@ export async function runWithRetry<T>(
     while (true) {
         try {
             return await operation();
-        } catch (error: any) {
+        } catch (error: unknown) {
             attempt++;
 
             // Check for 429 status (standard) or specific error messages if needed.
             // Google Generative AI SDK might throw errors with status property or specific messages.
-            const isRateLimit = error?.status === 429 || error?.response?.status === 429 || error?.message?.includes('429');
+            const err = error as { status?: number; response?: { status?: number }; message?: string };
+            const isRateLimit = err?.status === 429 || err?.response?.status === 429 || (typeof err?.message === 'string' && err.message.includes('429'));
 
             if (attempt > maxRetries || !isRateLimit) {
                 throw error;

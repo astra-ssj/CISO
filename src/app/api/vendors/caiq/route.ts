@@ -18,6 +18,7 @@ import type { OrganizationContext } from '@/lib/caiq/types';
 import type { CAIQAnswer, CAIQGeneratedBy } from '@/lib/caiq/types';
 import type { ConfidenceLevel } from '@/lib/caiq/caiq-knowledge-base';
 import type { AnsweredQuestion } from '@/lib/caiq/caiq-knowledge-base';
+import { validateFileSize } from '@/lib/api-validation';
 
 interface LegacyProfile {
   industry?: string;
@@ -88,6 +89,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const sizeError = validateFileSize(file);
+    if (sizeError) return sizeError;
 
     if (!isAIConfigured()) {
       return NextResponse.json(

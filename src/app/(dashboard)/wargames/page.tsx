@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { SCENARIOS, Scenario, GameStep, GameChoice } from "@/lib/wargames-data";
-import { Terminal, ShieldAlert, Award, AlertTriangle, ArrowRight, RotateCcw, Timer, Skull, Plus, DollarSign, Shield, Clock, Target, FileText, TrendingDown, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { SCENARIOS, Scenario, GameStep } from "@/lib/wargames-data";
+import { Terminal, ShieldAlert, ArrowRight, RotateCcw, Timer, Skull, Plus, DollarSign, Shield, Clock, Target, FileText, TrendingDown, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import Link from "next/link";
 
 // MITRE ATT&CK tactic names
@@ -357,7 +357,7 @@ export default function WarGamesPage() {
                                         <div>
                                             <div className="text-xs text-muted-foreground mb-1">Step {i + 1}: {d.stepTitle}</div>
                                             <div className="font-semibold">{d.isTimeout ? `⚠ TIMEOUT: ${d.choiceText}` : d.choiceText}</div>
-                                            <div className="text-sm text-muted-foreground mt-1 italic">"{d.feedback}"</div>
+                                            <div className="text-sm text-muted-foreground mt-1 italic">&quot;{d.feedback}&quot;</div>
                                         </div>
                                     </div>
                                     <div className="text-right text-xs font-mono space-y-1 shrink-0">
@@ -405,7 +405,7 @@ export default function WarGamesPage() {
                 {/* Outcome */}
                 <Card className="border-primary/20 bg-black/30">
                     <CardContent className="p-6 text-center space-y-4">
-                        <p className="text-muted-foreground italic text-lg">"{currentStep.description}"</p>
+                        <p className="text-muted-foreground italic text-lg">&quot;{currentStep.description}&quot;</p>
                         <div className="flex justify-center gap-4">
                             <Button onClick={resetGame} size="lg">
                                 <RotateCcw className="mr-2 h-4 w-4" /> New Exercise

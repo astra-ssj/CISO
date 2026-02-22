@@ -116,7 +116,6 @@ export async function logAction(
  * so callers are not broken.
  */
 export async function appendToFabric(input: AuditFabricInput): Promise<AuditFabricEntry | null> {
-    const timestamp = new Date();
     try {
         const row = await prisma.auditLog.create({
             data: {

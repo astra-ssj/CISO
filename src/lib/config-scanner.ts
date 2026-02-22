@@ -55,7 +55,7 @@ export function scanMicrosoftConfig(jsonString: string): SecurityScore {
             score -= 10;
         }
 
-    } catch (e) {
+    } catch {
         // Fallback for demo if invalid JSON or just to show results
         findings.push({
             id: 'ERR-001',
@@ -120,7 +120,7 @@ export function scanFirewallConfig(configString: string): SecurityScore {
             score -= 10;
         }
 
-    } catch (e) { }
+    } catch { }
 
     return { score: Math.max(0, score), findings };
 }

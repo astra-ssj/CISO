@@ -1,4 +1,4 @@
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, BorderStyle, WidthType } from "docx";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";
 import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
 import { Policy } from "./policy-store";
@@ -170,7 +170,7 @@ export const generateExecutiveReport = (data: ExecutiveReportData) => {
     doc.text("Top Enterprise Risks", 14, yPos);
     yPos += 10;
 
-    data.topRisks.forEach((risk, i) => {
+    data.topRisks.forEach((risk) => {
         doc.setFillColor(250, 250, 250);
         doc.rect(14, yPos, 180, 10, "F");
 

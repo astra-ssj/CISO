@@ -9,9 +9,7 @@ import {
   FileCheck,
   Send,
   ShieldQuestion,
-  FileDown,
   Terminal,
-  DollarSign,
   TrendingUp,
   TrendingDown,
   ArrowRight,
@@ -49,6 +47,11 @@ import { PostureGauge } from "@/components/dashboard/posture-gauge";
 import { BoardDeckGenerator } from "@/components/reporting/board-deck-generator";
 import { useDecisionStore } from '@/lib/decision-engine/router';
 import { DecisionCard } from '@/components/decisions/decision-card';
+import { useRiskRegisterStore } from '@/lib/risk-register-store';
+import { useVendorRiskStore } from '@/lib/vendor-risk-store';
+import { usePolicyStore } from '@/lib/policy-store';
+import { usePlaybookStore } from '@/lib/playbook-store';
+import { useEvidenceStore } from '@/lib/evidence-store';
 
 // Metric Card Component
 function MetricCard({
@@ -172,6 +175,19 @@ export default function DashboardPage() {
   const v2Decisions = useDecisionStore(s => s.decisions);
   const v2Pending = useMemo(() => v2Decisions.filter(d => d.status === 'PENDING'), [v2Decisions]);
 
+  const riskFetch = useRiskRegisterStore(s => s.fetchEntries);
+  const vendorRiskFetch = useVendorRiskStore(s => s.fetchVendors);
+  const policyFetch = usePolicyStore(s => s.fetchPolicies);
+  const playbookFetch = usePlaybookStore(s => s.fetchPlaybooks);
+  const evidenceFetch = useEvidenceStore(s => s.fetchEvidence);
+  useEffect(() => {
+    riskFetch();
+    vendorRiskFetch();
+    policyFetch();
+    playbookFetch();
+    evidenceFetch();
+  }, [riskFetch, vendorRiskFetch, policyFetch, playbookFetch, evidenceFetch]);
+
   // Protocol Dialog State
   const [isProtocolOpen, setIsProtocolOpen] = useState(false);
   const [protocolTitle, setProtocolTitle] = useState('');
@@ -181,8 +197,8 @@ export default function DashboardPage() {
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
 
   // Real Data State
-  const [trafficData, setTrafficData] = useState<any>(null); // Using any for simplicity in demo
-  const [githubStats, setGithubStats] = useState<any>(null);
+  const [trafficData, setTrafficData] = useState<Record<string, unknown> | null>(null);
+  const [githubStats, setGithubStats] = useState<Record<string, unknown> | null>(null);
 
   // CAIQ metrics (from API)
   const [caiqMetrics, setCaiqMetrics] = useState<{
@@ -203,7 +219,7 @@ export default function DashboardPage() {
     const fetchData = async () => {
       const gh = new GitHubConnector();
       const stats = await gh.getStats();
-      setGithubStats(stats);
+      setGithubStats(stats as Record<string, unknown>);
 
       // Transform for traffic flow (simulated logic)
       // In reality, this would map repo traffic or API calls

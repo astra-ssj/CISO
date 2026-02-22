@@ -1,17 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
     computeAllKPIs, KPI_CATEGORY_META, HEALTH_META,
-    type KPI, type KPICategory, type KPIHealth
+    type KPI, type KPICategory
 } from "@/lib/kpi-engine/kpi-engine";
 import {
     TrendingUp, TrendingDown, Minus, BarChart3, Eye, Monitor,
-    Target, ArrowUpRight, ArrowDownRight, Upload, Paperclip, Trash2
+    Target, Upload, Paperclip, Trash2
 } from "lucide-react";
 import { KPIUploader } from "@/components/strategy/kpi-uploader";
 import { useUploadedKPIStore } from "@/lib/kpi-engine/uploaded-kpi-store";

@@ -1,24 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,  } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useVendorStore, Vendor, RiskTier } from "@/lib/vendor-store";
+import { useVendorStore, RiskTier } from "@/lib/vendor-store";
 import { useAppSecStore } from "@/lib/appsec-store";
 import { usePlaybookStore } from "@/lib/playbook-store";
-import { Building2, ShieldAlert, CheckCircle2, AlertTriangle, Search, Plus, FileText, BarChart3, Lock, Flame } from "lucide-react";
+import { Building2, CheckCircle2, AlertTriangle, Search, Plus, FileText, Lock, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function RiskPage() {
-    const { vendors, addVendor, updateVendor } = useVendorStore();
+    const { vendors, updateVendor, fetchVendors } = useVendorStore();
+    useEffect(() => { fetchVendors(); }, [fetchVendors]);
     const { findings } = useAppSecStore();
-    const { playbooks } = usePlaybookStore();
+    const { playbooks, fetchPlaybooks } = usePlaybookStore();
+    useEffect(() => { fetchPlaybooks(); }, [fetchPlaybooks]);
 
     // Vendor State
     const [searchTerm, setSearchTerm] = useState("");

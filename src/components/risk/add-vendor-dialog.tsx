@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useVendorStore, Vendor } from "@/lib/vendor-store";
+import { useVendorStore, Vendor, type RiskTier } from "@/lib/vendor-store";
 
 interface AddVendorDialogProps {
     open: boolean;
@@ -19,7 +19,7 @@ export function AddVendorDialog({ open, onOpenChange }: AddVendorDialogProps) {
     const [name, setName] = useState("");
     const [desc, setDesc] = useState("");
     const [email, setEmail] = useState("");
-    const [tier, setTier] = useState<string>("TIER_3_MEDIUM");
+    const [tier, setTier] = useState<RiskTier>("TIER_3_MEDIUM");
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -29,7 +29,7 @@ export function AddVendorDialog({ open, onOpenChange }: AddVendorDialogProps) {
             name,
             serviceDescription: desc,
             contactEmail: email,
-            tier: tier as any,
+            tier,
             status: 'PENDING_ASSESSMENT',
             lastAssessmentDate: 'N/A',
             inherentRiskScore: 50, // Default start
@@ -68,7 +68,7 @@ export function AddVendorDialog({ open, onOpenChange }: AddVendorDialogProps) {
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="v-tier">Provisional Risk Tier</Label>
-                        <Select value={tier} onValueChange={setTier}>
+                        <Select value={tier} onValueChange={(v) => setTier(v as RiskTier)}>
                             <SelectTrigger>
                                 <SelectValue />
                             </SelectTrigger>

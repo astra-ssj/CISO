@@ -138,12 +138,14 @@ function EditModal({
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
-    if (item) {
+    if (!item) return;
+    const id = setTimeout(() => {
       setAnswer(item.answer);
       setAnswerType(item.answerType);
       setEvidenceInput(item.evidenceRefs.join(", "));
       setNotes(item.reviewerNotes ?? "");
-    }
+    }, 0);
+    return () => clearTimeout(id);
   }, [item]);
 
   if (!item) return null;
@@ -274,7 +276,7 @@ export default function CAIQReviewQueueTab({ variant = "tab" }: CAIQReviewQueueT
     addAuditEntry,
   } = useCAIQReviewStore();
 
-  const filteredItems = useMemo(() => getFilteredAndSortedItems(), [items, filterDomain, filterTier, filterStatus, sortBy, sortDir, getFilteredAndSortedItems]);
+  const filteredItems = useMemo(() => getFilteredAndSortedItems(), [getFilteredAndSortedItems]);
 
   useEffect(() => {
     const seed = buildSeedItems();

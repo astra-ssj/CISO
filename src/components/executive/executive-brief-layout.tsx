@@ -1,8 +1,7 @@
 "use client";
 
 import React from "react";
-import { cn } from "@/lib/utils";
-import { useViewEngine } from "@/stores/view-engine-store";
+import { useViewEngine, type Timeframe, type BusinessUnit, type Region } from "@/stores/view-engine-store";
 import { ChevronDown } from "lucide-react";
 
 export interface ExecutiveBriefLayoutProps {
@@ -37,21 +36,21 @@ export function ExecutiveBriefLayout({ children, presenter, date }: ExecutiveBri
                         <div className="flex items-center gap-2 bg-zinc-900/50 p-1.5 rounded-lg border border-zinc-800 backdrop-blur-md">
                             <ContextSelect
                                 value={context.unit}
-                                onChange={(v) => setDimension('unit', v)}
+                                onChange={(v) => setDimension('unit', v as BusinessUnit)}
                                 options={['Global', 'Engineering', 'Sales', 'Finance']}
                                 label="Unit"
                             />
                             <div className="w-px h-4 bg-zinc-800" />
                             <ContextSelect
                                 value={context.timeframe}
-                                onChange={(v) => setDimension('timeframe', v)}
+                                onChange={(v) => setDimension('timeframe', v as Timeframe)}
                                 options={['Q1', 'Q2', 'Q3', 'YTD']}
                                 label="Period"
                             />
                             <div className="w-px h-4 bg-zinc-800" />
                             <ContextSelect
                                 value={context.region}
-                                onChange={(v) => setDimension('region', v)}
+                                onChange={(v) => setDimension('region', v as Region)}
                                 options={['All', 'NA', 'EMEA', 'APAC']}
                                 label="Region"
                             />
@@ -76,7 +75,7 @@ export function ExecutiveBriefLayout({ children, presenter, date }: ExecutiveBri
     );
 }
 
-function ContextSelect({ value, onChange, options, label }: { value: string, onChange: (v: any) => void, options: string[], label: string }) {
+function ContextSelect({ value, onChange, options, label }: { value: string; onChange: (v: string) => void; options: string[]; label: string }) {
     return (
         <div className="relative group">
             <label className="absolute -top-2 left-1 text-[8px] text-zinc-500 bg-black px-1 font-bold tracking-wider uppercase">{label}</label>

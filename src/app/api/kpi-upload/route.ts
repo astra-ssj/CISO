@@ -4,6 +4,7 @@ import { extractKPIsFromText } from '@/lib/kpi-engine/kpi-extractor';
 import { writeFileSync, unlinkSync, mkdtempSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
+import { validateFileSize } from '@/lib/api-validation';
 
 export const runtime = 'nodejs';
 
@@ -28,6 +29,9 @@ export async function POST(request: Request) {
                 { status: 400 }
             );
         }
+
+        const sizeError = validateFileSize(file);
+        if (sizeError) return sizeError;
 
         // Convert File to Buffer
         const arrayBuffer = await file.arrayBuffer();

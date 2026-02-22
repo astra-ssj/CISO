@@ -60,10 +60,11 @@ Format as a professional policy document.`;
             model: 'intelligence-engine-v1'
         });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Policy Generation Failed:", error);
+        const details = error instanceof Error ? error.message : String(error);
         return NextResponse.json(
-            { error: "Generation Failed", details: error.message },
+            { error: "Generation Failed", details },
             { status: 500 }
         );
     }

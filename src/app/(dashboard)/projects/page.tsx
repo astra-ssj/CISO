@@ -1,14 +1,14 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOKRProjectStore, type Objective, type Project, type OKRStatus, type ProjectPhaseStatus } from "@/lib/okr-project-store";
 import {
-    Target, Calendar, DollarSign, FolderKanban, ChevronRight,
-    CheckCircle2, AlertTriangle, XCircle, Clock, ArrowRight, Layers
+    Target, Calendar, DollarSign, FolderKanban,
+    CheckCircle2, AlertTriangle, XCircle, Clock, Layers
 } from "lucide-react";
 
 const STATUS_STYLES: Record<OKRStatus, { color: string; icon: React.ReactNode }> = {
@@ -108,10 +108,10 @@ function OKRCard({ objective }: { objective: Objective }) {
 }
 
 function GanttChart({ project }: { project: Project }) {
+    const [now] = useState(() => Date.now());
     const start = new Date(project.startDate).getTime();
     const end = new Date(project.targetEndDate).getTime();
     const totalRange = end - start;
-    const now = Date.now();
     const nowPos = Math.min(100, Math.max(0, ((now - start) / totalRange) * 100));
 
     return (
@@ -212,8 +212,9 @@ function GanttChart({ project }: { project: Project }) {
 }
 
 export default function ProjectsPage() {
-    const { objectives, projects, getOverallOKRHealth } = useOKRProjectStore();
+    const { objectives, projects, getOverallOKRHealth, fetchOKR } = useOKRProjectStore();
     const health = getOverallOKRHealth();
+    useEffect(() => { fetchOKR(); }, [fetchOKR]);
 
     const activeProjects = projects.filter(p => p.status === 'IN_PROGRESS').length;
     const totalBudget = projects.reduce((s, p) => s + p.budgetAllocated, 0);

@@ -11,7 +11,9 @@ export interface SASTFinding {
     version?: string; // For SCA
 }
 
-const SAST_RULES = [
+type SASTSeverity = SASTFinding['severity'];
+
+const SAST_RULES: { regex: RegExp; severity: SASTSeverity; description: string; suggestion: string; cwe?: string }[] = [
     {
         regex: /dangerouslySetInnerHTML/,
         severity: 'CRITICAL',
@@ -56,7 +58,7 @@ const SAST_RULES = [
     }
 ];
 
-const SECRET_PATTERNS = [
+const SECRET_PATTERNS: { regex: RegExp; type: string; severity: SASTSeverity }[] = [
     {
         regex: /AKIA[0-9A-Z]{16}/,
         type: 'AWS Access Key',
@@ -79,7 +81,7 @@ const SECRET_PATTERNS = [
     }
 ];
 
-const SCA_DATABASE: Record<string, { severity: string, description: string, fixedIn: string }> = {
+const SCA_DATABASE: Record<string, { severity: SASTSeverity; description: string; fixedIn: string }> = {
     "react-scripts": {
         severity: "HIGH",
         description: "Vulnerable to cross-site scripting in development server.",
@@ -120,7 +122,7 @@ export const scanCode = (code: string): SASTFinding[] => {
                 findings.push({
                     id: `SAST-${Date.now()}-${Math.random()}`,
                     type: 'SAST',
-                    severity: rule.severity as any,
+                    severity: rule.severity,
                     line: lineNum,
                     description: rule.description,
                     match: lineContent.trim().substring(0, 100),
@@ -137,7 +139,7 @@ export const scanCode = (code: string): SASTFinding[] => {
                 findings.push({
                     id: `SEC-${Date.now()}-${Math.random()}`,
                     type: 'SECRET',
-                    severity: pattern.severity as any,
+                    severity: pattern.severity,
                     line: lineNum,
                     description: `Hardcoded ${pattern.type} detected.`,
                     match: match[0], // Only show the key itself (in real app, redact this!)
@@ -164,7 +166,7 @@ export const scanDependencies = (packageJson: string): SASTFinding[] => {
                 findings.push({
                     id: `SCA-${Date.now()}-${Math.random()}`,
                     type: 'SCA',
-                    severity: SCA_DATABASE[pkg].severity as any,
+                    severity: SCA_DATABASE[pkg].severity,
                     line: 0,
                     description: SCA_DATABASE[pkg].description,
                     match: `${pkg}: ${ver}`,

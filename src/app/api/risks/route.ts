@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { calculateRisk, type RiskScenario } from '@/lib/risk-engine/fair';
 import prisma from '@/lib/prisma';
 
+const THREAT_ACTORS: RiskScenario['threatActor'][] = ['NATION_STATE', 'CYBER_CRIMINAL', 'INSIDER', 'HACKTIVIST', 'SCRIPT_KIDDIE'];
+
 // GET /api/risks — Fetch all risk scenarios with history
 export async function GET() {
     try {
@@ -11,7 +13,7 @@ export async function GET() {
         });
 
         // Map DB rows → frontend RiskEntry shape
-        const entries = risks.map((r: any) => ({
+        const entries = risks.map((r) => ({
             id: r.id,
             scenario: {
                 id: r.id,
@@ -26,7 +28,7 @@ export async function GET() {
             analysis: calculateRisk({
                 id: r.id,
                 assetName: r.title,
-                threatActor: r.threatActor,
+                threatActor: THREAT_ACTORS.includes(r.threatActor as RiskScenario['threatActor']) ? r.threatActor as RiskScenario['threatActor'] : 'CYBER_CRIMINAL',
                 threatEventFrequency: r.threatEventFreq,
                 vulnerability: r.vulnerability,
                 primaryLoss: r.primaryLoss,
@@ -36,7 +38,7 @@ export async function GET() {
             owner: r.ownerId,
             notes: r.description || '',
             status: r.status,
-            history: r.history.map((h: any) => ({
+            history: r.history.map((h) => ({
                 date: h.date.toISOString().split('T')[0],
                 score: h.score,
                 ale: h.ale,
@@ -46,9 +48,10 @@ export async function GET() {
         }));
 
         return NextResponse.json(entries);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Risk API Error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }
 
@@ -84,9 +87,45 @@ export async function POST(req: Request) {
             include: { history: true },
         });
 
-        return NextResponse.json(risk, { status: 201 });
-    } catch (error: any) {
+        // Return same shape as GET for client
+        const r = risk;
+        const entry = {
+            id: r.id,
+            scenario: {
+                id: r.id,
+                assetName: r.title,
+                threatActor: r.threatActor,
+                threatEventFrequency: r.threatEventFreq,
+                vulnerability: r.vulnerability,
+                primaryLoss: r.primaryLoss,
+                secondaryLoss: r.secondaryLoss,
+                controlsEffective: r.controlsEffective,
+            },
+            analysis: calculateRisk({
+                id: r.id,
+                assetName: r.title,
+                threatActor: THREAT_ACTORS.includes(r.threatActor as RiskScenario['threatActor']) ? r.threatActor as RiskScenario['threatActor'] : 'CYBER_CRIMINAL',
+                threatEventFrequency: r.threatEventFreq,
+                vulnerability: r.vulnerability,
+                primaryLoss: r.primaryLoss,
+                secondaryLoss: r.secondaryLoss,
+                controlsEffective: r.controlsEffective,
+            }),
+            owner: r.ownerId,
+            notes: r.description || '',
+            status: r.status,
+            history: r.history.map((h) => ({
+                date: h.date.toISOString().split('T')[0],
+                score: h.score,
+                ale: h.ale,
+            })),
+            createdAt: r.createdAt.toISOString().split('T')[0],
+            updatedAt: r.updatedAt.toISOString().split('T')[0],
+        };
+        return NextResponse.json(entry, { status: 201 });
+    } catch (error: unknown) {
         console.error('Risk Create Error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }

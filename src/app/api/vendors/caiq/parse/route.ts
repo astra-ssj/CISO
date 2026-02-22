@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CAIQExcelParser } from '@/lib/caiq/caiq-excel-parser';
 import type { CAIQDomain } from '@/lib/caiq/types';
+import { validateFileSize } from '@/lib/api-validation';
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,6 +36,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const sizeError = validateFileSize(file);
+    if (sizeError) return sizeError;
 
     const buffer = Buffer.from(await file.arrayBuffer());
     const parser = new CAIQExcelParser();

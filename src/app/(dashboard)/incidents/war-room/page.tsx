@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,6 @@ import {
     Clock,
     Shield,
     CheckCircle,
-    XCircle,
     Phone,
     Users,
     FileText,
@@ -43,14 +42,6 @@ interface Incident {
     type: string;
     affectedSystems: string[];
 }
-
-// Mock AI responses for the copilot
-const AI_RESPONSES = [
-    "Based on the IOCs you've described, this appears to be consistent with **APT29 (Cozy Bear)** tactics. I recommend:\n\n1. **Isolate affected hosts immediately** - Block network access for the compromised endpoints\n2. **Preserve forensic evidence** - Take memory dumps before any remediation\n3. **Check lateral movement** - Review authentication logs from the past 72 hours\n4. **Rotate credentials** - Especially service accounts that may have been exposed",
-    "I've analyzed the logs you mentioned. The anomalous outbound traffic to the C2 domain suggests **data exfiltration may be in progress**.\n\n**Immediate actions:**\n- Block egress to `185.220.101.x/24` at your perimeter firewall\n- Enable enhanced logging on your DNS resolvers\n- Alert your MSSP/MDR for additional monitoring\n\nWould you like me to draft an executive communication?",
-    "The ransomware variant you're describing matches the **BlackCat/ALPHV** family. Key indicators:\n\n- Extension: `.sphynx`\n- Ransom note: `RECOVER-sphynx-FILES.txt`\n- Known to target ESXi hypervisors\n\n**Do NOT pay the ransom.** I can help you:\n1. Locate available backups\n2. Assess recovery time objectives\n3. Prepare regulatory notifications (GDPR 72-hour requirement)",
-    "Good question. For your incident response playbook, here's the recommended notification timeline:\n\n| Stakeholder | Timeframe | Method |\n|-------------|-----------|--------|\n| CISO | Immediate | Phone + Secure Chat |\n| Legal | Within 1 hour | Email + Meeting |\n| Executives | Within 2 hours | Briefing |\n| Regulators | Within 72 hours | Formal Notice |\n| Customers | TBD | After legal review |\n\nShall I help draft any of these communications?"
-];
 
 const MOCK_INCIDENT: Incident = {
     id: "INC-2026-0142",
@@ -113,7 +104,7 @@ export default function WarRoomPage() {
             // Call Real AI Action
             const result = await consultCommandCenter(
                 input,
-                MOCK_INCIDENT,
+                MOCK_INCIDENT as unknown as import('@/app/actions/war-room-ai').IncidentContext,
                 messages // Pass history for context
             );
 

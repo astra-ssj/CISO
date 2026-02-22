@@ -2,9 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Bot, MessageSquare, X, Send, User, Mic } from 'lucide-react';
+import { Bot, X, Send, User, Mic } from 'lucide-react';
 import { useAstraStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -29,9 +29,10 @@ export function ChatInterface() {
 
     // Voice Recognition Logic
     const startListening = () => {
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
+        if (typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+            const SpeechRecognitionCtor = window.SpeechRecognition ?? window.webkitSpeechRecognition;
+            if (!SpeechRecognitionCtor) return;
+            const recognition = new SpeechRecognitionCtor();
 
             recognition.continuous = false;
             recognition.interimResults = false;
@@ -41,13 +42,13 @@ export function ChatInterface() {
                 setIsListening(true);
             };
 
-            recognition.onresult = (event: any) => {
+            recognition.onresult = (event: SpeechRecognitionEvent) => {
                 const transcript = event.results[0][0].transcript;
                 setInputValue(transcript);
                 setIsListening(false);
             };
 
-            recognition.onerror = (event: any) => {
+            recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
                 console.error("Voice Error:", event.error);
                 setIsListening(false);
             };

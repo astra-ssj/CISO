@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Fingerprint, Lock, ShieldAlert, Scan, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Fingerprint, Lock, ShieldAlert, Scan, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -20,13 +19,15 @@ export function TwoKeyModal({ isOpen, onClose, onConfirm, actionName }: TwoKeyMo
     const holdIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const [status, setStatus] = useState<'IDLE' | 'ARMING' | 'AUTHORIZED'>('IDLE');
 
-    // Reset state on open
+    // Reset state when modal opens (defer to avoid synchronous setState in effect)
     useEffect(() => {
-        if (isOpen) {
+        if (!isOpen) return;
+        const id = setTimeout(() => {
             setHoldProgress(0);
             setIsComplete(false);
             setStatus('IDLE');
-        }
+        }, 0);
+        return () => clearTimeout(id);
     }, [isOpen]);
 
     const startHold = () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVendorRiskStore, VendorCategory, VendorRiskTier, VendorStatus } from "@/lib/vendor-risk-store";
-import { CAIQ_DOMAINS, type AnsweredQuestion, type ConfidenceLevel } from "@/lib/caiq/caiq-knowledge-base";
+import { type AnsweredQuestion, type ConfidenceLevel } from "@/lib/caiq/caiq-knowledge-base";
 import KnowledgeTransfer from "@/components/caiq/KnowledgeTransfer";
 import CAIQReviewQueueTab from "@/components/caiq/CAIQReviewQueueTab";
 import Link from "next/link";
@@ -72,7 +72,8 @@ interface CAIQResult {
 // ════════════════════════════════════════════
 
 export default function VendorsPage() {
-    const { vendors, addVendor, removeVendor, getCriticalVendorCount, getAverageRiskScore, getPendingReviewCount } = useVendorRiskStore();
+    const { vendors, addVendor, removeVendor, getCriticalVendorCount, getAverageRiskScore, getPendingReviewCount, fetchVendors } = useVendorRiskStore();
+    useEffect(() => { fetchVendors(); }, [fetchVendors]);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterTier, setFilterTier] = useState<string>('all');
     const [showAddForm, setShowAddForm] = useState(false);
@@ -120,7 +121,7 @@ export default function VendorsPage() {
     const handleAddVendor = () => {
         addVendor({
             ...newVendor,
-            dataAccess: newVendor.dataAccess as any[],
+            dataAccess: newVendor.dataAccess as ('PII' | 'FINANCIAL' | 'INTELLECTUAL_PROPERTY' | 'OPERATIONAL' | 'NONE')[],
             complianceCertifications: newVendor.complianceCertifications
         });
         setShowAddForm(false);
@@ -175,8 +176,8 @@ export default function VendorsPage() {
 
             setCaiqResult(data.result);
             setCaiqExportBase64(data.exportBase64 || null);
-        } catch (err: any) {
-            setCaiqError(err.message || 'Failed to process questionnaire');
+        } catch (err: unknown) {
+            setCaiqError(err instanceof Error ? err.message : 'Failed to process questionnaire');
         } finally {
             setCaiqLoading(false);
         }

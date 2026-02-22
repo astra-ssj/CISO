@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
-import { Bell, Check, CheckCheck, Trash2, ShieldAlert, FileCheck, Building2, Siren, BrainCircuit, Settings } from 'lucide-react';
+import { Bell, CheckCheck, Trash2, ShieldAlert, FileCheck, Building2, Siren, BrainCircuit, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNotificationStore, NotificationType, NotificationSeverity } from '@/lib/notification-store';
 import Link from 'next/link';
@@ -34,10 +34,12 @@ function timeAgo(timestamp: number): string {
 }
 
 export function NotificationCenter() {
-    const { notifications, getUnreadCount, markRead, markAllRead, clearAll } = useNotificationStore();
+    const { notifications, getUnreadCount, markRead, markAllRead, clearAll, fetchNotifications } = useNotificationStore();
     const [isOpen, setIsOpen] = useState(false);
     const panelRef = useRef<HTMLDivElement>(null);
     const unreadCount = getUnreadCount();
+
+    useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
 
     // Close on outside click
     useEffect(() => {

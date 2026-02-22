@@ -1,12 +1,12 @@
 "use client";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AlertTriangle, CheckCircle, ShieldAlert, Cpu, FileText, Check, X, Loader2, ArrowRight } from 'lucide-react';
+import { AlertTriangle, CheckCircle, ShieldAlert, Cpu, FileText, Check, X, Loader2 } from 'lucide-react';
 import { useAstraStore } from "@/lib/store";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -18,8 +18,8 @@ interface DecisionConsoleProps {
 }
 
 export function DecisionConsole({ requestId, open, onOpenChange }: DecisionConsoleProps) {
-    const { decisionQueue, resolveDecision, updateDecisionAnalysis, triggerAnalysis, currentUser } = useAstraStore() as any;
-    const request = requestId ? decisionQueue.find((r: any) => r.id === requestId) : null;
+    const { decisionQueue, resolveDecision, triggerAnalysis, currentUser } = useAstraStore();
+    const request = requestId ? (decisionQueue.find((r) => r.id === requestId) ?? null) : null;
 
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [activeTab, setActiveTab] = useState("overview");
@@ -157,10 +157,10 @@ export function DecisionConsole({ requestId, open, onOpenChange }: DecisionConso
                                                 </CardHeader>
                                                 <CardContent>
                                                     <ul className="list-disc list-inside text-sm space-y-1 text-red-200/80">
-                                                        {request.analysis.flaggedKeywords.map((k: string, i: number) => (
+                                                        {(request.analysis?.flaggedKeywords ?? []).map((k: string, i: number) => (
                                                             <li key={i}>Flagged sensitivity: <span className="font-bold">{k}</span></li>
                                                         ))}
-                                                        <li>Compliance Score Impact: -{request.analysis.riskScore > 50 ? '5.2' : '1.5'}%</li>
+                                                        <li>Compliance Score Impact: -{(request.analysis?.riskScore ?? 0) > 50 ? '5.2' : '1.5'}%</li>
                                                     </ul>
                                                 </CardContent>
                                             </Card>
@@ -172,7 +172,7 @@ export function DecisionConsole({ requestId, open, onOpenChange }: DecisionConso
                                                 </CardHeader>
                                                 <CardContent>
                                                     <ul className="list-disc list-inside text-sm space-y-1 text-blue-200/80">
-                                                        {request.analysis.complianceGaps.map((g: string, i: number) => (
+                                                        {(request.analysis?.complianceGaps ?? []).map((g: string, i: number) => (
                                                             <li key={i}>{g}</li>
                                                         ))}
                                                     </ul>
@@ -205,7 +205,7 @@ export function DecisionConsole({ requestId, open, onOpenChange }: DecisionConso
                                         <Badge variant="secondary">AUTO-GENERATED</Badge>
                                     </div>
                                     <div className="grid gap-4">
-                                        {request.generatedArtifacts?.map((artifact: any) => (
+                                        {request.generatedArtifacts?.map((artifact) => (
                                             <Card key={artifact.id} className="overflow-hidden">
                                                 <CardHeader className="bg-secondary/10 py-3 flex flex-row items-center justify-between">
                                                     <div className="flex items-center gap-2">
@@ -243,7 +243,7 @@ export function DecisionConsole({ requestId, open, onOpenChange }: DecisionConso
                             <Button
                                 className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_20px_rgba(16,185,129,0.2)] disabled:opacity-50 disabled:cursor-not-allowed"
                                 onClick={handleApprove}
-                                disabled={!hasAnalysis || (currentUser?.name && request.requester === currentUser.name)}
+                                disabled={!hasAnalysis || !!(currentUser?.name && request.requester === currentUser.name)}
                                 title={currentUser?.name && request.requester === currentUser.name ? "Segregation of Duties: You cannot approve your own request." : "Approve Request"}
                             >
                                 {currentUser?.name && request.requester === currentUser.name ? <ShieldAlert className="mr-2 h-4 w-4" /> : <Check className="mr-2 h-4 w-4" />}

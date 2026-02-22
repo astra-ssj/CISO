@@ -3,10 +3,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { FileText, ShieldAlert, Scale, DollarSign, Clock, Lock, BrainCircuit, Search } from 'lucide-react';
+import { FileText, BrainCircuit, Search } from 'lucide-react';
 import { ClauseInspector, ClauseData, RiskLevel } from './clause-inspector';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 
 // --- Mock Data: SaaS MSA ---
 

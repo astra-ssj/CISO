@@ -32,16 +32,16 @@ export async function scanProject(path: string = '.'): Promise<TrivyReport> {
     try {
         // Run Trivy in filesystem mode, outputting JSON
         // standard command: trivy fs <path> --format json
-        const { stdout, stderr } = await execAsync(`trivy fs ${path} --format json`);
+        const { stdout } = await execAsync(`trivy fs ${path} --format json`);
 
         if (!stdout) {
             throw new Error("No output from Trivy scan");
         }
 
         return JSON.parse(stdout) as TrivyReport;
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Trivy scan failed:", error);
-        // Return empty report or throw
-        throw new Error(`Trivy scan failed: ${error.message}`);
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`Trivy scan failed: ${message}`);
     }
 }

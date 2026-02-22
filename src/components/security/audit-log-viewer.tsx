@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { getAuditLogs, AuditLogEntry } from '@/lib/auth/audit';
+import { AuditLogEntry } from '@/lib/auth/audit';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShieldCheck, User, Clock, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAstraStore } from '@/lib/store';
 
 export function AuditLogViewer() {
     // For MVP, since getAuditLogs is server-side in our mock file but we need it client side,

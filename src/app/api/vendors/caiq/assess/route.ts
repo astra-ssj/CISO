@@ -18,6 +18,7 @@ import { getAllCircuitBreakerMetrics } from '@/lib/ai/circuit-breaker';
 import { setCAIQMetrics } from '@/lib/caiq/caiq-metrics';
 import type { OrganizationContext, CAIQAnswerSet } from '@/lib/caiq/types';
 import type { ValidationResult } from '@/lib/caiq/types';
+import { validateFileSize } from '@/lib/api-validation';
 
 const DEFAULT_AUTO_APPROVE = 0.9;
 const DEFAULT_FLAG_THRESHOLD = 0.6;
@@ -57,6 +58,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const sizeError = validateFileSize(file);
+    if (sizeError) return sizeError;
 
     if (!isAIConfigured()) {
       return NextResponse.json(
@@ -105,7 +109,7 @@ export async function POST(request: NextRequest) {
           );
 
           (async () => {
-            let progressCounts = { EXACT_MATCH: 0, SEMANTIC_MATCH: 0, AI_GENERATED: 0, FLAGGED: 0 };
+            const progressCounts = { EXACT_MATCH: 0, SEMANTIC_MATCH: 0, AI_GENERATED: 0, FLAGGED: 0 };
             const result = await engine.generateAnswers(questions, {
               includeEvidence,
               flagThreshold,
@@ -127,7 +131,7 @@ export async function POST(request: NextRequest) {
                       })}\n\n`
                     )
                   );
-                } catch (_) {}
+                } catch {}
               },
             });
             const validator = new CAIQValidator();
@@ -158,7 +162,7 @@ export async function POST(request: NextRequest) {
                   `event: error\ndata: ${JSON.stringify({ error: err instanceof Error ? err.message : String(err) })}\n\n`
                 )
               );
-            } catch (_) {}
+            } catch {}
             controller.close();
           });
         },

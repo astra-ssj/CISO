@@ -1,56 +1,65 @@
 import { NextResponse } from 'next/server';
-import { createSession } from '@/lib/auth/session';
+import { signIn } from '@/auth';
 import { logAction } from '@/lib/auth/audit';
-import { UserProfile, UserRole } from '@/lib/auth/rbac';
+import type { UserProfile } from '@/lib/auth/rbac';
+import type { UserRole } from '@/lib/auth/rbac';
+import prisma from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
+import { parseBodyWithZod, loginBodySchema } from '@/lib/api-validation';
+
+const VALID_ROLES: UserRole[] = ['CISO', 'SEC_ENGINEER', 'AUDITOR', 'VIEWER'];
+
+function toUserProfile(user: { id: string; email: string; name: string | null; role: string }): UserProfile {
+    const role = VALID_ROLES.includes(user.role as UserRole) ? (user.role as UserRole) : 'VIEWER';
+    return {
+        id: user.id,
+        email: user.email,
+        name: user.name ?? 'User',
+        role,
+        lastLogin: new Date().toISOString(),
+    };
+}
 
 export async function POST(request: Request) {
     try {
-        const body = await request.json();
-        const { username, password } = body;
-
-        // Mock User Database for Demo
-        let user: UserProfile | null = null;
-
-        if (username === 'ciso@astra.ai' && password === 'admin123') {
-            user = {
-                id: 'u-ciso-001',
-                email: 'ciso@astra.ai',
-                name: 'System Administrator',
-                role: 'CISO',
-                lastLogin: new Date().toISOString()
-            };
-        } else if (username === 'analyst@astra.ai' && password === 'user123') {
-            user = {
-                id: 'u-sec-002',
-                email: 'analyst@astra.ai',
-                name: 'Security Analyst',
-                role: 'SEC_ENGINEER', // Correct role mapping
-                lastLogin: new Date().toISOString()
-            };
-        } else if (username === 'auditor@astra.ai') {
-            user = {
-                id: 'u-audit-003',
-                email: 'auditor@astra.ai',
-                name: 'External Auditor',
-                role: 'AUDITOR',
-                lastLogin: new Date().toISOString()
-            };
+        const raw = await request.json().catch(() => ({}));
+        const parsed = parseBodyWithZod(raw, loginBodySchema);
+        if ('error' in parsed) return parsed.error;
+        const { password } = parsed.data;
+        const email = (parsed.data.email ?? parsed.data.username)?.trim();
+        if (!email) {
+            return NextResponse.json({ error: 'Email or username is required' }, { status: 400 });
         }
 
-        if (!user) {
+        const user = await prisma.user.findUnique({ where: { email } });
+        if (!user?.password) {
             return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
         }
 
-        // 1. Create Secure Session
-        await createSession(user);
+        const valid = await bcrypt.compare(password, user.password);
+        if (!valid) {
+            return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+        }
 
-        // 2. Audit Log
-        const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
-        await logAction(user, 'LOGIN', 'User logged in successfully', { ip });
+        // Establish NextAuth session (single source of truth)
+        const result = await signIn('credentials', {
+            email: user.email,
+            password,
+            redirect: false,
+        });
 
-        return NextResponse.json({ success: true, user });
+        if (result?.error || !result?.ok) {
+            return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+        }
 
-    } catch (error) {
+        const profile = toUserProfile(user);
+
+        const ip = request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? '127.0.0.1';
+        await logAction(profile, 'LOGIN', 'User logged in successfully', { ip });
+
+        return NextResponse.json({ success: true, user: profile });
+    } catch (e) {
+        console.error('[auth/login]', e);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

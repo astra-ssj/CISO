@@ -4,8 +4,7 @@ import React from "react";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Info, Shield, Server, FileText, Zap } from "lucide-react";
+import { Shield, Server, FileText, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface BudgetState {

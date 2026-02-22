@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePlaybookStore, Playbook } from "@/lib/playbook-store";
+import { usePlaybookStore } from "@/lib/playbook-store";
 import { usePolicyStore, Policy } from "@/lib/policy-store";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,17 +11,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-    AlertCircle,
     Clock,
     CheckCircle2,
     Flag,
     Send,
     PlayCircle,
-    ShieldAlert,
-    FileText,
     Scale,
     Fingerprint,
-    Download,
     BookOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -112,11 +108,12 @@ export function PlaybookActiveView({ playbookId, onExit }: PlaybookActiveViewPro
             headStyles: { fillColor: [41, 41, 41] }
         });
 
-        // Steps Compliance
-        const currentY = (doc as any).lastAutoTable.finalY + 20;
+        // Steps Compliance (jspdf-autotable adds lastAutoTable to doc)
+        const docWithTable = doc as jsPDF & { lastAutoTable?: { finalY: number } };
+        const currentY = (docWithTable.lastAutoTable?.finalY ?? 85) + 20;
         doc.text("Procedural Compliance Record", 14, currentY);
 
-        const stepsData: any[] = [];
+        const stepsData: (string | number)[][] = [];
         playbook.phases.forEach(phase => {
             phase.steps.forEach(step => {
                 stepsData.push([
@@ -226,7 +223,7 @@ export function PlaybookActiveView({ playbookId, onExit }: PlaybookActiveViewPro
                     </CardHeader>
                     <CardContent className="flex-1 overflow-auto pr-2">
                         <div className="space-y-6">
-                            {playbook.phases.map((phase, index) => (
+                            {playbook.phases.map((phase) => (
                                 <div key={phase.id} className="relative pl-6 border-l-2 border-border/50 pb-6 last:pb-0">
                                     <div className={cn(
                                         "absolute -left-[9px] top-0 w-4 h-4 rounded-full border-2 bg-background flex items-center justify-center",

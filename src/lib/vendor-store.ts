@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 export type RiskTier = 'TIER_1_CRITICAL' | 'TIER_2_HIGH' | 'TIER_3_MEDIUM' | 'TIER_4_LOW';
 export type VendorStatus = 'ACTIVE' | 'PENDING_ASSESSMENT' | 'REJECTED' | 'DEPRECATED';
@@ -15,65 +14,84 @@ export interface Vendor {
     contactEmail: string;
 }
 
-export interface VendorAssessment {
-    vendorId: string;
-    date: string;
-    answers: Record<string, string>; // QId -> Answer
-    score: number;
-}
-
 interface VendorState {
     vendors: Vendor[];
-    addVendor: (vendor: Vendor) => void;
-    updateVendor: (id: string, updates: Partial<Vendor>) => void;
-    deleteVendor: (id: string) => void;
+    isLoading: boolean;
+    hasFetched: boolean;
+    fetchVendors: () => Promise<void>;
+    addVendor: (vendor: Vendor) => Promise<void>;
+    updateVendor: (id: string, updates: Partial<Vendor>) => Promise<void>;
+    deleteVendor: (id: string) => Promise<void>;
 }
 
-const MOCK_VENDORS: Vendor[] = [
-    {
-        id: 'v-1',
-        name: 'AWS (Amazon Web Services)',
-        serviceDescription: 'Core Cloud Infrastructure Provider',
-        tier: 'TIER_1_CRITICAL',
-        status: 'ACTIVE',
-        lastAssessmentDate: '2025-11-15',
-        inherentRiskScore: 92,
-        contactEmail: 'aws-support@amazon.com'
-    },
-    {
-        id: 'v-2',
-        name: 'Slack',
-        serviceDescription: 'Internal Communication Platform',
-        tier: 'TIER_2_HIGH',
-        status: 'ACTIVE',
-        lastAssessmentDate: '2026-01-10',
-        inherentRiskScore: 65,
-        contactEmail: 'security@slack.com'
-    },
-    {
-        id: 'v-3',
-        name: 'FastFix IT Support',
-        serviceDescription: 'On-demand hardware repair',
-        tier: 'TIER_3_MEDIUM',
-        status: 'PENDING_ASSESSMENT',
-        lastAssessmentDate: '-',
-        inherentRiskScore: 40,
-        contactEmail: 'support@fastfix.local'
-    }
-];
+const API = '/api/vendor-list';
 
-export const useVendorStore = create<VendorState>()(
-    persist(
-        (set) => ({
-            vendors: MOCK_VENDORS,
-            addVendor: (vendor) => set((state) => ({ vendors: [...state.vendors, vendor] })),
-            updateVendor: (id, updates) => set((state) => ({
-                vendors: state.vendors.map(v => v.id === id ? { ...v, ...updates } : v)
-            })),
-            deleteVendor: (id) => set((state) => ({ vendors: state.vendors.filter(v => v.id !== id) }))
-        }),
-        {
-            name: 'astra-vendor-store'
+export const useVendorStore = create<VendorState>()((set, get) => ({
+    vendors: [],
+    isLoading: false,
+    hasFetched: false,
+
+    fetchVendors: async () => {
+        if (get().hasFetched) return;
+        set({ isLoading: true });
+        try {
+            const res = await fetch(API);
+            if (!res.ok) throw new Error(await res.text());
+            const data = await res.json();
+            set({ vendors: Array.isArray(data) ? data : [], hasFetched: true, isLoading: false });
+        } catch (e) {
+            console.warn('Vendor list fetch failed', e);
+            set({ hasFetched: true, isLoading: false });
         }
-    )
-);
+    },
+
+    addVendor: async (vendor) => {
+        try {
+            const res = await fetch(API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: vendor.name,
+                    serviceDescription: vendor.serviceDescription,
+                    tier: vendor.tier,
+                    status: vendor.status,
+                    lastAssessmentDate: vendor.lastAssessmentDate,
+                    inherentRiskScore: vendor.inherentRiskScore,
+                    contactEmail: vendor.contactEmail,
+                }),
+            });
+            if (!res.ok) throw new Error(await res.text());
+            const created = await res.json();
+            set((s) => ({ vendors: [created, ...s.vendors], hasFetched: true }));
+        } catch (e) {
+            console.warn('Vendor add failed', e);
+        }
+    },
+
+    updateVendor: async (id, updates) => {
+        try {
+            const res = await fetch(`${API}/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates),
+            });
+            if (!res.ok) throw new Error(await res.text());
+            const updated = await res.json();
+            set((s) => ({
+                vendors: s.vendors.map((v) => (v.id === id ? { ...v, ...updated } : v)),
+            }));
+        } catch (e) {
+            console.warn('Vendor update failed', e);
+        }
+    },
+
+    deleteVendor: async (id) => {
+        try {
+            const res = await fetch(`${API}/${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error(await res.text());
+            set((s) => ({ vendors: s.vendors.filter((v) => v.id !== id) }));
+        } catch (e) {
+            console.warn('Vendor delete failed', e);
+        }
+    },
+}));

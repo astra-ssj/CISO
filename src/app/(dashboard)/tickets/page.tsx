@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
     TicketCheck, ArrowLeft, Plus, Clock, AlertTriangle, CheckCircle2,
-    Send, Edit3, Trash2, ExternalLink, Search, Filter, FileText,
+    Send, Edit3, Trash2, ExternalLink, Search, FileText,
     Shield, Wrench, Users, Target, Siren, Clipboard, XCircle, CircleDot
 } from 'lucide-react';
 import { TICKET_CATEGORIES, TICKET_TEMPLATES, TicketCategory, TicketTemplate, getTemplatesByCategory } from "@/lib/jira/jira-templates";

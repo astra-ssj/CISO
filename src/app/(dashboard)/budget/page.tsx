@@ -145,7 +145,15 @@ export default function BudgetPage() {
     );
 }
 
-function MetricCard({ title, value, icon: Icon, trend, trendUp, neutral }: any) {
+interface MetricCardProps {
+    title: string;
+    value: string | number;
+    icon: React.ComponentType<{ className?: string }>;
+    trend: string;
+    trendUp: boolean;
+    neutral?: boolean;
+}
+function MetricCard({ title, value, icon: Icon, trend, trendUp, neutral }: MetricCardProps) {
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

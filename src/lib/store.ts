@@ -80,7 +80,7 @@ interface AstraState {
     // Actions
     addDecisionRequest: (request: Omit<DecisionRequest, 'id' | 'status'>) => void;
     resolveDecision: (id: string, outcome: 'APPROVED' | 'DENIED', reason: string) => void;
-    updateDecisionAnalysis: (id: string, results: any) => void;
+    updateDecisionAnalysis: (id: string, results: DecisionAnalysisResults) => void;
     triggerAnalysis: (id: string, request: DecisionRequest) => Promise<void>; // New Async Action
     updateComplianceScore: (score: number) => void;
     sendQuery: (query: string) => void;
@@ -96,13 +96,13 @@ interface AstraState {
     updateKPI: (id: string, updates: Partial<KPI>) => void;
     deleteKPI: (id: string) => void;
     // Auth
-    // Auth & RBAC
+    // Auth & RBAC (roles aligned with NextAuth / src/lib/auth/rbac)
     currentUser: {
         name: string;
-        role: 'CISO' | 'ARCHITECT' | 'DEVOPS';
+        role: 'CISO' | 'SEC_ENGINEER' | 'AUDITOR' | 'VIEWER';
     } | null;
     isAuthenticated: boolean;
-    login: (role?: 'CISO' | 'ARCHITECT' | 'DEVOPS') => void;
+    login: (role?: 'CISO' | 'SEC_ENGINEER' | 'AUDITOR' | 'VIEWER', name?: string) => void;
     logout: () => void;
 
     // UI State
@@ -111,14 +111,22 @@ interface AstraState {
 
     // Signal Bus
     signals: Signal[];
-    dispatchSignal: (type: string, payload: any) => void;
+    dispatchSignal: (type: string, payload: unknown) => void;
 }
 
 export interface Signal {
     id: string;
     type: string;
-    payload: any;
+    payload: unknown;
     timestamp: number;
+}
+
+export interface DecisionAnalysisResults {
+    riskScore: number;
+    flaggedKeywords: string[];
+    complianceGaps: string[];
+    recommendedActions?: string[];
+    generatedArtifacts?: DecisionRequest['generatedArtifacts'];
 }
 
 export const useAstraStore = create<AstraState>()(
@@ -247,7 +255,8 @@ export const useAstraStore = create<AstraState>()(
                 get().triggerAnalysis(id, newRequest as DecisionRequest);
             },
 
-            resolveDecision: (id, outcome, reason) => set((state) => ({
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars -- reason is part of public API
+            resolveDecision: (id, outcome, _reason) => set((state) => ({
                 decisionQueue: state.decisionQueue.map(d =>
                     d.id === id ? { ...d, status: outcome } : d
                 )
@@ -386,20 +395,24 @@ export const useAstraStore = create<AstraState>()(
             currentUser: null,
             isAuthenticated: false,
 
-            login: (role = 'CISO') => {
-                // Set Secure Cookie for Middleware verification
-                document.cookie = "astra-auth=true; path=/; max-age=86400; SameSite=Strict";
+            // Local UI state only; actual auth is NextAuth. Sync from useSession() where needed.
+            login: (role = 'CISO', name?: string) => {
+                const labels: Record<string, string> = {
+                    CISO: 'Chief Information Security Officer',
+                    SEC_ENGINEER: 'Security Engineer',
+                    AUDITOR: 'Compliance Auditor',
+                    VIEWER: 'Viewer',
+                };
                 set({
                     isAuthenticated: true,
                     currentUser: {
-                        name: role === 'CISO' ? 'Chief Information Security Officer' : 'Security Architect',
-                        role: role
+                        name: name ?? labels[role] ?? role,
+                        role: role as 'CISO' | 'SEC_ENGINEER' | 'AUDITOR' | 'VIEWER'
                     }
                 });
             },
 
             logout: () => {
-                document.cookie = "astra-auth=; path=/; max-age=0";
                 set({ isAuthenticated: false, currentUser: null });
             },
 

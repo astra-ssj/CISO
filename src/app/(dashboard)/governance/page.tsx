@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDynamicControls, calculateComplianceScore } from "@/lib/governance";
 import { usePolicyStore } from "@/lib/policy-store";
 import { usePlaybookStore } from "@/lib/playbook-store";
-import { CheckCircle, XCircle, FileText, Scale, FileUp, Shield } from "lucide-react";
+import { useEvidenceStore } from "@/lib/evidence-store";
+import { CheckCircle, XCircle, FileText, Scale, FileUp } from "lucide-react";
 import { ComplianceHeatmap } from "@/components/governance/compliance-heatmap";
 import { AuditManager } from "@/components/governance/audit-manager";
 import { ContractAnalysis } from "@/components/governance/contract-analysis";
@@ -13,12 +14,18 @@ import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function GovernancePage() {
-    const { policies } = usePolicyStore();
-    const { playbooks } = usePlaybookStore();
+    const { policies, fetchPolicies } = usePolicyStore();
+    const { playbooks, fetchPlaybooks } = usePlaybookStore();
+    const { fetchEvidence } = useEvidenceStore();
     const [controls, setControls] = useState(getDynamicControls([], []));
 
     useEffect(() => {
-        // Recalculate controls when stores change
+        fetchPolicies();
+        fetchPlaybooks();
+        fetchEvidence();
+    }, [fetchPolicies, fetchPlaybooks, fetchEvidence]);
+
+    useEffect(() => {
         setControls(getDynamicControls(policies, playbooks));
     }, [policies, playbooks]);
 

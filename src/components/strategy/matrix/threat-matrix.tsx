@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { SafeguardCell, Safeguard } from "./safeguard-cell";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Skull, Eye, Shield, Search, Zap, RotateCcw, Filter, LayoutGrid, Settings2 } from "lucide-react";
@@ -34,8 +33,6 @@ interface ThreatMatrixProps {
 
 export function ThreatMatrix({ data }: ThreatMatrixProps) {
     const [filter, setFilter] = useState<"all" | "critical" | "gaps">("all");
-    const [xAxis, setXAxis] = useState<'function' | 'severity' | 'status'>('function');
-    const [yAxis, setYAxis] = useState<'scenario' | 'asset'>('scenario');
 
     // Calculate Global Health Score
     // (Mock logic: Average of all safeguards across all rows)
@@ -55,7 +52,8 @@ export function ThreatMatrix({ data }: ThreatMatrixProps) {
         return true;
     });
 
-    const nistFunctions = [
+    type NistKey = keyof Pick<ThreatRow, 'identify' | 'protect' | 'detect' | 'respond' | 'recover'>;
+    const nistFunctions: { key: NistKey; label: string; icon: React.ComponentType<{ className?: string }>; color: string; border: string; bg: string }[] = [
         { key: 'identify', label: 'IDENTIFY', icon: Eye, color: 'text-blue-400', border: 'border-blue-500/20', bg: 'bg-blue-500/5' },
         { key: 'protect', label: 'PROTECT', icon: Shield, color: 'text-purple-400', border: 'border-purple-500/20', bg: 'bg-purple-500/5' },
         { key: 'detect', label: 'DETECT', icon: Search, color: 'text-amber-400', border: 'border-amber-500/20', bg: 'bg-amber-500/5' },
@@ -179,9 +177,7 @@ export function ThreatMatrix({ data }: ThreatMatrixProps) {
                                         {nistFunctions.map(fn => (
                                             <td key={fn.key} className="p-3 align-top border-l border-zinc-800/30">
                                                 <div className="flex flex-col gap-1.5 min-h-[60px]">
-                                                    {/* @ts-ignore */}
                                                     {row[fn.key]?.length > 0 ? (
-                                                        /* @ts-ignore */
                                                         row[fn.key].map((sg: Safeguard) => (
                                                             <SafeguardCell key={sg.id} safeguard={sg} />
                                                         ))

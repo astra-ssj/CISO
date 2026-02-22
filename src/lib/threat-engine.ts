@@ -99,10 +99,6 @@ export const generateMermaidDiagram = (arch: Architecture, threats: Threat[]): s
 
     // Components
     arch.components.forEach(comp => {
-        let shape = 'rack'; // default
-        if (comp.type === 'DATABASE') shape = 'cylinder';
-        if (comp.type === 'USER_BROWSER') shape = 'rect';
-
         let styleClass = '';
         if (comp.isPublic) styleClass = ':::public';
         if (comp.type === 'DATABASE' || comp.type === 'FILE_STORE') styleClass = ':::store';

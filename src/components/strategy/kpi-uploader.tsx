@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-    Upload, FileText, Loader2, CheckCircle2, XCircle, AlertTriangle,
+    Upload, FileText, Loader2, CheckCircle2, AlertTriangle,
     Trash2, Check, X, FileUp, Sparkles
 } from 'lucide-react';
 import type { ExtractedKPI } from '@/lib/kpi-engine/kpi-extractor';

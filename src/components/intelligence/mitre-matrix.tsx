@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { TechniqueCard, TechniqueStatus } from "./technique-card";
-import { motion } from "framer-motion";
 import { Search, Filter, Shield } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -78,19 +77,15 @@ const MITRE_DATA = {
 };
 
 export function MitreMatrix() {
-    const [activeThreats, setActiveThreats] = useState<Record<string, { status: TechniqueStatus, count: number }>>({});
+    const [activeThreats, setActiveThreats] = useState<Record<string, { status: TechniqueStatus, count: number }>>(() => ({
+        'T1566': { status: 'blocked', count: 124 },
+        'T1190': { status: 'active', count: 3 },
+        'T1110': { status: 'blocked', count: 890 },
+        'T1059': { status: 'active', count: 1 },
+    }));
     const [filter, setFilter] = useState('');
 
-    // Simulate Live Activity
     useEffect(() => {
-        // Initial Mock State
-        setActiveThreats({
-            'T1566': { status: 'blocked', count: 124 },
-            'T1190': { status: 'active', count: 3 },
-            'T1110': { status: 'blocked', count: 890 },
-            'T1059': { status: 'active', count: 1 },
-        });
-
         const interval = setInterval(() => {
             // Randomly flip a technique to active or blocked
             const tactic = MITRE_DATA.tactics[Math.floor(Math.random() * MITRE_DATA.tactics.length)];

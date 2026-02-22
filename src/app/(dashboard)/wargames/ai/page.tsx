@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Terminal, ShieldAlert, Skull, Zap, ArrowLeft, Play, Loader2, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Terminal, Skull, Zap, ArrowLeft, Play, Loader2, CheckCircle2 } from 'lucide-react';
 import Link from "next/link";
 
 interface ThreatActorProfile {
@@ -221,7 +221,7 @@ export default function AIWargamePage() {
                     <Card>
                         <CardHeader>
                             <CardTitle>Threat Actor</CardTitle>
-                            <CardDescription>Select who you're up against</CardDescription>
+                            <CardDescription>Select who you&apos;re up against</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <Select value={selectedThreatActor} onValueChange={setSelectedThreatActor}>
@@ -335,7 +335,7 @@ export default function AIWargamePage() {
                 <Card className="lg:col-span-2 flex flex-col border-red-500/20 bg-black/40 backdrop-blur-xl overflow-hidden">
                     <CardHeader className="border-b border-red-500/10 bg-black/20">
                         <CardTitle className="font-mono text-lg text-red-500 tracking-wider">
-                            /// ADVERSARY TRANSMISSION
+                            {"/// ADVERSARY TRANSMISSION"}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="flex-1 p-6 flex flex-col gap-6 overflow-y-auto">

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
-import { analyzePolicy } from '@/lib/policy-engine';
+import { analyzePolicy, type PolicyGap } from '@/lib/policy-engine';
 import type { FrameworkID } from '@/lib/compliance-frameworks';
 
 export async function POST(request: Request) {
@@ -51,10 +51,10 @@ ${policyContent.substring(0, 10000)}
   "riskLevel": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
 }`;
 
-                const analysis = await provider.generateStructuredContent(prompt);
+                const analysis = await provider.generateStructuredContent<Record<string, unknown>>(prompt);
 
                 return NextResponse.json({
-                    ...analysis,
+                    ...(typeof analysis === 'object' && analysis !== null ? analysis : {}),
                     provider: process.env.AI_PROVIDER || 'GEMINI',
                     model: 'ai-policy-analyzer',
                     aiPowered: true
@@ -70,25 +70,28 @@ ${policyContent.substring(0, 10000)}
         return NextResponse.json({
             ...heuristicResult,
             recommendations: heuristicResult.identifiedGaps.map(
-                (g: any) => `Address ${g.framework || 'compliance'} gap: ${g.description}`
+                (g: PolicyGap) => `Address ${g.frameworkName || 'compliance'} gap: ${g.gapDescription}`
             ),
             riskLevel: heuristicResult.score > 80 ? 'LOW' : heuristicResult.score > 60 ? 'MEDIUM' : heuristicResult.score > 40 ? 'HIGH' : 'CRITICAL',
             provider: 'HEURISTIC',
             model: 'policy-engine-v1',
             aiPowered: false
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('[Policy Analysis] Error:', error);
 
-        const status = error.status || 500;
+        const err = error as { status?: number; message?: string };
+        const status = err.status ?? 500;
         let message = 'Internal server error during policy analysis.';
 
-        if (status === 429 || error.message?.includes('429')) {
+        if (status === 429 || (typeof err.message === 'string' && err.message.includes('429'))) {
             message = 'AI rate limit exceeded. Please try again in a moment.';
+        } else if (err.message) {
+            message = err.message;
         }
 
         return NextResponse.json(
-            { error: message, details: error.message },
+            { error: message, details: err.message },
             { status }
         );
     }

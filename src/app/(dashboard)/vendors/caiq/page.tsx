@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,8 +22,6 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
-  BarChart3,
-  PieChart as PieChartIcon,
   Download,
   FileText,
   ExternalLink,
@@ -200,7 +197,7 @@ export default function CAIQAssessmentPage() {
         jurisdictions: data.jurisdictions,
         frameworks: data.frameworks,
       });
-    } catch (_) {
+    } catch {
       setOrgContext({
         name: "Organization",
         industry: "Technology",
@@ -281,7 +278,7 @@ export default function CAIQAssessmentPage() {
             } else if (data.error != null) {
               setAssessError(String(data.error));
             }
-          } catch (_) {
+          } catch {
             // ignore parse errors for non-JSON lines
           }
         }
@@ -293,7 +290,7 @@ export default function CAIQAssessmentPage() {
       setAssessError(err instanceof Error ? err.message : String(err));
       setStep("config");
     }
-  }, [file, parseResult?.questionCount, autoApproveThreshold, flagThreshold, configOverrides]);
+  }, [file, parseResult?.questionCount, autoApproveThreshold, flagThreshold, configOverrides, assessError]);
 
   const goToReview = useCallback(() => {
     if (!result) return;

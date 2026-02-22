@@ -1,8 +1,8 @@
 "use client";
 
-import { usePolicyStore, Policy, PolicyStatus } from "@/lib/policy-store";
+import { usePolicyStore, PolicyStatus } from "@/lib/policy-store";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, FileText, MoreHorizontal } from "lucide-react";

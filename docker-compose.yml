@@ -7,6 +7,8 @@ services:
     container_name: astra-ciso
     ports:
       - "3000:3000"
+    env_file:
+      - .env.local
     environment:
       NODE_ENV: production
       # Database (SQLite in persisted volume)
@@ -22,10 +24,8 @@ services:
       ASTRA_INDUSTRY: ${ASTRA_INDUSTRY:-}
       ASTRA_ORG_SIZE: ${ASTRA_ORG_SIZE:-}
       ASTRA_CLOUD_MODEL: ${ASTRA_CLOUD_MODEL:-}
-      # Optional: AI providers
-      AI_PROVIDER: ${AI_PROVIDER:-GEMINI}
-      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      # Optional: AI providers (keys come from env_file: .env.local; do not override here or they get cleared)
+      AI_PROVIDER: ${AI_PROVIDER:-ANTHROPIC}
     volumes:
       # Writable data dir for SQLite (DB, WAL, journal files)
       - astra-ciso-data:/app/data

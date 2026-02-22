@@ -12,7 +12,7 @@ interface ComplianceState {
     refreshStatus: () => void;
 }
 
-export const useComplianceStore = create<ComplianceState>((set, get) => ({
+export const useComplianceStore = create<ComplianceState>((set) => ({
     controls: [],
     overallScore: 0,
     auditMode: false,

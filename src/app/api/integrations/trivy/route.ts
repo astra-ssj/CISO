@@ -65,9 +65,10 @@ export async function GET() {
         console.log("Trivy Scan: Success (Real Data)");
         return NextResponse.json(JSON.parse(stdout));
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         // 2. Fallback to Simulation if CLI is missing or fails
-        console.warn("Trivy Scan: CLI not found or failed. Using Simulation Mode.", error.message);
+        const message = error instanceof Error ? error.message : String(error);
+        console.warn("Trivy Scan: CLI not found or failed. Using Simulation Mode.", message);
 
         // Add a metadata field to indicate this is a simulation
         return NextResponse.json({

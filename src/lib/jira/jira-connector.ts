@@ -130,8 +130,8 @@ export class JiraConnector {
                 },
             });
             if (!res.ok) return [];
-            const projects = await res.json();
-            return projects.map((p: any) => ({ key: p.key, name: p.name }));
+            const projects = await res.json() as { key: string; name: string }[];
+            return projects.map((p) => ({ key: p.key, name: p.name }));
         } catch {
             return [];
         }

@@ -132,7 +132,7 @@ export const useJiraStore = create<JiraStoreState>()(
                                 : t
                         ),
                     }));
-                } catch (error) {
+                } catch {
                     set(state => ({
                         tickets: state.tickets.map(t =>
                             t.id === id

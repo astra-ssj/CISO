@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import { Terminal, ShieldCheck, Fingerprint, Lock, CheckCircle2, AlertTriangle, X, PlayCircle, BarChart3, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TwoKeyModal } from './two-key-modal';
@@ -73,15 +73,29 @@ export function RemediationModal({ isOpen, onClose, threatId, threatTitle = "Cri
     const [isTwoKeyOpen, setIsTwoKeyOpen] = useState(false);
     const logsEndRef = useRef<HTMLDivElement>(null);
 
-    // Reset state on open
+    const addLog = useCallback((msg: string) => {
+        setLogs(prev => [...prev, msg]);
+    }, []);
+
+    const runScan = useCallback(async () => {
+        for (const log of MOCK_LOGS) {
+            await new Promise(r => setTimeout(r, 600));
+            addLog(log);
+        }
+        setStep('simulation');
+    }, [addLog]);
+
+    // Reset state on open (defer setState to avoid synchronous setState in effect)
     useEffect(() => {
-        if (isOpen) {
+        if (!isOpen) return;
+        const id = setTimeout(() => {
             setStep('scanning');
             setLogs([]);
-            setShowDetails(false); // Reset to summary view
+            setShowDetails(false);
             runScan();
-        }
-    }, [isOpen]);
+        }, 0);
+        return () => clearTimeout(id);
+    }, [isOpen, runScan]);
 
     // Auto-scroll logs
     useEffect(() => {
@@ -89,19 +103,6 @@ export function RemediationModal({ isOpen, onClose, threatId, threatTitle = "Cri
             logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
     }, [logs, showDetails]);
-
-    const addLog = (msg: string) => {
-        setLogs(prev => [...prev, msg]);
-    };
-
-    const runScan = async () => {
-        // ... (Mock scan logic)
-        for (const log of MOCK_LOGS) {
-            await new Promise(r => setTimeout(r, 600));
-            addLog(log);
-        }
-        setStep('simulation');
-    };
 
     // ... (Keep other run functions same, just ensuring they exist)
 

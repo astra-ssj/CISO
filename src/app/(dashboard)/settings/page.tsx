@@ -18,10 +18,7 @@ import {
     Moon,
     Sun,
     Bell,
-    Shield,
-    User,
-    Settings as SettingsIcon,
-    LogOut
+    Settings as SettingsIcon
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -45,7 +42,7 @@ function AIProviderConfig() {
             .then(res => res.json())
             .then(data => {
                 const providerList = Array.isArray(data.providers)
-                    ? data.providers.map((p: any) => typeof p === 'string' ? p : p.name)
+                    ? data.providers.map((p: string | { name?: string }) => typeof p === 'string' ? p : (p.name ?? 'Unknown'))
                     : ['MOCK', 'OPENAI', 'ANTHROPIC', 'GOOGLE'];
                 setProviders(providerList);
                 setActiveProvider(data.active || 'MOCK');
@@ -136,7 +133,7 @@ function AIProviderConfig() {
                     <div>
                         <CardTitle>AI Intelligence Provider</CardTitle>
                         <CardDescription className="mt-1">
-                            Configure which LLM powers Astra's analysis capabilities.
+                            Configure which LLM powers Astra&apos;s analysis capabilities.
                         </CardDescription>
                     </div>
                 </div>

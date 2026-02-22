@@ -208,7 +208,7 @@ export function ClauseInspector({ clause, onClose }: ClauseInspectorProps) {
                             <div className="p-4 rounded-lg bg-amber-500/5 border border-amber-500/20">
                                 <div className="text-xs uppercase tracking-widest text-amber-500 font-bold mb-2">Gap Analysis</div>
                                 <p className="text-sm text-muted-foreground">
-                                    The vendor's clause is significantly more restrictive than the standard. The primary conflict is the limitation period (1 month vs 12 months).
+                                    The vendor&apos;s clause is significantly more restrictive than the standard. The primary conflict is the limitation period (1 month vs 12 months).
                                 </p>
                             </div>
                         </TabsContent>
@@ -292,7 +292,7 @@ export function ClauseInspector({ clause, onClose }: ClauseInspectorProps) {
                                             Suggested Email Context:
                                         </p>
                                         <div className="p-3 rounded bg-muted/30 text-xs text-muted-foreground">
-                                            "Regarding logic clause {clause.id}, we cannot accept the current terms as they fall below our compliance baseline. Please see the attached redline which aligns with our standard MSA..."
+                                            &quot;Regarding logic clause {clause.id}, we cannot accept the current terms as they fall below our compliance baseline. Please see the attached redline which aligns with our standard MSA...&quot;
                                         </div>
                                     </div>
 

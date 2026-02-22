@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ScrollText, ShieldAlert, AlertTriangle, CheckCircle2, Terminal } from "lucide-react";
+import { ScrollText, ShieldAlert, CheckCircle2, Terminal } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SecurityEvent {
@@ -34,30 +34,6 @@ export function SecurityEventsFeed() {
     const scrollRef = useRef<HTMLDivElement>(null);
     const { dispatchSignal } = useAstraStore();
 
-    useEffect(() => {
-        // Initial Population
-        const initialEvents = Array.from({ length: 8 }).map((_, i) => createRandomEvent(i));
-        setEvents(initialEvents);
-
-        // Live Feed Simulation
-        const interval = setInterval(() => {
-            const newEvent = createRandomEvent(Date.now());
-            setEvents(prev => [newEvent, ...prev.slice(0, 50)]); // Keep last 50
-
-            // EMITTER LOGIC: Dispatch Signal for High Severity Events
-            if (newEvent.level >= 10 && newEvent.status === 'fired') {
-                dispatchSignal('THREAT_DETECTED', {
-                    description: newEvent.description,
-                    level: newEvent.level,
-                    agent: newEvent.agent
-                });
-            }
-
-        }, 2000);
-
-        return () => clearInterval(interval);
-    }, []);
-
     const createRandomEvent = (seed: number): SecurityEvent => {
         const template = SAMPLE_EVENTS[Math.floor(Math.random() * SAMPLE_EVENTS.length)];
         const date = new Date();
@@ -71,6 +47,29 @@ export function SecurityEventsFeed() {
             status: Math.random() > 0.8 ? 'mitigated' : 'fired' // 20% mitigated
         };
     };
+
+    useEffect(() => {
+        const id = setTimeout(() => {
+            setEvents(Array.from({ length: 8 }).map((_, i) => createRandomEvent(i)));
+        }, 0);
+        const interval = setInterval(() => {
+            const newEvent = createRandomEvent(Date.now());
+            setEvents(prev => [newEvent, ...prev.slice(0, 50)]);
+
+            if (newEvent.level >= 10 && newEvent.status === 'fired') {
+                dispatchSignal('THREAT_DETECTED', {
+                    description: newEvent.description,
+                    level: newEvent.level,
+                    agent: newEvent.agent
+                });
+            }
+        }, 2000);
+
+        return () => {
+            clearTimeout(id);
+            clearInterval(interval);
+        };
+    }, [dispatchSignal]);
 
     const getSeverityColor = (level: number) => {
         if (level >= 12) return "text-red-500 bg-red-500/10 border-red-500/20";

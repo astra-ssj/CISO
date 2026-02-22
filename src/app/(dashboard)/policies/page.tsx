@@ -1,16 +1,13 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePolicyStore, Policy } from '@/lib/policy-store';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, LayoutGrid, List, FileText, CheckCircle2, AlertTriangle, Network, Pencil, File, Sparkles, Bot } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, LayoutGrid, List, FileText, CheckCircle2, AlertTriangle, Network, Pencil, File } from "lucide-react";
 import { VisualPolicyMap } from "@/components/policies/visual-mapper";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { PolicyEditor } from "@/components/policies/policy-editor";
@@ -29,17 +26,19 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function PoliciesPage() {
-    const { policies, addPolicy, updatePolicy } = usePolicyStore();
-    const [selectedPolicyId, setSelectedPolicyId] = useState<string | null>(policies[0]?.id || null);
+    const { policies, addPolicy, updatePolicy, fetchPolicies } = usePolicyStore();
+    const [selectedPolicyId, setSelectedPolicyId] = useState<string | null>(null);
+    useEffect(() => { fetchPolicies(); }, [fetchPolicies]);
+    useEffect(() => { if (policies.length && !selectedPolicyId) setSelectedPolicyId(policies[0].id); }, [policies, selectedPolicyId]);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [draftPolicy, setDraftPolicy] = useState<Partial<Policy> | undefined>(undefined);
 
     const selectedPolicy = policies.find(p => p.id === selectedPolicyId);
 
-    const handleCreatePolicy = (policy: Policy) => {
-        addPolicy(policy);
-        setSelectedPolicyId(policy.id);
+    const handleCreatePolicy = async (policy: Policy) => {
+        const created = await addPolicy(policy);
+        if (created?.id) setSelectedPolicyId(created.id);
         setIsCreateDialogOpen(false);
         setDraftPolicy(undefined);
     };

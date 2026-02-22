@@ -26,7 +26,6 @@ import {
     ShieldCheck,
     Settings,
     BookOpen,
-    ChevronDown,
     ChevronRight,
     MessageSquare,
     Cpu,

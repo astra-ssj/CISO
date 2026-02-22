@@ -32,7 +32,7 @@ export function StrategyPyramid({
         <div className="flex flex-col items-center justify-center relative w-full h-full perspective-[1000px]">
             {/* Context Indicator */}
             <div className="absolute top-4 right-4 text-xs font-mono text-zinc-500 border border-zinc-800 rounded px-2 py-1">
-                SLICE: <span className="text-zinc-300">{context.unit.toUpperCase()}</span> // {context.timeframe}
+                SLICE: <span className="text-zinc-300">{context.unit.toUpperCase()}</span>{" "}{" // "}{context.timeframe}
             </div>
 
             {/* Dynamic Light Source - Changes color based on Unit */}

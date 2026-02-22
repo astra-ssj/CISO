@@ -16,12 +16,9 @@ export function ComplianceHeatmap() {
     // Initialize data on mount
     useEffect(() => {
         initialize();
-        const interval = setInterval(refreshStatus, 5000); // Live updates every 5s
+        const interval = setInterval(refreshStatus, 5000);
         return () => clearInterval(interval);
-    }, []);
-
-    // Group controls by domain for better visualization
-    const domains = Array.from(new Set(controls.map(c => c.domain)));
+    }, [initialize, refreshStatus]);
 
     return (
         <Card className="bg-card/30 border-primary/10 h-full flex flex-col">

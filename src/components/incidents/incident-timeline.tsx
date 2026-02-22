@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, User, AlertTriangle, CheckCircle, Shield, ArrowRight } from 'lucide-react';
+import { Clock, User, AlertTriangle, CheckCircle } from 'lucide-react';
 
 export interface TimelineEvent {
     timestamp: string;
@@ -84,7 +84,7 @@ export function IncidentTimeline({ events, sla, incidentTitle }: {
                                     <span>{event.actor}</span>
                                 </div>
                                 {event.notes && (
-                                    <p className="text-xs text-muted-foreground/80 mt-1.5 italic">"{event.notes}"</p>
+                                    <p className="text-xs text-muted-foreground/80 mt-1.5 italic">&quot;{event.notes}&quot;</p>
                                 )}
                             </div>
                         </div>

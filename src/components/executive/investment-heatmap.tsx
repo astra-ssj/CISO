@@ -1,8 +1,7 @@
 "use client";
 
 import React from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { PieChart, Loader2, DollarSign } from "lucide-react";
+import { DollarSign } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface InvestmentItem {

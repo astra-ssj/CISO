@@ -1,7 +1,9 @@
 import { NextResponse, NextRequest } from 'next/server';
+import { auth } from '@/auth';
 import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
 import { getCircuitState, setCircuitState } from '@/lib/ai/circuit-breaker';
 import { appendToFabric } from '@/lib/auth/audit';
+import { parseBodyWithZod, agentChatBodySchema } from '@/lib/api-validation';
 
 const CISO_SYSTEM_PROMPT = `You are Astra, an AI security advisor embedded in the Astra-CISO platform. You have deep knowledge of ISO 27001, NIST CSF, GDPR, NIS2, EU AI Act, SOC 2, and FAIR risk methodology. You help CISOs with compliance questions, risk analysis, policy drafting, incident response guidance, and security strategy. Be concise, specific, and reference relevant framework controls when applicable. When uncertain, say so — never fabricate compliance guidance.
 
@@ -53,16 +55,13 @@ export async function POST(request: NextRequest) {
     const providerName = (process.env.AI_PROVIDER || 'GEMINI').toUpperCase();
 
     try {
-        const body = await request.json();
-        const { message, history = [], context } = body;
+        const raw = await request.json().catch(() => ({}));
+        const parsed = parseBodyWithZod(raw, agentChatBodySchema);
+        if ('error' in parsed) return parsed.error;
+        const { message, history = [], context } = parsed.data;
 
-        if (!message || typeof message !== 'string') {
-            return NextResponse.json({ error: 'Message is required' }, { status: 400 });
-        }
-
-        const authCookie = request.cookies.get('astra-auth');
-        const authHeader = request.headers.get('Authorization');
-        if (process.env.NODE_ENV !== 'development' && authCookie?.value !== 'true' && !authHeader?.startsWith('Bearer ')) {
+        const session = await auth();
+        if (!session?.user) {
             return NextResponse.json({ error: 'Unauthorized Access to Neural Core' }, { status: 401 });
         }
 
@@ -89,8 +88,9 @@ export async function POST(request: NextRequest) {
         const contextBlock = buildContextBlock(context);
         const userMessageWithContext = message + '\n' + contextBlock;
 
-        let chatHistory = (history as { role: string; content: string }[]).map((msg: { role: string; content: string }) => ({
-            role: msg.role === 'assistant' ? 'model' : 'user',
+        type ChatHistoryEntry = import('@/lib/ai/engine').ChatHistoryEntry;
+        let chatHistory: ChatHistoryEntry[] = (history as { role: string; content: string }[]).map((msg): ChatHistoryEntry => ({
+            role: (msg.role === 'assistant' ? 'model' : 'user') as ChatHistoryEntry['role'],
             parts: [{ text: msg.content || '' }]
         }));
         if (chatHistory.length > 0 && chatHistory[0].role === 'model') {

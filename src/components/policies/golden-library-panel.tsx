@@ -5,8 +5,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Scale, ShieldCheck, FileCheck, CheckCircle2, ChevronRight, PlusCircle } from "lucide-react";
-import { GOLDEN_LIBRARY, VerifiedClause } from "@/lib/golden-library";
+import { Search, Scale, ShieldCheck, FileCheck, PlusCircle } from "lucide-react";
+import { GOLDEN_LIBRARY } from "@/lib/golden-library";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 

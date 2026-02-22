@@ -16,8 +16,8 @@ export function TrivyReportDashboard() {
             if (!res.ok) throw new Error('Scan failed');
             const data = await res.json();
             setReport(data.report);
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Scan failed');
         } finally {
             setLoading(false);
         }
@@ -27,7 +27,7 @@ export function TrivyReportDashboard() {
     const summary = React.useMemo(() => {
         if (!report?.Results) return { total: 0, critical: 0, high: 0, medium: 0, low: 0 };
 
-        let s = { total: 0, critical: 0, high: 0, medium: 0, low: 0 };
+        const s = { total: 0, critical: 0, high: 0, medium: 0, low: 0 };
         report.Results.forEach(r => {
             r.Vulnerabilities?.forEach(v => {
                 s.total++;

@@ -10,7 +10,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Palette, Monitor } from "lucide-react";
+import { Palette } from "lucide-react";
 import { useThemeStore, THEMES, AppTheme, BackgroundStyle } from "@/lib/theme-store";
 import { useEffect } from "react";
 

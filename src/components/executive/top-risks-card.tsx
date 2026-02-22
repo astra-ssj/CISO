@@ -1,10 +1,9 @@
 "use client";
 
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { TrendingUp, TrendingDown, Minus, AlertTriangle, AlertOctagon } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, AlertTriangle } from "lucide-react";
 
 export interface RiskItem {
     id: string;
@@ -13,10 +12,6 @@ export interface RiskItem {
     trend: "up" | "down" | "stable";
     severity: "critical" | "high" | "medium" | "low";
     owner: string;
-}
-
-interface TopRisksCardProps {
-    risks: RiskItem[];
 }
 
 export function TopRisksCard({ risks, strategyLevel }: { risks: RiskItem[], strategyLevel?: 'okr' | 'kpi' | 'metric' }) {
@@ -48,7 +43,7 @@ export function TopRisksCard({ risks, strategyLevel }: { risks: RiskItem[], stra
                 {displayRisks.length === 0 && (
                     <div className="text-zinc-600 italic text-sm py-4">No critical risks at this level.</div>
                 )}
-                {displayRisks.map((risk, i) => (
+                {displayRisks.map((risk) => (
                     <div key={risk.id} className="group relative pl-4 border-l border-zinc-800 hover:border-red-500/50 transition-colors duration-300">
                         {/* Hover Glow */}
                         <div className="absolute left-0 top-0 bottom-0 w-px bg-red-500 opacity-0 group-hover:opacity-100 shadow-[0_0_10px_rgba(239,68,68,0.8)] transition-all duration-300" />

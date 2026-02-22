@@ -1,15 +1,15 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { ExecutiveBriefLayout } from "@/components/executive/executive-brief-layout";
 import { useDecisionStore } from "@/lib/decision-engine/router";
-import { computeAllKPIs, KPI_CATEGORY_META, HEALTH_META } from "@/lib/kpi-engine/kpi-engine";
+import { computeAllKPIs, HEALTH_META } from "@/lib/kpi-engine/kpi-engine";
 import { useOKRProjectStore } from "@/lib/okr-project-store";
 import { PILLAR_META, URGENCY_META, Decision } from "@/lib/decision-engine/types";
 import {
-    ShieldAlert, TrendingUp, TrendingDown, Minus, Target,
+    TrendingUp, TrendingDown, Minus, Target,
     AlertTriangle, CheckCircle, BarChart3, DollarSign,
-    ArrowUpRight, Zap, Clock
+    Zap, Clock
 } from "lucide-react";
 
 // ─── Sparkline mini-chart ───────────────────────────────────────
@@ -33,8 +33,9 @@ function Sparkline({ data, color = "#10b981" }: { data: number[]; color?: string
 export default function ExecutiveBriefPage() {
     const kpis = useMemo(() => computeAllKPIs(), []);
     const { decisions, getStats } = useDecisionStore();
-    const { objectives, projects, getOverallOKRHealth } = useOKRProjectStore();
+    const { objectives, projects, getOverallOKRHealth, fetchOKR } = useOKRProjectStore();
     const stats = getStats();
+    useEffect(() => { fetchOKR(); }, [fetchOKR]);
 
     // Derived data
     const postureKPI = kpis.find(k => k.id === "kpi-posture-overall");

@@ -1,8 +1,7 @@
 "use client";
 
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Gauge, Zap } from "lucide-react";
+import { Zap } from "lucide-react";
 
 export interface VelocityMetric {
     id: string;
@@ -18,7 +17,7 @@ interface RevenueVelocityGaugeProps {
 
 export function RevenueVelocityGauge({ metrics }: RevenueVelocityGaugeProps) {
     // Sort: Blocked first
-    const sorted = [...metrics].sort((a, b) => (a.status === 'blocked' ? -1 : 1));
+    const sorted = [...metrics].sort((a, b) => (a.status === 'blocked' && b.status !== 'blocked' ? -1 : (b.status === 'blocked' && a.status !== 'blocked' ? 1 : 0)));
 
     return (
         <div className="h-full flex flex-col">
@@ -62,18 +61,3 @@ function getStatusColor(status: VelocityMetric["status"]) {
     return 'bg-emerald-500';
 }
 
-function StatusIcon({ status }: { status: VelocityMetric["status"] }) {
-    if (status === "blocked") {
-        return <div className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)] animate-pulse" />;
-    }
-    if (status === "slow") {
-        return <div className="w-2 h-2 rounded-full bg-amber-500" />;
-    }
-    return <div className="w-2 h-2 rounded-full bg-emerald-500" />;
-}
-
-function getDelayColor(status: VelocityMetric["status"]) {
-    if (status === 'blocked') return 'text-red-500';
-    if (status === 'slow') return 'text-amber-500';
-    return 'text-emerald-500';
-}

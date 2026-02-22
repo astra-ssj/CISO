@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Send, Sparkles, Terminal, Maximize2, Minimize2, Loader2 } from 'lucide-react';
+import { X, Send, Sparkles, Terminal, Maximize2, Minimize2, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -70,12 +70,13 @@ export function OmniChat() {
             };
 
             setMessages(prev => [...prev, aiMsg]);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(error);
+            const message = error instanceof Error ? error.message : "Error connecting to Neural Core.";
             setMessages(prev => [...prev, {
                 id: Date.now().toString(),
                 role: 'assistant',
-                content: error.message || "Error connecting to Neural Core.",
+                content: message,
                 timestamp: Date.now()
             }]);
         } finally {
@@ -155,7 +156,7 @@ export function OmniChat() {
                                     )}>
                                         <ReactMarkdown
                                             components={{
-                                                code: ({ node, ...props }: any) => <code className="bg-black/30 px-1 py-0.5 rounded text-xs font-mono text-emerald-400" {...props} />
+                                                code: (props: React.ComponentProps<'code'>) => <code className="bg-black/30 px-1 py-0.5 rounded text-xs font-mono text-emerald-400" {...props} />
                                             }}
                                         >
                                             {msg.content}

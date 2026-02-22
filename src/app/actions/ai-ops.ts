@@ -10,7 +10,7 @@ export interface AIResult {
 }
 
 // --- SecOps: Threat Analysis ---
-export async function analyzeThreatBatchAction(events: any[]): Promise<AIResult> {
+export async function analyzeThreatBatchAction(events: unknown[]): Promise<AIResult> {
     if (!isAIConfigured()) return { success: true, content: "Mock: AI Engine not configured." };
 
     try {
@@ -23,8 +23,9 @@ export async function analyzeThreatBatchAction(events: any[]): Promise<AIResult>
         const content = await getAIProvider().generateContent(prompt) || "No content generated.";
 
         return { success: true, content: content };
-    } catch (e: any) {
-        return { success: false, error: e.message };
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e);
+        return { success: false, error: message };
     }
 }
 
@@ -43,8 +44,9 @@ export async function generateRemediationPlanAction(threatId: string, descriptio
         const content = await getAIProvider().generateContent(prompt) || "";
 
         return { success: true, content: content };
-    } catch (e: any) {
-        return { success: false, error: e.message };
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e);
+        return { success: false, error: message };
     }
 }
 
@@ -69,7 +71,8 @@ export async function draftPolicyAction(topic: string, specificRequirements?: st
         const content = await getAIProvider().generateContent(prompt) || "";
 
         return { success: true, content: content };
-    } catch (e: any) {
-        return { success: false, error: e.message };
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e);
+        return { success: false, error: message };
     }
 }

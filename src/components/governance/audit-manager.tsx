@@ -8,10 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileCheck, Upload, AlertCircle, ShieldCheck, Siren, Fingerprint } from "lucide-react";
+import { FileCheck, Upload, AlertCircle, ShieldCheck, Siren } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { useRef, useEffect } from "react";
+import { useEffect } from "react";
 // Import stores
 import { usePlaybookStore } from "@/lib/playbook-store";
 import { getDynamicControls } from "@/lib/governance";
@@ -26,7 +26,6 @@ export function AuditManager() {
 
     // Internal state
     const [auditMode, setAuditMode] = useState(false);
-    const [auditStep, setAuditStep] = useState(0);
     const [auditorMood, setAuditorMood] = useState(100);
     const [currentRequest, setCurrentRequest] = useState<typeof controls[0] | null>(null);
     const [selectedEvidence, setSelectedEvidence] = useState("");
@@ -48,19 +47,21 @@ export function AuditManager() {
 
     const stopAudit = () => {
         setAuditMode(false);
-        setAuditStep(0);
         setCurrentRequest(null);
     };
 
-    const nextChallenge = () => {
-        // Pick a random domain to audit
-        const target = controls[Math.floor(Math.random() * controls.length)];
-        setCurrentRequest(target);
-        setSelectedEvidence("");
+    const [nextChallengeTrigger, setNextChallengeTrigger] = useState(0);
+    const nextChallenge = () => setNextChallengeTrigger((t) => t + 1);
 
-        // Logic: active incidents or missing policies trigger "finding"
-        // In this dynamic version, we respect the actual status
-    };
+    useEffect(() => {
+        if (nextChallengeTrigger === 0) return;
+        const target = controls[Math.floor(Math.random() * controls.length)];
+        const id = setTimeout(() => {
+            setCurrentRequest(target);
+            setSelectedEvidence("");
+        }, 0);
+        return () => clearTimeout(id);
+    }, [nextChallengeTrigger, controls]);
 
     const handleEvidenceUpload = () => {
         if (!currentRequest) return;
@@ -131,7 +132,7 @@ export function AuditManager() {
                                     {currentRequest.id}: {currentRequest.name}
                                 </div>
                                 <div className="text-xs text-muted-foreground mb-4 relative z-10">
-                                    "{currentRequest.description}"
+                                    &quot;{currentRequest.description}&quot;
                                 </div>
 
                                 {/* Dynamic Status Display */}

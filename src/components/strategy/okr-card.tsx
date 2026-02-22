@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from 'react';
-import { OKR, KeyResult, useAstraStore } from '@/lib/store';
-import { ChevronDown, ChevronRight, Plus, Trash2, Edit2, Target } from 'lucide-react';
+import { OKR, useAstraStore } from '@/lib/store';
+import { ChevronDown, ChevronRight, Plus, Trash2, Target } from 'lucide-react';
 
 interface OKRCardProps {
     okr: OKR;

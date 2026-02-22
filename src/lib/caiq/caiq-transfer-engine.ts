@@ -428,8 +428,6 @@ export async function processTransfer(
   targetBuffer: ArrayBuffer,
   aiGenerate?: (prompt: string) => Promise<string>,
 ): Promise<TransferResult> {
-  const parser = new CAIQExcelParser();
-
   let sourceQAs: SourceQA[];
   let targetParse: TargetParseResult;
 

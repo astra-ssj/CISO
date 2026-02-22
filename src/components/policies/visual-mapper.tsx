@@ -1,10 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { usePolicyStore, Policy } from "@/lib/policy-store";
-import { useState } from "react";
+import { usePolicyStore } from "@/lib/policy-store";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 export function VisualPolicyMap({ policyId }: { policyId: string }) {
     const { policies } = usePolicyStore();
@@ -90,8 +88,7 @@ export function VisualPolicyMap({ policyId }: { policyId: string }) {
                 >
                     <Card className={`p-3 backdrop-blur-md shadow-md hover:shadow-lg transition-shadow border-l-4 ${node.type === 'POLICY' ? 'border-l-primary bg-card/90' :
                             node.type === 'FRAMEWORK' ? 'border-l-indigo-400 bg-white/80' :
-                                // @ts-ignore
-                                node.coverage === 'FULL' ? 'border-l-emerald-500 bg-emerald-50/90' : 'border-l-amber-500 bg-amber-50/90'
+                                'coverage' in node && node.coverage === 'FULL' ? 'border-l-emerald-500 bg-emerald-50/90' : 'border-l-amber-500 bg-amber-50/90'
                         }`}>
                         <div className="text-[10px] font-bold uppercase text-muted-foreground mb-1">{node.type}</div>
                         <div className="font-semibold text-sm truncate" title={node.label}>{node.label}</div>

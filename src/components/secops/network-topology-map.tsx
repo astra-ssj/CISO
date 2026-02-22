@@ -9,10 +9,7 @@ import {
     Server,
     Database,
     Globe,
-    Laptop,
-    Shield,
-    Zap,
-    Lock
+    Laptop
 } from "lucide-react";
 
 // Types for our topology
@@ -67,6 +64,12 @@ const EDGES: TopologyEdge[] = [
 
 export function NetworkTopologyMap() {
     const [selectedNode, setSelectedNode] = useState<TopologyNode | null>(null);
+    const [trafficRps, setTrafficRps] = useState(0);
+    useEffect(() => {
+        if (!selectedNode) return;
+        const id = setTimeout(() => setTrafficRps(Math.floor(Math.random() * 500) + 50), 0);
+        return () => clearTimeout(id);
+    }, [selectedNode]);
     const containerRef = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
 
@@ -209,7 +212,7 @@ export function NetworkTopologyMap() {
                             </div>
                             <div className="flex justify-between">
                                 <span>Traffic</span>
-                                <span>{Math.floor(Math.random() * 500) + 50} RPS</span>
+                                <span>{selectedNode ? trafficRps : 0} RPS</span>
                             </div>
                             <div className="pt-2 border-t mt-2">
                                 <span className="text-xs">Latest Flows:</span>

@@ -2,10 +2,7 @@ import { create } from "zustand";
 import type {
   CAIQAnswer,
   CAIQDomain,
-  CAIQAnswerType,
-  CAIQGeneratedBy,
   ConfidenceTier,
-  FrameworkMapping,
 } from "@/lib/caiq/types";
 
 // ─────────────────────────────────────────────────────────────────────────────

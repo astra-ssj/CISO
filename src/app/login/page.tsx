@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 export default function LoginPage() {
     const router = useRouter();
-    const { data: session, status } = useSession();
+    const { status } = useSession();
 
     // Form State
     const [email, setEmail] = useState('');
@@ -70,7 +70,7 @@ export default function LoginPage() {
                 setTerminalLines(prev => [...prev, `[ERROR] Failed login attempt for user: ${email}`]);
                 setIsLoading(false);
             }
-        } catch (err) {
+        } catch {
             setError("Connection Error.");
             setIsLoading(false);
         }
@@ -146,10 +146,10 @@ export default function LoginPage() {
                                 </Button>
 
                                 <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-white/10">
-                                    <button type="button" onClick={() => { setEmail('ciso@astra.ai'); setPassword('password123'); }} className="text-[10px] text-zinc-500 hover:text-primary transition-colors text-left">
+                                    <button type="button" onClick={() => { setEmail('ciso@astra.ai'); setPassword('admin123'); }} className="text-[10px] text-zinc-500 hover:text-primary transition-colors text-left">
                                         &gt; Load CISO Profile
                                     </button>
-                                    <button type="button" onClick={() => { setEmail('analyst@astra.ai'); setPassword('analyst123'); }} className="text-[10px] text-zinc-500 hover:text-primary transition-colors text-right">
+                                    <button type="button" onClick={() => { setEmail('analyst@astra.ai'); setPassword('user123'); }} className="text-[10px] text-zinc-500 hover:text-primary transition-colors text-right">
                                         &gt; Load Analyst Profile
                                     </button>
                                 </div>
