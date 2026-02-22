@@ -14,6 +14,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Build native addon for better-sqlite3 (npm ci --ignore-scripts skips it)
+RUN npm rebuild better-sqlite3
+
 # Prisma generate (schema at prisma/schema.prisma)
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npx prisma generate
@@ -33,7 +36,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Healthcheck + entrypoint: wget, su-exec, sqlite3 (apply schema.sql at runtime)
 RUN apk add --no-cache wget su-exec sqlite
 
-# Create non-root user (UID 1001 for volume ownership)
+# Create app user (UID 1001); /app/data must be writable by this user for SQLite
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
@@ -42,11 +45,13 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Prisma client only (app uses it at runtime); schema.sql for DB init (no Prisma CLI at runtime)
+# Prisma client + better-sqlite3 (app uses at runtime); schema.sql for DB init (no Prisma CLI at runtime)
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3
 COPY --from=builder /app/schema.sql ./schema.sql
-RUN chown -R nextjs:nodejs ./node_modules/.prisma ./node_modules/@prisma 2>/dev/null || true
+COPY --from=builder /app/docker-seed-user.sql ./docker-seed-user.sql
+RUN chown -R nextjs:nodejs ./node_modules/.prisma ./node_modules/@prisma ./node_modules/better-sqlite3 2>/dev/null || true
 
 # Data dir: volume mount at runtime; entrypoint chowns so nextjs can write
 RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data

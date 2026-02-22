@@ -15,6 +15,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
     processTransfer,
     exportTransferToExcel,
+    exportTransferToTargetFile,
+    parseTargetWithParser,
     type TransferResult,
     type TransferredAnswer,
 } from '@/lib/caiq/caiq-transfer-engine';
@@ -27,7 +29,7 @@ export async function POST(request: NextRequest) {
         const targetFile = formData.get('target') as File | null;
         const action = formData.get('action') as string || 'process'; // 'process' | 'export'
 
-        // ── Export action: receives reviewed answers JSON, returns Excel ──
+        // ── Export action: reviewed answers JSON; optional targetFile → write back into target format ──
         if (action === 'export') {
             const answersRaw = formData.get('answers') as string;
             if (!answersRaw) {
@@ -35,6 +37,17 @@ export async function POST(request: NextRequest) {
             }
 
             const answers: TransferredAnswer[] = JSON.parse(answersRaw);
+            const targetFileExport = formData.get('targetFile') as File | null;
+
+            if (targetFileExport && targetFileExport.size > 0) {
+                const ab = await targetFileExport.arrayBuffer();
+                const targetBuffer = Buffer.from(ab);
+                const { columnMap } = await parseTargetWithParser(ab);
+                const excelBuffer = await exportTransferToTargetFile(targetBuffer, answers, columnMap);
+                const base64 = excelBuffer.toString('base64');
+                return NextResponse.json({ success: true, exportBase64: base64 });
+            }
+
             const result: TransferResult = {
                 sourceCount: 0,
                 targetCount: answers.length,
@@ -45,14 +58,12 @@ export async function POST(request: NextRequest) {
                 coveragePct: Math.round((answers.filter(a => a.answer).length / answers.length) * 100),
                 answers,
             };
-
             const excelBuffer = await exportTransferToExcel(result);
             const base64 = excelBuffer.toString('base64');
-
             return NextResponse.json({ success: true, exportBase64: base64 });
         }
 
-        // ── Process action: dual file upload → 3-tier matching ──
+        // ── Process action: dual file upload → 4-tier matching (ID → semantic → AI → flagged) ──
         if (!sourceFile || !targetFile) {
             return NextResponse.json(
                 { error: 'Both source (answered) and target (empty) Excel files are required.' },

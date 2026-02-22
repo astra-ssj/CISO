@@ -13,6 +13,7 @@ services:
       DATABASE_URL: "file:/app/data/astra-ciso.db"
       # Auth (set in .env or override in deployment)
       AUTH_SECRET: ${AUTH_SECRET:-change-me-in-production}
+      AUTH_TRUST_HOST: "true"
       JWT_SECRET: ${JWT_SECRET:-${AUTH_SECRET:-change-me-in-production}}
       # Optional: app branding / health
       VERSION: ${VERSION:-0.1.0}
@@ -26,9 +27,8 @@ services:
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     volumes:
-      # Writable data dir for SQLite (required when read_only: true)
+      # Writable data dir for SQLite (DB, WAL, journal files)
       - astra-ciso-data:/app/data
-    read_only: true
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
       interval: 30s

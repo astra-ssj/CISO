@@ -41,7 +41,7 @@ export default function LoginPage() {
             if (result?.ok) {
                 setLoginStage('DECRYPTING');
 
-                // Initiate simulated decryption sequence (Visuals only)
+                // Short simulated decryption sequence (visual only); then redirect quickly
                 const sequence = [
                     "Establishing secure handshake...",
                     "Verifying biometric signature...",
@@ -59,11 +59,11 @@ export default function LoginPage() {
                                 setTimeout(() => {
                                     router.push('/');
                                     router.refresh();
-                                }, 1000);
-                            }, 800);
+                                }, 200);
+                            }, 200);
                         }
                     }, delay);
-                    delay += 600;
+                    delay += 280;
                 });
             } else {
                 setError("ACCESS DENIED. Invalid Credentials.");

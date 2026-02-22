@@ -69,8 +69,8 @@ export class GitHubConnector {
         // if (!this.token) throw new Error("No Token");
         // const res = await fetch('api.github.com/orgs/astra/dependabot/alerts', ...);
 
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 800));
+        // Brief simulated delay (keep UI responsive)
+        await new Promise(resolve => setTimeout(resolve, 150));
 
         return MOCK_GITHUB_DATA;
     }

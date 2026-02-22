@@ -12,12 +12,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVendorRiskStore, VendorCategory, VendorRiskTier, VendorStatus } from "@/lib/vendor-risk-store";
 import { CAIQ_DOMAINS, type AnsweredQuestion, type ConfidenceLevel } from "@/lib/caiq/caiq-knowledge-base";
 import KnowledgeTransfer from "@/components/caiq/KnowledgeTransfer";
+import CAIQReviewQueueTab from "@/components/caiq/CAIQReviewQueueTab";
 import Link from "next/link";
 import {
     Building2, ShieldAlert, Search, Plus, AlertTriangle, CheckCircle,
     Clock, XCircle, TrendingUp, Users, FileWarning, ChevronDown, ChevronUp,
     Upload, FileSpreadsheet, Brain, Zap, Download, Loader2, Edit3,
-    Check, BarChart3, Sparkles, Shield, RefreshCw, ExternalLink
+    Check, BarChart3, Sparkles, Shield, RefreshCw, ExternalLink, FileSearch
 } from "lucide-react";
 
 // ────────────────────────────────────────────
@@ -97,6 +98,7 @@ export default function VendorsPage() {
     const [editingRow, setEditingRow] = useState<number | null>(null);
     const [editAnswer, setEditAnswer] = useState('');
     const [isDragging, setIsDragging] = useState(false);
+    const [vendorsTab, setVendorsTab] = useState('vendors');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Org profile for AI context
@@ -235,7 +237,7 @@ export default function VendorsPage() {
             </div>
 
             {/* Tabs */}
-            <Tabs defaultValue="vendors" className="w-full">
+            <Tabs value={vendorsTab} onValueChange={setVendorsTab} className="w-full">
                 <TabsList className="bg-zinc-900/60 border border-zinc-800/50">
                     <TabsTrigger value="vendors" className="gap-2 data-[state=active]:bg-primary/20">
                         <Building2 className="h-4 w-4" /> Vendor Registry
@@ -245,6 +247,9 @@ export default function VendorsPage() {
                     </TabsTrigger>
                     <TabsTrigger value="transfer" className="gap-2 data-[state=active]:bg-cyan-500/20">
                         <RefreshCw className="h-4 w-4" /> Knowledge Transfer
+                    </TabsTrigger>
+                    <TabsTrigger value="review" className="gap-2 data-[state=active]:bg-amber-500/20">
+                        <FileSearch className="h-4 w-4" /> Review Queue
                     </TabsTrigger>
                 </TabsList>
 
@@ -923,7 +928,14 @@ export default function VendorsPage() {
                 {/* TAB 3: Knowledge Transfer               */}
                 {/* ═══════════════════════════════════════ */}
                 <TabsContent value="transfer" className="space-y-6 mt-6">
-                    <KnowledgeTransfer />
+                    <KnowledgeTransfer onNavigateToReviewQueue={() => setVendorsTab('review')} />
+                </TabsContent>
+
+                {/* ═══════════════════════════════════════ */}
+                {/* TAB 4: Review Queue                       */}
+                {/* ═══════════════════════════════════════ */}
+                <TabsContent value="review" className="space-y-6 mt-6">
+                    <CAIQReviewQueueTab variant="tab" />
                 </TabsContent>
             </Tabs>
         </div>

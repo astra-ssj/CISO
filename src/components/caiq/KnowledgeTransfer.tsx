@@ -10,7 +10,7 @@ import type { TransferredAnswer } from '@/lib/caiq/caiq-transfer-engine';
 import {
     Upload, FileSpreadsheet, Brain, Sparkles, Download, Loader2, Edit3,
     Check, X, ArrowRight, AlertTriangle, CheckCircle, Eye,
-    ChevronDown, ChevronUp, Filter, BarChart3, RefreshCw,
+    ChevronDown, ChevronUp, Filter, BarChart3, RefreshCw, ExternalLink,
 } from 'lucide-react';
 
 // ────────────────────────────────────────────
@@ -31,16 +31,21 @@ type Step = 'upload' | 'processing' | 'review';
 
 const TIER_STYLES = {
     tier1: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-400', label: 'Tier 1 · Direct Match', icon: '✅' },
-    tier2: { bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-400', label: 'Tier 2 · AI Adapted', icon: '🟡' },
-    tier3: { bg: 'bg-orange-500/10', border: 'border-orange-500/30', text: 'text-orange-400', label: 'Tier 3 · AI Generated', icon: '🟠' },
-    unmatched: { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400', label: 'Unmatched', icon: '🔴' },
+    tier2: { bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-400', label: 'Tier 2 · Semantic Match', icon: '🟡' },
+    tier3: { bg: 'bg-orange-500/10', border: 'border-orange-500/30', text: 'text-orange-400', label: 'Tier 3 · AI Adaptation', icon: '🟠' },
+    unmatched: { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400', label: 'Tier 4 · Flagged', icon: '🔴' },
 };
 
 // ────────────────────────────────────────────
 // Component
 // ────────────────────────────────────────────
 
-export default function KnowledgeTransfer() {
+export interface KnowledgeTransferProps {
+    /** Callback to switch to the Review Queue tab (e.g. for editing/approving). */
+    onNavigateToReviewQueue?: () => void;
+}
+
+export default function KnowledgeTransfer({ onNavigateToReviewQueue }: KnowledgeTransferProps) {
     // Step state
     const [step, setStep] = useState<Step>('upload');
 
@@ -139,6 +144,9 @@ export default function KnowledgeTransfer() {
             const formData = new FormData();
             formData.append('action', 'export');
             formData.append('answers', JSON.stringify(answers));
+            if (targetFile) {
+                formData.append('targetFile', targetFile);
+            }
 
             const res = await fetch('/api/vendors/caiq/transfer', { method: 'POST', body: formData });
             const data = await res.json();
@@ -202,22 +210,26 @@ export default function KnowledgeTransfer() {
                         <div>
                             <h2 className="text-xl font-bold text-white">Knowledge Transfer Engine</h2>
                             <p className="text-sm text-zinc-400">
-                                Upload a completed questionnaire → Auto-fill a new one with 95% accuracy
+                                Source file = your organization’s real answers (Golden Source). Export writes back into the target file’s format.
                             </p>
                         </div>
                     </div>
-                    <div className="flex gap-6 mt-4">
+                    <div className="flex flex-wrap gap-6 mt-4">
                         <div className="flex items-center gap-2 text-xs text-zinc-400">
                             <span className="text-emerald-400">✅</span>
-                            <span>Tier 1: Direct ID + text match</span>
+                            <span>Tier 1: Same question ID → copy answer (0.95+)</span>
                         </div>
                         <div className="flex items-center gap-2 text-xs text-zinc-400">
                             <span className="text-amber-400">🟡</span>
-                            <span>Tier 2: AI semantic adaptation</span>
+                            <span>Tier 2: Semantic match (0.80–0.95)</span>
                         </div>
                         <div className="flex items-center gap-2 text-xs text-zinc-400">
                             <span className="text-orange-400">🟠</span>
-                            <span>Tier 3: AI-generated from context</span>
+                            <span>Tier 3: AI from source + org context (0.60–0.80)</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-zinc-400">
+                            <span className="text-red-400">🔴</span>
+                            <span>Tier 4: Flagged for manual (&lt;0.60)</span>
                         </div>
                     </div>
                 </div>
@@ -335,7 +347,7 @@ export default function KnowledgeTransfer() {
                         <div>
                             <h3 className="text-lg font-semibold text-white">Processing Knowledge Transfer</h3>
                             <p className="text-sm text-zinc-400 mt-1">
-                                Running 3-tier matching: ID match → AI semantic → AI generate...
+                                Running 4-tier matching: ID → semantic → AI → flag...
                             </p>
                         </div>
                         <div className="flex justify-center gap-4 text-xs text-zinc-500">
@@ -409,7 +421,7 @@ export default function KnowledgeTransfer() {
                                     <SelectItem value="tier1">✅ Tier 1</SelectItem>
                                     <SelectItem value="tier2">🟡 Tier 2</SelectItem>
                                     <SelectItem value="tier3">🟠 Tier 3</SelectItem>
-                                    <SelectItem value="unmatched">🔴 Unmatched</SelectItem>
+                                    <SelectItem value="unmatched">🔴 Tier 4 Flagged</SelectItem>
                                 </SelectContent>
                             </Select>
                             <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -424,7 +436,14 @@ export default function KnowledgeTransfer() {
                             </Select>
                         </div>
 
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap items-center">
+                            {onNavigateToReviewQueue && (
+                                <Button variant="outline" size="sm" className="gap-2 text-xs text-amber-400 border-amber-500/30 hover:bg-amber-500/10"
+                                    onClick={onNavigateToReviewQueue}>
+                                    <ExternalLink className="h-3.5 w-3.5" />
+                                    Review Queue
+                                </Button>
+                            )}
                             <Button variant="outline" size="sm" className="gap-2 text-xs" onClick={handleBulkApprove}>
                                 <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
                                 Approve All High-Conf
