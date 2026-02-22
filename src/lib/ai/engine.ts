@@ -150,20 +150,29 @@ class AnthropicProvider implements UnifiedAIProvider {
 // Factory
 // ------------------------------------------------------------------
 export const getAIProvider = (): UnifiedAIProvider => {
-    const providerType = process.env.AI_PROVIDER || 'GEMINI';
-
-    console.log(`[ASTRA CORE] AI Provider Selected: ${providerType}`);
+    const providerType = (process.env.AI_PROVIDER || 'GEMINI').toUpperCase();
+    const googleKey = (process.env.GOOGLE_API_KEY || '').trim();
+    const anthropicKey = (process.env.ANTHROPIC_API_KEY || '').trim();
 
     if (providerType === 'ANTHROPIC') {
-        const apiKey = process.env.ANTHROPIC_API_KEY || '';
-        if (!apiKey) throw new Error("ANTHROPIC_API_KEY not found");
-        return new AnthropicProvider(apiKey);
+        if (!anthropicKey) throw new Error("ANTHROPIC_API_KEY not set. Add it to .env.local for the chat agent.");
+        console.log(`[ASTRA CORE] AI Provider: ANTHROPIC`);
+        return new AnthropicProvider(anthropicKey);
     }
 
-    // Default to Gemini
-    const apiKey = (process.env.GOOGLE_API_KEY || '').trim();
-    if (!apiKey) console.warn("GOOGLE_API_KEY not found");
-    return new GeminiProvider(apiKey);
+    // Prefer Gemini when key is set; otherwise fall back to Anthropic so chat works with one key
+    if (googleKey) {
+        console.log(`[ASTRA CORE] AI Provider: GEMINI`);
+        return new GeminiProvider(googleKey);
+    }
+    if (anthropicKey) {
+        console.warn("[ASTRA CORE] GOOGLE_API_KEY not set; using ANTHROPIC as fallback.");
+        return new AnthropicProvider(anthropicKey);
+    }
+
+    throw new Error(
+        "No AI provider configured. Set GOOGLE_API_KEY or ANTHROPIC_API_KEY in .env.local (and restart the dev server)."
+    );
 };
 
 // Kept for backward compatibility during refactor if needed, 

@@ -84,24 +84,32 @@ export const analyzeRequestAsync = async (
         riskScore += 80;
     }
 
-    // --- AGENTIC INTEGRATION: OpenClaw ---
+    // --- Native CISO AI: policy analysis via /api/agent/analyze-policy ---
     try {
-        const { openClaw } = await import('./openclaw-client');
-        const agentAnalysis = await openClaw.analyzePolicy(fullText, context.activeStandards);
-
-        // Merge Agent Findings
-        if (agentAnalysis.gaps.length > 0) {
-            complianceGaps.push(...agentAnalysis.gaps.map(g => `[AGENT] ${g}`));
+        const base = typeof process !== 'undefined'
+            ? (process.env.NEXTAUTH_URL || process.env.VERCEL_URL || 'http://localhost:3000')
+            : '';
+        if (base) {
+            const standards = context.activeStandards.map((s: string) => s.replace('ISO_27001', 'ISO_27001_2022').replace('NIST_CSF', 'NIST_CSF_2_0'));
+            const res = await fetch(`${base}/api/agent/analyze-policy`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ policyContent: fullText, standards: standards.length ? standards : ['NIST_CSF_2_0', 'ISO_27001_2022'] })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const agentScore = data.score ?? data.riskScore ?? 50;
+                const agentGaps = data.identifiedGaps?.map((g: { description?: string; framework?: string; controlId?: string }) =>
+                    typeof g === 'string' ? g : `${g.controlId || g.framework || ''}: ${g.description || g}`
+                ) || [];
+                const agentRecs = data.recommendations || data.strongPoints || [];
+                if (agentGaps.length > 0) complianceGaps.push(...agentGaps.map((g: string) => `[AI] ${g}`));
+                if (agentRecs.length > 0) recommendedActions.push(...agentRecs.map((r: string) => `[AI] ${r}`));
+                riskScore = Math.floor((riskScore * 0.6) + (agentScore * 0.4));
+            }
         }
-        if (agentAnalysis.recommendations.length > 0) {
-            recommendedActions.push(...agentAnalysis.recommendations.map(r => `[AGENT] ${r}`));
-        }
-
-        // Adjust Risk Score (Agent opinion weight: 40%)
-        riskScore = Math.floor((riskScore * 0.6) + (agentAnalysis.riskScore * 0.4));
-
     } catch (e) {
-        console.warn("OpenClaw Agent unavailable, falling back to heuristics only.");
+        console.warn("Policy analysis API unavailable, falling back to heuristics only.", e);
     }
 
     // 4. Policy Cross-Reference (Agentic Feature)

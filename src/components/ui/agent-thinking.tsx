@@ -1,8 +1,18 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { ThinkingStep, ToolExecution } from '@/lib/openclaw-client';
 import { ChevronDown, ChevronRight, Terminal, Brain, CheckCircle2, CircleDashed } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+
+export interface ThinkingStep {
+    description: string;
+    status: 'pending' | 'active' | 'completed' | 'failed';
+}
+export interface ToolExecution {
+    tool: string;
+    input: string;
+    output: string;
+    status: 'running' | 'completed' | 'failed';
+}
 
 interface AgentThinkingProps {
     thinking?: ThinkingStep[];
@@ -19,7 +29,6 @@ export function AgentThinking({ thinking, tools, isFinished }: AgentThinkingProp
         <div className="w-full max-w-[90%] space-y-2 mb-2">
             <div className="flex justify-between items-center px-1">
                 <span className="text-[10px] font-mono text-muted-foreground uppercase">Agent Activity</span>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded font-mono">SIMULATION MODE</span>
             </div>
             {/* Thinking Block */}
             {thinking && thinking.length > 0 && (

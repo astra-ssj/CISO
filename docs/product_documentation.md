@@ -27,7 +27,7 @@ The platform is built as a modern Single Page Application (SPA) with Server-Side
 - **State Management**: `zustand` (global store).
 - **AI Integration**:
   - **Provider Abstraction Layer**: Interfaces for OpenAI, Anthropic, Google Gemini, and Mock providers.
-  - **OpenClaw Client**: A specialized client for security-specific AI tasks (Policy drafting, Risk analysis).
+  - **CISO AI Assistant**: Native chat and security-specific AI (policy drafting, risk analysis) via AI engine and circuit breaker.
 
 ### BFF Pattern (Backend-for-Frontend)
 

@@ -1,41 +1,37 @@
-# Security Audit Report: OpenClaw Integration
+# Security Audit Report: CISO AI Assistant (Native)
 
 ## Executive Summary
 
 **Status**: ✅ SECURE (Not Vulnerable)
-**Reason**: The current implementation utilizes a locally mocked client and does not interact with external OpenClaw servers.
+**Note**: OpenClaw dependency was removed. The platform uses a **native CISO AI Assistant** backed by `src/lib/ai/engine.ts` and circuit breaker; all AI calls go through server-side API routes.
 
 ## Audit Findings
 
 ### 1. Dependency Analysis
 
-- **Finding**: The `openclaw` npm package is **not installed**.
-- **Evidence**: Checked `package.json`. No matching dependencies found.
+- **Finding**: No third-party agent SDK; AI is provided by the unified engine (Gemini/Anthropic via env-configured keys).
+- **Evidence**: `package.json` uses `@google/generative-ai` and `@anthropic-ai/sdk`; no OpenClaw or external agent package.
 
 ### 2. Code Execution (RCE)
 
 - **Finding**: No Remote Code Execution vectors found.
 - **Analysis**:
-  - `src/lib/openclaw-client.ts` is a mock class returning static/logic-based strings.
-  - `src/components/ui/agent-thinking.tsx` renders output using safe React `<pre>` tags.
-  - No usage of `eval()`, `exec()`, or unsafe HTML injection.
-  - No backend API routes (`src/app/api`) exist to process webhooks.
+  - Chat is handled by `/api/agent/chat` using the AI engine and circuit breaker.
+  - UI renders assistant content in controlled components; no `eval()` or unsafe HTML injection.
+  - No backend routes process external webhooks for the chat agent.
 
 ### 3. API Key Exposure
 
-- **Finding**: No API keys detected in client bundles.
+- **Finding**: No API keys in client bundles.
 - **Analysis**:
-  - Grep search for `API_KEY` returned 0 results in build artifacts.
-  - Mock providers are used by default, requiring no secrets.
-  - When real providers are enabled (via Settings), keys are stored in local state/cookies and not hardcoded.
+  - AI keys (e.g. `GOOGLE_API_KEY`, `ANTHROPIC_API_KEY`) are used only in server-side API routes and `src/lib/ai/engine.ts`.
+  - Provider is selected via `AI_PROVIDER` env var (ANTHROPIC | GEMINI | OLLAMA).
 
-## Recommendations for Phase A (Intelligence Upgrade)
+## Recommendations
 
-When upgrading to production OpenClaw integration:
-
-1. **Implement Server-Side Proxy**: Use the designed BFF pattern in `src/app/api/agent` to hold secrets.
-2. **Sanitize Output**: Maintain current safe rendering pattern (`<pre>` or sanitized Markdown).
-3. **Validate Input**: Ensure user prompts are sanitized before sending to the Agent.
+1. **Server-Side Proxy**: Maintain the BFF pattern; all AI calls remain in `src/app/api/agent/*`.
+2. **Sanitize Output**: Keep assistant responses rendered as plain text or sanitized Markdown.
+3. **Validate Input**: Chat route validates and redacts user input for audit logs.
 
 ---
 *Audit performed by Astra Security Agent.*

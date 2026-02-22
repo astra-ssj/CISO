@@ -95,7 +95,7 @@ CISO/
 │   │   ├── playbook-store.ts, appsec-store.ts, policy-store.ts
 │   │   ├── posture-score.ts, threat-engine.ts, intelligence-engine.ts
 │   │   ├── sast-engine.ts, config-scanner.ts, pii-scanner.ts
-│   │   ├── openclaw-client.ts    # Chat client calling /api/agent/chat
+│   │   # Chat uses native /api/agent/chat (CISO AI Assistant)
 │   │   ├── ransomware-client.ts # Ransomware feed (mock + optional api.ransomware.live)
 │   │   ├── golden-library.ts, governance.ts, export-utils.ts
 │   │   └── unification-store.tsx, theme-store.ts, view-engine-store.ts, oob-store.ts
@@ -151,7 +151,7 @@ CISO/
 - **`src/lib/connectors/github.ts`** — GitHub (e.g. repo security); uses `GITHUB_TOKEN`; audit logging.
 - **`src/lib/trivy/scanner.ts`** — Trivy vulnerability scanning wrapper; used by `/api/integrations/trivy` and appsec.
 - **`src/lib/ransomware-client.ts`** — Fetches ransomware feed; currently forces mock data (api.ransomware.live commented); types in `src/types/ransomware.ts`.
-- **`src/lib/openclaw-client.ts`** — Client for CISO AI assistant: streams thinking/tool/response; calls `POST /api/agent/chat`.
+- **CISO AI Assistant** — Native chat via `POST /api/agent/chat`; uses `src/lib/ai/engine.ts` and circuit breaker; context from store.
 
 ### 3.5 UI and layout
 
@@ -200,7 +200,7 @@ CISO/
 
 | Route | Method | Purpose |
 |-------|--------|---------|
-| `/api/agent/chat` | POST | CISO AI assistant (OpenClaw client) |
+| `/api/agent/chat` | POST | CISO AI assistant (native AI engine + circuit breaker) |
 | `/api/agent/wargame` | POST | War game simulation (narrative, metrics delta) |
 | `/api/agent/generate-policy` | POST | AI policy draft (title, type, strictness) |
 | `/api/agent/analyze` | POST | Threat/request analysis |

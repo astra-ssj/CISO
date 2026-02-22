@@ -1,166 +1,181 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { getAIProvider } from '@/lib/ai/engine';
+import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
+import { getCircuitState, setCircuitState } from '@/lib/ai/circuit-breaker';
+import { appendToFabric } from '@/lib/auth/audit';
 
-// System Prompt Definition
-const ASTRA_SYSTEM_PROMPT = `You are ASTRA (Authorized Security & Threat Response Agent), an advanced CISO AI assistant.
-Your goal is to assist the Chief Information Security Officer (CISO) in managing governance, risk, compliance, and offensive security operations.
+const CISO_SYSTEM_PROMPT = `You are Astra, an AI security advisor embedded in the Astra-CISO platform. You have deep knowledge of ISO 27001, NIST CSF, GDPR, NIS2, EU AI Act, SOC 2, and FAIR risk methodology. You help CISOs with compliance questions, risk analysis, policy drafting, incident response guidance, and security strategy. Be concise, specific, and reference relevant framework controls when applicable. When uncertain, say so — never fabricate compliance guidance.
 
-### CORE DIRECTIVES:
-1.  **Offensive Mindset**: When analyzing assets or vulnerabilities, always think like an attacker. Explain *how* something could be exploited (Exploitability Analysis).
-2.  **Governance & Compliance**: You are deeply knowledgeable about ISO 27001, NIST CSF, SOC2, and GDPR. Always map findings to these standards.
-3.  **Context Aware**: You have access to the platform's current state. Use the provided context to tailor your answers.
-4.  **Operational Maturity**: Be concise, professional, and actionable. Avoid generic fluff.
+### CONVERSATION MODES (detect from user input and respond accordingly):
+- **General security Q&A** — Answer directly with references to standards where relevant.
+- **Policy drafting** — Use policy templates and structure; reference controls (e.g. ISO A.5.x, NIST ID.AM).
+- **Risk analysis** — Use FAIR methodology; distinguish threat, vulnerability, impact, likelihood.
+- **Incident guidance** — Reference playbooks, containment, communication, and post-incident review.
+- **Compliance gap analysis** — Reference framework controls and map gaps to specific control IDs.
+- **CAIQ / vendor risk** — Help with questionnaire answers and evidence mapping.
 
-### AVAILABLE VIRTUAL TOOLS:
-You can simulate the execution of the following security tools. To use a tool, generate a JSON object in your response with the following format:
-\`\`\`json
-{
-  "tool": "tool_name",
-  "params": { ... }
-}
-\`\`\`
+Use the CURRENT PLATFORM CONTEXT below to tailor your answers to the organization's state.`;
 
-1.  \`scan_asset(target: string)\`: Simulates an Nmap/Vuln scan on an IP or Host.
-2.  \`check_exploitability(cve_id: string, asset_context: string)\`: Returns analysis of a CVE's exploitability (PoC availability, actively exploited in wild).
-3.  \`query_compliance(standard: string)\`: Checks current compliance status for a standard.
+function buildContextBlock(context: Record<string, unknown> | undefined): string {
+    const complianceScore = context?.complianceScore ?? '—';
+    const activeThreats = context?.activeThreats ?? 0;
+    const activeStandards = Array.isArray(context?.activeStandards)
+        ? (context.activeStandards as string[]).join(', ')
+        : '—';
+    const recentRiskScores = Array.isArray(context?.recentRiskScores)
+        ? (context.recentRiskScores as number[]).slice(0, 5).join(', ')
+        : '—';
+    const userRole = context?.userRole ?? 'Unknown';
+    const page = context?.page ?? 'Dashboard';
+    const systemStatus = context?.systemStatus ?? 'NOMINAL';
 
-### RESPONSE FORMAT:
--   If using a tool, output ONLY the tool JSON.
--   Otherwise, answer the user normally.
--   Be helpful and proactive.
+    return `
+### CURRENT PLATFORM CONTEXT:
+- **User Role**: ${userRole}
+- **Current Page**: ${page}
+- **System Status**: ${systemStatus}
+- **Compliance Posture Score**: ${complianceScore} (0–100)
+- **Active Incident / Threat Count**: ${activeThreats}
+- **Active Frameworks**: ${activeStandards}
+- **Recent Risk Scores** (from decision queue): ${recentRiskScores}
 `;
+}
+
+/** Redact or truncate query for audit (avoid logging full PII/secrets). */
+function redactForAudit(query: string, maxLen: number = 200): string {
+    if (!query || typeof query !== 'string') return '[empty]';
+    const trimmed = query.trim().slice(0, maxLen);
+    // Mask potential secrets (e.g. API key-like strings)
+    const masked = trimmed.replace(/\b[A-Za-z0-9_-]{20,}\b/g, '[REDACTED]');
+    return masked + (query.length > maxLen ? '…' : '');
+}
 
 export async function POST(request: NextRequest) {
+    const providerName = (process.env.AI_PROVIDER || 'GEMINI').toUpperCase();
+
     try {
         const body = await request.json();
-        const { message, history, context } = body;
+        const { message, history = [], context } = body;
 
-        if (!message) {
-            return NextResponse.json({ error: "Message is required" }, { status: 400 });
+        if (!message || typeof message !== 'string') {
+            return NextResponse.json({ error: 'Message is required' }, { status: 400 });
         }
 
-        // Security Check: Verify Auth
         const authCookie = request.cookies.get('astra-auth');
         const authHeader = request.headers.get('Authorization');
-
         if (process.env.NODE_ENV !== 'development' && authCookie?.value !== 'true' && !authHeader?.startsWith('Bearer ')) {
-            return NextResponse.json({ error: "Unauthorized Access to Neural Core" }, { status: 401 });
+            return NextResponse.json({ error: 'Unauthorized Access to Neural Core' }, { status: 401 });
         }
 
-        // Construct Context Block
-        const contextBlock = `
-### CURRENT SYSTEM CONTEXT:
-- **User Role**: ${context?.userRole || 'Unknown'}
-- **Current Page**: ${context?.page || 'Dashboard'}
-- **System Status**: ${context?.systemStatus || 'NOMINAL'}
-- **Active Threats**: ${context?.activeThreats || 0}
-`;
+        // Circuit breaker: if open, return helpful message
+        if (getCircuitState(providerName) === 'open') {
+            return NextResponse.json(
+                {
+                    error: 'AI assistant is temporarily unavailable. The circuit breaker will retry shortly.',
+                    circuitOpen: true
+                },
+                { status: 503 }
+            );
+        }
 
-        // Initialize Chat Session via Unified Factory
-        let chatHistory = history.map((msg: any) => ({
+        if (!isAIConfigured()) {
+            return NextResponse.json(
+                {
+                    error: 'AI provider not configured. Set GOOGLE_API_KEY or ANTHROPIC_API_KEY in .env.local and restart the server.'
+                },
+                { status: 503 }
+            );
+        }
+
+        const contextBlock = buildContextBlock(context);
+        const userMessageWithContext = message + '\n' + contextBlock;
+
+        let chatHistory = (history as { role: string; content: string }[]).map((msg: { role: string; content: string }) => ({
             role: msg.role === 'assistant' ? 'model' : 'user',
-            parts: [{ text: msg.content }]
+            parts: [{ text: msg.content || '' }]
         }));
-
-        // Remove leading model messages if passing history directly
         if (chatHistory.length > 0 && chatHistory[0].role === 'model') {
             chatHistory = chatHistory.slice(1);
         }
 
         const provider = getAIProvider();
-        const chatSession = provider.createChatSession(ASTRA_SYSTEM_PROMPT, chatHistory);
+        const chatSession = provider.createChatSession(CISO_SYSTEM_PROMPT, chatHistory);
 
-        // Send User Message with Context (with Retry)
         const { runWithRetry } = await import('@/lib/ai/utils');
+        const responseText = await runWithRetry(() => chatSession.sendMessage(userMessageWithContext));
 
-        const result = await runWithRetry(async () => {
-            // Unified interface returns string directly, not an object with .response.text()
-            return await chatSession.sendMessage(message + contextBlock);
-        });
+        const finalContent = typeof responseText === 'string' ? responseText : String(responseText ?? '');
 
-        const responseText = result; // result is already string
-
-        let finalContent = responseText;
-
-        // Tool execution logic
-        let toolExecution = null;
-
-        try {
-            const toolMatch = finalContent.match(/```json\n([\s\S]*?)\n```/);
-            if (toolMatch) {
-                const toolJson = JSON.parse(toolMatch[1]);
-                if (toolJson.tool) {
-                    toolExecution = toolJson;
-                    const toolResult = executeMockTool(toolJson.tool, toolJson.params);
-                    finalContent = `*[ASTRA executing ${toolJson.tool}...]*\n\n> **Tool Output**: ${toolResult}\n\n`;
-
-                    // Simple follow-up using the same chat session
-                    const followUpResult = await runWithRetry(async () => {
-                        // Unified interface returns string directly
-                        return await chatSession.sendMessage(
-                            `Tool Output: ${toolResult}\n\nIntepret this output and give me the bottom line.`
-                        );
-                    });
-                    finalContent += followUpResult;
-                }
+        // Audit: log every AI interaction
+        const querySummary = redactForAudit(message);
+        const responseSummary = finalContent.slice(0, 500) + (finalContent.length > 500 ? '…' : '');
+        await appendToFabric({
+            actor: 'SYSTEM',
+            action: 'AI_CHAT',
+            resource: 'agent:chat',
+            resourceId: null,
+            metadata: {
+                querySummary,
+                responseSummary,
+                modelUsed: providerName,
+                tokensConsumed: null,
+                confidenceLevel: null
             }
-        } catch (e) {
-            console.log("Tool parsing failed or no tool used", e);
+        }).catch(() => {});
+
+        const wantsStream = request.headers.get('accept')?.includes('text/event-stream');
+        if (wantsStream) {
+            const encoder = new TextEncoder();
+            const stream = new ReadableStream({
+                start(controller) {
+                    const chunk = finalContent;
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: chunk, done: true })}\n\n`));
+                    controller.close();
+                }
+            });
+            return new Response(stream, {
+                headers: {
+                    'Content-Type': 'text/event-stream',
+                    'Cache-Control': 'no-cache',
+                    Connection: 'keep-alive'
+                }
+            });
         }
 
         return NextResponse.json({
             role: 'assistant',
-            content: finalContent,
-            toolExecution
+            content: finalContent
         });
+    } catch (error: unknown) {
+        const err = error as { message?: string; status?: number };
+        const errMsg = typeof err?.message === 'string' ? err.message : String(err?.message ?? error);
+        console.error('Chat API Error:', error);
 
-
-
-    } catch (error: any) {
-        console.error("Chat API Error:", error);
-
-        let status = error.status || 500;
+        let status = err?.status ?? 500;
         let message = 'Internal Server Error';
 
-        if (status === 429 || error.message?.includes('429')) {
-            status = 429; // Force 429 status if detected in message
+        if (status === 429 || errMsg.includes('429')) {
+            status = 429;
             message = 'AI Rate Limit Exceeded. Please try again in a moment. (Retried 3 times)';
+        } else if (
+            status === 403 ||
+            errMsg.includes('not configured') ||
+            errMsg.includes('not set') ||
+            errMsg.includes('unregistered callers') ||
+            errMsg.includes('API Key')
+        ) {
+            status = 503;
+            message = 'AI provider not configured. Set GOOGLE_API_KEY or ANTHROPIC_API_KEY in .env.local and restart the server.';
         }
 
-        return NextResponse.json({ error: message, details: error.message }, { status: status });
-    }
-}
+        if (status !== 429 && status !== 403) {
+            setCircuitState(providerName, 'open');
+            const { logCircuitBreakerTripped } = await import('@/lib/auth/audit');
+            logCircuitBreakerTripped(providerName, { error: errMsg }).catch(() => {});
+        }
 
-// Mock Tool Execution Logic
-function executeMockTool(tool: string, params: any): string {
-    switch (tool) {
-        case 'scan_asset':
-            return `Nmap Scan Report for ${params.target}:
-Host is up (0.002s latency).
-PORT    STATE SERVICE VERSION
-22/tcp  open  ssh     OpenSSH 8.2p1
-80/tcp  open  http    nginx 1.18.0
-443/tcp open  https   nginx 1.18.0
-Mac Address: AA:BB:CC:DD:EE:FF
-OS Details: Linux 5.4.0-150-generic`;
-
-        case 'check_exploitability':
-            return `Exploitability Analysis for ${params.cve_id}:
-- **PoC Available**: YES (GitHub, ExploitDB)
-- **Active Exploitation**: HIGH (Observed in wild by CISA)
-- **Attack Vector**: Network (Remote Code Execution)
-- **Complexity**: LOW (Script kiddie level)
-- **Recommendation**: PATCH IMMEDIATELY. Isolate asset ${params.asset_context} if patching is impossible.`;
-
-        case 'query_compliance':
-            return `Compliance Status for ${params.standard}:
-- **Overall Score**: 85%
-- **Critical Gaps**: 
-  1. MFA not enforced on all admin accounts (Identity)
-  2. Data at rest encryption inconsistent (S3 Buckets)
-- **Status**: AT RISK`;
-
-        default:
-            return `Tool ${tool} not found or failed to execute.`;
+        return NextResponse.json({
+            error: message,
+            details: errMsg
+        }, { status });
     }
 }

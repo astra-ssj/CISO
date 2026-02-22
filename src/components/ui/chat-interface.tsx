@@ -8,7 +8,6 @@ import { Bot, MessageSquare, X, Send, User, Mic } from 'lucide-react';
 import { useAstraStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AgentThinking } from './agent-thinking';
 
 export function ChatInterface() {
     // const [isOpen, setIsOpen] = useState(false); // Removed local state
@@ -113,14 +112,6 @@ export function ChatInterface() {
                                             "flex flex-col max-w-[85%]",
                                             msg.role === 'user' && "items-end"
                                         )}>
-                                            {msg.role === 'assistant' && (
-                                                <AgentThinking
-                                                    thinking={msg.thinking}
-                                                    tools={msg.toolExecutions}
-                                                    isFinished={!!msg.content && msg.thinking?.every(t => t.status === 'completed')}
-                                                />
-                                            )}
-
                                             {msg.content && (
                                                 <div className={cn(
                                                     "p-3 rounded-lg",
@@ -184,7 +175,7 @@ function ViewTitle() {
     return (
         <div className="flex flex-col">
             <span className="text-sm font-mono text-primary font-bold">ASTRA_AI_CORE</span>
-            <span className="text-[10px] text-muted-foreground">OpenClaw Agent Connected</span>
+            <span className="text-[10px] text-muted-foreground">CISO AI Assistant</span>
         </div>
     )
 }

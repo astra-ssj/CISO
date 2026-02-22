@@ -67,7 +67,7 @@ const DEMO_NOTIFICATIONS: Notification[] = [
     },
     {
         id: 'n-005', type: 'AI_INSIGHT', title: 'AI Policy Recommendation',
-        message: 'OpenClaw identified 3 gaps in your Data Protection Policy against GDPR Article 32.',
+        message: 'Astra identified 3 gaps in your Data Protection Policy against GDPR Article 32.',
         severity: 'INFO', read: true, timestamp: Date.now() - 14400000, actionUrl: '/policies'
     },
 ];

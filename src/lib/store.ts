@@ -55,9 +55,14 @@ export interface KPI {
     status: 'success' | 'warning' | 'danger';
 }
 
-import { AgentMessage, openClaw } from './openclaw-client';
-
-export type ChatMessage = AgentMessage;
+// Native CISO AI Assistant — chat messages (no OpenClaw)
+export type ChatMessageRole = 'user' | 'assistant' | 'system';
+export interface ChatMessage {
+    id: string;
+    role: ChatMessageRole;
+    content: string;
+    timestamp: number;
+}
 
 interface AstraState {
     // Global Posture
@@ -303,7 +308,7 @@ export const useAstraStore = create<AstraState>()(
 
             updateComplianceScore: (score) => set({ complianceScore: score }),
 
-            // Integrated OpenClaw Logic
+            // Native CISO AI Assistant — single request/response to /api/agent/chat
             sendQuery: async (query) => {
                 const state = get();
                 const userMsg: ChatMessage = {
@@ -313,26 +318,66 @@ export const useAstraStore = create<AstraState>()(
                     timestamp: Date.now()
                 };
 
+                const historyForApi = state.chatHistory.slice(-20).map(m => ({ role: m.role, content: m.content }));
                 set(s => ({ chatHistory: [...s.chatHistory, userMsg] }));
 
-                // Start handling the stream from OpenClaw
-                const iterator = openClaw.sendMessage(query);
+                const assistantPlaceholder: ChatMessage = {
+                    id: `assistant-${Date.now()}`,
+                    role: 'assistant',
+                    content: '',
+                    timestamp: Date.now()
+                };
+                set(s => ({ chatHistory: [...s.chatHistory, assistantPlaceholder] }));
 
-                let messageId: string | null = null;
+                try {
+                    const response = await fetch('/api/agent/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message: query,
+                            history: historyForApi,
+                            context: {
+                                page: typeof window !== 'undefined' ? window.location.pathname : 'Dashboard',
+                                userRole: state.currentUser?.role ?? 'CISO',
+                                systemStatus: state.systemStatus,
+                                complianceScore: state.complianceScore,
+                                activeThreats: state.activeThreats,
+                                activeStandards: state.activeStandards,
+                                recentRiskScores: state.decisionQueue.slice(0, 5).map(d => d.analysis?.riskScore).filter(Boolean)
+                            }
+                        })
+                    });
 
-                for await (const update of iterator) {
-                    if (!messageId) {
-                        messageId = update.id;
-                        // Add the initial empty/thinking message
-                        set(s => ({ chatHistory: [...s.chatHistory, update] }));
-                    } else {
-                        // Update the existing message in place
+                    const data = await response.json().catch(() => ({}));
+
+                    if (!response.ok) {
+                        const errMsg = data?.error || response.statusText || 'Request failed';
                         set(s => ({
                             chatHistory: s.chatHistory.map(msg =>
-                                msg.id === messageId ? update : msg
+                                msg.id === assistantPlaceholder.id
+                                    ? { ...msg, content: `**Assistant unavailable.** ${errMsg}` }
+                                    : msg
                             )
                         }));
+                        return;
                     }
+
+                    set(s => ({
+                        chatHistory: s.chatHistory.map(msg =>
+                            msg.id === assistantPlaceholder.id
+                                ? { ...msg, content: data.content ?? '' }
+                                : msg
+                        )
+                    }));
+                } catch (err) {
+                    const errMsg = err instanceof Error ? err.message : 'Network error';
+                    set(s => ({
+                        chatHistory: s.chatHistory.map(msg =>
+                            msg.id === assistantPlaceholder.id
+                                ? { ...msg, content: `**Could not reach the assistant.** ${errMsg}` }
+                                : msg
+                        )
+                    }));
                 }
             },
 

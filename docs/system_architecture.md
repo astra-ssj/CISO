@@ -123,7 +123,7 @@ interface DecisionRequest {
 ### 3.2 Secret Isolation
 
 * **Problem**: Client-side apps cannot safely store secrets.
-* **Solution**: All external API calls (to OpenAI, OpenClaw) originate from **Server-Side** API routes.
+* **Solution**: All external API calls (to AI providers) originate from **Server-Side** API routes.
 * **Env Vars**: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` are loaded only in the Node.js runtime.
 
 ### 3.3 Input Validation
