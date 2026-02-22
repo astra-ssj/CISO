@@ -72,7 +72,7 @@ export function OmniChat() {
             setMessages(prev => [...prev, aiMsg]);
         } catch (error: unknown) {
             console.error(error);
-            const message = error instanceof Error ? error.message : "Error connecting to Neural Core.";
+            const message = error instanceof Error ? error.message : "Unable to connect to the AI assistant. Please try again.";
             setMessages(prev => [...prev, {
                 id: Date.now().toString(),
                 role: 'assistant',

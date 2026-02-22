@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
 
         const session = await auth();
         if (!session?.user) {
-            return NextResponse.json({ error: 'Unauthorized Access to Neural Core' }, { status: 401 });
+            return NextResponse.json({ error: 'Sign in required to use the AI assistant.' }, { status: 401 });
         }
 
         // Circuit breaker: if open, return helpful message

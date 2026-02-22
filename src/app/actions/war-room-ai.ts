@@ -80,7 +80,7 @@ export async function consultCommandCenter(
             return {
                 success: true,
                 role: 'assistant',
-                content: `**[BANDWIDTH LIMIT EXCEEDED]**\n\nUnable to establish high-fidelity uplink with Neural Core.\n\n**Automated Tactical Recommendation:**\n1.  **Isolate** the compromised subnet immediately.\n2.  **Snapshot** all affected VM memory states.\n3.  **Reset** Kerberos Ticket Granting Ticket (KRBTGT) account password twice.\n\n*Retrying connection in 60s...*`,
+                content: `**AI assistant temporarily unavailable.**\n\nUnable to reach the AI service. Please try again shortly.\n\n**Recommended actions:**\n1.  **Isolate** the compromised subnet immediately.\n2.  **Snapshot** all affected VM memory states.\n3.  **Reset** Kerberos Ticket Granting Ticket (KRBTGT) account password twice.\n\n*You can retry the AI connection in 60s.*`,
                 timestamp: new Date()
             };
         }

@@ -475,7 +475,7 @@ function GettingStartedContent() {
                     Keyboard shortcuts
                 </h2>
                 <p className="text-muted-foreground text-sm">
-                    Use the global AI chat (OmniChat) from the header for quick questions. Keyboard shortcuts are available in the chat and in context-specific views (e.g. War Room). Check the product tour and in-app hints for the latest shortcuts.
+                    Use the AI assistant from the header for quick questions when it is configured. Keyboard shortcuts are available in the chat and in context-specific views (e.g. War Room). Check the product tour and in-app hints for the latest shortcuts.
                 </p>
             </section>
         </div>
@@ -544,7 +544,8 @@ export default function HelpPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const { setChatOpen, sendQuery } = useAstraStore();
 
-    const handleSearchSubmit = () => {
+    // "Ask AI" opens the global chat and sends the query (optional; requires sign-in and API keys).
+    const handleAskAi = () => {
         const q = searchQuery.trim();
         if (q) {
             setChatOpen(true);
@@ -583,19 +584,25 @@ export default function HelpPage() {
                         Knowledge base for CISOs and security analysts. Search or browse by module.
                     </p>
                 </div>
-                <div className="relative flex gap-2">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                    <Input
-                        placeholder="Search modules or ask AI (e.g. “How do I add a policy?”)"
-                        className="pl-9 flex-1 bg-background"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit()}
-                    />
-                    <Button onClick={handleSearchSubmit} variant="secondary" className="shrink-0">
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        Ask AI
-                    </Button>
+                <div className="relative flex flex-col gap-2">
+                    <div className="relative flex gap-2">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                        <Input
+                            placeholder="Search modules (e.g. policy, risk, governance)"
+                            aria-label="Search help modules"
+                            className="pl-9 flex-1 bg-background"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
+                        />
+                        <Button onClick={handleAskAi} variant="secondary" className="shrink-0" type="button">
+                            <MessageSquare className="h-4 w-4 mr-2" />
+                            Ask AI
+                        </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                        Browse the guides below anytime. The AI assistant is available when you are signed in and an AI provider is configured in Settings.
+                    </p>
                 </div>
             </div>
 

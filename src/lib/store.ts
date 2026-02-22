@@ -364,7 +364,7 @@ export const useAstraStore = create<AstraState>()(
                         set(s => ({
                             chatHistory: s.chatHistory.map(msg =>
                                 msg.id === assistantPlaceholder.id
-                                    ? { ...msg, content: `**Assistant unavailable.** ${errMsg}` }
+                                    ? { ...msg, content: errMsg }
                                     : msg
                             )
                         }));
@@ -383,7 +383,7 @@ export const useAstraStore = create<AstraState>()(
                     set(s => ({
                         chatHistory: s.chatHistory.map(msg =>
                             msg.id === assistantPlaceholder.id
-                                ? { ...msg, content: `**Could not reach the assistant.** ${errMsg}` }
+                                ? { ...msg, content: `Unable to reach the AI assistant. ${errMsg}` }
                                 : msg
                         )
                     }));

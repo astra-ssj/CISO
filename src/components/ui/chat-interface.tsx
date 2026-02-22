@@ -175,8 +175,8 @@ export function ChatInterface() {
 function ViewTitle() {
     return (
         <div className="flex flex-col">
-            <span className="text-sm font-mono text-primary font-bold">ASTRA_AI_CORE</span>
-            <span className="text-[10px] text-muted-foreground">CISO AI Assistant</span>
+            <span className="text-sm font-mono text-primary font-bold">AI Assistant</span>
+            <span className="text-[10px] text-muted-foreground">Security guidance when configured</span>
         </div>
     )
 }
