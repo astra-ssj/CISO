@@ -12,10 +12,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Palette } from "lucide-react";
 import { useThemeStore, THEMES, AppTheme, BackgroundStyle } from "@/lib/theme-store";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export function ThemeSwitcher() {
     const { theme, background, setTheme, setBackground } = useThemeStore();
+    const [mounted, setMounted] = useState(false);
+
+    // Only render on client to avoid Radix ID hydration mismatch
+    useEffect(() => { setMounted(true); }, []);
 
     // Apply theme class to document body
     useEffect(() => {
@@ -27,6 +31,14 @@ export function ThemeSwitcher() {
         // Handle background style via data attribute on body
         document.body.setAttribute('data-bg', background);
     }, [theme, background]);
+
+    if (!mounted) {
+        return (
+            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground" aria-label="Change Theme">
+                <Palette className="h-4 w-4" />
+            </Button>
+        );
+    }
 
     return (
         <DropdownMenu>
