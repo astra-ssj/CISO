@@ -12,10 +12,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVendorRiskStore, VendorCategory, VendorRiskTier, VendorStatus } from "@/lib/vendor-risk-store";
 import CAIQWizard from "@/components/caiq/CAIQWizard";
 import { KnowledgeBase } from "@/components/knowledge/KnowledgeBase";
+import QuickAnswerWidget from "@/components/caiq/QuickAnswerWidget";
 import {
     Building2, ShieldAlert, Search, Plus, AlertTriangle, CheckCircle,
     Clock, XCircle, TrendingUp, Users, FileWarning, ChevronDown, ChevronUp,
-    FileSpreadsheet, BookOpen
+    FileSpreadsheet, BookOpen, Zap
 } from "lucide-react";
 
 // ────────────────────────────────────────────
@@ -113,6 +114,9 @@ export default function VendorsPage() {
                     </TabsTrigger>
                     <TabsTrigger value="caiq" className="gap-2 data-[state=active]:bg-violet-500/20">
                         <FileSpreadsheet className="h-4 w-4" /> CAIQ Automation
+                    </TabsTrigger>
+                    <TabsTrigger value="quickanswer" className="gap-2 data-[state=active]:bg-amber-500/20">
+                        <Zap className="h-4 w-4" /> Quick Answer
                     </TabsTrigger>
                     <TabsTrigger value="knowledge" className="gap-2 data-[state=active]:bg-blue-500/20">
                         <BookOpen className="h-4 w-4" /> Knowledge Base
@@ -380,7 +384,14 @@ export default function VendorsPage() {
                 </TabsContent>
 
                 {/* ═══════════════════════════════════════ */}
-                {/* TAB 3: Knowledge Base                   */}
+                {/* TAB 3: Quick Answer                     */}
+                {/* ═══════════════════════════════════════ */}
+                <TabsContent value="quickanswer" className="mt-6">
+                    <QuickAnswerWidget />
+                </TabsContent>
+
+                {/* ═══════════════════════════════════════ */}
+                {/* TAB 4: Knowledge Base                   */}
                 {/* ═══════════════════════════════════════ */}
                 <TabsContent value="knowledge" className="mt-6">
                     <KnowledgeBase />
