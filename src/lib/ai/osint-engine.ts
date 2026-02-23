@@ -76,14 +76,12 @@ Respond with a JSON object matching this exact structure:
 Generate 5-7 top threats, 3-5 threat actors, and 5-8 recommendations. Use real MITRE ATT&CK technique IDs. Be specific and actionable.`;
 
     try {
-        const result = await provider.generateStructuredContent<Partial<ThreatBrief>>(prompt);
-        const fallback = getFallbackBrief(industry, region);
+        const result = await provider.generateStructuredContent(prompt);
         return {
-            ...fallback,
-            ...(typeof result === 'object' && result !== null ? result : {}),
             generatedAt: new Date().toISOString(),
             industry,
             region,
+            ...result.data,
         };
     } catch (error) {
         console.error("[OSINT Engine] AI generation failed:", error);

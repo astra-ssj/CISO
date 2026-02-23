@@ -15,6 +15,7 @@ PLATFORM CAPABILITIES (Use this for Help/Support):
 - **Strategy Pyramid**: Strategic initiatives are prioritized by AI based on threat signals. You can "Adopt" initiatives to track them.
 - **Policy Engine**: Upload docs to check against ISO/NIST. Uses gap analysis to find missing controls.
 - **Connectivity**: The "Signal Bus" connects modules. A "Critical" alert in Intelligence automatically promotes initiatives in Strategy.
+- **AI Economics**: We mathematically track AI token consumption (Prompt Tokens + Completion Tokens) via a 'TokenTracker' backend utility that intercepts traffic from our 4 major AI engines (Chat, Policy, Risk, and CAIQ). The cost is calculated against exact model pricing per 1 million tokens, saved to a local JSON log, and aggregated into a CISO-level frontend dashboard to monitor Profit Margins for each active tenant.
 `;
 
         if (context.selectedNode) {
@@ -48,10 +49,10 @@ PLATFORM CAPABILITIES (Use this for Help/Support):
         const lastMessage = messages[messages.length - 1];
 
         const session = provider.createChatSession(systemInstruction, history);
-        const content = await session.sendMessage(lastMessage.content);
+        const response = await session.sendMessage(lastMessage.content);
 
         return NextResponse.json({
-            response: content || "No response generated."
+            response: response?.data || "No response generated."
         });
 
     } catch (error: unknown) {

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { analyzeRequestAsync } from '@/lib/intelligence-engine';
 import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
+import { TokenTracker, AIModel } from '@/lib/telemetry/token-tracker';
 
 // Define expected output shape
 interface AnalysisResult {
@@ -58,10 +59,21 @@ Output Schema:
   "recommendedActions": string[]
 }`;
 
-            let analysis: AnalysisResult;
+            let analysis: any;
 
             try {
-                analysis = await provider.generateStructuredContent(prompt);
+                const response = await provider.generateStructuredContent(prompt);
+                analysis = response.data;
+
+                if (response.usage) {
+                    await TokenTracker.trackUsage({
+                        userId: 'authenticated-user',
+                        model: (provider as any).modelName as AIModel || 'gemini-1.5-pro',
+                        actionType: 'RISK_ANALYSIS',
+                        promptTokens: response.usage.promptTokens,
+                        completionTokens: response.usage.completionTokens
+                    });
+                }
             } catch (e) {
                 console.error("AI Generation failed, falling back to mock", e);
                 // Silent fallback or error? Let's fallback for robustness

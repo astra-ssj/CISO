@@ -20,7 +20,8 @@ export async function analyzeThreatBatchAction(events: unknown[]): Promise<AIRes
         Task: You are a CISO. Summarize these security events into 2 concise sentences for an executive briefing. Focus on the most critical risks.
         `;
 
-        const content = await getAIProvider().generateContent(prompt) || "No content generated.";
+        const response = await getAIProvider().generateContent(prompt);
+        const content = response?.data || "No content generated.";
 
         return { success: true, content: content };
     } catch (e: unknown) {
@@ -41,7 +42,8 @@ export async function generateRemediationPlanAction(threatId: string, descriptio
         Format as clear code blocks.
         `;
 
-        const content = await getAIProvider().generateContent(prompt) || "";
+        const response = await getAIProvider().generateContent(prompt);
+        const content = response?.data || "";
 
         return { success: true, content: content };
     } catch (e: unknown) {
@@ -68,7 +70,8 @@ export async function draftPolicyAction(topic: string, specificRequirements?: st
         Keep it professional and concise.
         `;
 
-        const content = await getAIProvider().generateContent(prompt) || "";
+        const response = await getAIProvider().generateContent(prompt);
+        const content = response?.data || "";
 
         return { success: true, content: content };
     } catch (e: unknown) {

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { generatePolicyAsync } from '@/lib/intelligence-engine';
 import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
+import { TokenTracker, AIModel } from '@/lib/telemetry/token-tracker';
 
 export async function POST(request: Request) {
     try {
@@ -34,7 +35,18 @@ Include the following sections:
 Format as a professional policy document.`;
 
             const provider = getAIProvider();
-            const content = await provider.generateContent(prompt);
+            const response = await provider.generateContent(prompt);
+            const content = response.data;
+
+            if (response.usage) {
+                await TokenTracker.trackUsage({
+                    userId: 'authenticated-user',
+                    model: (provider as any).modelName as AIModel || 'gemini-1.5-pro',
+                    actionType: 'POLICY_GEN',
+                    promptTokens: response.usage.promptTokens,
+                    completionTokens: response.usage.completionTokens
+                });
+            }
 
             return NextResponse.json({
                 title: `${safeTopic} Policy`,

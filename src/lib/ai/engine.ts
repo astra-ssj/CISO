@@ -4,20 +4,24 @@ import Anthropic from '@anthropic-ai/sdk';
 // ------------------------------------------------------------------
 // Interfaces
 // ------------------------------------------------------------------
-export interface UnifiedChatSession {
-    sendMessage(message: string): Promise<string>;
+export interface AIUsageMetadata {
+    promptTokens: number;
+    completionTokens: number;
 }
 
-export interface ChatHistoryEntry {
-    role: 'user' | 'assistant' | 'model' | 'system';
-    content?: string;
-    parts?: { text?: string }[];
+export interface AIResponse<T = string> {
+    data: T;
+    usage?: AIUsageMetadata;
+}
+
+export interface UnifiedChatSession {
+    sendMessage(message: string): Promise<AIResponse<string>>;
 }
 
 export interface UnifiedAIProvider {
-    createChatSession(systemInstruction: string, history: ChatHistoryEntry[]): UnifiedChatSession;
-    generateContent(prompt: string): Promise<string>;
-    generateStructuredContent<T = unknown>(prompt: string, schema?: unknown): Promise<T>;
+    createChatSession(systemInstruction: string, history: any[]): UnifiedChatSession;
+    generateContent(prompt: string): Promise<AIResponse<string>>;
+    generateStructuredContent(prompt: string, schema?: any): Promise<AIResponse<any>>;
 }
 
 // ------------------------------------------------------------------
@@ -32,35 +36,45 @@ class GeminiProvider implements UnifiedAIProvider {
         this.modelName = modelName;
     }
 
-    createChatSession(systemInstruction: string, history: ChatHistoryEntry[]): UnifiedChatSession {
+    createChatSession(systemInstruction: string, history: any[]): UnifiedChatSession {
         const model = this.client.getGenerativeModel({
             model: this.modelName,
             systemInstruction
         });
 
-        const geminiHistory = history.map((msg) => ({
-            role: msg.role === 'assistant' ? 'model' as const : 'user' as const,
-            parts: [{ text: msg.content ?? msg.parts?.[0]?.text ?? '' }]
-        }));
         const chat = model.startChat({
-            history: geminiHistory
+            history: history as any[]
         });
 
         return {
             sendMessage: async (msg: string) => {
                 const result = await chat.sendMessage(msg);
-                return result.response.text();
+                const usageMetadata = result.response.usageMetadata;
+                return {
+                    data: result.response.text(),
+                    usage: usageMetadata ? {
+                        promptTokens: usageMetadata.promptTokenCount,
+                        completionTokens: usageMetadata.candidatesTokenCount
+                    } : undefined
+                };
             }
         };
     }
 
-    async generateContent(prompt: string): Promise<string> {
+    async generateContent(prompt: string): Promise<AIResponse<string>> {
         const model = this.client.getGenerativeModel({ model: this.modelName });
         const result = await model.generateContent(prompt);
-        return result.response.text();
+        const usageMetadata = result.response.usageMetadata;
+        return {
+            data: result.response.text(),
+            usage: usageMetadata ? {
+                promptTokens: usageMetadata.promptTokenCount,
+                completionTokens: usageMetadata.candidatesTokenCount
+            } : undefined
+        };
     }
 
-    async generateStructuredContent<T = unknown>(prompt: string): Promise<T> {
+    async generateStructuredContent(prompt: string, schema?: any): Promise<AIResponse<any>> {
         const model = this.client.getGenerativeModel({
             model: this.modelName,
             generationConfig: { responseMimeType: "application/json" }
@@ -68,13 +82,19 @@ class GeminiProvider implements UnifiedAIProvider {
 
         const result = await model.generateContent(prompt + "\n\nRespond locally in JSON.");
         const text = result.response.text();
+        const usageMetadata = result.response.usageMetadata;
+
+        const usage = usageMetadata ? {
+            promptTokens: usageMetadata.promptTokenCount,
+            completionTokens: usageMetadata.candidatesTokenCount
+        } : undefined;
 
         try {
-            return JSON.parse(text) as T;
-        } catch (err) {
-            console.error("Gemini JSON parse failed, attempting cleanup", err);
+            return { data: JSON.parse(text), usage };
+        } catch (e) {
+            console.error("Gemini JSON parse failed, attempting cleanup", e);
             const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
-            return JSON.parse(cleaned) as T;
+            return { data: JSON.parse(cleaned), usage };
         }
     }
 }
@@ -91,10 +111,10 @@ class AnthropicProvider implements UnifiedAIProvider {
         this.modelName = modelName;
     }
 
-    createChatSession(systemInstruction: string, history: ChatHistoryEntry[]): UnifiedChatSession {
-        const internalHistory: { role: 'user' | 'assistant'; content: string }[] = history.map((msg) => ({
+    createChatSession(systemInstruction: string, history: any[]): UnifiedChatSession {
+        let internalHistory = history.map((msg: any) => ({
             role: (msg.role === 'model' ? 'assistant' : msg.role) as 'user' | 'assistant',
-            content: msg.parts?.[0]?.text ?? msg.content ?? ''
+            content: msg.parts?.[0]?.text || ''
         }));
 
         return {
@@ -114,25 +134,37 @@ class AnthropicProvider implements UnifiedAIProvider {
                     .join('\n');
 
                 internalHistory.push({ role: 'assistant', content: text });
-                return text;
+                return {
+                    data: text,
+                    usage: {
+                        promptTokens: response.usage.input_tokens,
+                        completionTokens: response.usage.output_tokens
+                    }
+                };
             }
         };
     }
 
-    async generateContent(prompt: string): Promise<string> {
+    async generateContent(prompt: string): Promise<AIResponse<string>> {
         const response = await this.client.messages.create({
             model: this.modelName,
             max_tokens: 4096,
             messages: [{ role: 'user', content: prompt }]
         });
 
-        return response.content
-            .filter(block => block.type === 'text')
-            .map(block => block.text)
-            .join('\n');
+        return {
+            data: response.content
+                .filter(block => block.type === 'text')
+                .map(block => block.text)
+                .join('\n'),
+            usage: {
+                promptTokens: response.usage.input_tokens,
+                completionTokens: response.usage.output_tokens
+            }
+        };
     }
 
-    async generateStructuredContent<T = unknown>(prompt: string): Promise<T> {
+    async generateStructuredContent(prompt: string, schema?: any): Promise<AIResponse<any>> {
         // Claude doesn't have a strict JSON mode flag like Gemini/OpenAI yet in the SDK 
         // effectively, but we prompt-engineer it.
         const response = await this.client.messages.create({
@@ -147,11 +179,16 @@ class AnthropicProvider implements UnifiedAIProvider {
             .map(block => block.text)
             .join('\n');
 
+        const usage = {
+            promptTokens: response.usage.input_tokens,
+            completionTokens: response.usage.output_tokens
+        };
+
         try {
-            return JSON.parse(text) as T;
-        } catch {
+            return { data: JSON.parse(text), usage };
+        } catch (e) {
             const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
-            return JSON.parse(cleaned) as T;
+            return { data: JSON.parse(cleaned), usage };
         }
     }
 }
@@ -160,29 +197,20 @@ class AnthropicProvider implements UnifiedAIProvider {
 // Factory
 // ------------------------------------------------------------------
 export const getAIProvider = (): UnifiedAIProvider => {
-    const providerType = (process.env.AI_PROVIDER || 'GEMINI').toUpperCase();
-    const googleKey = (process.env.GOOGLE_API_KEY || '').trim();
-    const anthropicKey = (process.env.ANTHROPIC_API_KEY || '').trim();
+    const providerType = process.env.AI_PROVIDER || 'GEMINI';
+
+    console.log(`[ASTRA CORE] AI Provider Selected: ${providerType}`);
 
     if (providerType === 'ANTHROPIC') {
-        if (!anthropicKey) throw new Error("ANTHROPIC_API_KEY not set. Add it to .env.local for the chat agent.");
-        console.log(`[ASTRA CORE] AI Provider: ANTHROPIC`);
-        return new AnthropicProvider(anthropicKey);
+        const apiKey = process.env.ANTHROPIC_API_KEY || '';
+        if (!apiKey) throw new Error("ANTHROPIC_API_KEY not found");
+        return new AnthropicProvider(apiKey);
     }
 
-    // Prefer Gemini when key is set; otherwise fall back to Anthropic so chat works with one key
-    if (googleKey) {
-        console.log(`[ASTRA CORE] AI Provider: GEMINI`);
-        return new GeminiProvider(googleKey);
-    }
-    if (anthropicKey) {
-        console.warn("[ASTRA CORE] GOOGLE_API_KEY not set; using ANTHROPIC as fallback.");
-        return new AnthropicProvider(anthropicKey);
-    }
-
-    throw new Error(
-        "No AI provider configured. Set GOOGLE_API_KEY or ANTHROPIC_API_KEY in .env.local (and restart the dev server)."
-    );
+    // Default to Gemini
+    const apiKey = (process.env.GOOGLE_API_KEY || '').trim();
+    if (!apiKey) console.warn("GOOGLE_API_KEY not found");
+    return new GeminiProvider(apiKey);
 };
 
 // Kept for backward compatibility during refactor if needed, 

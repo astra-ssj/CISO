@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Server, Database, ShieldCheck, Globe, Activity } from 'lucide-react';
+import { useEffect, useRef, useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Cloud, Server, Database, ShieldCheck, Globe, Wifi, Activity, ArrowRight, Lock, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // --- Types ---
@@ -13,6 +13,20 @@ interface TrafficNode {
     x: number; // Percentage 0-100
     y: number; // Percentage 0-100
     status: 'active' | 'idle' | 'warning';
+}
+
+const getStableRandom = (index: number, offset: number = 0) => {
+    const seed = index * 49297 + offset * 9301;
+    return ((seed % 233280) / 233280);
+};
+
+interface TrafficParticle {
+    id: string;
+    source: string;
+    target: string;
+    type: 'http' | 'sql' | 'secure';
+    speed: number;
+    delay: number;
 }
 
 // --- Configuration ---
@@ -30,16 +44,10 @@ function NodeIcon({ type, className }: { type: TrafficNode['type'], className?: 
     }
 }
 
-interface TrafficPath {
-    from: string;
-    to: string;
-    type: 'http' | 'sql' | 'secure';
-}
-
 interface TrafficFlowProps {
     data?: {
         nodes: TrafficNode[];
-        paths: TrafficPath[];
+        paths: any[];
     };
 }
 
@@ -67,7 +75,27 @@ export function TrafficFlow({ data }: TrafficFlowProps) {
     const nodes = data?.nodes || DEFAULT_NODES;
     const paths = data?.paths || DEFAULT_PATHS;
 
+    const [activeParticles, setActiveParticles] = useState<TrafficParticle[]>([]);
     const containerRef = useRef<HTMLDivElement>(null);
+
+    // Generate random traffic
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const types: TrafficParticle['type'][] = ['http', 'secure', 'sql'];
+            const newParticle: TrafficParticle = {
+                id: Math.random().toString(36).substr(2, 9),
+                source: 'internet',
+                target: 'db-primary', // Simplified flow for now
+                type: types[Math.floor(Math.random() * types.length)],
+                speed: 2 + Math.random() * 2,
+                delay: 0,
+            };
+            // setActiveParticles(prev => [...prev.slice(-20), newParticle]); 
+            // In a real implementation, we'd manage particle lifecycle. 
+            // For Framer Motion, we can just render the paths and animate the stroke.
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
 
     // Helper to get coordinates
     const getPos = (id: string) => {
@@ -129,10 +157,6 @@ export function TrafficFlow({ data }: TrafficFlowProps) {
 
                     const color = path.type === 'http' ? '#3b82f6' : path.type === 'secure' ? '#10b981' : '#f59e0b';
 
-                    // Stable durations from index (avoids hydration mismatch from Math.random())
-                    const dur1 = 1.5 + ((i * 0.13) % 1);
-                    const dur2 = 2 + ((i * 0.17) % 1);
-
                     return (
                         <g key={i}>
                             {/* Base Path */}
@@ -141,7 +165,7 @@ export function TrafficFlow({ data }: TrafficFlowProps) {
                             {/* Animated Traffic Particle */}
                             <circle r="2" fill={color}>
                                 <animateMotion
-                                    dur={`${dur1}s`}
+                                    dur={`${1.5 + getStableRandom(i, 1)}s`}
                                     repeatCount="indefinite"
                                     path={d}
                                     keyPoints="0;1"
@@ -151,7 +175,7 @@ export function TrafficFlow({ data }: TrafficFlowProps) {
                             </circle>
                             <circle r="1" fill={color} opacity="0.5">
                                 <animateMotion
-                                    dur={`${dur2}s`}
+                                    dur={`${2 + getStableRandom(i, 2)}s`}
                                     begin="0.5s"
                                     repeatCount="indefinite"
                                     path={d}

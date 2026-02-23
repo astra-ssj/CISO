@@ -66,7 +66,7 @@ export async function consultCommandCenter(
         return {
             success: true,
             role: 'assistant',
-            content: responseText,
+            content: responseText.data,
             timestamp: new Date()
         };
 

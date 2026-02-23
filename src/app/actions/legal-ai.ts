@@ -53,12 +53,12 @@ export async function generateCounterDraftAction(
 
         // 4. Parse Result with Robustness
         // const response = result.response; // Removed
-        const cleanResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+        let cleanResponse = textResponse.data.replace(/```json/g, '').replace(/```/g, '').trim();
 
         let data;
         try {
             data = JSON.parse(cleanResponse);
-        } catch {
+        } catch (parseError) {
             console.warn("JSON Parse Failed. Returning raw text.", cleanResponse);
             // Fallback: Use the whole text as reasoning if parse fails
             data = {
@@ -75,12 +75,11 @@ export async function generateCounterDraftAction(
 
         // ... (previous code)
 
-    } catch (error: unknown) {
+    } catch (error: any) {
         console.error("AI Engine Error:", error);
 
-        const message = error instanceof Error ? error.message : String(error);
         // Graceful Fallback for Quota Exceeded (429)
-        if (message.includes("429") || message.includes("Quota exceeded")) {
+        if (error.message?.includes("429") || error.message?.includes("Quota exceeded")) {
             console.warn("Quota exceeded. Returning mock fallback.");
             return {
                 success: true,
@@ -89,10 +88,9 @@ export async function generateCounterDraftAction(
             };
         }
 
-        const errMsg = error instanceof Error ? error.message : "Failed to generate draft";
         return {
             success: false,
-            error: errMsg
+            error: error.message || "Failed to generate draft"
         };
     }
 }
