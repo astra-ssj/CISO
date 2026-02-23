@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
     Upload, FileSpreadsheet, ArrowRight, ArrowLeft, Download, Loader2,
     Check, XCircle, Edit3, BarChart3, Sparkles, Shield, Brain,
-    RefreshCw, CheckCircle, AlertTriangle, Filter,
+    RefreshCw, CheckCircle, AlertTriangle, Filter, Database, PlusCircle,
 } from 'lucide-react';
 
 // ────────────────────────────────────────────
@@ -39,6 +39,7 @@ interface AnsweredQuestion {
     confidence: 'high' | 'medium' | 'low';
     source: 'a2a' | 'semantic' | 'context' | 'manual';
     evidenceRef: string;
+    addedToRepo?: boolean;
 }
 
 interface SourceEntry {
@@ -124,6 +125,8 @@ export default function CAIQWizard() {
     const [editingRow, setEditingRow] = useState<number | null>(null);
     const [editAnswer, setEditAnswer] = useState('');
     const [exporting, setExporting] = useState(false);
+    const [addingToRepo, setAddingToRepo] = useState<number | null>(null);
+    const [addingAll, setAddingAll] = useState(false);
 
     // ── File Handlers ──
 
@@ -371,6 +374,63 @@ export default function CAIQWizard() {
         setEnhanceStage('semantic');
     };
 
+    const handleAddToRepo = async (q: AnsweredQuestion) => {
+        if (!q.answer || q.answer.length < 5) return;
+        setAddingToRepo(q.rowIndex);
+        try {
+            const res = await fetch('/api/knowledge/ingest', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    questions: [q],
+                    source: `CAIQ Wizard (Row ${q.rowIndex})`,
+                }),
+            });
+            if (!res.ok) throw new Error('Failed to add to repository');
+
+            setResult(prev => prev ? {
+                ...prev,
+                questions: prev.questions.map(reqQ =>
+                    reqQ.rowIndex === q.rowIndex ? { ...reqQ, addedToRepo: true } : reqQ
+                )
+            } : null);
+        } catch (err: any) {
+            setError(err.message || 'Failed to add to repository');
+        } finally {
+            setAddingToRepo(null);
+        }
+    };
+
+    const handleAddAllManual = async () => {
+        if (!result) return;
+        const toAdd = result.questions.filter(q => q.source === 'manual' && q.answer && q.answer.length >= 5 && !q.addedToRepo);
+        if (toAdd.length === 0) return;
+
+        setAddingAll(true);
+        try {
+            const res = await fetch('/api/knowledge/ingest', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    questions: toAdd,
+                    source: `CAIQ Wizard (${targetFile?.name || 'Bulk'})`,
+                }),
+            });
+            if (!res.ok) throw new Error('Failed to bulk add to repository');
+
+            setResult(prev => prev ? {
+                ...prev,
+                questions: prev.questions.map(reqQ =>
+                    (reqQ.source === 'manual' && reqQ.answer && reqQ.answer.length >= 5) ? { ...reqQ, addedToRepo: true } : reqQ
+                )
+            } : null);
+        } catch (err: any) {
+            setError(err.message || 'Failed to bulk add to repository');
+        } finally {
+            setAddingAll(false);
+        }
+    };
+
     // Filter for review step
     const filteredQuestions = result?.questions.filter(q => {
         if (filterSource !== 'all' && q.source !== filterSource) return false;
@@ -390,8 +450,8 @@ export default function CAIQWizard() {
                     <div key={s.num} className="flex items-center flex-1">
                         <div className={`flex items-center gap-2 ${step >= s.num ? 'text-violet-400' : 'text-zinc-600'}`}>
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all ${step > s.num ? 'bg-violet-500 border-violet-500 text-white' :
-                                    step === s.num ? 'border-violet-500 text-violet-400' :
-                                        'border-zinc-700 text-zinc-600'
+                                step === s.num ? 'border-violet-500 text-violet-400' :
+                                    'border-zinc-700 text-zinc-600'
                                 }`}>
                                 {step > s.num ? <Check className="h-4 w-4" /> : s.num}
                             </div>
@@ -431,8 +491,8 @@ export default function CAIQWizard() {
                                     onDrop={handleSourceDrop}
                                     onClick={() => sourceInputRef.current?.click()}
                                     className={`relative border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-all ${isDraggingSource ? 'border-emerald-400 bg-emerald-500/5' :
-                                            sourceFile ? 'border-emerald-500/30 bg-emerald-500/5' :
-                                                'border-zinc-700 hover:border-zinc-600'
+                                        sourceFile ? 'border-emerald-500/30 bg-emerald-500/5' :
+                                            'border-zinc-700 hover:border-zinc-600'
                                         }`}
                                 >
                                     <input
@@ -473,8 +533,8 @@ export default function CAIQWizard() {
                                     onDrop={handleTargetDrop}
                                     onClick={() => targetInputRef.current?.click()}
                                     className={`relative border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-all ${isDraggingTarget ? 'border-violet-400 bg-violet-500/5' :
-                                            targetFile ? 'border-violet-500/30 bg-violet-500/5' :
-                                                'border-zinc-700 hover:border-zinc-600'
+                                        targetFile ? 'border-violet-500/30 bg-violet-500/5' :
+                                            'border-zinc-700 hover:border-zinc-600'
                                         }`}
                                 >
                                     <input
@@ -525,8 +585,8 @@ export default function CAIQWizard() {
                                             key={cert.id}
                                             onClick={() => toggleCert(cert.id)}
                                             className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${selectedCerts.includes(cert.id)
-                                                    ? 'bg-violet-500/20 border-violet-500/40 text-violet-300'
-                                                    : 'bg-zinc-800/50 border-zinc-700 text-zinc-500 hover:border-zinc-600'
+                                                ? 'bg-violet-500/20 border-violet-500/40 text-violet-300'
+                                                : 'bg-zinc-800/50 border-zinc-700 text-zinc-500 hover:border-zinc-600'
                                                 }`}
                                         >
                                             {selectedCerts.includes(cert.id) && <span className="mr-1">✓</span>}
@@ -758,11 +818,17 @@ export default function CAIQWizard() {
                             </Select>
                         </div>
                         <div className="flex-1" />
+                        {result.questions.some(q => q.source === 'manual' && q.answer && q.answer.length >= 5 && !q.addedToRepo) && (
+                            <Button onClick={handleAddAllManual} disabled={addingAll} size="sm" className="gap-2 bg-violet-600 hover:bg-violet-500">
+                                {addingAll ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Database className="h-3.5 w-3.5" />}
+                                Add Manual to Repo
+                            </Button>
+                        )}
                         <Button onClick={handleExport} disabled={exporting} size="sm" className="gap-2 bg-emerald-600 hover:bg-emerald-500">
                             {exporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
                             Export Excel
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={handleReset} className="gap-1.5 text-zinc-500">
+                        <Button variant="ghost" size="sm" onClick={handleReset} className="gap-1.5 text-zinc-500 hover:bg-zinc-800">
                             <RefreshCw className="h-3 w-3" /> Reset
                         </Button>
                     </div>
@@ -780,7 +846,7 @@ export default function CAIQWizard() {
                                             <th className="text-left p-3 text-xs font-medium text-muted-foreground uppercase">Answer</th>
                                             <th className="text-center p-3 text-xs font-medium text-muted-foreground uppercase w-[80px]">Tier</th>
                                             <th className="text-center p-3 text-xs font-medium text-muted-foreground uppercase w-[80px]">Conf.</th>
-                                            <th className="text-center p-3 text-xs font-medium text-muted-foreground uppercase w-[50px]">Edit</th>
+                                            <th className="text-center p-3 text-xs font-medium text-muted-foreground uppercase w-[90px]">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -792,8 +858,8 @@ export default function CAIQWizard() {
                                                 </td>
                                                 <td className="p-3">
                                                     <span className={`text-xs font-mono font-bold ${q.yesNo === 'Yes' ? 'text-emerald-400' :
-                                                            q.yesNo === 'No' ? 'text-red-400' :
-                                                                q.yesNo === 'N/A' ? 'text-zinc-500' : 'text-zinc-700'
+                                                        q.yesNo === 'No' ? 'text-red-400' :
+                                                            q.yesNo === 'N/A' ? 'text-zinc-500' : 'text-zinc-700'
                                                         }`}>{q.yesNo || '—'}</span>
                                                 </td>
                                                 <td className="p-3 max-w-[350px]">
@@ -833,13 +899,36 @@ export default function CAIQWizard() {
                                                     )}
                                                 </td>
                                                 <td className="p-3 text-center">
-                                                    <Button
-                                                        variant="ghost" size="sm"
-                                                        className="h-7 w-7 p-0 hover:bg-violet-500/10"
-                                                        onClick={() => { setEditingRow(q.rowIndex); setEditAnswer(q.answer || ''); }}
-                                                    >
-                                                        <Edit3 className="h-3.5 w-3.5 text-zinc-500" />
-                                                    </Button>
+                                                    <div className="flex items-center justify-center gap-1">
+                                                        <Button
+                                                            variant="ghost" size="sm"
+                                                            className="h-7 w-7 p-0 hover:bg-violet-500/10"
+                                                            onClick={() => { setEditingRow(q.rowIndex); setEditAnswer(q.answer || ''); }}
+                                                            title="Edit Answer"
+                                                        >
+                                                            <Edit3 className="h-3.5 w-3.5 text-zinc-500 cursor-pointer" />
+                                                        </Button>
+                                                        {q.source === 'manual' && q.answer && q.answer.length >= 5 && !q.addedToRepo && (
+                                                            <Button
+                                                                variant="ghost" size="sm"
+                                                                className="h-7 w-7 p-0 hover:bg-emerald-500/10"
+                                                                onClick={() => handleAddToRepo(q)}
+                                                                disabled={addingToRepo === q.rowIndex}
+                                                                title="Add to Knowledge Base"
+                                                            >
+                                                                {addingToRepo === q.rowIndex ? (
+                                                                    <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-500" />
+                                                                ) : (
+                                                                    <PlusCircle className="h-3.5 w-3.5 text-emerald-500" />
+                                                                )}
+                                                            </Button>
+                                                        )}
+                                                        {q.addedToRepo && (
+                                                            <span title="Added to Knowledge Base">
+                                                                <CheckCircle className="h-3.5 w-3.5 text-emerald-500/50" />
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -902,14 +991,14 @@ function StageIndicator({ label, icon, status, progress }: {
 }) {
     return (
         <div className={`flex items-center gap-3 p-3 rounded-lg border ${status === 'active' ? 'border-violet-500/30 bg-violet-500/5' :
-                status === 'complete' ? 'border-emerald-500/20 bg-emerald-500/5' :
-                    'border-zinc-800 bg-zinc-900/30'
+            status === 'complete' ? 'border-emerald-500/20 bg-emerald-500/5' :
+                'border-zinc-800 bg-zinc-900/30'
             }`}>
             <span className="text-lg">{icon}</span>
             <div className="flex-1">
                 <p className={`text-sm font-medium ${status === 'active' ? 'text-violet-300' :
-                        status === 'complete' ? 'text-emerald-300' :
-                            'text-zinc-500'
+                    status === 'complete' ? 'text-emerald-300' :
+                        'text-zinc-500'
                     }`}>{label}</p>
                 {status === 'active' && progress !== undefined && (
                     <div className="w-full h-1.5 bg-zinc-800 rounded-full mt-1.5">

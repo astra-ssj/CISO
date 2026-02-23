@@ -88,8 +88,8 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Step 2: Match to knowledge base
-        let answered = matchToKnowledgeBase(questions);
+        // Step 2: Match to knowledge base (now queries DB-backed repo)
+        let answered = await matchToKnowledgeBase(questions);
 
         // Step 3: Optionally enhance with AI
         if (mode === 'ai' && isAIConfigured()) {
@@ -115,7 +115,26 @@ export async function POST(request: NextRequest) {
         // Step 4: Compute results
         const result = computeResults(answered);
 
-        // Step 5: Generate export Excel
+        // Step 5: Feedback loop — ingest answered questions into Knowledge Repository
+        try {
+            const answeredForIngest = result.questions
+                .filter((q: any) => q.answer && q.answer.length > 10 && q.source !== 'manual');
+            if (answeredForIngest.length > 0) {
+                await fetch(new URL('/api/knowledge/ingest', request.url), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        questions: answeredForIngest,
+                        source: `Assessment: ${file.name}`,
+                    }),
+                });
+                console.log(`[CAIQ API] Fed ${answeredForIngest.length} answers back to Knowledge Repository`);
+            }
+        } catch (feedbackErr) {
+            console.warn('[CAIQ API] Knowledge feedback loop failed (non-blocking):', feedbackErr);
+        }
+
+        // Step 6: Generate export Excel
         const exportBuffer = await exportToExcel(result);
         const exportBase64 = exportBuffer.toString('base64');
 

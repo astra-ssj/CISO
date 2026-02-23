@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
             });
         } else {
             // ── Fallback: match against built-in CAIQ Knowledge Base ──
-            const answeredQuestions = matchToKnowledgeBase(targetQuestions);
+            const answeredQuestions = await matchToKnowledgeBase(targetQuestions);
             result = computeResults(answeredQuestions);
 
             return NextResponse.json({

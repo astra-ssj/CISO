@@ -1,15 +1,13 @@
 import { PrismaClient } from '@prisma/client'
-import { PrismaLibSql } from '@prisma/adapter-libsql'
-import { createClient } from '@libsql/client'
+import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 import bcrypt from 'bcryptjs'
 import 'dotenv/config'
+import { config } from 'dotenv'
+config({ path: '.env.local' })
 
-const libsql = createClient({
-    url: "file:dev.db",
-})
-
-const adapter = new PrismaLibSql(libsql as any)
-const prisma = new PrismaClient({ adapter })
+const dbUrl = process.env.DATABASE_URL || 'file:dev.db'
+const adapter = new PrismaBetterSqlite3({ url: dbUrl })
+const prisma = new PrismaClient({ adapter } as never)
 
 async function main() {
     console.log('🌱 Starting seed...')
@@ -199,9 +197,22 @@ async function main() {
         ],
     })
 
-    console.log('✅ Seed complete!')
-    console.log(`Created user: ${ciso.name}`)
-    console.log(`Created risk: ${ransomwareRisk.title}`)
+    // 10. Knowledge Repository — seed all 1000+ entries using the child scripts
+    const { execSync } = await import('child_process');
+    console.log('🌱 Delegating Knowledge Repository seeding to specialized scripts...');
+
+    try {
+        execSync('npx tsx prisma/seeds/seed-caiq.ts', { stdio: 'inherit' });
+        execSync('npx tsx prisma/seeds/seed-baseline.ts', { stdio: 'inherit' });
+        execSync('npx tsx prisma/seeds/seed-frameworks.ts', { stdio: 'inherit' });
+        execSync('npx tsx prisma/seeds/seed-volume.ts', { stdio: 'inherit' });
+        console.log('✅ All Knowledge Repository seeds completed.');
+    } catch (e) {
+        console.error('❌ Failed to run knowledge repository seed scripts:', e);
+    }
+
+    console.log('✅ Main Seed complete!');
+    console.log(`Created user: ${ciso.name}`);
 }
 
 main()

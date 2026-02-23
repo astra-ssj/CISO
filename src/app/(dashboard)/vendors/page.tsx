@@ -11,10 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVendorRiskStore, VendorCategory, VendorRiskTier, VendorStatus } from "@/lib/vendor-risk-store";
 import CAIQWizard from "@/components/caiq/CAIQWizard";
+import { KnowledgeBase } from "@/components/knowledge/KnowledgeBase";
 import {
     Building2, ShieldAlert, Search, Plus, AlertTriangle, CheckCircle,
     Clock, XCircle, TrendingUp, Users, FileWarning, ChevronDown, ChevronUp,
-    FileSpreadsheet
+    FileSpreadsheet, BookOpen
 } from "lucide-react";
 
 // ────────────────────────────────────────────
@@ -112,6 +113,9 @@ export default function VendorsPage() {
                     </TabsTrigger>
                     <TabsTrigger value="caiq" className="gap-2 data-[state=active]:bg-violet-500/20">
                         <FileSpreadsheet className="h-4 w-4" /> CAIQ Automation
+                    </TabsTrigger>
+                    <TabsTrigger value="knowledge" className="gap-2 data-[state=active]:bg-blue-500/20">
+                        <BookOpen className="h-4 w-4" /> Knowledge Base
                     </TabsTrigger>
                 </TabsList>
 
@@ -373,6 +377,13 @@ export default function VendorsPage() {
                 {/* ═══════════════════════════════════════ */}
                 <TabsContent value="caiq" className="mt-6">
                     <CAIQWizard />
+                </TabsContent>
+
+                {/* ═══════════════════════════════════════ */}
+                {/* TAB 3: Knowledge Base                   */}
+                {/* ═══════════════════════════════════════ */}
+                <TabsContent value="knowledge" className="mt-6">
+                    <KnowledgeBase />
                 </TabsContent>
 
             </Tabs>

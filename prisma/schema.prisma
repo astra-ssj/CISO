@@ -344,3 +344,30 @@ model AuditLog {
   resourceId String?
   metadata   String?  // JSON
 }
+
+// -----------------------------------------------------------------------------
+// 12. Organizational Knowledge Repository
+// -----------------------------------------------------------------------------
+
+model KnowledgeEntry {
+  id                 String    @id @default(cuid())
+  questionText       String
+  questionNormalized String    // lowercase, cleaned for matching
+  keywords           String    // comma-separated for search
+  domain             String    // AIS, IAM, DSP, CUSTOM, etc.
+  category           String    // Access Control, Encryption, Incident Response, etc.
+  answerType         String    // YES, NO, NA, CONDITIONAL
+  answerText         String    // The approved answer
+  evidence           String?   // Evidence references
+  frameworks         String?   // JSON: [{framework, controlId}]
+  source             String    // Which assessment this came from
+  approvedBy         String?   // Who approved this answer
+  approvedAt         DateTime?
+  confidence         Float     @default(1.0)
+  usageCount         Int       @default(0) // How many times reused
+  lastUsed           DateTime?
+  jurisdiction       String?   // EU, US, UK, etc.
+  tags               String?   // comma-separated custom tags
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}

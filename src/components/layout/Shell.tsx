@@ -62,6 +62,7 @@ const navItems = [
     { name: 'Policy Engine', href: '/policies', icon: ScrollText },
     { name: 'Governance & Risk', href: '/governance', icon: FileText },
     { name: 'Vendor Risk', href: '/vendors', icon: Building2 },
+    { name: 'Knowledge Base', href: '/vendors/knowledge', icon: BookOpen },
     { name: 'Incidents', href: '/incidents', icon: Siren },
     { name: 'AppSec Dashboard', href: '/appsec', icon: Shield },
     { name: 'Wargames', href: '/wargames', icon: Gamepad2 },

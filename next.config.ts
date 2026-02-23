@@ -23,11 +23,7 @@ const nextConfig: NextConfig = {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
           },
-          // CSP for static assets (e.g. _next/static); app routes get CSP with nonce from middleware
-          {
-            key: "Content-Security-Policy",
-            value: "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';",
-          },
+          // CSP is set dynamically by middleware with nonce support — do NOT set it here.
         ],
       },
     ];

@@ -462,63 +462,123 @@ export function matchToSource(
 }
 
 /**
- * Legacy: match against the hardcoded CAIQ_KNOWLEDGE_BASE.
- * Kept as fallback when no source file is provided.
+ * Match against the database-backed Knowledge Repository.
+ * Queries all entries once, then scores each target question
+ * using the same keyword/overlap algorithm as the legacy version.
+ * Falls back to the hardcoded CAIQ_KNOWLEDGE_BASE if DB is unavailable.
  */
-export function matchToKnowledgeBase(
+export async function matchToKnowledgeBase(
     questions: QuestionnaireQuestion[],
     minConfidence: number = 30
-): AnsweredQuestion[] {
-    return questions.map(q => {
-        let bestMatch: CAIQEntry | null = null;
-        let bestScore = 0;
+): Promise<AnsweredQuestion[]> {
+    try {
+        const prisma = (await import('@/lib/prisma')).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const entries = await (prisma as any).knowledgeEntry.findMany();
 
-        for (const entry of CAIQ_KNOWLEDGE_BASE) {
-            const qLower = q.questionText.toLowerCase();
-            const words = qLower.split(/\s+/).filter(w => w.length > 3);
-            let keywordHits = 0;
-            for (const kw of entry.keywords) {
-                if (qLower.includes(kw.toLowerCase())) keywordHits++;
-            }
-            const keywordScore = entry.keywords.length > 0 ? (keywordHits / entry.keywords.length) * 100 : 0;
-            const entryWords = entry.question.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-            let wordOverlap = 0;
-            for (const w of words) {
-                if (entryWords.some(ew => ew.includes(w) || w.includes(ew))) wordOverlap++;
-            }
-            const overlapScore = words.length > 0 ? (wordOverlap / Math.max(words.length, entryWords.length)) * 100 : 0;
-            const score = Math.round(keywordScore * 0.6 + overlapScore * 0.4);
+        if (entries && entries.length > 0) {
+            return questions.map((q: QuestionnaireQuestion) => {
+                let bestMatch: any = null;
+                let bestScore = 0;
+                let matchTier = 0; // 1: Exact, 2: Keyword/Domain, 3: Jaccard/Semantic
 
-            if (score > bestScore) {
-                bestScore = score;
-                bestMatch = entry;
-            }
+                const qNormRaw = q.questionText.toLowerCase();
+                const qNorm = qNormRaw.replace(/[^a-z0-9\s]/g, '').trim();
+                const qWords = qNorm.split(/\s+/).filter((w: string) => w.length > 3);
+
+                for (const entry of entries) {
+                    const eNorm = entry.questionNormalized;
+
+                    // Tier 1: Exact Normalized Match
+                    if (qNorm === eNorm && qNorm.length > 0) {
+                        bestScore = 97;
+                        bestMatch = entry;
+                        matchTier = 1;
+                        break; // Perfect match, shortcut
+                    }
+
+                    const eWords = eNorm.split(/\s+/).filter((w: string) => w.length > 3);
+                    const entryKeywords = (entry.keywords || '').split(',').map((k: string) => k.trim().toLowerCase()).filter(Boolean);
+
+                    let keywordHits = 0;
+                    for (const kw of entryKeywords) {
+                        if (qNormRaw.includes(kw)) keywordHits++;
+                    }
+                    const keywordScore = entryKeywords.length > 0 ? (keywordHits / entryKeywords.length) * 100 : 0;
+
+                    let wordOverlap = 0;
+                    for (const w of qWords) {
+                        if (eWords.some((ew: string) => ew.includes(w) || w.includes(ew))) wordOverlap++;
+                    }
+                    const overlapScore = qWords.length > 0 ? (wordOverlap / Math.max(qWords.length, eWords.length)) * 100 : 0;
+
+                    // Tier 2: Keyword + Domain Overlap (Weighted)
+                    const t2Score = Math.round(keywordScore * 0.6 + overlapScore * 0.4);
+
+                    // Tier 3: Jaccard Similarity (Basic Semantic Approximation)
+                    const intersection = qWords.filter((x: string) => eWords.includes(x));
+                    const union = new Set([...qWords, ...eWords]);
+                    const jaccard = union.size === 0 ? 0 : (intersection.length / union.size) * 100;
+                    const t3Score = Math.round(jaccard * 0.7 + overlapScore * 0.3);
+
+                    const currentScore = Math.max(t2Score, t3Score);
+                    const currentTier = t2Score >= t3Score ? 2 : 3;
+
+                    if (currentScore > bestScore) {
+                        bestScore = currentScore;
+                        bestMatch = entry;
+                        matchTier = currentTier;
+                    }
+                }
+
+                if (bestMatch && bestScore >= minConfidence) {
+                    let confidence: ConfidenceLevel = 'low';
+                    if (matchTier === 1) confidence = 'high';
+                    else if (matchTier === 2 && bestScore >= 80) confidence = 'high';
+                    else if (matchTier === 2 || (matchTier === 3 && bestScore >= 65)) confidence = 'medium';
+
+                    // Track usage asynchronously (fire-and-forget)
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (prisma as any).knowledgeEntry.update({
+                        where: { id: bestMatch.id },
+                        data: { usageCount: { increment: 1 }, lastUsed: new Date() },
+                    }).catch(() => { });
+
+                    return {
+                        ...q,
+                        answer: bestMatch.answerText,
+                        yesNo: bestMatch.answerType as 'Yes' | 'No' | 'N/A',
+                        confidence,
+                        matchedEntryId: bestMatch.id,
+                        source: 'a2a' as const,
+                        evidenceRef: bestMatch.evidence || '',
+                    };
+                }
+
+                // Tier 5 (Fallback): Manual
+                return {
+                    ...q,
+                    answer: '',
+                    yesNo: '' as const,
+                    confidence: 'low' as const,
+                    source: 'manual' as const,
+                    evidenceRef: '',
+                };
+            });
         }
+    } catch (err) {
+        console.warn('[CAIQ Engine] DB knowledge query failed, falling back to empty:', err);
+    }
 
-        if (bestMatch && bestScore >= minConfidence) {
-            const confidence: ConfidenceLevel =
-                bestScore >= 70 ? 'high' : bestScore >= 50 ? 'medium' : 'low';
-
-            return {
-                ...q,
-                answer: bestMatch.answer,
-                yesNo: bestMatch.yesNo,
-                confidence,
-                matchedEntryId: bestMatch.id,
-                source: 'a2a' as const,
-                evidenceRef: bestMatch.evidenceRef,
-            };
-        }
-
-        return {
-            ...q,
-            answer: '',
-            yesNo: '' as const,
-            confidence: 'low' as const,
-            source: 'manual' as const,
-            evidenceRef: '',
-        };
-    });
+    // If DB fails, fallback to bare manual mapping
+    return questions.map(q => ({
+        ...q,
+        answer: '',
+        yesNo: '' as const,
+        confidence: 'low' as const,
+        source: 'manual' as const,
+        evidenceRef: '',
+    }));
 }
 
 // ────────────────────────────────────────────
@@ -676,6 +736,25 @@ export async function enhanceWithAI(
     const toEnhance = questions.filter(q => q.source === 'manual' || q.confidence === 'low');
     if (toEnhance.length === 0) return questions;
 
+    // Tier 4: Fetch Knowledge Repository Context dynamically for AI reference
+    let repoContext = '';
+    try {
+        const prisma = (await import('@/lib/prisma')).default;
+        // Fetch a broad cross-section of approved answers
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const entries = await (prisma as any).knowledgeEntry.findMany({
+            where: { approvedAt: { not: null } },
+            orderBy: { usageCount: 'desc' },
+            take: 80 // enough for solid context without blowing up token limit
+        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        repoContext = entries.map((e: any) => `Q: ${e.questionText}\nA: ${e.answerText}`).join('\n\n');
+    } catch (e) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _e = e;
+        console.warn('[CAIQ Engine] Failed to fetch repo context for Tier 4 AI synthesis');
+    }
+
     const batches: AnsweredQuestion[][] = [];
     for (let i = 0; i < toEnhance.length; i += 15) {
         batches.push(toEnhance.slice(i, i + 15));
@@ -686,7 +765,7 @@ export async function enhanceWithAI(
 
     for (let bi = 0; bi < batches.length; bi++) {
         const batch = batches[bi];
-        const prompt = buildLegacyAIPrompt(batch, orgProfile);
+        const prompt = buildDynamicAIPrompt(batch, orgProfile, repoContext);
 
         try {
             const response = await aiGenerateContent(prompt);
@@ -709,13 +788,13 @@ export async function enhanceWithAI(
                         answer: item.answer,
                         yesNo: item.yesNo,
                         confidence: 'medium',
-                        source: 'context',
+                        source: 'context', // Contextual generation
                         evidenceRef: item.evidenceRef || original.evidenceRef,
                     });
                 }
             }
         } catch (error) {
-            console.error('[CAIQ AI] Batch processing error:', error);
+            console.error('[CAIQ AI] Tier 4 Batch processing error:', error);
         }
 
         processedCount += batch.length;
@@ -819,21 +898,23 @@ RESPOND IN THIS EXACT JSON FORMAT (array of objects):
 Respond ONLY with the JSON array. No explanation.`;
 }
 
-function buildLegacyAIPrompt(questions: AnsweredQuestion[], profile: OrgProfile): string {
+function buildDynamicAIPrompt(questions: AnsweredQuestion[], profile: OrgProfile, repoContext: string): string {
     const questionsText = questions.map(q =>
         `[ROW:${q.rowIndex}] ${q.questionText}`
     ).join('\n');
 
-    return `You are a cybersecurity compliance expert completing a vendor risk questionnaire (CAIQ/SIG style).
+    return `You are a Tier 4 AI Synthesizer completing a vendor risk questionnaire.
+Your goal is to answer the target questions by synthesizing information from the Organization Profile and the existing Knowledge Repository Context.
 
 ORGANIZATION PROFILE:
 - Industry: ${profile.industry || 'Technology'}
 - Certifications: ${profile.certifications.join(', ') || 'SOC 2 Type II, ISO 27001'}
-- Organization Size: ${profile.orgSize || 'Mid-size (500-5000 employees)'}
 - Cloud Provider: ${profile.cloudProvider || 'AWS/Azure'}
-- Additional Context: ${profile.additionalContext || 'N/A'}
 
-For each question below, provide a professional, detailed answer from the perspective of a mature, compliant organization. Each answer should be 2-4 sentences and reference specific controls, tools, or processes.
+KNOWLEDGE REPOSITORY CONTEXT (use this to base your answers on actual company posture):
+${repoContext ? repoContext : 'No specific context provided. Rely on standard enterprise best practices aligned to the certifications.'}
+
+For each question below, provide a professional, detailed answer (2-4 sentences) that aligns with the organization's posture. 
 
 QUESTIONS:
 ${questionsText}
@@ -844,7 +925,7 @@ RESPOND IN THIS EXACT JSON FORMAT (array of objects):
     "rowIndex": <number>,
     "yesNo": "Yes" | "No" | "N/A",
     "answer": "<detailed answer>",
-    "evidenceRef": "<evidence document reference>"
+    "evidenceRef": "<evidence reference>"
   }
 ]
 

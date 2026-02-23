@@ -22,23 +22,24 @@ function setSecurityHeaders(response: NextResponse, nonce: string) {
         'Permissions-Policy',
         'camera=(), microphone=(), geolocation=()'
     );
-    // CSP: nonce for scripts/styles; strict-dynamic allows scripts loaded by nonce-approved scripts.
-    // In development, Next.js uses eval() so we allow unsafe-eval only then.
+    // CSP: In development, we use permissive policies because Next.js/React
+    // inject inline scripts and styles that aren't nonce-aware.
+    // In production, tighten these with proper nonce integration.
     const isDev = process.env.NODE_ENV !== 'production';
-    const scriptSrc = [
-        "'self'",
-        `'nonce-${nonce}'`,
-        "'strict-dynamic'",
-        ...(isDev ? ["'unsafe-eval'"] : []),
-    ].join(' ');
+    const scriptSrc = isDev
+        ? "'self' 'unsafe-inline' 'unsafe-eval'"
+        : `'self' 'nonce-${nonce}' 'strict-dynamic'`;
+    const styleSrc = isDev
+        ? "'self' 'unsafe-inline'"
+        : `'self' 'unsafe-inline' 'nonce-${nonce}'`;
     response.headers.set(
         'Content-Security-Policy',
         [
             "default-src 'self'",
             `script-src ${scriptSrc}`,
-            `style-src 'self' 'nonce-${nonce}'`,
+            `style-src ${styleSrc}`,
             "img-src 'self' data: https: blob:",
-            "font-src 'self' data:",
+            "font-src 'self' data: https:",
             "connect-src 'self' https:",
             "frame-ancestors 'none'",
             "base-uri 'self'",
