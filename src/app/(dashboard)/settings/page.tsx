@@ -10,8 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import {
     Brain, Loader2, Sparkles, Key, Eye, EyeOff, RefreshCw, Bell,
-    Settings as SettingsIcon, Coins, Flame, Activity, Users, ShieldAlert, Cpu
+    Settings as SettingsIcon, Coins, Flame, Activity, Users, ShieldAlert, Cpu, Building2
 } from "lucide-react";
+import { CompaniesProductsTab } from '@/components/settings/CompaniesProductsTab';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
     ResponsiveContainer, Cell
@@ -218,11 +219,13 @@ export default function SettingsPage() {
                     <TabsTrigger value="ai" className="gap-2"><Sparkles className="h-4 w-4" />AI Provider</TabsTrigger>
                     <TabsTrigger value="preferences" className="gap-2"><SettingsIcon className="h-4 w-4" />Preferences</TabsTrigger>
                     <TabsTrigger value="economics" className="gap-2"><Coins className="h-4 w-4" />AI Economics</TabsTrigger>
+                    <TabsTrigger value="companies" className="gap-2"><Building2 className="h-4 w-4" />Companies & Products</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="ai"><AIProviderConfig /></TabsContent>
                 <TabsContent value="preferences"><div className="space-y-4"><NotificationSettings /></div></TabsContent>
                 <TabsContent value="economics"><AIEconomicsTab /></TabsContent>
+                <TabsContent value="companies"><CompaniesProductsTab /></TabsContent>
             </Tabs>
         </div>
     );

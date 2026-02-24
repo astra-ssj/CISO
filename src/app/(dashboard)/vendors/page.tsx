@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,13 +11,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVendorRiskStore, VendorCategory, VendorRiskTier, VendorStatus } from "@/lib/vendor-risk-store";
+import { useCompanyProductStore } from "@/lib/company-product-store";
 import CAIQWizard from "@/components/caiq/CAIQWizard";
 import { KnowledgeBase } from "@/components/knowledge/KnowledgeBase";
 import QuickAnswerWidget from "@/components/caiq/QuickAnswerWidget";
+import CAIQReviewQueueTab from "@/components/caiq/CAIQReviewQueueTab";
+import { ContextSwitcher } from "@/components/layout/ContextSwitcher";
 import {
     Building2, ShieldAlert, Search, Plus, AlertTriangle, CheckCircle,
     Clock, XCircle, TrendingUp, Users, FileWarning, ChevronDown, ChevronUp,
-    FileSpreadsheet, BookOpen, Zap
+    FileSpreadsheet, BookOpen, Zap, ClipboardCheck
 } from "lucide-react";
 
 // ────────────────────────────────────────────
@@ -54,10 +58,28 @@ const CATEGORY_LABELS: Record<VendorCategory, string> = {
 
 export default function VendorsPage() {
     const { vendors, addVendor, removeVendor, getCriticalVendorCount, getAverageRiskScore, getPendingReviewCount } = useVendorRiskStore();
+    const { selectedCompanyId, selectedProductId, contextLabel, fetchCompanies } = useCompanyProductStore();
+    const searchParams = useSearchParams();
     const [searchQuery, setSearchQuery] = useState('');
     const [filterTier, setFilterTier] = useState<string>('all');
     const [showAddForm, setShowAddForm] = useState(false);
     const [expandedVendor, setExpandedVendor] = useState<string | null>(null);
+
+    // Determine initial tab from URL params (for "Configure CAIQ" navigation)
+    const tabFromUrl = searchParams.get('tab') || 'quickanswer';
+
+    useEffect(() => {
+        fetchCompanies();
+    }, [fetchCompanies]);
+
+    // Apply company/product context from URL params (from Settings → Configure CAIQ)
+    useEffect(() => {
+        const companyId = searchParams.get('companyId');
+        const productId = searchParams.get('productId');
+        if (companyId) {
+            useCompanyProductStore.getState().setContext(companyId, productId);
+        }
+    }, [searchParams]);
 
     // New vendor form state
     const [newVendor, setNewVendor] = useState({
@@ -93,8 +115,8 @@ export default function VendorsPage() {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
-            <div className="flex flex-col gap-2">
+            {/* Header with Context Switcher */}
+            <div className="flex flex-col gap-3">
                 <div className="flex justify-between items-start">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
@@ -104,27 +126,61 @@ export default function VendorsPage() {
                         <p className="text-muted-foreground">Assess, monitor, and manage third-party vendor risk across your supply chain.</p>
                     </div>
                 </div>
+
+                {/* Context Switcher — always visible */}
+                <ContextSwitcher />
             </div>
 
-            {/* Tabs */}
-            <Tabs defaultValue="vendors" className="w-full">
+            {/* Tabs — New Structure */}
+            <Tabs defaultValue={tabFromUrl} className="w-full">
                 <TabsList className="bg-zinc-900/60 border border-zinc-800/50">
-                    <TabsTrigger value="vendors" className="gap-2 data-[state=active]:bg-primary/20">
-                        <Building2 className="h-4 w-4" /> Vendor Registry
-                    </TabsTrigger>
-                    <TabsTrigger value="caiq" className="gap-2 data-[state=active]:bg-violet-500/20">
-                        <FileSpreadsheet className="h-4 w-4" /> CAIQ Automation
-                    </TabsTrigger>
                     <TabsTrigger value="quickanswer" className="gap-2 data-[state=active]:bg-amber-500/20">
                         <Zap className="h-4 w-4" /> Quick Answer
+                    </TabsTrigger>
+                    <TabsTrigger value="transfer" className="gap-2 data-[state=active]:bg-violet-500/20">
+                        <FileSpreadsheet className="h-4 w-4" /> Knowledge Transfer
                     </TabsTrigger>
                     <TabsTrigger value="knowledge" className="gap-2 data-[state=active]:bg-blue-500/20">
                         <BookOpen className="h-4 w-4" /> Knowledge Base
                     </TabsTrigger>
+                    <TabsTrigger value="review" className="gap-2 data-[state=active]:bg-purple-500/20">
+                        <ClipboardCheck className="h-4 w-4" /> Review Queue
+                    </TabsTrigger>
+                    <TabsTrigger value="vendors" className="gap-2 data-[state=active]:bg-primary/20">
+                        <Building2 className="h-4 w-4" /> Vendor Registry
+                    </TabsTrigger>
                 </TabsList>
 
                 {/* ═══════════════════════════════════════ */}
-                {/* TAB 1: Vendor Registry (Original)       */}
+                {/* TAB 1: Quick Answer (3-step flow)      */}
+                {/* ═══════════════════════════════════════ */}
+                <TabsContent value="quickanswer" className="mt-6">
+                    <QuickAnswerWidget />
+                </TabsContent>
+
+                {/* ═══════════════════════════════════════ */}
+                {/* TAB 2: Knowledge Transfer (was CAIQ)   */}
+                {/* ═══════════════════════════════════════ */}
+                <TabsContent value="transfer" className="mt-6">
+                    <CAIQWizard />
+                </TabsContent>
+
+                {/* ═══════════════════════════════════════ */}
+                {/* TAB 3: Knowledge Base (3-layer view)   */}
+                {/* ═══════════════════════════════════════ */}
+                <TabsContent value="knowledge" className="mt-6">
+                    <KnowledgeBase />
+                </TabsContent>
+
+                {/* ═══════════════════════════════════════ */}
+                {/* TAB 4: Review Queue                    */}
+                {/* ═══════════════════════════════════════ */}
+                <TabsContent value="review" className="mt-6">
+                    <CAIQReviewQueueTab />
+                </TabsContent>
+
+                {/* ═══════════════════════════════════════ */}
+                {/* TAB 5: Vendor Registry (Original)      */}
                 {/* ═══════════════════════════════════════ */}
                 <TabsContent value="vendors" className="space-y-6 mt-6">
                     {/* Hero Metrics */}
@@ -374,27 +430,6 @@ export default function VendorsPage() {
                             )}
                         </CardContent>
                     </Card>
-                </TabsContent>
-
-                {/* ═══════════════════════════════════════ */}
-                {/* TAB 2: CAIQ Automation (New Wizard)     */}
-                {/* ═══════════════════════════════════════ */}
-                <TabsContent value="caiq" className="mt-6">
-                    <CAIQWizard />
-                </TabsContent>
-
-                {/* ═══════════════════════════════════════ */}
-                {/* TAB 3: Quick Answer                     */}
-                {/* ═══════════════════════════════════════ */}
-                <TabsContent value="quickanswer" className="mt-6">
-                    <QuickAnswerWidget />
-                </TabsContent>
-
-                {/* ═══════════════════════════════════════ */}
-                {/* TAB 4: Knowledge Base                   */}
-                {/* ═══════════════════════════════════════ */}
-                <TabsContent value="knowledge" className="mt-6">
-                    <KnowledgeBase />
                 </TabsContent>
 
             </Tabs>

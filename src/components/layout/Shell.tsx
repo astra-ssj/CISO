@@ -22,6 +22,7 @@ import {
     Target,
     Building2,
     Zap,
+    Map,
 } from 'lucide-react';
 import { useAstraStore } from '@/lib/store';
 import { signOut } from 'next-auth/react';
@@ -43,6 +44,7 @@ const navItems = [
     { name: 'AppSec', href: '/appsec', icon: Shield },
     { name: 'Settings', href: '/settings', icon: Settings },
     { name: 'Help Center', href: '/help', icon: HelpCircle },
+    { name: 'Roadmap', href: '/roadmap', icon: Map },
 ];
 
 export function Shell({ children }: { children: React.ReactNode }) {

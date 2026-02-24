@@ -370,4 +370,66 @@ model KnowledgeEntry {
   tags               String?   // comma-separated custom tags
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
+
+  knowledgeOverrides KnowledgeOverride[]
+}
+
+// -----------------------------------------------------------------------------
+// 13. Company & Product (Multi-tenant CAIQ)
+// -----------------------------------------------------------------------------
+
+model Company {
+  id                String    @id @default(cuid())
+  name              String    // "AstraLabs DE"
+  legalEntity       String    // "AstraLabs GmbH"
+  jurisdiction      String    // EU
+  country           String    // DE
+  industry          String    // Technology
+  size              String    // Enterprise
+  certifications    String    // JSON: ["ISO 27001", "SOC 2 Type II"]
+  primaryCloud      String    // AWS
+  additionalContext String?
+  products          Product[]
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Product {
+  id                 String    @id @default(cuid())
+  name               String    // "CORTEX"
+  description        String?   // "Zero Trust AI Platform for compliance"
+  type               String    // SaaS, PaaS, On-Premise, Hybrid
+  dataTypes          String    // JSON: ["PII", "Financial", "Health"]
+  hostingRegions     String    // JSON: ["eu-west-1", "eu-central-1"]
+  complianceScope    String    // JSON: ["GDPR", "NIS2", "SOC 2"]
+  techStack          String?   // JSON: ["Next.js", "PostgreSQL", "Docker"]
+  companyId          String
+  company            Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  knowledgeOverrides KnowledgeOverride[]
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// 14. Knowledge Overrides (Company / Product layer)
+// -----------------------------------------------------------------------------
+
+model KnowledgeOverride {
+  id               String          @id @default(cuid())
+  knowledgeEntryId String?         // links to common KB entry (null if net-new)
+  knowledgeEntry   KnowledgeEntry? @relation(fields: [knowledgeEntryId], references: [id], onDelete: SetNull)
+  scope            String          // "COMPANY" or "PRODUCT"
+  companyId        String?
+  productId        String?
+  product          Product?        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  questionText     String          // may be same or different from common
+  answerType       String          // YES, NO, NA, CONDITIONAL
+  answerText       String          // the override answer
+  evidence         String?
+  frameworks       String?
+  notes            String?         // why this differs from common
+  approvedBy       String?
+  approvedAt       DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
 }

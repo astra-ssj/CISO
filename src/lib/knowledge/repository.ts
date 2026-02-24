@@ -86,7 +86,7 @@ export function extractKeywords(text: string): string {
     return unique.join(',');
 }
 
-function tokenOverlapScore(a: string, b: string): number {
+export function tokenOverlapScore(a: string, b: string): number {
     const tokensA = new Set(a.split(/[\s,]+/).filter(Boolean));
     const tokensB = new Set(b.split(/[\s,]+/).filter(Boolean));
     if (tokensA.size === 0 || tokensB.size === 0) return 0;
