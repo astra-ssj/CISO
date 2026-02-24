@@ -57,7 +57,11 @@ function setSecurityHeaders(response: NextResponse, nonce: string) {
         'Permissions-Policy',
         'camera=(), microphone=(), geolocation=()'
     );
+    // M2 fix: isDev CSP uses unsafe-inline + unsafe-eval — intentional for local development only.
+    // IMPORTANT: staging and production MUST set NODE_ENV=production to use the nonce-based
+    // strict-dynamic policy below. Never deploy with NODE_ENV=development.
     const isDev = process.env.NODE_ENV !== 'production';
+
     const scriptSrc = isDev
         ? "'self' 'unsafe-inline' 'unsafe-eval'"
         : `'self' 'nonce-${nonce}' 'strict-dynamic'`;

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { jiraConnector, JiraIssue } from '@/lib/jira/jira-connector';
+import { jiraConnector } from '@/lib/jira/jira-connector';
+import { parseBodyWithZod, jiraIssueBodySchema, log } from '@/lib/api-validation';
 
 // Initialize connector from env vars if available
 function initConnector() {
@@ -38,7 +39,9 @@ export async function POST(request: Request) {
     initConnector();
 
     try {
-        const body = await request.json() as JiraIssue;
+        const raw = await request.json().catch(() => ({}));
+        const parsed = parseBodyWithZod(raw, jiraIssueBodySchema);
+        if ('error' in parsed) return parsed.error;
 
         if (!jiraConnector.isConfigured()) {
             return NextResponse.json({
@@ -48,7 +51,8 @@ export async function POST(request: Request) {
             }, { status: 503 });
         }
 
-        const result = await jiraConnector.createIssue(body);
+        const result = await jiraConnector.createIssue(parsed.data as any);
+
         return NextResponse.json({
             success: true,
             key: result.key,

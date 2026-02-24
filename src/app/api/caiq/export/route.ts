@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import ExcelJS from 'exceljs';
 import type { AnsweredQuestion } from '@/lib/caiq/caiq-knowledge-base';
+import { parseBodyWithZod, caiqExportBodySchema, log } from '@/lib/api-validation';
 
 const CONFIDENCE_LABEL: Record<string, string> = {
     a2a: 'Direct Match (KB)',
@@ -20,12 +21,14 @@ const CONFIDENCE_LABEL: Record<string, string> = {
 
 export async function POST(request: NextRequest) {
     try {
-        const body = await request.json() as {
+        const raw = await request.json().catch(() => ({}));
+        const parsed = parseBodyWithZod(raw, caiqExportBodySchema);
+        if ('error' in parsed) return parsed.error;
+
+        const { questions, fileName = 'questionnaire-answers' } = parsed.data as unknown as {
             questions: AnsweredQuestion[];
             fileName?: string;
         };
-
-        const { questions, fileName = 'questionnaire-answers' } = body;
 
         if (!questions || questions.length === 0) {
             return NextResponse.json({ error: 'No questions provided' }, { status: 400 });

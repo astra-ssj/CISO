@@ -8,8 +8,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { KnowledgeRepository } from '@/lib/knowledge/repository';
+import { parseBodyWithZod, knowledgeCreateBodySchema, log } from '@/lib/api-validation';
 
 const repo = new KnowledgeRepository(prisma as any);
+
 
 // ─── GET — Search & List ────────────────────
 
@@ -60,7 +62,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
-        const body = await request.json();
+        const raw = await request.json().catch(() => ({}));
+        const parsed = parseBodyWithZod(raw, knowledgeCreateBodySchema);
+        if ('error' in parsed) return parsed.error;
+        const body = parsed.data as any;
 
         // Bulk import mode
         if (Array.isArray(body.entries)) {
@@ -74,13 +79,6 @@ export async function POST(request: NextRequest) {
         }
 
         // Single entry creation
-        if (!body.questionText || !body.answerText) {
-            return NextResponse.json(
-                { error: 'questionText and answerText are required' },
-                { status: 400 }
-            );
-        }
-
         const entry = await repo.createEntry({
             questionText: body.questionText,
             answerText: body.answerText,
@@ -97,10 +95,11 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({ success: true, entry }, { status: 201 });
     } catch (error: any) {
-        console.error('[Knowledge API] POST error:', error);
+        log('error', 'knowledge/POST', 'Failed to create knowledge entry', error);
         return NextResponse.json(
             { error: error.message || 'Failed to create knowledge entry' },
             { status: 500 }
         );
     }
 }
+

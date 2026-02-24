@@ -2,27 +2,18 @@ import { NextResponse } from 'next/server';
 import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
 import { analyzePolicy } from '@/lib/policy-engine';
 import type { FrameworkID } from '@/lib/compliance-frameworks';
+import { parseBodyWithZod, agentAnalyzePolicyBodySchema, log } from '@/lib/api-validation';
 
 export async function POST(request: Request) {
     try {
-        const body = await request.json();
-        const { policyContent, standards } = body;
+        const raw = await request.json().catch(() => ({}));
+        const parsed = parseBodyWithZod(raw, agentAnalyzePolicyBodySchema);
+        if ('error' in parsed) return parsed.error;
+        const { policyContent, standards } = parsed.data;
 
-        if (!policyContent) {
-            return NextResponse.json(
-                { error: 'Missing required field: policyContent' },
-                { status: 400 }
-            );
-        }
+        const frameworks: FrameworkID[] = (standards as FrameworkID[] | undefined) || ['NIST_CSF_2_0', 'ISO_27001_2022'];
 
-        if (policyContent.length > 50000) {
-            return NextResponse.json(
-                { error: 'Policy content exceeds maximum length (50,000 characters).' },
-                { status: 400 }
-            );
-        }
 
-        const frameworks: FrameworkID[] = standards || ['NIST_CSF_2_0', 'ISO_27001_2022'];
 
         // Try real AI analysis first
         if (isAIConfigured()) {

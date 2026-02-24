@@ -8,8 +8,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { KnowledgeRepository } from '@/lib/knowledge/repository';
+import { parseBodyWithZod, knowledgePatchBodySchema, log } from '@/lib/api-validation';
 
 const repo = new KnowledgeRepository(prisma as any);
+
 
 // ─── PATCH — Update / Approve ───────────────
 
@@ -19,7 +21,10 @@ export async function PATCH(
 ) {
     try {
         const { id } = await params;
-        const body = await request.json();
+        const raw = await request.json().catch(() => ({}));
+        const parsed = parseBodyWithZod(raw, knowledgePatchBodySchema);
+        if ('error' in parsed) return parsed.error;
+        const body = parsed.data as any;
 
         // Special mode: approve
         if (body.action === 'approve') {
@@ -37,13 +42,14 @@ export async function PATCH(
         const entry = await repo.updateEntry(id, body);
         return NextResponse.json({ success: true, entry });
     } catch (error: any) {
-        console.error('[Knowledge API] PATCH error:', error);
+        log('error', 'knowledge/[id]/PATCH', 'Failed to update entry', error);
         return NextResponse.json(
             { error: error.message || 'Failed to update entry' },
             { status: 500 }
         );
     }
 }
+
 
 // ─── DELETE — Remove ────────────────────────
 

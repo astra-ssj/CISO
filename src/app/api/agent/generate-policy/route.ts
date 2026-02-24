@@ -2,18 +2,14 @@ import { NextResponse } from 'next/server';
 import { generatePolicyAsync } from '@/lib/intelligence-engine';
 import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
 import { TokenTracker, AIModel } from '@/lib/telemetry/token-tracker';
+import { parseBodyWithZod, agentGeneratePolicyBodySchema, log } from '@/lib/api-validation';
 
 export async function POST(request: Request) {
     try {
-        const body = await request.json();
-        const { topic, strictness, useRealAI } = body;
-
-        if (!topic) {
-            return NextResponse.json(
-                { error: "Topic is required" },
-                { status: 400 }
-            );
-        }
+        const raw = await request.json().catch(() => ({}));
+        const parsed = parseBodyWithZod(raw, agentGeneratePolicyBodySchema);
+        if ('error' in parsed) return parsed.error;
+        const { topic, strictness, useRealAI } = parsed.data;
 
         const safeTopic = topic.slice(0, 100).replace(/[<>]/g, "");
         const isReady = isAIConfigured();

@@ -18,26 +18,23 @@ import {
 import type { AnsweredQuestion } from '@/lib/caiq/caiq-knowledge-base';
 import type { SourceEntry } from '@/lib/caiq/caiq-answer-engine';
 import { getAIProvider } from '@/lib/ai/engine';
+import { parseBodyWithZod, caiqEnhanceBodySchema, log } from '@/lib/api-validation';
 
 export async function POST(request: NextRequest) {
     try {
-        const body = await request.json();
+        const raw = await request.json().catch(() => ({}));
+        const parsed = parseBodyWithZod(raw, caiqEnhanceBodySchema);
+        if ('error' in parsed) return parsed.error;
+
         const {
             questions,
             sourceEntries,
             profile,
-        } = body as {
+        } = parsed.data as unknown as {
             questions: AnsweredQuestion[];
             sourceEntries: SourceEntry[];
             profile: OrgProfile;
         };
-
-        if (!questions || questions.length === 0) {
-            return new Response(JSON.stringify({ error: 'No questions provided' }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
 
         const provider = getAIProvider();
         const aiGenerateContent = provider.generateContent.bind(provider);

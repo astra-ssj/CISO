@@ -2,6 +2,20 @@ import { NextResponse } from 'next/server';
 import { analyzeRequestAsync } from '@/lib/intelligence-engine';
 import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
 import { TokenTracker, AIModel } from '@/lib/telemetry/token-tracker';
+import { parseBodyWithZod, log } from '@/lib/api-validation';
+import { z } from 'zod';
+
+// Inline schema — extends the shared one to include the legacy 'policies' field
+const analyzeBodySchema = z.object({
+    title: z.string().min(1, 'Title is required').max(200),
+    description: z.string().min(1, 'Description is required').max(5000),
+    context: z.object({
+        activeStandards: z.array(z.string().max(64)).max(20).optional(),
+        policies: z.array(z.unknown()).max(100).optional(),
+    }).optional(),
+    useRealAI: z.boolean().optional(),
+});
+
 
 // Define expected output shape
 interface AnalysisResult {
@@ -14,23 +28,11 @@ interface AnalysisResult {
 
 export async function POST(request: Request) {
     try {
-        const body = await request.json();
-        const { title, description, context, useRealAI } = body;
+        const raw = await request.json().catch(() => ({}));
+        const parsed = parseBodyWithZod(raw, analyzeBodySchema);
+        if ('error' in parsed) return parsed.error;
+        const { title, description, context, useRealAI } = parsed.data;
 
-        if (!title || !description) {
-            return NextResponse.json(
-                { error: "Missing required fields: title, description" },
-                { status: 400 }
-            );
-        }
-
-        // Input Sanitization
-        if (title.length > 200 || description.length > 5000) {
-            return NextResponse.json(
-                { error: "Input exceeds maximum length limits." },
-                { status: 400 }
-            );
-        }
 
         // Check availability
         const isReady = isAIConfigured();
@@ -81,8 +83,9 @@ Output Schema:
                     title,
                     description,
                     {
-                        activeStandards: context?.activeStandards || [],
-                        policies: context?.policies || []
+                        activeStandards: (context?.activeStandards || []) as any,
+                        policies: (context?.policies || []) as any
+
                     }
                 );
                 return NextResponse.json({
@@ -105,8 +108,10 @@ Output Schema:
             title,
             description,
             {
-                activeStandards: context?.activeStandards || [],
-                policies: context?.policies || []
+                activeStandards: (context?.activeStandards || []) as any,
+                policies: (context?.policies || []) as any
+
+
             }
         );
 
@@ -117,7 +122,8 @@ Output Schema:
         });
 
     } catch (error: unknown) {
-        console.error("Agent Analysis Failed:", error);
+        log('error', 'agent/analyze', 'Agent Analysis Failed', error);
+
 
         const err = error as { status?: number; message?: string };
         const status = err.status ?? 500;

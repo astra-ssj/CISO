@@ -7,24 +7,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { KnowledgeRepository } from '@/lib/knowledge/repository';
+import { parseBodyWithZod, knowledgeIngestBodySchema, log } from '@/lib/api-validation';
 
 const repo = new KnowledgeRepository(prisma as any);
 
+
 export async function POST(request: NextRequest) {
     try {
-        const body = await request.json();
+        const raw = await request.json().catch(() => ({}));
+        const parsed = parseBodyWithZod(raw, knowledgeIngestBodySchema);
+        if ('error' in parsed) return parsed.error;
+        const { questions, source, assessmentName } = parsed.data;
 
-        if (!Array.isArray(body.questions) || body.questions.length === 0) {
-            return NextResponse.json(
-                { error: 'questions array is required and must not be empty' },
-                { status: 400 }
-            );
-        }
-
-        const source = body.source || body.assessmentName || 'Assessment Import';
+        const src = source || assessmentName || 'Assessment Import';
 
         // Transform AnsweredQuestion[] to IngestEntry[]
-        const entries = body.questions
+        const entries = questions
             .filter((q: any) => q.answer && q.answer.length > 5 && q.source !== 'manual')
             .map((q: any) => ({
                 questionText: q.questionText,
@@ -39,20 +37,21 @@ export async function POST(request: NextRequest) {
                             : typeof q.confidence === 'number' ? q.confidence : 0.7,
             }));
 
-        const result = await repo.bulkIngest(entries, source);
+        const result = await repo.bulkIngest(entries, src);
 
         return NextResponse.json({
             success: true,
-            source,
-            totalProcessed: body.questions.length,
+            source: src,
+            totalProcessed: questions.length,
             created: result.created,
             skipped: result.skipped,
         });
     } catch (error: any) {
-        console.error('[Knowledge Ingest API] Error:', error);
+        log('error', 'knowledge/ingest/POST', 'Failed to ingest knowledge entries', error);
         return NextResponse.json(
             { error: error.message || 'Failed to ingest knowledge entries' },
             { status: 500 }
         );
     }
 }
+

@@ -105,6 +105,9 @@ function AIProviderConfig() {
                                 {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </Button>
                         </div>
+                        <p className="text-[11px] text-muted-foreground">
+                            🔒 This key is held in session memory only and is <strong>not saved</strong> to the database. You will need to re-enter it after a page refresh.
+                        </p>
                     </div>
                 )}
 
