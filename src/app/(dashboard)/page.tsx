@@ -42,7 +42,7 @@ import { VulnerabilityFeed } from "@/components/dashboard/vulnerability-feed";
 import { RemediationVelocity } from "@/components/dashboard/remediation-velocity";
 import { BoardReportExport } from "@/components/reporting/board-export-btn";
 import { TrafficFlow } from "@/components/visualizations/traffic-flow";
-import { GitHubConnector } from "@/lib/connectors/github";
+import { GitHubConnector, type GitHubStats } from "@/lib/connectors/github";
 import { PostureGauge } from "@/components/dashboard/posture-gauge";
 import { BoardDeckGenerator } from "@/components/reporting/board-deck-generator";
 import { useDecisionStore } from '@/lib/decision-engine/router';
@@ -197,8 +197,9 @@ export default function DashboardPage() {
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
 
   // Real Data State
-  const [trafficData, setTrafficData] = useState<Record<string, unknown> | null>(null);
-  const [githubStats, setGithubStats] = useState<Record<string, unknown> | null>(null);
+  interface TrafficData { nodes: { id: string; label: string; type: 'internet' | 'security' | 'app' | 'data'; x: number; y: number; status: 'active' | 'idle' | 'warning' }[]; paths: any[] }
+  const [trafficData, setTrafficData] = useState<TrafficData | undefined>(undefined);
+  const [githubStats, setGithubStats] = useState<GitHubStats | null>(null);
 
   // CAIQ metrics (from API)
   const [caiqMetrics, setCaiqMetrics] = useState<{
@@ -211,7 +212,7 @@ export default function DashboardPage() {
     fetch('/api/vendors/caiq/metrics')
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => data && setCaiqMetrics(data))
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   useEffect(() => {
@@ -219,7 +220,7 @@ export default function DashboardPage() {
     const fetchData = async () => {
       const gh = new GitHubConnector();
       const stats = await gh.getStats();
-      setGithubStats(stats as Record<string, unknown>);
+      setGithubStats(stats);
 
       // Transform for traffic flow (simulated logic)
       // In reality, this would map repo traffic or API calls
@@ -232,6 +233,15 @@ export default function DashboardPage() {
           { id: 'app-2', label: 'Auth Service', type: 'app', x: 65, y: 70, status: 'active' },
           { id: 'db-primary', label: 'Postgres Primary', type: 'data', x: 85, y: 30, status: 'active' },
           { id: 'db-cache', label: 'Redis Cluster', type: 'data', x: 85, y: 70, status: 'active' }
+        ],
+        paths: [
+          { from: 'internet', to: 'waf', type: 'http' },
+          { from: 'waf', to: 'lb', type: 'secure' },
+          { from: 'lb', to: 'app-1', type: 'http' },
+          { from: 'lb', to: 'app-2', type: 'secure' },
+          { from: 'app-1', to: 'db-primary', type: 'sql' },
+          { from: 'app-1', to: 'db-cache', type: 'sql' },
+          { from: 'app-2', to: 'db-primary', type: 'sql' },
         ]
       });
     };
@@ -346,9 +356,9 @@ export default function DashboardPage() {
         />
         <MetricCard
           label="Active Threats"
-          value={githubStats ? githubStats.openAlerts.toString() : activeThreats.toString()}
+          value={githubStats ? String(githubStats.openAlerts) : activeThreats.toString()}
           icon={ShieldCheck}
-          status={(githubStats?.openAlerts || activeThreats) > 0 ? 'danger' : 'success'}
+          status={(githubStats?.openAlerts ?? activeThreats) > 0 ? 'danger' : 'success'}
         />
         <MetricCard
           label="Pending Reviews"

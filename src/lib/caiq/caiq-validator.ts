@@ -490,7 +490,7 @@ If aligned and specificEnough are true and issues is empty, the answer passes. O
 
     try {
       const raw = await provider.generateContent(prompt);
-      const parsed = this.parseAISelfCheckResponse(raw);
+      const parsed = this.parseAISelfCheckResponse(raw.data);
       if (!parsed) {
         return {
           name: 'AI Self-Check',

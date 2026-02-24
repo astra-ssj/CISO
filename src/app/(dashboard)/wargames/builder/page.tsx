@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Save, Download, ArrowLeft } from 'lucide-react';
-import { Scenario, GameStep } from "@/lib/wargames-data";
+import { Scenario, GameStep, GameChoice } from "@/lib/wargames-data";
 import Link from 'next/link';
 
 export default function ScenarioBuilderPage() {

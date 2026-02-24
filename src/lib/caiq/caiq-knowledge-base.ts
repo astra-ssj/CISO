@@ -491,3 +491,44 @@ export const CAIQ_KNOWLEDGE_BASE: CAIQEntry[] = [
         yesNo: 'Yes', confidence: 'high', evidenceRef: 'Breach Notification Procedure, Notification Templates, Legal Review Records'
     },
 ];
+
+// ────────────────────────────────────────────
+// Helper accessors (used by caiq-org-context, caiq-validator, assess route)
+// ────────────────────────────────────────────
+
+export interface KBEntryView {
+    questionId: string;
+    domain: CAIQDomain;
+    domainName: string;
+    question: string;
+    keywords: string[];
+    answer: string;
+    yesNo: 'Yes' | 'No' | 'N/A';
+    confidence: ConfidenceLevel;
+    evidenceRef: string;
+    frameworkMappings: { framework: string; controlId: string }[];
+}
+
+function toView(entry: CAIQEntry): KBEntryView {
+    return {
+        ...entry,
+        questionId: entry.id,
+        frameworkMappings: [],
+    };
+}
+
+/** Returns the full knowledge base as KBEntryView[]. */
+export function getKnowledgeBase(): KBEntryView[] {
+    return CAIQ_KNOWLEDGE_BASE.map(toView);
+}
+
+/** Finds a single KB entry by question ID (e.g. "IAM-01.1"). */
+export function getEntryByQuestionId(questionId: string): KBEntryView | undefined {
+    const entry = CAIQ_KNOWLEDGE_BASE.find((e) => e.id === questionId);
+    return entry ? toView(entry) : undefined;
+}
+
+/** Returns all KB entries for the given CAIQ domain. */
+export function getEntriesByDomain(domain: string): KBEntryView[] {
+    return CAIQ_KNOWLEDGE_BASE.filter((e) => e.domain === domain).map(toView);
+}

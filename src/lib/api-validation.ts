@@ -12,7 +12,7 @@ export function parseBodyWithZod<T>(body: unknown, schema: z.ZodType<T>): { data
         return { data: result.data };
     }
     const first = result.error.flatten();
-    const message = first.formErrors[0] ?? first.fieldErrors ? Object.values(first.fieldErrors).flat()[0]?.[0] : 'Validation failed';
+    const message = first.formErrors[0] ?? (Object.values(first.fieldErrors).flat().filter(Boolean)[0] as string | undefined) ?? 'Validation failed';
     return {
         error: NextResponse.json(
             { error: 'Validation failed', details: message },
@@ -41,7 +41,7 @@ const chatMessageSchema = z.object({
 export const agentChatBodySchema = z.object({
     message: z.string().min(1, 'Message is required').max(32_000),
     history: z.array(chatMessageSchema).max(50).optional(),
-    context: z.record(z.unknown()).optional(),
+    context: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type AgentChatBody = z.infer<typeof agentChatBodySchema>;

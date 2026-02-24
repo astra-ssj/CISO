@@ -33,6 +33,8 @@ interface ThreatMatrixProps {
 
 export function ThreatMatrix({ data }: ThreatMatrixProps) {
     const [filter, setFilter] = useState<"all" | "critical" | "gaps">("all");
+    const [, setXAxis] = useState<string>('function');
+    const [, setYAxis] = useState<string>('scenario');
 
     // Calculate Global Health Score
     // (Mock logic: Average of all safeguards across all rows)

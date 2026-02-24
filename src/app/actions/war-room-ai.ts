@@ -1,6 +1,8 @@
 "use server";
 
-import { getAIProvider, isAIConfigured, type ChatHistoryEntry } from '@/lib/ai/engine';
+import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
+
+type ChatHistoryEntry = { role: 'user' | 'model'; parts: { text: string }[] };
 
 export interface WarRoomResult {
     success: boolean;

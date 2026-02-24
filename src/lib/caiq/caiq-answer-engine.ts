@@ -1065,3 +1065,159 @@ export async function exportToExcel(result: CAIQProcessingResult): Promise<Buffe
     const buf = await wb.xlsx.writeBuffer();
     return Buffer.from(buf);
 }
+
+// ────────────────────────────────────────────
+// CAIQAnswerEngine class wrapper (used by assess/route.ts)
+// ────────────────────────────────────────────
+
+import type {
+    CAIQAnswer,
+    CAIQAnswerSet,
+    CAIQStats,
+    CAIQDomain as TypesDomain,
+    ConfidenceTier,
+    CAIQGeneratedBy,
+    CAIQAnswerType,
+    OrganizationContext,
+} from './types';
+import { CAIQ_DOMAINS as DOMAIN_LIST } from './types';
+import type { KBEntryView } from './caiq-knowledge-base';
+import type { UnifiedAIProvider } from '@/lib/ai/engine';
+
+interface EngineOptions {
+    semanticMatchThreshold?: number;
+    exactMatchConfidence?: number;
+    aiTemperature?: number;
+}
+
+interface GenerateOptions {
+    includeEvidence?: boolean;
+    autoApproveThreshold?: number;
+    flagThreshold?: number;
+    onProgress?: (current: number, total: number, lastAnswer: CAIQAnswer) => void;
+}
+
+function toCAIQAnswer(aq: AnsweredQuestion, idx: number): CAIQAnswer {
+    const tierMap: Record<string, ConfidenceTier> = {
+        a2a: 'EXACT_MATCH',
+        semantic: 'SEMANTIC_MATCH',
+        context: 'AI_GENERATED',
+        manual: 'FLAGGED',
+    };
+    const generatedByMap: Record<string, CAIQGeneratedBy> = {
+        a2a: 'KB_EXACT',
+        semantic: 'KB_SEMANTIC',
+        context: 'AI_PRIMARY',
+        manual: 'HUMAN',
+    };
+    const answerTypeMap: Record<string, CAIQAnswerType> = {
+        Yes: 'YES',
+        No: 'NO',
+        'N/A': 'NOT_APPLICABLE',
+        '': 'NOT_APPLICABLE',
+    };
+
+    const confidence =
+        aq.confidence === 'high' ? 0.95 : aq.confidence === 'medium' ? 0.75 : 0.4;
+
+    return {
+        questionId: aq.questionId ?? `Q-${idx}`,
+        answer: aq.answer || '',
+        answerType: answerTypeMap[aq.yesNo] ?? 'NOT_APPLICABLE',
+        confidence,
+        tier: tierMap[aq.source] ?? 'FLAGGED',
+        sources: aq.matchedEntryId ? [aq.matchedEntryId] : [],
+        evidenceRefs: aq.evidenceRef ? [aq.evidenceRef] : [],
+        frameworkRefs: [],
+        needsReview: confidence < 0.6 || aq.source === 'manual',
+        auditId: `audit-${Date.now()}-${idx}`,
+        generatedAt: new Date().toISOString(),
+        generatedBy: generatedByMap[aq.source] ?? 'HUMAN',
+    };
+}
+
+export class CAIQAnswerEngine {
+    private kb: KBEntryView[];
+    private ai: UnifiedAIProvider;
+    private orgContext: OrganizationContext;
+    private options: EngineOptions;
+
+    constructor(
+        kb: KBEntryView[],
+        ai: UnifiedAIProvider,
+        orgContext: OrganizationContext,
+        options: EngineOptions = {},
+    ) {
+        this.kb = kb;
+        this.ai = ai;
+        this.orgContext = orgContext;
+        this.options = options;
+    }
+
+    async generateAnswers(
+        questions: { id: string; domain: TypesDomain; text: string }[],
+        opts: GenerateOptions = {},
+    ): Promise<CAIQAnswerSet> {
+        // Convert ParsedCAIQQuestion[] to QuestionnaireQuestion[] for existing matchers
+        const qqList: QuestionnaireQuestion[] = questions.map((q, i) => ({
+            rowIndex: i,
+            questionId: q.id,
+            questionText: q.text,
+        }));
+
+        // Tier 1: match against KB
+        const kbEntries: SourceEntry[] = this.kb.map((e, i) => ({
+            rowIndex: i,
+            questionId: e.questionId,
+            questionText: e.question,
+            answerText: e.answer,
+            yesNo: e.yesNo,
+        }));
+
+        const minConf = Math.round((this.options.semanticMatchThreshold ?? 0.4) * 100);
+        let answered = matchToSource(qqList, kbEntries, minConf);
+
+        // Convert to CAIQAnswer[]
+        const caiqAnswers: CAIQAnswer[] = answered.map((aq, i) => toCAIQAnswer(aq, i));
+
+        // Fire progress callbacks
+        if (opts.onProgress) {
+            for (let i = 0; i < caiqAnswers.length; i++) {
+                opts.onProgress(i + 1, caiqAnswers.length, caiqAnswers[i]);
+            }
+        }
+
+        const stats = this.computeStats(caiqAnswers, questions);
+        return { answers: caiqAnswers, stats };
+    }
+
+    private computeStats(
+        answers: CAIQAnswer[],
+        questions: { id: string; domain: TypesDomain; text: string }[],
+    ): CAIQStats {
+        const high = answers.filter(a => a.confidence >= 0.8).length;
+        const medium = answers.filter(a => a.confidence >= 0.5 && a.confidence < 0.8).length;
+        const low = answers.filter(a => a.confidence < 0.5).length;
+        const flagged = answers.filter(a => a.tier === 'FLAGGED').length;
+        const answered = answers.filter(a => a.answer.length > 0 && a.tier !== 'FLAGGED').length;
+
+        const coverageByDomain = {} as Record<TypesDomain, { answered: number; total: number }>;
+        for (const d of DOMAIN_LIST) {
+            const domainQs = questions.filter(q => q.domain === d);
+            const domainAs = answers.filter(
+                (a, i) => questions[i]?.domain === d && a.answer.length > 0 && a.tier !== 'FLAGGED',
+            );
+            coverageByDomain[d] = { answered: domainAs.length, total: domainQs.length };
+        }
+
+        return {
+            total: answers.length,
+            highConfidence: high,
+            mediumConfidence: medium,
+            lowConfidence: low,
+            flagged,
+            estimatedAccuracy: answers.length > 0 ? answered / answers.length : 0,
+            coverageByDomain,
+        };
+    }
+}

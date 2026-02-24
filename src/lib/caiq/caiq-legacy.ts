@@ -241,7 +241,7 @@ export function matchToKnowledgeBase(
         yesNo: bestMatch.yesNo,
         confidence,
         matchedEntryId: bestMatch.id,
-        source: 'knowledge-base' as const,
+        source: 'a2a' as const,
         evidenceRef: bestMatch.evidenceRef,
       };
     }
@@ -335,7 +335,7 @@ export async function enhanceWithAI(
             answer: item.answer,
             yesNo: item.yesNo,
             confidence: 'medium',
-            source: 'ai',
+            source: 'context' as const,
             evidenceRef: item.evidenceRef || original.evidenceRef,
           });
         }
@@ -349,8 +349,8 @@ export async function enhanceWithAI(
 }
 
 export function computeResults(questions: AnsweredQuestion[]): CAIQProcessingResult {
-  const answeredByKB = questions.filter((q) => q.source === 'knowledge-base').length;
-  const answeredByAI = questions.filter((q) => q.source === 'ai').length;
+  const answeredByKB = questions.filter((q) => q.source === 'a2a').length;
+  const answeredByAI = questions.filter((q) => q.source === 'context' || q.source === 'semantic').length;
   const answered = answeredByKB + answeredByAI;
   const unanswered = questions.length - answered;
 

@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
         const buffer = Buffer.from(await file.arrayBuffer());
         const workbook = new ExcelJS.Workbook();
-        await workbook.xlsx.load(buffer);
+        await workbook.xlsx.load(buffer as unknown as ArrayBuffer);
 
         const sheet = workbook.getWorksheet(1); // Assume first sheet
         if (!sheet) {
