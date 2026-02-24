@@ -1,13 +1,27 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import NextAuth from 'next-auth';
+import { authConfig } from '@/auth.config';
 import { rateLimit, getClientIp } from '@/lib/rate-limit';
-import { randomBytes } from 'crypto';
+
+/**
+ * Edge-safe middleware.
+ *
+ * Uses auth.config.ts (no Prisma / no fs) instead of the full auth.ts
+ * so that the middleware runs correctly in the Edge runtime.
+ *
+ * Full auth (with Prisma credentials provider) is only used in API routes
+ * via the auth() helper from auth.ts.
+ */
+
+const { auth } = NextAuth(authConfig);
 
 const AUTH_LIMIT = 10;   // requests per minute for auth endpoints
 const API_LIMIT = 100;   // requests per minute for other API routes
 
 function generateNonce(): string {
-    return randomBytes(16).toString('base64');
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    return btoa(String.fromCharCode(...bytes));
 }
 
 function setSecurityHeaders(response: NextResponse, nonce: string) {
@@ -22,9 +36,6 @@ function setSecurityHeaders(response: NextResponse, nonce: string) {
         'Permissions-Policy',
         'camera=(), microphone=(), geolocation=()'
     );
-    // CSP: In development, we use permissive policies because Next.js/React
-    // inject inline scripts and styles that aren't nonce-aware.
-    // In production, tighten these with proper nonce integration.
     const isDev = process.env.NODE_ENV !== 'production';
     const scriptSrc = isDev
         ? "'self' 'unsafe-inline' 'unsafe-eval'"
@@ -49,7 +60,6 @@ function setSecurityHeaders(response: NextResponse, nonce: string) {
     return response;
 }
 
-// NextAuth auth() runs authorized() from auth.config; we add rate limiting and security headers.
 export default auth((req) => {
     const pathname = req.nextUrl.pathname;
     const ip = getClientIp(req);
