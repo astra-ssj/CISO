@@ -1,0 +1,1112 @@
+[
+    {
+        "id": "dc-001",
+        "name": "Ashburn VA Corridor",
+        "lat": 39.0438,
+        "lng": -77.4874,
+        "country": "US",
+        "operator": "Multiple",
+        "type": "Hyperscale Cluster",
+        "capacity": "2000+ MW"
+    },
+    {
+        "id": "dc-002",
+        "name": "Dallas-Fort Worth",
+        "lat": 32.8998,
+        "lng": -97.0403,
+        "country": "US",
+        "operator": "Multiple",
+        "type": "Hyperscale Cluster",
+        "capacity": "800+ MW"
+    },
+    {
+        "id": "dc-003",
+        "name": "Phoenix/Mesa AZ",
+        "lat": 33.4203,
+        "lng": -111.8227,
+        "country": "US",
+        "operator": "Multiple",
+        "type": "Hyperscale Cluster",
+        "capacity": "600+ MW"
+    },
+    {
+        "id": "dc-004",
+        "name": "Silicon Valley",
+        "lat": 37.3861,
+        "lng": -122.0839,
+        "country": "US",
+        "operator": "Multiple",
+        "type": "Hyperscale Cluster",
+        "capacity": "500+ MW"
+    },
+    {
+        "id": "dc-005",
+        "name": "Chicago IL",
+        "lat": 41.8781,
+        "lng": -87.6298,
+        "country": "US",
+        "operator": "Multiple",
+        "type": "Hyperscale Cluster",
+        "capacity": "400+ MW"
+    },
+    {
+        "id": "dc-006",
+        "name": "Hillsboro OR",
+        "lat": 45.5229,
+        "lng": -122.9898,
+        "country": "US",
+        "operator": "Intel/Google/Meta",
+        "type": "AI/Hyperscale",
+        "capacity": "500+ MW"
+    },
+    {
+        "id": "dc-007",
+        "name": "Council Bluffs IA",
+        "lat": 41.2619,
+        "lng": -95.8608,
+        "country": "US",
+        "operator": "Google/Meta",
+        "type": "Hyperscale",
+        "capacity": "400+ MW"
+    },
+    {
+        "id": "dc-008",
+        "name": "Quincy WA",
+        "lat": 47.2343,
+        "lng": -119.8526,
+        "country": "US",
+        "operator": "Microsoft/Yahoo",
+        "type": "Hyperscale",
+        "capacity": "300+ MW"
+    },
+    {
+        "id": "dc-009",
+        "name": "The Dalles OR",
+        "lat": 45.5946,
+        "lng": -121.1787,
+        "country": "US",
+        "operator": "Google",
+        "type": "AI/Hyperscale",
+        "capacity": "300+ MW"
+    },
+    {
+        "id": "dc-010",
+        "name": "Prineville OR",
+        "lat": 44.3101,
+        "lng": -120.8339,
+        "country": "US",
+        "operator": "Meta/Apple",
+        "type": "Hyperscale",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-011",
+        "name": "Columbus OH",
+        "lat": 39.9612,
+        "lng": -82.9988,
+        "country": "US",
+        "operator": "Multiple",
+        "type": "Hyperscale Cluster",
+        "capacity": "400+ MW"
+    },
+    {
+        "id": "dc-012",
+        "name": "New Albany OH",
+        "lat": 40.0812,
+        "lng": -82.8088,
+        "country": "US",
+        "operator": "Google/Meta/AWS",
+        "type": "AI/Hyperscale",
+        "capacity": "600+ MW"
+    },
+    {
+        "id": "dc-013",
+        "name": "Atlanta GA",
+        "lat": 33.7490,
+        "lng": -84.3880,
+        "country": "US",
+        "operator": "Multiple",
+        "type": "Hyperscale Cluster",
+        "capacity": "300+ MW"
+    },
+    {
+        "id": "dc-014",
+        "name": "New York Metro",
+        "lat": 40.7128,
+        "lng": -74.0060,
+        "country": "US",
+        "operator": "Multiple",
+        "type": "Financial/Colo",
+        "capacity": "400+ MW"
+    },
+    {
+        "id": "dc-015",
+        "name": "Salt Lake City UT",
+        "lat": 40.7608,
+        "lng": -111.8910,
+        "country": "US",
+        "operator": "Multiple",
+        "type": "Emerging Cluster",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-016",
+        "name": "London Slough",
+        "lat": 51.5074,
+        "lng": -0.5950,
+        "country": "GB",
+        "operator": "Equinix/CyrusOne",
+        "type": "Colocation Cluster",
+        "capacity": "500+ MW"
+    },
+    {
+        "id": "dc-017",
+        "name": "London Docklands",
+        "lat": 51.5065,
+        "lng": -0.0097,
+        "country": "GB",
+        "operator": "Equinix/Telehouse",
+        "type": "Financial/Colo",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-018",
+        "name": "Amsterdam AMS",
+        "lat": 52.3031,
+        "lng": 4.9389,
+        "country": "NL",
+        "operator": "Equinix/Digital Realty",
+        "type": "Internet Exchange Hub",
+        "capacity": "500+ MW"
+    },
+    {
+        "id": "dc-019",
+        "name": "Frankfurt FRA",
+        "lat": 50.1109,
+        "lng": 8.6821,
+        "country": "DE",
+        "operator": "Equinix/DE-CIX",
+        "type": "Internet Exchange Hub",
+        "capacity": "600+ MW"
+    },
+    {
+        "id": "dc-020",
+        "name": "Paris CDG",
+        "lat": 48.9811,
+        "lng": 2.5472,
+        "country": "FR",
+        "operator": "Equinix/Scaleway",
+        "type": "Hyperscale Cluster",
+        "capacity": "300+ MW"
+    },
+    {
+        "id": "dc-021",
+        "name": "Marseille MRS",
+        "lat": 43.2965,
+        "lng": 5.3698,
+        "country": "FR",
+        "operator": "Interxion/DE-CIX",
+        "type": "Cable Landing Hub",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-022",
+        "name": "Dublin DUB",
+        "lat": 53.3498,
+        "lng": -6.2603,
+        "country": "IE",
+        "operator": "AWS/Microsoft/Google",
+        "type": "Hyperscale Cluster",
+        "capacity": "900+ MW"
+    },
+    {
+        "id": "dc-023",
+        "name": "Stockholm STO",
+        "lat": 59.3293,
+        "lng": 18.0686,
+        "country": "SE",
+        "operator": "Multiple",
+        "type": "Hyperscale Cluster",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-024",
+        "name": "Hamina FI",
+        "lat": 60.5693,
+        "lng": 27.1978,
+        "country": "FI",
+        "operator": "Google",
+        "type": "AI/Hyperscale",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-025",
+        "name": "Luleå SE",
+        "lat": 65.5848,
+        "lng": 22.1547,
+        "country": "SE",
+        "operator": "Meta",
+        "type": "Hyperscale",
+        "capacity": "150+ MW"
+    },
+    {
+        "id": "dc-026",
+        "name": "Stavanger NO",
+        "lat": 58.9700,
+        "lng": 5.7331,
+        "country": "NO",
+        "operator": "Green Mountain",
+        "type": "Hyperscale",
+        "capacity": "100+ MW"
+    },
+    {
+        "id": "dc-027",
+        "name": "Geneva CH",
+        "lat": 46.2044,
+        "lng": 6.1432,
+        "country": "CH",
+        "operator": "Equinix",
+        "type": "Financial Hub",
+        "capacity": "100+ MW"
+    },
+    {
+        "id": "dc-028",
+        "name": "Zurich CH",
+        "lat": 47.3769,
+        "lng": 8.5417,
+        "country": "CH",
+        "operator": "Equinix/Green",
+        "type": "Financial Hub",
+        "capacity": "150+ MW"
+    },
+    {
+        "id": "dc-029",
+        "name": "Milan IT",
+        "lat": 45.4642,
+        "lng": 9.1900,
+        "country": "IT",
+        "operator": "Equinix/DATA4",
+        "type": "Mediterranean Hub",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-030",
+        "name": "Madrid ES",
+        "lat": 40.4168,
+        "lng": -3.7038,
+        "country": "ES",
+        "operator": "Equinix/Interxion",
+        "type": "Iberian Hub",
+        "capacity": "150+ MW"
+    },
+    {
+        "id": "dc-031",
+        "name": "Singapore SG",
+        "lat": 1.3521,
+        "lng": 103.8198,
+        "country": "SG",
+        "operator": "Multiple",
+        "type": "APAC Hub",
+        "capacity": "800+ MW"
+    },
+    {
+        "id": "dc-032",
+        "name": "Tokyo TY",
+        "lat": 35.6762,
+        "lng": 139.6503,
+        "country": "JP",
+        "operator": "Equinix/NTT",
+        "type": "APAC Hub",
+        "capacity": "600+ MW"
+    },
+    {
+        "id": "dc-033",
+        "name": "Osaka OS",
+        "lat": 34.6937,
+        "lng": 135.5023,
+        "country": "JP",
+        "operator": "NTT/Equinix",
+        "type": "APAC Hub",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-034",
+        "name": "Hong Kong HK",
+        "lat": 22.3193,
+        "lng": 114.1694,
+        "country": "HK",
+        "operator": "Equinix/SUNeVision",
+        "type": "APAC Hub",
+        "capacity": "400+ MW"
+    },
+    {
+        "id": "dc-035",
+        "name": "Seoul KR",
+        "lat": 37.5665,
+        "lng": 126.9780,
+        "country": "KR",
+        "operator": "KT/SK",
+        "type": "APAC Hub",
+        "capacity": "300+ MW"
+    },
+    {
+        "id": "dc-036",
+        "name": "Mumbai IN",
+        "lat": 19.0760,
+        "lng": 72.8777,
+        "country": "IN",
+        "operator": "NTT/STT/Equinix",
+        "type": "South Asia Hub",
+        "capacity": "300+ MW"
+    },
+    {
+        "id": "dc-037",
+        "name": "Chennai IN",
+        "lat": 13.0827,
+        "lng": 80.2707,
+        "country": "IN",
+        "operator": "NTT/STT",
+        "type": "Cable Landing Hub",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-038",
+        "name": "Hyderabad IN",
+        "lat": 17.3850,
+        "lng": 78.4867,
+        "country": "IN",
+        "operator": "AWS/Microsoft/Google",
+        "type": "Hyperscale Cluster",
+        "capacity": "400+ MW"
+    },
+    {
+        "id": "dc-039",
+        "name": "Sydney AU",
+        "lat": -33.8688,
+        "lng": 151.2093,
+        "country": "AU",
+        "operator": "Equinix/NextDC",
+        "type": "APAC Hub",
+        "capacity": "300+ MW"
+    },
+    {
+        "id": "dc-040",
+        "name": "Melbourne AU",
+        "lat": -37.8136,
+        "lng": 144.9631,
+        "country": "AU",
+        "operator": "Equinix/NextDC",
+        "type": "APAC Hub",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-041",
+        "name": "São Paulo BR",
+        "lat": -23.5505,
+        "lng": -46.6333,
+        "country": "BR",
+        "operator": "Equinix/Ascenty",
+        "type": "LATAM Hub",
+        "capacity": "300+ MW"
+    },
+    {
+        "id": "dc-042",
+        "name": "Santiago CL",
+        "lat": -33.4489,
+        "lng": -70.6693,
+        "country": "CL",
+        "operator": "Equinix/GTD",
+        "type": "LATAM Hub",
+        "capacity": "100+ MW"
+    },
+    {
+        "id": "dc-043",
+        "name": "Querétaro MX",
+        "lat": 20.5888,
+        "lng": -100.3899,
+        "country": "MX",
+        "operator": "Equinix/KIO",
+        "type": "LATAM Hub",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-044",
+        "name": "Warsaw PL",
+        "lat": 52.2297,
+        "lng": 21.0122,
+        "country": "PL",
+        "operator": "Equinix/Atman",
+        "type": "CEE Hub",
+        "capacity": "150+ MW"
+    },
+    {
+        "id": "dc-045",
+        "name": "Bucharest RO",
+        "lat": 44.4268,
+        "lng": 26.1025,
+        "country": "RO",
+        "type": "Emerging Hub",
+        "operator": "Multiple",
+        "capacity": "50+ MW"
+    },
+    {
+        "id": "dc-046",
+        "name": "Johor Bahru MY",
+        "lat": 1.4927,
+        "lng": 103.7414,
+        "country": "MY",
+        "operator": "Multiple",
+        "type": "APAC Expansion",
+        "capacity": "500+ MW"
+    },
+    {
+        "id": "dc-047",
+        "name": "Batam ID",
+        "lat": 1.0456,
+        "lng": 104.0305,
+        "country": "ID",
+        "operator": "Multiple",
+        "type": "APAC Expansion",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-048",
+        "name": "Jakarta ID",
+        "lat": -6.2088,
+        "lng": 106.8456,
+        "country": "ID",
+        "operator": "NTT/DCI",
+        "type": "Southeast Asia",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-049",
+        "name": "Jeddah SA",
+        "lat": 21.4858,
+        "lng": 39.1925,
+        "country": "SA",
+        "operator": "stc/AWS",
+        "type": "MENA Hub",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-050",
+        "name": "Riyadh SA",
+        "lat": 24.7136,
+        "lng": 46.6753,
+        "country": "SA",
+        "operator": "stc/Oracle",
+        "type": "MENA Hub",
+        "capacity": "300+ MW"
+    },
+    {
+        "id": "dc-051",
+        "name": "Dubai AE",
+        "lat": 25.2048,
+        "lng": 55.2708,
+        "country": "AE",
+        "operator": "Equinix/Khazna",
+        "type": "MENA Hub",
+        "capacity": "400+ MW"
+    },
+    {
+        "id": "dc-052",
+        "name": "Fujairah AE",
+        "lat": 25.1288,
+        "lng": 56.3264,
+        "country": "AE",
+        "operator": "DATAMENA",
+        "type": "Cable Landing Hub",
+        "capacity": "100+ MW"
+    },
+    {
+        "id": "dc-053",
+        "name": "Tel Aviv IL",
+        "lat": 32.0853,
+        "lng": 34.7818,
+        "country": "IL",
+        "operator": "Equinix",
+        "type": "Innovation Hub",
+        "capacity": "50+ MW"
+    },
+    {
+        "id": "dc-054",
+        "name": "Cape Town ZA",
+        "lat": -33.9249,
+        "lng": 18.4241,
+        "country": "ZA",
+        "operator": "Teraco",
+        "type": "Africa Hub",
+        "capacity": "80+ MW"
+    },
+    {
+        "id": "dc-055",
+        "name": "Johannesburg ZA",
+        "lat": -26.2041,
+        "lng": 28.0473,
+        "country": "ZA",
+        "operator": "Teraco",
+        "type": "Africa Hub",
+        "capacity": "100+ MW"
+    },
+    {
+        "id": "dc-056",
+        "name": "Lagos NG",
+        "lat": 6.5244,
+        "lng": 3.3792,
+        "country": "NG",
+        "operator": "Rack Centre/MDXi",
+        "type": "West Africa Hub",
+        "capacity": "50+ MW"
+    },
+    {
+        "id": "dc-057",
+        "name": "Nairobi KE",
+        "lat": -1.2921,
+        "lng": 36.8219,
+        "country": "KE",
+        "operator": "PAIX/iColo",
+        "type": "East Africa Hub",
+        "capacity": "40+ MW"
+    },
+    {
+        "id": "dc-058",
+        "name": "Beijing CN",
+        "lat": 39.9042,
+        "lng": 116.4074,
+        "country": "CN",
+        "operator": "ChinaNet/GDS",
+        "type": "Hyperscale",
+        "capacity": "400+ MW"
+    },
+    {
+        "id": "dc-059",
+        "name": "Shanghai CN",
+        "lat": 31.2304,
+        "lng": 121.4737,
+        "country": "CN",
+        "operator": "ChinaNet/GDS/Equinix",
+        "type": "Hyperscale",
+        "capacity": "500+ MW"
+    },
+    {
+        "id": "dc-060",
+        "name": "Guiyang CN",
+        "lat": 26.6470,
+        "lng": 106.6302,
+        "country": "CN",
+        "operator": "Multiple",
+        "type": "AI/Big Data",
+        "capacity": "300+ MW"
+    },
+    {
+        "id": "dc-061",
+        "name": "Zhongwei CN",
+        "lat": 37.5149,
+        "lng": 105.1965,
+        "country": "CN",
+        "operator": "AWS/Multiple",
+        "type": "AI/Cloud",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-062",
+        "name": "Ulanqab CN",
+        "lat": 41.0341,
+        "lng": 113.1334,
+        "country": "CN",
+        "operator": "Ali/Huawei",
+        "type": "AI/Cloud",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-063",
+        "name": "Mineral Gap VA",
+        "lat": 37.7700,
+        "lng": -78.1300,
+        "country": "US",
+        "operator": "QTS/Meta",
+        "type": "AI/Hyperscale",
+        "capacity": "300+ MW"
+    },
+    {
+        "id": "dc-064",
+        "name": "Mayes County OK",
+        "lat": 36.3000,
+        "lng": -95.2500,
+        "country": "US",
+        "operator": "Google",
+        "type": "AI/Hyperscale",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-065",
+        "name": "Papillion NE",
+        "lat": 41.1544,
+        "lng": -96.0422,
+        "country": "US",
+        "operator": "Meta",
+        "type": "AI/Hyperscale",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-066",
+        "name": "Mesa AZ",
+        "lat": 33.4152,
+        "lng": -111.8315,
+        "country": "US",
+        "operator": "Google/Apple",
+        "type": "AI/Hyperscale",
+        "capacity": "300+ MW"
+    },
+    {
+        "id": "dc-067",
+        "name": "Henrico VA",
+        "lat": 37.5563,
+        "lng": -77.3220,
+        "country": "US",
+        "operator": "QTS/Meta",
+        "type": "AI/Hyperscale",
+        "capacity": "300+ MW"
+    },
+    {
+        "id": "dc-068",
+        "name": "Eagle Mountain UT",
+        "lat": 40.3141,
+        "lng": -112.0119,
+        "country": "US",
+        "operator": "Meta",
+        "type": "AI/Hyperscale",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-069",
+        "name": "Kajaani FI",
+        "lat": 64.2274,
+        "lng": 27.7285,
+        "country": "FI",
+        "operator": "CSC/LUMI",
+        "type": "AI Supercomputer",
+        "capacity": "100+ MW"
+    },
+    {
+        "id": "dc-070",
+        "name": "Bologna IT",
+        "lat": 44.4949,
+        "lng": 11.3426,
+        "country": "IT",
+        "operator": "CINECA/Leonardo",
+        "type": "AI Supercomputer",
+        "capacity": "50+ MW"
+    },
+    {
+        "id": "dc-071",
+        "name": "Jülich DE",
+        "lat": 50.9222,
+        "lng": 6.3558,
+        "country": "DE",
+        "operator": "FZJ/JUPITER",
+        "type": "AI Supercomputer",
+        "capacity": "50+ MW"
+    },
+    {
+        "id": "dc-072",
+        "name": "Barcelona ES",
+        "lat": 41.3874,
+        "lng": 2.1686,
+        "country": "ES",
+        "operator": "BSC/MareNostrum",
+        "type": "AI Supercomputer",
+        "capacity": "40+ MW"
+    },
+    {
+        "id": "dc-073",
+        "name": "Kakogawa JP",
+        "lat": 34.7669,
+        "lng": 134.8414,
+        "country": "JP",
+        "operator": "Fujitsu/Fugaku",
+        "type": "AI Supercomputer",
+        "capacity": "30+ MW"
+    },
+    {
+        "id": "dc-074",
+        "name": "Oak Ridge TN",
+        "lat": 35.9312,
+        "lng": -84.3100,
+        "country": "US",
+        "operator": "ORNL/Frontier",
+        "type": "AI Supercomputer",
+        "capacity": "40+ MW"
+    },
+    {
+        "id": "dc-075",
+        "name": "Argonne IL",
+        "lat": 41.7144,
+        "lng": -87.9815,
+        "country": "US",
+        "operator": "ANL/Aurora",
+        "type": "AI Supercomputer",
+        "capacity": "60+ MW"
+    },
+    {
+        "id": "dc-076",
+        "name": "LLNL Livermore CA",
+        "lat": 37.6882,
+        "lng": -121.7068,
+        "country": "US",
+        "operator": "LLNL/El Capitan",
+        "type": "AI Supercomputer",
+        "capacity": "40+ MW"
+    },
+    {
+        "id": "dc-077",
+        "name": "Bristol GB",
+        "lat": 51.4545,
+        "lng": -2.5879,
+        "country": "GB",
+        "operator": "Isambard-AI",
+        "type": "AI Supercomputer",
+        "capacity": "20+ MW"
+    },
+    {
+        "id": "dc-078",
+        "name": "Taipei TW",
+        "lat": 25.0330,
+        "lng": 121.5654,
+        "country": "TW",
+        "operator": "Chief/Chunghwa",
+        "type": "APAC Hub",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-079",
+        "name": "Karawang ID",
+        "lat": -6.3023,
+        "lng": 107.3038,
+        "country": "ID",
+        "operator": "Google/Telkom",
+        "type": "Hyperscale",
+        "capacity": "100+ MW"
+    },
+    {
+        "id": "dc-080",
+        "name": "Navi Mumbai IN",
+        "lat": 19.0330,
+        "lng": 73.0297,
+        "country": "IN",
+        "operator": "Yotta/Reliance",
+        "type": "AI Hyperscale",
+        "capacity": "250+ MW"
+    },
+    {
+        "id": "dc-081",
+        "name": "Noida IN",
+        "lat": 28.5355,
+        "lng": 77.3910,
+        "country": "IN",
+        "operator": "NTT/Sify",
+        "type": "NCR Hub",
+        "capacity": "100+ MW"
+    },
+    {
+        "id": "dc-082",
+        "name": "Cyberjaya MY",
+        "lat": 2.9228,
+        "lng": 101.6545,
+        "country": "MY",
+        "operator": "AIMS/TIME",
+        "type": "ASEAN Hub",
+        "capacity": "150+ MW"
+    },
+    {
+        "id": "dc-083",
+        "name": "Kuala Lumpur MY",
+        "lat": 3.1390,
+        "lng": 101.6869,
+        "country": "MY",
+        "operator": "Equinix/AIMS",
+        "type": "ASEAN Hub",
+        "capacity": "100+ MW"
+    },
+    {
+        "id": "dc-084",
+        "name": "Bangkok TH",
+        "lat": 13.7563,
+        "lng": 100.5018,
+        "country": "TH",
+        "operator": "STT/True IDC",
+        "type": "ASEAN Hub",
+        "capacity": "100+ MW"
+    },
+    {
+        "id": "dc-085",
+        "name": "Ho Chi Minh City VN",
+        "lat": 10.8231,
+        "lng": 106.6297,
+        "country": "VN",
+        "operator": "Viettel/CMC",
+        "type": "Emerging Market",
+        "capacity": "60+ MW"
+    },
+    {
+        "id": "dc-086",
+        "name": "Manila PH",
+        "lat": 14.5995,
+        "lng": 120.9842,
+        "country": "PH",
+        "operator": "PLDT/Globe",
+        "type": "ASEAN Hub",
+        "capacity": "100+ MW"
+    },
+    {
+        "id": "dc-087",
+        "name": "Montreal CA",
+        "lat": 45.5017,
+        "lng": -73.5673,
+        "country": "CA",
+        "operator": "OVH/QScale",
+        "type": "AI Corridor",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-088",
+        "name": "Toronto CA",
+        "lat": 43.6532,
+        "lng": -79.3832,
+        "country": "CA",
+        "operator": "Equinix/Rogers",
+        "type": "Hyperscale Cluster",
+        "capacity": "300+ MW"
+    },
+    {
+        "id": "dc-089",
+        "name": "Beauharnois CA",
+        "lat": 45.3175,
+        "lng": -73.8721,
+        "country": "CA",
+        "operator": "OVH",
+        "type": "Hyperscale",
+        "capacity": "100+ MW"
+    },
+    {
+        "id": "dc-090",
+        "name": "Bogotá CO",
+        "lat": 4.7110,
+        "lng": -74.0721,
+        "country": "CO",
+        "operator": "Equinix/GlobeNet",
+        "type": "Andean Hub",
+        "capacity": "50+ MW"
+    },
+    {
+        "id": "dc-091",
+        "name": "Lima PE",
+        "lat": -12.0464,
+        "lng": -77.0428,
+        "country": "PE",
+        "operator": "Equinix",
+        "type": "Andean Hub",
+        "capacity": "30+ MW"
+    },
+    {
+        "id": "dc-092",
+        "name": "Buenos Aires AR",
+        "lat": -34.6037,
+        "lng": -58.3816,
+        "country": "AR",
+        "operator": "Equinix/Dataplex",
+        "type": "Southern Cone",
+        "capacity": "50+ MW"
+    },
+    {
+        "id": "dc-093",
+        "name": "Lisbon PT",
+        "lat": 38.7223,
+        "lng": -9.1393,
+        "country": "PT",
+        "operator": "Equinix/Start Campus",
+        "type": "Atlantic Hub",
+        "capacity": "150+ MW"
+    },
+    {
+        "id": "dc-094",
+        "name": "Eemshaven NL",
+        "lat": 53.4389,
+        "lng": 6.8344,
+        "country": "NL",
+        "operator": "Google/QTS",
+        "type": "AI/Hyperscale",
+        "capacity": "400+ MW"
+    },
+    {
+        "id": "dc-095",
+        "name": "Groningen NL",
+        "lat": 53.2194,
+        "lng": 6.5665,
+        "country": "NL",
+        "operator": "Multiple",
+        "type": "Hyperscale Expansion",
+        "capacity": "100+ MW"
+    },
+    {
+        "id": "dc-096",
+        "name": "Middenmeer NL",
+        "lat": 52.8103,
+        "lng": 5.0067,
+        "country": "NL",
+        "operator": "Microsoft",
+        "type": "AI/Hyperscale",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-097",
+        "name": "Ankang CN",
+        "lat": 32.6853,
+        "lng": 109.0292,
+        "country": "CN",
+        "operator": "Alibaba",
+        "type": "AI/Cloud",
+        "capacity": "150+ MW"
+    },
+    {
+        "id": "dc-098",
+        "name": "Chongqing CN",
+        "lat": 29.4316,
+        "lng": 106.9123,
+        "country": "CN",
+        "operator": "Tencent",
+        "type": "AI/Cloud",
+        "capacity": "200+ MW"
+    },
+    {
+        "id": "dc-099",
+        "name": "Nanjing CN",
+        "lat": 32.0603,
+        "lng": 118.7969,
+        "country": "CN",
+        "operator": "Multiple",
+        "type": "Eastern Hub",
+        "capacity": "150+ MW"
+    },
+    {
+        "id": "dc-100",
+        "name": "Shenzhen CN",
+        "lat": 22.5431,
+        "lng": 114.0579,
+        "country": "CN",
+        "operator": "Huawei/Tencent",
+        "type": "Southern Hub",
+        "capacity": "300+ MW"
+    },
+    {
+        "id": "dc-101",
+        "name": "Darwin AU",
+        "lat": -12.4634,
+        "lng": 130.8456,
+        "country": "AU",
+        "operator": "NextDC",
+        "type": "Emerging Hub",
+        "capacity": "30+ MW"
+    },
+    {
+        "id": "dc-102",
+        "name": "Perth AU",
+        "lat": -31.9505,
+        "lng": 115.8605,
+        "country": "AU",
+        "operator": "NextDC/CDC",
+        "type": "Western Hub",
+        "capacity": "50+ MW"
+    },
+    {
+        "id": "dc-103",
+        "name": "Canberra AU",
+        "lat": -35.2809,
+        "lng": 149.1300,
+        "country": "AU",
+        "operator": "CDC/Macquarie",
+        "type": "Government Hub",
+        "capacity": "100+ MW"
+    },
+    {
+        "id": "dc-104",
+        "name": "Muscat OM",
+        "lat": 23.5880,
+        "lng": 58.3829,
+        "country": "OM",
+        "operator": "Oman Data Park",
+        "type": "MENA Expansion",
+        "capacity": "30+ MW"
+    },
+    {
+        "id": "dc-105",
+        "name": "Doha QA",
+        "lat": 25.2854,
+        "lng": 51.5310,
+        "country": "QA",
+        "operator": "Ooredoo",
+        "type": "MENA Expansion",
+        "capacity": "40+ MW"
+    },
+    {
+        "id": "dc-106",
+        "name": "Manama BH",
+        "lat": 26.2285,
+        "lng": 50.5860,
+        "country": "BH",
+        "operator": "AWS",
+        "type": "MENA Hub",
+        "capacity": "100+ MW"
+    },
+    {
+        "id": "dc-107",
+        "name": "Ankara TR",
+        "lat": 39.9334,
+        "lng": 32.8597,
+        "country": "TR",
+        "operator": "Turkcell",
+        "type": "Turkey Hub",
+        "capacity": "50+ MW"
+    },
+    {
+        "id": "dc-108",
+        "name": "Istanbul TR",
+        "lat": 41.0082,
+        "lng": 28.9784,
+        "country": "TR",
+        "operator": "Equinix/Turkcell",
+        "type": "Eurasia Hub",
+        "capacity": "100+ MW"
+    },
+    {
+        "id": "dc-109",
+        "name": "Accra GH",
+        "lat": 5.6037,
+        "lng": -0.1870,
+        "country": "GH",
+        "operator": "Africa Data Centres",
+        "type": "West Africa",
+        "capacity": "25+ MW"
+    },
+    {
+        "id": "dc-110",
+        "name": "Cairo EG",
+        "lat": 30.0444,
+        "lng": 31.2357,
+        "country": "EG",
+        "operator": "Raya/Telecom Egypt",
+        "type": "North Africa Hub",
+        "capacity": "40+ MW"
+    },
+    {
+        "id": "dc-111",
+        "name": "Casablanca MA",
+        "lat": 33.5731,
+        "lng": -7.5898,
+        "country": "MA",
+        "operator": "N+ONE",
+        "type": "North Africa Hub",
+        "capacity": "20+ MW"
+    }
+]

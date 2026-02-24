@@ -1,0 +1,990 @@
+[
+    {
+        "id": "sl-001",
+        "name": "Washington DC",
+        "lat": 38.9072,
+        "lng": -77.0369,
+        "type": "political",
+        "keywords": [
+            "white house",
+            "pentagon",
+            "congress",
+            "state department",
+            "capitol"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-002",
+        "name": "New York",
+        "lat": 40.7128,
+        "lng": -74.0060,
+        "type": "financial",
+        "keywords": [
+            "wall street",
+            "un",
+            "united nations",
+            "NYSE"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-003",
+        "name": "London",
+        "lat": 51.5074,
+        "lng": -0.1278,
+        "type": "political_financial",
+        "keywords": [
+            "downing street",
+            "city of london",
+            "parliament",
+            "NATO",
+            "bank of england"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-004",
+        "name": "Brussels",
+        "lat": 50.8503,
+        "lng": 4.3517,
+        "type": "political",
+        "keywords": [
+            "EU",
+            "european commission",
+            "NATO HQ",
+            "european council"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-005",
+        "name": "Moscow",
+        "lat": 55.7558,
+        "lng": 37.6173,
+        "type": "political",
+        "keywords": [
+            "kremlin",
+            "duma",
+            "russia",
+            "putin"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-006",
+        "name": "Beijing",
+        "lat": 39.9042,
+        "lng": 116.4074,
+        "type": "political",
+        "keywords": [
+            "CPC",
+            "politburo",
+            "xi jinping",
+            "zhongnanhai"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-007",
+        "name": "Tokyo",
+        "lat": 35.6762,
+        "lng": 139.6503,
+        "type": "political_financial",
+        "keywords": [
+            "diet",
+            "bank of japan",
+            "nikkei"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-008",
+        "name": "Geneva",
+        "lat": 46.2044,
+        "lng": 6.1432,
+        "type": "diplomatic",
+        "keywords": [
+            "UN",
+            "WHO",
+            "WTO",
+            "ICRC",
+            "CERN"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-009",
+        "name": "Taipei",
+        "lat": 25.0330,
+        "lng": 121.5654,
+        "type": "geopolitical",
+        "keywords": [
+            "taiwan",
+            "strait",
+            "TSMC",
+            "semiconductor"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-010",
+        "name": "Kyiv",
+        "lat": 50.4501,
+        "lng": 30.5234,
+        "type": "conflict",
+        "keywords": [
+            "ukraine",
+            "zelensky",
+            "war"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-011",
+        "name": "Tehran",
+        "lat": 35.6892,
+        "lng": 51.3890,
+        "type": "geopolitical",
+        "keywords": [
+            "iran",
+            "IRGC",
+            "nuclear",
+            "sanctions"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-012",
+        "name": "Riyadh",
+        "lat": 24.7136,
+        "lng": 46.6753,
+        "type": "political",
+        "keywords": [
+            "saudi",
+            "MBS",
+            "OPEC",
+            "vision 2030"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-013",
+        "name": "Jerusalem",
+        "lat": 31.7683,
+        "lng": 35.2137,
+        "type": "conflict",
+        "keywords": [
+            "israel",
+            "palestine",
+            "holy city"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-014",
+        "name": "Istanbul",
+        "lat": 41.0082,
+        "lng": 28.9784,
+        "type": "geopolitical",
+        "keywords": [
+            "bosphorus",
+            "turkey",
+            "erdogan"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-015",
+        "name": "Singapore",
+        "lat": 1.3521,
+        "lng": 103.8198,
+        "type": "financial",
+        "keywords": [
+            "strait of malacca",
+            "ASEAN",
+            "trading hub"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-016",
+        "name": "Berlin",
+        "lat": 52.5200,
+        "lng": 13.4050,
+        "type": "political",
+        "keywords": [
+            "germany",
+            "bundestag",
+            "scholz"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-017",
+        "name": "Paris",
+        "lat": 48.8566,
+        "lng": 2.3522,
+        "type": "political",
+        "keywords": [
+            "france",
+            "macron",
+            "elysee"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-018",
+        "name": "Mumbai",
+        "lat": 19.0760,
+        "lng": 72.8777,
+        "type": "financial",
+        "keywords": [
+            "india",
+            "BSE",
+            "bombay stock exchange"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-019",
+        "name": "New Delhi",
+        "lat": 28.6139,
+        "lng": 77.2090,
+        "type": "political",
+        "keywords": [
+            "india",
+            "modi",
+            "parliament"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-020",
+        "name": "Islamabad",
+        "lat": 33.6844,
+        "lng": 73.0479,
+        "type": "geopolitical",
+        "keywords": [
+            "pakistan",
+            "ISI",
+            "nuclear"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-021",
+        "name": "Pyongyang",
+        "lat": 39.0392,
+        "lng": 125.7625,
+        "type": "geopolitical",
+        "keywords": [
+            "north korea",
+            "DPRK",
+            "kim jong un",
+            "missile",
+            "nuclear"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-022",
+        "name": "Seoul",
+        "lat": 37.5665,
+        "lng": 126.9780,
+        "type": "geopolitical",
+        "keywords": [
+            "south korea",
+            "DMZ",
+            "samsung"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-023",
+        "name": "Kabul",
+        "lat": 34.5553,
+        "lng": 69.2075,
+        "type": "conflict",
+        "keywords": [
+            "afghanistan",
+            "taliban"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-024",
+        "name": "Damascus",
+        "lat": 33.5138,
+        "lng": 36.2765,
+        "type": "conflict",
+        "keywords": [
+            "syria",
+            "assad"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-025",
+        "name": "Baghdad",
+        "lat": 33.3152,
+        "lng": 44.3661,
+        "type": "geopolitical",
+        "keywords": [
+            "iraq",
+            "militia"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-026",
+        "name": "Sanaa",
+        "lat": 15.3694,
+        "lng": 44.1910,
+        "type": "conflict",
+        "keywords": [
+            "yemen",
+            "houthi"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-027",
+        "name": "Khartoum",
+        "lat": 15.5007,
+        "lng": 32.5599,
+        "type": "conflict",
+        "keywords": [
+            "sudan",
+            "RSF",
+            "SAF"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-028",
+        "name": "Mogadishu",
+        "lat": 2.0469,
+        "lng": 45.3182,
+        "type": "conflict",
+        "keywords": [
+            "somalia",
+            "al-shabaab"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-029",
+        "name": "Naypyidaw",
+        "lat": 19.7633,
+        "lng": 96.0785,
+        "type": "conflict",
+        "keywords": [
+            "myanmar",
+            "junta",
+            "coup"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-030",
+        "name": "Caracas",
+        "lat": 10.4806,
+        "lng": -66.9036,
+        "type": "geopolitical",
+        "keywords": [
+            "venezuela",
+            "maduro",
+            "sanctions"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-031",
+        "name": "Havana",
+        "lat": 23.1136,
+        "lng": -82.3666,
+        "type": "geopolitical",
+        "keywords": [
+            "cuba",
+            "sanctions"
+        ],
+        "tier": 3
+    },
+    {
+        "id": "sl-032",
+        "name": "Tripoli",
+        "lat": 32.8872,
+        "lng": 13.1913,
+        "type": "conflict",
+        "keywords": [
+            "libya",
+            "GNA",
+            "LNA"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-033",
+        "name": "Ankara",
+        "lat": 39.9334,
+        "lng": 32.8597,
+        "type": "political",
+        "keywords": [
+            "turkey",
+            "erdogan"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-034",
+        "name": "Minsk",
+        "lat": 53.9006,
+        "lng": 27.5590,
+        "type": "geopolitical",
+        "keywords": [
+            "belarus",
+            "lukashenko"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-035",
+        "name": "Suez Canal",
+        "lat": 30.4565,
+        "lng": 32.3498,
+        "type": "infrastructure",
+        "keywords": [
+            "suez",
+            "canal",
+            "shipping",
+            "chokepoint"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-036",
+        "name": "Panama Canal",
+        "lat": 9.0800,
+        "lng": -79.6800,
+        "type": "infrastructure",
+        "keywords": [
+            "panama",
+            "canal",
+            "shipping",
+            "chokepoint"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-037",
+        "name": "Strait of Hormuz",
+        "lat": 26.5667,
+        "lng": 56.2500,
+        "type": "infrastructure",
+        "keywords": [
+            "hormuz",
+            "oil",
+            "chokepoint",
+            "iran"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-038",
+        "name": "Bab el-Mandeb",
+        "lat": 12.5833,
+        "lng": 43.3167,
+        "type": "infrastructure",
+        "keywords": [
+            "red sea",
+            "bab el-mandeb",
+            "chokepoint",
+            "houthi"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-039",
+        "name": "Strait of Malacca",
+        "lat": 2.5000,
+        "lng": 101.2000,
+        "type": "infrastructure",
+        "keywords": [
+            "malacca",
+            "shipping",
+            "chokepoint",
+            "piracy"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-040",
+        "name": "Djibouti",
+        "lat": 11.5721,
+        "lng": 43.1456,
+        "type": "military",
+        "keywords": [
+            "djibouti",
+            "horn of africa",
+            "military bases"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-041",
+        "name": "Ramstein",
+        "lat": 49.4369,
+        "lng": 7.6003,
+        "type": "military",
+        "keywords": [
+            "ramstein",
+            "NATO",
+            "USAF",
+            "germany"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-042",
+        "name": "Norfolk",
+        "lat": 36.8508,
+        "lng": -76.2859,
+        "type": "military",
+        "keywords": [
+            "norfolk",
+            "navy",
+            "NATO",
+            "atlantic"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-043",
+        "name": "Davos",
+        "lat": 46.8003,
+        "lng": 9.8360,
+        "type": "diplomatic",
+        "keywords": [
+            "WEF",
+            "world economic forum",
+            "davos"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-044",
+        "name": "Vienna",
+        "lat": 48.2082,
+        "lng": 16.3738,
+        "type": "diplomatic",
+        "keywords": [
+            "IAEA",
+            "OSCE",
+            "OPEC",
+            "nuclear talks"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-045",
+        "name": "The Hague",
+        "lat": 52.0705,
+        "lng": 4.3007,
+        "type": "diplomatic",
+        "keywords": [
+            "ICJ",
+            "ICC",
+            "international court",
+            "war crimes"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-046",
+        "name": "Addis Ababa",
+        "lat": 9.0250,
+        "lng": 38.7469,
+        "type": "diplomatic",
+        "keywords": [
+            "african union",
+            "AU",
+            "ethiopia"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-047",
+        "name": "Hong Kong",
+        "lat": 22.3193,
+        "lng": 114.1694,
+        "type": "financial",
+        "keywords": [
+            "hong kong",
+            "HKEX",
+            "PRC"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-048",
+        "name": "Shanghai",
+        "lat": 31.2304,
+        "lng": 121.4737,
+        "type": "financial",
+        "keywords": [
+            "shanghai",
+            "SSE",
+            "china"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-049",
+        "name": "Dubai",
+        "lat": 25.2048,
+        "lng": 55.2708,
+        "type": "financial",
+        "keywords": [
+            "dubai",
+            "UAE",
+            "emirates"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-050",
+        "name": "Ottawa",
+        "lat": 45.4215,
+        "lng": -75.6972,
+        "type": "political",
+        "keywords": [
+            "canada",
+            "five eyes"
+        ],
+        "tier": 3
+    },
+    {
+        "id": "sl-051",
+        "name": "Canberra",
+        "lat": -35.2809,
+        "lng": 149.1300,
+        "type": "political",
+        "keywords": [
+            "australia",
+            "AUKUS",
+            "five eyes"
+        ],
+        "tier": 3
+    },
+    {
+        "id": "sl-052",
+        "name": "Wellington",
+        "lat": -41.2865,
+        "lng": 174.7762,
+        "type": "political",
+        "keywords": [
+            "new zealand",
+            "five eyes"
+        ],
+        "tier": 3
+    },
+    {
+        "id": "sl-053",
+        "name": "Tallinn",
+        "lat": 59.4370,
+        "lng": 24.7536,
+        "type": "geopolitical",
+        "keywords": [
+            "estonia",
+            "NATO",
+            "cyber",
+            "CCDCOE"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-054",
+        "name": "Riga",
+        "lat": 56.9496,
+        "lng": 24.1052,
+        "type": "geopolitical",
+        "keywords": [
+            "latvia",
+            "NATO",
+            "baltic"
+        ],
+        "tier": 3
+    },
+    {
+        "id": "sl-055",
+        "name": "Vilnius",
+        "lat": 54.6872,
+        "lng": 25.2797,
+        "type": "geopolitical",
+        "keywords": [
+            "lithuania",
+            "NATO",
+            "baltic"
+        ],
+        "tier": 3
+    },
+    {
+        "id": "sl-056",
+        "name": "Warsaw",
+        "lat": 52.2297,
+        "lng": 21.0122,
+        "type": "geopolitical",
+        "keywords": [
+            "poland",
+            "NATO",
+            "eastern flank"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-057",
+        "name": "Bucharest",
+        "lat": 44.4268,
+        "lng": 26.1025,
+        "type": "geopolitical",
+        "keywords": [
+            "romania",
+            "NATO",
+            "black sea"
+        ],
+        "tier": 3
+    },
+    {
+        "id": "sl-058",
+        "name": "Cape Town",
+        "lat": -33.9249,
+        "lng": 18.4241,
+        "type": "infrastructure",
+        "keywords": [
+            "cape of good hope",
+            "shipping",
+            "south africa"
+        ],
+        "tier": 3
+    },
+    {
+        "id": "sl-059",
+        "name": "Lagos",
+        "lat": 6.5244,
+        "lng": 3.3792,
+        "type": "geopolitical",
+        "keywords": [
+            "nigeria",
+            "west africa",
+            "oil"
+        ],
+        "tier": 3
+    },
+    {
+        "id": "sl-060",
+        "name": "Nairobi",
+        "lat": -1.2921,
+        "lng": 36.8219,
+        "type": "geopolitical",
+        "keywords": [
+            "kenya",
+            "east africa",
+            "tech hub"
+        ],
+        "tier": 3
+    },
+    {
+        "id": "sl-061",
+        "name": "São Paulo",
+        "lat": -23.5505,
+        "lng": -46.6333,
+        "type": "financial",
+        "keywords": [
+            "brazil",
+            "B3",
+            "LATAM"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-062",
+        "name": "Mexico City",
+        "lat": 19.4326,
+        "lng": -99.1332,
+        "type": "political",
+        "keywords": [
+            "mexico",
+            "USMCA",
+            "cartel"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-063",
+        "name": "Kaliningrad",
+        "lat": 54.7104,
+        "lng": 20.4522,
+        "type": "military",
+        "keywords": [
+            "kaliningrad",
+            "russia",
+            "exclave",
+            "baltic",
+            "nuclear"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-064",
+        "name": "Sevastopol",
+        "lat": 44.6167,
+        "lng": 33.5333,
+        "type": "conflict",
+        "keywords": [
+            "crimea",
+            "black sea fleet",
+            "russia",
+            "ukraine"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-065",
+        "name": "Vladivostok",
+        "lat": 43.1056,
+        "lng": 131.8735,
+        "type": "military",
+        "keywords": [
+            "pacific fleet",
+            "russia",
+            "far east"
+        ],
+        "tier": 3
+    },
+    {
+        "id": "sl-066",
+        "name": "Murmansk",
+        "lat": 68.9585,
+        "lng": 33.0827,
+        "type": "military",
+        "keywords": [
+            "northern fleet",
+            "arctic",
+            "russia",
+            "nuclear submarines"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-067",
+        "name": "Natanz",
+        "lat": 33.7250,
+        "lng": 51.7267,
+        "type": "geopolitical",
+        "keywords": [
+            "iran",
+            "nuclear",
+            "enrichment",
+            "centrifuge"
+        ],
+        "tier": 1
+    },
+    {
+        "id": "sl-068",
+        "name": "Dimona",
+        "lat": 31.0014,
+        "lng": 35.1444,
+        "type": "geopolitical",
+        "keywords": [
+            "israel",
+            "nuclear",
+            "reactor"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-069",
+        "name": "Fiery Cross Reef",
+        "lat": 9.5500,
+        "lng": 112.8833,
+        "type": "military",
+        "keywords": [
+            "south china sea",
+            "china",
+            "artificial island",
+            "SCS"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-070",
+        "name": "Yokosuka",
+        "lat": 35.2906,
+        "lng": 139.6645,
+        "type": "military",
+        "keywords": [
+            "japan",
+            "7th fleet",
+            "carrier",
+            "USN"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-071",
+        "name": "Diego Garcia",
+        "lat": -7.3133,
+        "lng": 72.4111,
+        "type": "military",
+        "keywords": [
+            "indian ocean",
+            "strategic base",
+            "USN",
+            "B-52"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-072",
+        "name": "Pine Gap",
+        "lat": -23.7981,
+        "lng": 133.7350,
+        "type": "military",
+        "keywords": [
+            "australia",
+            "intelligence",
+            "SIGINT",
+            "five eyes"
+        ],
+        "tier": 2
+    },
+    {
+        "id": "sl-073",
+        "name": "Svalbard",
+        "lat": 78.2232,
+        "lng": 15.6267,
+        "type": "infrastructure",
+        "keywords": [
+            "arctic",
+            "norway",
+            "satellite",
+            "cables"
+        ],
+        "tier": 3
+    },
+    {
+        "id": "sl-074",
+        "name": "Guam",
+        "lat": 13.4443,
+        "lng": 144.7937,
+        "type": "military",
+        "keywords": [
+            "US territory",
+            "pacific",
+            "B-2",
+            "THAAD"
+        ],
+        "tier": 2
+    }
+]

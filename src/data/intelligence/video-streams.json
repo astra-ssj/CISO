@@ -1,0 +1,122 @@
+[
+    {
+        "id": "vs-001",
+        "name": "Sky News Live",
+        "url": "https://www.youtube.com/watch?v=9Auq9mYxFEE",
+        "source": "Sky News",
+        "region": "Global",
+        "language": "en"
+    },
+    {
+        "id": "vs-002",
+        "name": "Al Jazeera English",
+        "url": "https://www.youtube.com/watch?v=F-POY4Q0QSI",
+        "source": "Al Jazeera",
+        "region": "Global",
+        "language": "en"
+    },
+    {
+        "id": "vs-003",
+        "name": "France 24 English",
+        "url": "https://www.youtube.com/watch?v=h3MuIUNCCzI",
+        "source": "France 24",
+        "region": "Europe",
+        "language": "en"
+    },
+    {
+        "id": "vs-004",
+        "name": "DW News",
+        "url": "https://www.youtube.com/watch?v=GE_SfNVNyqk",
+        "source": "Deutsche Welle",
+        "region": "Europe",
+        "language": "en"
+    },
+    {
+        "id": "vs-005",
+        "name": "NHK World Japan",
+        "url": "https://www.youtube.com/watch?v=f0ldnpLEZsI",
+        "source": "NHK",
+        "region": "Asia-Pacific",
+        "language": "en"
+    },
+    {
+        "id": "vs-006",
+        "name": "ABC News Australia",
+        "url": "https://www.youtube.com/watch?v=W1ilCy6XrmI",
+        "source": "ABC",
+        "region": "Asia-Pacific",
+        "language": "en"
+    },
+    {
+        "id": "vs-007",
+        "name": "India Today",
+        "url": "https://www.youtube.com/watch?v=Nq2wYlWFucg",
+        "source": "India Today",
+        "region": "South Asia",
+        "language": "en"
+    },
+    {
+        "id": "vs-008",
+        "name": "WION",
+        "url": "https://www.youtube.com/watch?v=U4Jl3EvSKlg",
+        "source": "WION",
+        "region": "Global",
+        "language": "en"
+    },
+    {
+        "id": "vs-009",
+        "name": "TRT World",
+        "url": "https://www.youtube.com/watch?v=TV7iY5M7VzI",
+        "source": "TRT",
+        "region": "Middle East",
+        "language": "en"
+    },
+    {
+        "id": "vs-010",
+        "name": "CNA 24/7",
+        "url": "https://www.youtube.com/watch?v=XWq5kBlakcQ",
+        "source": "CNA",
+        "region": "Asia-Pacific",
+        "language": "en"
+    },
+    {
+        "id": "vs-011",
+        "name": "Euronews",
+        "url": "https://www.youtube.com/watch?v=pyZdCNZDPQA",
+        "source": "Euronews",
+        "region": "Europe",
+        "language": "en"
+    },
+    {
+        "id": "vs-012",
+        "name": "ISS Live Feed",
+        "url": "https://www.youtube.com/watch?v=P9C25Un7xaM",
+        "source": "NASA",
+        "region": "Space",
+        "language": "en"
+    },
+    {
+        "id": "vs-013",
+        "name": "CSPAN",
+        "url": "https://www.youtube.com/watch?v=HuyTENQjLJE",
+        "source": "CSPAN",
+        "region": "North America",
+        "language": "en"
+    },
+    {
+        "id": "vs-014",
+        "name": "KBS World 24",
+        "url": "https://www.youtube.com/watch?v=6HBcQIhJW0Y",
+        "source": "KBS",
+        "region": "East Asia",
+        "language": "en"
+    },
+    {
+        "id": "vs-015",
+        "name": "CGTN Live",
+        "url": "https://www.youtube.com/watch?v=EaKT7bIFEBg",
+        "source": "CGTN",
+        "region": "Global",
+        "language": "en"
+    }
+]

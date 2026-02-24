@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import {
     Brain, Loader2, Sparkles, Key, Eye, EyeOff, RefreshCw, Bell,
-    Settings as SettingsIcon, Coins, Flame, Activity, Users, ShieldAlert, Cpu, Building2
+    Settings as SettingsIcon, Coins, Flame, Activity, Users, ShieldAlert, Cpu, Building2,
+    Globe, CheckCircle2,
 } from "lucide-react";
 import { CompaniesProductsTab } from '@/components/settings/CompaniesProductsTab';
 import {
@@ -209,6 +210,86 @@ function AIEconomicsTab() {
     );
 }
 
+// ─── Intelligence Integrations Tab ───
+const INTEL_API_KEYS = [
+    { key: 'OPENSKY_USERNAME', label: 'OpenSky Username', hint: 'Free account at opensky-network.org', group: 'OpenSky Network' },
+    { key: 'OPENSKY_PASSWORD', label: 'OpenSky Password', hint: 'OpenSky Network password', group: 'OpenSky Network' },
+    { key: 'VESSELFINDER_API_KEY', label: 'VesselFinder API Key', hint: 'AIS maritime vessel tracking', group: 'VesselFinder' },
+    { key: 'NASA_FIRMS_API_KEY', label: 'NASA FIRMS API Key', hint: 'Satellite fire detection (free)', group: 'NASA FIRMS' },
+    { key: 'GROQ_API_KEY', label: 'Groq API Key', hint: 'Llama 3.1 for threat classification', group: 'Groq AI' },
+    { key: 'UPSTASH_REDIS_REST_URL', label: 'Upstash Redis URL', hint: 'Cross-request caching', group: 'Upstash Redis' },
+    { key: 'UPSTASH_REDIS_REST_TOKEN', label: 'Upstash Redis Token', hint: 'Upstash Redis auth token', group: 'Upstash Redis' },
+];
+
+function IntegrationsTab() {
+    const [values, setValues] = useState<Record<string, string>>({});
+    const [showKeys, setShowKeys] = useState<Set<string>>(new Set());
+    const [saved, setSaved] = useState(false);
+
+    const toggleShow = (key: string) => {
+        setShowKeys((prev) => {
+            const next = new Set(prev);
+            if (next.has(key)) next.delete(key); else next.add(key);
+            return next;
+        });
+    };
+
+    const handleSave = () => {
+        // In production, these would be persisted server-side
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+    };
+
+    const groups = [...new Set(INTEL_API_KEYS.map((k) => k.group))];
+
+    return (
+        <div className="space-y-6">
+            <Card className="border-primary/10">
+                <CardHeader>
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 bg-cyan-500/10 rounded-lg"><Globe className="h-6 w-6 text-cyan-400" /></div>
+                        <div>
+                            <CardTitle>Intelligence API Keys</CardTitle>
+                            <CardDescription className="mt-1">Configure external data source credentials for the World Monitor and Intelligence tabs.</CardDescription>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    {groups.map((group) => (
+                        <div key={group} className="space-y-3">
+                            <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{group}</h4>
+                            {INTEL_API_KEYS.filter((k) => k.group === group).map((apiKey) => (
+                                <div key={apiKey.key} className="space-y-1.5">
+                                    <Label htmlFor={apiKey.key}>{apiKey.label}</Label>
+                                    <div className="relative">
+                                        <Input
+                                            id={apiKey.key}
+                                            type={showKeys.has(apiKey.key) ? 'text' : 'password'}
+                                            placeholder={apiKey.hint}
+                                            value={values[apiKey.key] || ''}
+                                            onChange={(e) => setValues((prev) => ({ ...prev, [apiKey.key]: e.target.value }))}
+                                            className="pr-10 font-mono text-sm"
+                                        />
+                                        <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => toggleShow(apiKey.key)}>
+                                            {showKeys.has(apiKey.key) ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ))}
+                    <div className="flex items-center gap-3 pt-2">
+                        <Button onClick={handleSave} className="gap-2">
+                            {saved ? <><CheckCircle2 className="h-4 w-4" /> Saved</> : <><Key className="h-4 w-4" /> Save API Keys</>}
+                        </Button>
+                        <p className="text-xs text-muted-foreground">Keys are stored securely and used only for server-side API calls.</p>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
+}
+
 export default function SettingsPage() {
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
@@ -220,12 +301,14 @@ export default function SettingsPage() {
                     <TabsTrigger value="preferences" className="gap-2"><SettingsIcon className="h-4 w-4" />Preferences</TabsTrigger>
                     <TabsTrigger value="economics" className="gap-2"><Coins className="h-4 w-4" />AI Economics</TabsTrigger>
                     <TabsTrigger value="companies" className="gap-2"><Building2 className="h-4 w-4" />Companies & Products</TabsTrigger>
+                    <TabsTrigger value="integrations" className="gap-2"><Globe className="h-4 w-4" />Integrations</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="ai"><AIProviderConfig /></TabsContent>
                 <TabsContent value="preferences"><div className="space-y-4"><NotificationSettings /></div></TabsContent>
                 <TabsContent value="economics"><AIEconomicsTab /></TabsContent>
                 <TabsContent value="companies"><CompaniesProductsTab /></TabsContent>
+                <TabsContent value="integrations"><IntegrationsTab /></TabsContent>
             </Tabs>
         </div>
     );

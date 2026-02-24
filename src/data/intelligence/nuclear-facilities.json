@@ -1,0 +1,502 @@
+[
+    {
+        "id": "nuc-001",
+        "name": "Zaporizhzhia NPP",
+        "lat": 47.5069,
+        "lng": 34.5853,
+        "country": "UA",
+        "type": "Power Plant",
+        "status": "occupied",
+        "capacity_mw": 5700
+    },
+    {
+        "id": "nuc-002",
+        "name": "Bruce Power Station",
+        "lat": 44.3261,
+        "lng": -81.5975,
+        "country": "CA",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 6384
+    },
+    {
+        "id": "nuc-003",
+        "name": "Kashiwazaki-Kariwa",
+        "lat": 37.4262,
+        "lng": 138.5979,
+        "country": "JP",
+        "type": "Power Plant",
+        "status": "shutdown",
+        "capacity_mw": 7965
+    },
+    {
+        "id": "nuc-004",
+        "name": "Hanul NPP",
+        "lat": 37.0928,
+        "lng": 129.3831,
+        "country": "KR",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 5881
+    },
+    {
+        "id": "nuc-005",
+        "name": "Gravelines",
+        "lat": 51.0153,
+        "lng": 2.1089,
+        "country": "FR",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 5460
+    },
+    {
+        "id": "nuc-006",
+        "name": "Paluel",
+        "lat": 49.8594,
+        "lng": 0.6325,
+        "country": "FR",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 5320
+    },
+    {
+        "id": "nuc-007",
+        "name": "Cattenom",
+        "lat": 49.4072,
+        "lng": 6.2194,
+        "country": "FR",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 5200
+    },
+    {
+        "id": "nuc-008",
+        "name": "Palo Verde",
+        "lat": 33.3886,
+        "lng": -112.8617,
+        "country": "US",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 3937
+    },
+    {
+        "id": "nuc-009",
+        "name": "Vogtle",
+        "lat": 33.1422,
+        "lng": -81.7617,
+        "country": "US",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 4694
+    },
+    {
+        "id": "nuc-010",
+        "name": "Hinkley Point C",
+        "lat": 51.2083,
+        "lng": -3.1300,
+        "country": "GB",
+        "type": "Power Plant",
+        "status": "construction",
+        "capacity_mw": 3260
+    },
+    {
+        "id": "nuc-011",
+        "name": "Sizewell B",
+        "lat": 52.2156,
+        "lng": 1.6192,
+        "country": "GB",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 1198
+    },
+    {
+        "id": "nuc-012",
+        "name": "Doel",
+        "lat": 51.3264,
+        "lng": 4.2589,
+        "country": "BE",
+        "type": "Power Plant",
+        "status": "phaseout",
+        "capacity_mw": 2911
+    },
+    {
+        "id": "nuc-013",
+        "name": "Tihange",
+        "lat": 50.5339,
+        "lng": 5.2717,
+        "country": "BE",
+        "type": "Power Plant",
+        "status": "phaseout",
+        "capacity_mw": 3016
+    },
+    {
+        "id": "nuc-014",
+        "name": "Olkiluoto",
+        "lat": 61.2353,
+        "lng": 21.4475,
+        "country": "FI",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 2860
+    },
+    {
+        "id": "nuc-015",
+        "name": "Forsmark",
+        "lat": 60.4078,
+        "lng": 18.1681,
+        "country": "SE",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 3277
+    },
+    {
+        "id": "nuc-016",
+        "name": "Ringhals",
+        "lat": 57.2639,
+        "lng": 12.1131,
+        "country": "SE",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 2186
+    },
+    {
+        "id": "nuc-017",
+        "name": "Kudankulam",
+        "lat": 8.1664,
+        "lng": 77.7044,
+        "country": "IN",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 2000
+    },
+    {
+        "id": "nuc-018",
+        "name": "Tarapur",
+        "lat": 19.8314,
+        "lng": 72.6742,
+        "country": "IN",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 1400
+    },
+    {
+        "id": "nuc-019",
+        "name": "Barakah",
+        "lat": 23.9565,
+        "lng": 52.2583,
+        "country": "AE",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 5380
+    },
+    {
+        "id": "nuc-020",
+        "name": "Akkuyu",
+        "lat": 36.1456,
+        "lng": 33.5264,
+        "country": "TR",
+        "type": "Power Plant",
+        "status": "construction",
+        "capacity_mw": 4800
+    },
+    {
+        "id": "nuc-021",
+        "name": "Bushehr",
+        "lat": 28.8325,
+        "lng": 50.8847,
+        "country": "IR",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 1000
+    },
+    {
+        "id": "nuc-022",
+        "name": "Natanz",
+        "lat": 33.7250,
+        "lng": 51.7267,
+        "country": "IR",
+        "type": "Enrichment",
+        "status": "operational",
+        "capacity_mw": 0
+    },
+    {
+        "id": "nuc-023",
+        "name": "Fordow",
+        "lat": 34.8831,
+        "lng": 51.5750,
+        "country": "IR",
+        "type": "Enrichment",
+        "status": "operational",
+        "capacity_mw": 0
+    },
+    {
+        "id": "nuc-024",
+        "name": "Dimona",
+        "lat": 31.0014,
+        "lng": 35.1444,
+        "country": "IL",
+        "type": "Research Reactor",
+        "status": "operational",
+        "capacity_mw": 0
+    },
+    {
+        "id": "nuc-025",
+        "name": "Yongbyon",
+        "lat": 39.7968,
+        "lng": 125.7561,
+        "country": "KP",
+        "type": "Research/Weapons",
+        "status": "operational",
+        "capacity_mw": 0
+    },
+    {
+        "id": "nuc-026",
+        "name": "Taishan",
+        "lat": 21.9158,
+        "lng": 112.9869,
+        "country": "CN",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 3460
+    },
+    {
+        "id": "nuc-027",
+        "name": "Fuqing",
+        "lat": 25.4408,
+        "lng": 119.4406,
+        "country": "CN",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 3660
+    },
+    {
+        "id": "nuc-028",
+        "name": "Hualong One (Karachi)",
+        "lat": 24.8422,
+        "lng": 66.7817,
+        "country": "PK",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 2200
+    },
+    {
+        "id": "nuc-029",
+        "name": "Chashma",
+        "lat": 32.3656,
+        "lng": 71.3808,
+        "country": "PK",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 1330
+    },
+    {
+        "id": "nuc-030",
+        "name": "Kola NPP",
+        "lat": 67.4631,
+        "lng": 32.4744,
+        "country": "RU",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 1760
+    },
+    {
+        "id": "nuc-031",
+        "name": "Leningrad NPP II",
+        "lat": 59.8408,
+        "lng": 29.0375,
+        "country": "RU",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 2400
+    },
+    {
+        "id": "nuc-032",
+        "name": "Kursk NPP",
+        "lat": 51.6744,
+        "lng": 35.6150,
+        "country": "RU",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 4000
+    },
+    {
+        "id": "nuc-033",
+        "name": "Flamanville (EPR)",
+        "lat": 49.5386,
+        "lng": -1.8814,
+        "country": "FR",
+        "type": "Power Plant",
+        "status": "commissioning",
+        "capacity_mw": 1630
+    },
+    {
+        "id": "nuc-034",
+        "name": "La Hague",
+        "lat": 49.6789,
+        "lng": -1.8792,
+        "country": "FR",
+        "type": "Reprocessing",
+        "status": "operational",
+        "capacity_mw": 0
+    },
+    {
+        "id": "nuc-035",
+        "name": "Sellafield",
+        "lat": 54.4200,
+        "lng": -3.4963,
+        "country": "GB",
+        "type": "Reprocessing/Decom",
+        "status": "decommissioning",
+        "capacity_mw": 0
+    },
+    {
+        "id": "nuc-036",
+        "name": "Kozloduy",
+        "lat": 43.7447,
+        "lng": 23.7656,
+        "country": "BG",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 2000
+    },
+    {
+        "id": "nuc-037",
+        "name": "Cernavoda",
+        "lat": 44.3181,
+        "lng": 28.0594,
+        "country": "RO",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 1413
+    },
+    {
+        "id": "nuc-038",
+        "name": "Mochovce",
+        "lat": 48.2750,
+        "lng": 18.4403,
+        "country": "SK",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 1966
+    },
+    {
+        "id": "nuc-039",
+        "name": "Dukovany",
+        "lat": 51.0864,
+        "lng": 16.1467,
+        "country": "CZ",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 2040
+    },
+    {
+        "id": "nuc-040",
+        "name": "Paks",
+        "lat": 46.5717,
+        "lng": 18.8539,
+        "country": "HU",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 2000
+    },
+    {
+        "id": "nuc-041",
+        "name": "Paks II",
+        "lat": 46.5730,
+        "lng": 18.8550,
+        "country": "HU",
+        "type": "Power Plant",
+        "status": "construction",
+        "capacity_mw": 2400
+    },
+    {
+        "id": "nuc-042",
+        "name": "Rooppur",
+        "lat": 24.0603,
+        "lng": 89.0478,
+        "country": "BD",
+        "type": "Power Plant",
+        "status": "construction",
+        "capacity_mw": 2400
+    },
+    {
+        "id": "nuc-043",
+        "name": "El Dabaa",
+        "lat": 31.0500,
+        "lng": 28.5500,
+        "country": "EG",
+        "type": "Power Plant",
+        "status": "construction",
+        "capacity_mw": 4800
+    },
+    {
+        "id": "nuc-044",
+        "name": "Koeberg",
+        "lat": -33.6764,
+        "lng": 18.4333,
+        "country": "ZA",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 1860
+    },
+    {
+        "id": "nuc-045",
+        "name": "Diablo Canyon",
+        "lat": 35.2114,
+        "lng": -120.8544,
+        "country": "US",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 2256
+    },
+    {
+        "id": "nuc-046",
+        "name": "South Texas Project",
+        "lat": 28.7950,
+        "lng": -96.0483,
+        "country": "US",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 2710
+    },
+    {
+        "id": "nuc-047",
+        "name": "Watts Bar",
+        "lat": 35.6069,
+        "lng": -84.7903,
+        "country": "US",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 2330
+    },
+    {
+        "id": "nuc-048",
+        "name": "Angra",
+        "lat": -23.0081,
+        "lng": -44.4572,
+        "country": "BR",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 1884
+    },
+    {
+        "id": "nuc-049",
+        "name": "Atucha",
+        "lat": -34.0603,
+        "lng": -59.1994,
+        "country": "AR",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 1045
+    },
+    {
+        "id": "nuc-050",
+        "name": "Wolsong",
+        "lat": 35.7103,
+        "lng": 129.4767,
+        "country": "KR",
+        "type": "Power Plant",
+        "status": "operational",
+        "capacity_mw": 2779
+    }
+]

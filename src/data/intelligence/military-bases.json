@@ -1,0 +1,2202 @@
+[
+    {
+        "id": "base-001",
+        "name": "Norfolk Naval Station",
+        "lat": 36.9461,
+        "lng": -76.3013,
+        "country": "US",
+        "operator": "USN",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-002",
+        "name": "Camp Pendleton",
+        "lat": 33.3015,
+        "lng": -117.3553,
+        "country": "US",
+        "operator": "USMC",
+        "type": "Marine Corps Base",
+        "status": "active"
+    },
+    {
+        "id": "base-003",
+        "name": "Fort Liberty",
+        "lat": 35.1392,
+        "lng": -79.0065,
+        "country": "US",
+        "operator": "US Army",
+        "type": "Army Base",
+        "status": "active"
+    },
+    {
+        "id": "base-004",
+        "name": "Joint Base Pearl Harbor-Hickam",
+        "lat": 21.3469,
+        "lng": -157.9561,
+        "country": "US",
+        "operator": "USN/USAF",
+        "type": "Joint Base",
+        "status": "active"
+    },
+    {
+        "id": "base-005",
+        "name": "Ramstein Air Base",
+        "lat": 49.4369,
+        "lng": 7.6003,
+        "country": "DE",
+        "operator": "USAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-006",
+        "name": "Kadena Air Base",
+        "lat": 26.3516,
+        "lng": 127.7680,
+        "country": "JP",
+        "operator": "USAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-007",
+        "name": "RAF Lakenheath",
+        "lat": 52.4093,
+        "lng": 0.5608,
+        "country": "GB",
+        "operator": "USAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-008",
+        "name": "RAF Mildenhall",
+        "lat": 52.3617,
+        "lng": 0.4864,
+        "country": "GB",
+        "operator": "USAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-009",
+        "name": "Camp Humphreys",
+        "lat": 36.9631,
+        "lng": 127.0311,
+        "country": "KR",
+        "operator": "US Army",
+        "type": "Army Base",
+        "status": "active"
+    },
+    {
+        "id": "base-010",
+        "name": "Naval Station Rota",
+        "lat": 36.6367,
+        "lng": -6.3497,
+        "country": "ES",
+        "operator": "USN",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-011",
+        "name": "Naval Air Station Sigonella",
+        "lat": 37.4017,
+        "lng": 14.9222,
+        "country": "IT",
+        "operator": "USN",
+        "type": "Naval Air Station",
+        "status": "active"
+    },
+    {
+        "id": "base-012",
+        "name": "Incirlik Air Base",
+        "lat": 37.0022,
+        "lng": 35.4253,
+        "country": "TR",
+        "operator": "USAF/TuAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-013",
+        "name": "Al Udeid Air Base",
+        "lat": 25.1175,
+        "lng": 51.3150,
+        "country": "QA",
+        "operator": "USAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-014",
+        "name": "Camp Lemonnier",
+        "lat": 11.5483,
+        "lng": 43.1475,
+        "country": "DJ",
+        "operator": "USN",
+        "type": "Expeditionary Base",
+        "status": "active"
+    },
+    {
+        "id": "base-015",
+        "name": "Diego Garcia",
+        "lat": -7.3133,
+        "lng": 72.4111,
+        "country": "IO",
+        "operator": "USN/RAF",
+        "type": "Naval Support Facility",
+        "status": "active"
+    },
+    {
+        "id": "base-016",
+        "name": "Thule Air Base",
+        "lat": 76.5312,
+        "lng": -68.7032,
+        "country": "GL",
+        "operator": "USSF",
+        "type": "Space Base",
+        "status": "active"
+    },
+    {
+        "id": "base-017",
+        "name": "Yokosuka Naval Base",
+        "lat": 35.2906,
+        "lng": 139.6645,
+        "country": "JP",
+        "operator": "USN",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-018",
+        "name": "Misawa Air Base",
+        "lat": 40.7033,
+        "lng": 141.3686,
+        "country": "JP",
+        "operator": "USAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-019",
+        "name": "Guantanamo Bay",
+        "lat": 19.9022,
+        "lng": -75.0969,
+        "country": "CU",
+        "operator": "USN",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-020",
+        "name": "Aviano Air Base",
+        "lat": 46.0319,
+        "lng": 12.5964,
+        "country": "IT",
+        "operator": "USAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-021",
+        "name": "Souda Bay",
+        "lat": 35.5283,
+        "lng": 24.1400,
+        "country": "GR",
+        "operator": "USN",
+        "type": "Naval Support Activity",
+        "status": "active"
+    },
+    {
+        "id": "base-022",
+        "name": "HMNB Portsmouth",
+        "lat": 50.7989,
+        "lng": -1.1044,
+        "country": "GB",
+        "operator": "Royal Navy",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-023",
+        "name": "HMNB Devonport",
+        "lat": 50.3839,
+        "lng": -4.1889,
+        "country": "GB",
+        "operator": "Royal Navy",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-024",
+        "name": "HMNB Clyde",
+        "lat": 56.0600,
+        "lng": -4.8200,
+        "country": "GB",
+        "operator": "Royal Navy",
+        "type": "Naval/Nuclear Base",
+        "status": "active"
+    },
+    {
+        "id": "base-025",
+        "name": "RAF Coningsby",
+        "lat": 53.0930,
+        "lng": -0.1660,
+        "country": "GB",
+        "operator": "RAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-026",
+        "name": "Brest Naval Base",
+        "lat": 48.3830,
+        "lng": -4.4950,
+        "country": "FR",
+        "operator": "Marine Nationale",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-027",
+        "name": "Toulon Naval Base",
+        "lat": 43.1170,
+        "lng": 5.9330,
+        "country": "FR",
+        "operator": "Marine Nationale",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-028",
+        "name": "BA 125 Istres",
+        "lat": 43.5300,
+        "lng": 4.9300,
+        "country": "FR",
+        "operator": "Armée de l'Air",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-029",
+        "name": "Wilhelmshaven Naval Base",
+        "lat": 53.5133,
+        "lng": 8.1453,
+        "country": "DE",
+        "operator": "Deutsche Marine",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-030",
+        "name": "Büchel Air Base",
+        "lat": 50.1736,
+        "lng": 7.0633,
+        "country": "DE",
+        "operator": "Luftwaffe",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-031",
+        "name": "Ämari Air Base",
+        "lat": 59.2603,
+        "lng": 24.2086,
+        "country": "EE",
+        "operator": "Estonian Air Force/NATO",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-032",
+        "name": "Šiauliai Air Base",
+        "lat": 55.8939,
+        "lng": 23.3950,
+        "country": "LT",
+        "operator": "Lithuanian AF/NATO",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-033",
+        "name": "Malbork Air Base",
+        "lat": 54.0269,
+        "lng": 19.0508,
+        "country": "PL",
+        "operator": "Polish AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-034",
+        "name": "Ørland Air Base",
+        "lat": 63.6989,
+        "lng": 9.6036,
+        "country": "NO",
+        "operator": "Royal Norwegian AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-035",
+        "name": "Bodø Air Station",
+        "lat": 67.2692,
+        "lng": 14.3653,
+        "country": "NO",
+        "operator": "Royal Norwegian AF",
+        "type": "Air Station",
+        "status": "active"
+    },
+    {
+        "id": "base-036",
+        "name": "Haakonsvern Naval Base",
+        "lat": 60.3586,
+        "lng": 5.2511,
+        "country": "NO",
+        "operator": "Royal Norwegian Navy",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-037",
+        "name": "Tartus Naval Base",
+        "lat": 34.8889,
+        "lng": 35.8867,
+        "country": "SY",
+        "operator": "Russian Navy",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-038",
+        "name": "Khmeimim Air Base",
+        "lat": 35.4011,
+        "lng": 35.9486,
+        "country": "SY",
+        "operator": "Russian AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-039",
+        "name": "Kaliningrad",
+        "lat": 54.7104,
+        "lng": 20.4522,
+        "country": "RU",
+        "operator": "Russian Navy/Army",
+        "type": "Military District",
+        "status": "active"
+    },
+    {
+        "id": "base-040",
+        "name": "Sevastopol Naval Base",
+        "lat": 44.6167,
+        "lng": 33.5333,
+        "country": "UA",
+        "operator": "Russian Navy",
+        "type": "Naval Base",
+        "status": "disputed"
+    },
+    {
+        "id": "base-041",
+        "name": "Vladivostok Fleet HQ",
+        "lat": 43.1056,
+        "lng": 131.8735,
+        "country": "RU",
+        "operator": "Russian Pacific Fleet",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-042",
+        "name": "Murmansk/Severomorsk",
+        "lat": 69.0733,
+        "lng": 33.4167,
+        "country": "RU",
+        "operator": "Russian Northern Fleet",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-043",
+        "name": "Engels Air Base",
+        "lat": 51.4800,
+        "lng": 46.2000,
+        "country": "RU",
+        "operator": "Russian AF",
+        "type": "Strategic Bomber Base",
+        "status": "active"
+    },
+    {
+        "id": "base-044",
+        "name": "Hainan/Yulin Naval Base",
+        "lat": 18.2278,
+        "lng": 109.5667,
+        "country": "CN",
+        "operator": "PLAN",
+        "type": "Nuclear Submarine Base",
+        "status": "active"
+    },
+    {
+        "id": "base-045",
+        "name": "Djibouti Support Base",
+        "lat": 11.5928,
+        "lng": 43.1456,
+        "country": "DJ",
+        "operator": "PLA",
+        "type": "Support Base",
+        "status": "active"
+    },
+    {
+        "id": "base-046",
+        "name": "Fiery Cross Reef",
+        "lat": 9.5500,
+        "lng": 112.8833,
+        "country": "CN",
+        "operator": "PLA",
+        "type": "Artificial Island Base",
+        "status": "active"
+    },
+    {
+        "id": "base-047",
+        "name": "Subi Reef",
+        "lat": 10.9233,
+        "lng": 114.0844,
+        "country": "CN",
+        "operator": "PLA",
+        "type": "Artificial Island Base",
+        "status": "active"
+    },
+    {
+        "id": "base-048",
+        "name": "Mischief Reef",
+        "lat": 9.9000,
+        "lng": 115.5333,
+        "country": "CN",
+        "operator": "PLA",
+        "type": "Artificial Island Base",
+        "status": "active"
+    },
+    {
+        "id": "base-049",
+        "name": "Zhanjiang Naval Base",
+        "lat": 21.2000,
+        "lng": 110.3667,
+        "country": "CN",
+        "operator": "PLAN Southern Fleet",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-050",
+        "name": "Qingdao Naval Base",
+        "lat": 36.0667,
+        "lng": 120.3833,
+        "country": "CN",
+        "operator": "PLAN Northern Fleet",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-051",
+        "name": "Korla Missile Test Center",
+        "lat": 41.7583,
+        "lng": 86.1283,
+        "country": "CN",
+        "operator": "PLARF",
+        "type": "Missile Test Range",
+        "status": "active"
+    },
+    {
+        "id": "base-052",
+        "name": "Jamnagar Air Force Station",
+        "lat": 22.4653,
+        "lng": 70.0122,
+        "country": "IN",
+        "operator": "IAF",
+        "type": "Air Force Station",
+        "status": "active"
+    },
+    {
+        "id": "base-053",
+        "name": "INS Kadamba",
+        "lat": 14.7917,
+        "lng": 74.1167,
+        "country": "IN",
+        "operator": "Indian Navy",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-054",
+        "name": "Visakhapatnam Naval Base",
+        "lat": 17.6868,
+        "lng": 83.2185,
+        "country": "IN",
+        "operator": "Indian Navy",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-055",
+        "name": "Agra Air Force Station",
+        "lat": 27.1567,
+        "lng": 77.9608,
+        "country": "IN",
+        "operator": "IAF",
+        "type": "Air Force Station",
+        "status": "active"
+    },
+    {
+        "id": "base-056",
+        "name": "Yokota Air Base",
+        "lat": 35.7485,
+        "lng": 139.3487,
+        "country": "JP",
+        "operator": "USAF/JASDF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-057",
+        "name": "Sasebo Naval Base",
+        "lat": 33.1592,
+        "lng": 129.7151,
+        "country": "JP",
+        "operator": "USN/JMSDF",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-058",
+        "name": "Changi Naval Base",
+        "lat": 1.3250,
+        "lng": 103.9714,
+        "country": "SG",
+        "operator": "Republic of Singapore Navy",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-059",
+        "name": "Pine Gap",
+        "lat": -23.7981,
+        "lng": 133.7350,
+        "country": "AU",
+        "operator": "ASD/CIA",
+        "type": "Intelligence Facility",
+        "status": "active"
+    },
+    {
+        "id": "base-060",
+        "name": "HMAS Stirling",
+        "lat": -32.3272,
+        "lng": 115.6839,
+        "country": "AU",
+        "operator": "Royal Australian Navy",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-061",
+        "name": "RAAF Tindal",
+        "lat": -14.5211,
+        "lng": 132.3781,
+        "country": "AU",
+        "operator": "RAAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-062",
+        "name": "Bandar Abbas Naval Base",
+        "lat": 27.1832,
+        "lng": 56.2680,
+        "country": "IR",
+        "operator": "IRIN",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-063",
+        "name": "Isfahan Nuclear Technology Center",
+        "lat": 32.6539,
+        "lng": 51.6850,
+        "country": "IR",
+        "operator": "AEOI",
+        "type": "Nuclear/Military",
+        "status": "active"
+    },
+    {
+        "id": "base-064",
+        "name": "King Abdulaziz Air Base",
+        "lat": 26.2653,
+        "lng": 50.1522,
+        "country": "SA",
+        "operator": "RSAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-065",
+        "name": "King Faisal Naval Base",
+        "lat": 27.0833,
+        "lng": 49.6667,
+        "country": "SA",
+        "operator": "RSN",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-066",
+        "name": "Nevatim Air Base",
+        "lat": 31.2089,
+        "lng": 34.8422,
+        "country": "IL",
+        "operator": "IAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-067",
+        "name": "Haifa Naval Base",
+        "lat": 32.8131,
+        "lng": 34.9886,
+        "country": "IL",
+        "operator": "Israeli Navy",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-068",
+        "name": "Dimona Nuclear Research Center",
+        "lat": 31.0014,
+        "lng": 35.1444,
+        "country": "IL",
+        "operator": "IAEC",
+        "type": "Nuclear Facility",
+        "status": "active"
+    },
+    {
+        "id": "base-069",
+        "name": "Bergan Naval Base",
+        "lat": 60.3917,
+        "lng": 5.3283,
+        "country": "NO",
+        "operator": "Royal Norwegian Navy",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-070",
+        "name": "Andøya Air Station",
+        "lat": 69.2925,
+        "lng": 16.1442,
+        "country": "NO",
+        "operator": "Norwegian Armed Forces",
+        "type": "Air Station",
+        "status": "active"
+    },
+    {
+        "id": "base-071",
+        "name": "Redzikowo",
+        "lat": 54.4764,
+        "lng": 17.1014,
+        "country": "PL",
+        "operator": "USN",
+        "type": "Aegis Ashore",
+        "status": "active"
+    },
+    {
+        "id": "base-072",
+        "name": "Deveselu",
+        "lat": 44.0431,
+        "lng": 24.3167,
+        "country": "RO",
+        "operator": "USN",
+        "type": "Aegis Ashore",
+        "status": "active"
+    },
+    {
+        "id": "base-073",
+        "name": "Mihail Kogălniceanu Air Base",
+        "lat": 44.3617,
+        "lng": 28.4883,
+        "country": "RO",
+        "operator": "Romanian AF/USAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-074",
+        "name": "Graf Ignatievo Air Base",
+        "lat": 42.2906,
+        "lng": 24.7147,
+        "country": "BG",
+        "operator": "Bulgarian AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-075",
+        "name": "Lask Air Base",
+        "lat": 51.5517,
+        "lng": 19.1792,
+        "country": "PL",
+        "operator": "Polish AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-076",
+        "name": "Keflavik Air Base",
+        "lat": 63.9850,
+        "lng": -22.6006,
+        "country": "IS",
+        "operator": "NATO/Icelandic CG",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-077",
+        "name": "Bardufoss Air Station",
+        "lat": 69.0558,
+        "lng": 18.5403,
+        "country": "NO",
+        "operator": "Royal Norwegian AF",
+        "type": "Air Station",
+        "status": "active"
+    },
+    {
+        "id": "base-078",
+        "name": "Ronne Air Station",
+        "lat": 55.0633,
+        "lng": 14.7594,
+        "country": "DK",
+        "operator": "Royal Danish AF",
+        "type": "Air Station",
+        "status": "active"
+    },
+    {
+        "id": "base-079",
+        "name": "Karup Air Base",
+        "lat": 56.2975,
+        "lng": 9.1242,
+        "country": "DK",
+        "operator": "Royal Danish AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-080",
+        "name": "Luleå/Kallax Air Base",
+        "lat": 65.5438,
+        "lng": 22.1308,
+        "country": "SE",
+        "operator": "Swedish AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-081",
+        "name": "Gotland Regiment",
+        "lat": 57.5986,
+        "lng": 18.2117,
+        "country": "SE",
+        "operator": "Swedish Army",
+        "type": "Army Base",
+        "status": "active"
+    },
+    {
+        "id": "base-082",
+        "name": "Rovaniemi Air Base",
+        "lat": 66.5603,
+        "lng": 25.8306,
+        "country": "FI",
+        "operator": "Finnish AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-083",
+        "name": "Marham RAF",
+        "lat": 52.6483,
+        "lng": 0.5506,
+        "country": "GB",
+        "operator": "RAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-084",
+        "name": "Lossiemouth RAF",
+        "lat": 57.7056,
+        "lng": -3.3392,
+        "country": "GB",
+        "operator": "RAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-085",
+        "name": "Waddington RAF",
+        "lat": 53.1662,
+        "lng": -0.5238,
+        "country": "GB",
+        "operator": "RAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-086",
+        "name": "Évreux-Fauville Air Base",
+        "lat": 49.0286,
+        "lng": 1.2197,
+        "country": "FR",
+        "operator": "Armée de l'Air",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-087",
+        "name": "Mont-de-Marsan Air Base",
+        "lat": 43.9117,
+        "lng": -0.5083,
+        "country": "FR",
+        "operator": "Armée de l'Air",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-088",
+        "name": "Nörvenich Air Base",
+        "lat": 50.8312,
+        "lng": 6.6581,
+        "country": "DE",
+        "operator": "Luftwaffe",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-089",
+        "name": "Jagel Air Base",
+        "lat": 54.4586,
+        "lng": 9.5186,
+        "country": "DE",
+        "operator": "Luftwaffe",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-090",
+        "name": "Laage Air Base",
+        "lat": 53.9183,
+        "lng": 12.2725,
+        "country": "DE",
+        "operator": "Luftwaffe",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-091",
+        "name": "Kleine Brogel Air Base",
+        "lat": 51.1683,
+        "lng": 5.4700,
+        "country": "BE",
+        "operator": "Belgian AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-092",
+        "name": "Volkel Air Base",
+        "lat": 51.6572,
+        "lng": 5.7072,
+        "country": "NL",
+        "operator": "Royal Netherlands AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-093",
+        "name": "Leeuwarden Air Base",
+        "lat": 53.2286,
+        "lng": 5.7606,
+        "country": "NL",
+        "operator": "Royal Netherlands AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-094",
+        "name": "Trapani Air Base",
+        "lat": 37.9117,
+        "lng": 12.4900,
+        "country": "IT",
+        "operator": "AMI",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-095",
+        "name": "Ghedi Air Base",
+        "lat": 45.4325,
+        "lng": 10.2772,
+        "country": "IT",
+        "operator": "AMI",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-096",
+        "name": "Florennes Air Base",
+        "lat": 50.2433,
+        "lng": 4.6467,
+        "country": "BE",
+        "operator": "Belgian AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-097",
+        "name": "Pápa Air Base",
+        "lat": 47.3636,
+        "lng": 17.5006,
+        "country": "HU",
+        "operator": "NATO/HAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-098",
+        "name": "Poznan",
+        "lat": 52.4200,
+        "lng": 16.8500,
+        "country": "PL",
+        "operator": "US Army",
+        "type": "Forward Operating Site",
+        "status": "active"
+    },
+    {
+        "id": "base-099",
+        "name": "Tapa Military Base",
+        "lat": 59.2603,
+        "lng": 25.9572,
+        "country": "EE",
+        "operator": "NATO eFP",
+        "type": "Army Base",
+        "status": "active"
+    },
+    {
+        "id": "base-100",
+        "name": "Ādaži Military Base",
+        "lat": 57.0744,
+        "lng": 24.3217,
+        "country": "LV",
+        "operator": "NATO eFP",
+        "type": "Army Base",
+        "status": "active"
+    },
+    {
+        "id": "base-101",
+        "name": "Rukla Military Base",
+        "lat": 55.0506,
+        "lng": 24.2114,
+        "country": "LT",
+        "operator": "NATO eFP",
+        "type": "Army Base",
+        "status": "active"
+    },
+    {
+        "id": "base-102",
+        "name": "Drawsko Pomorskie",
+        "lat": 53.5244,
+        "lng": 15.8094,
+        "country": "PL",
+        "operator": "NATO/Polish Army",
+        "type": "Training Area",
+        "status": "active"
+    },
+    {
+        "id": "base-103",
+        "name": "Grafenwöhr Training Area",
+        "lat": 49.6808,
+        "lng": 11.9383,
+        "country": "DE",
+        "operator": "US Army",
+        "type": "Training Area",
+        "status": "active"
+    },
+    {
+        "id": "base-104",
+        "name": "Cincu Training Area",
+        "lat": 46.0831,
+        "lng": 24.8831,
+        "country": "RO",
+        "operator": "NATO",
+        "type": "Training Area",
+        "status": "active"
+    },
+    {
+        "id": "base-105",
+        "name": "Novo Selo Training Area",
+        "lat": 42.1667,
+        "lng": 25.8667,
+        "country": "BG",
+        "operator": "NATO/US Army",
+        "type": "Training Area",
+        "status": "active"
+    },
+    {
+        "id": "base-106",
+        "name": "Aksaz Naval Base",
+        "lat": 36.9539,
+        "lng": 28.2328,
+        "country": "TR",
+        "operator": "Turkish Navy",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-107",
+        "name": "Izmir Air Base",
+        "lat": 38.5133,
+        "lng": 27.0106,
+        "country": "TR",
+        "operator": "TuAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-108",
+        "name": "Diyarbakır Air Base",
+        "lat": 37.8939,
+        "lng": 40.2011,
+        "country": "TR",
+        "operator": "TuAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-109",
+        "name": "Batman Air Base",
+        "lat": 37.9289,
+        "lng": 41.1181,
+        "country": "TR",
+        "operator": "TuAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-110",
+        "name": "Habbaniyah Air Base",
+        "lat": 33.3739,
+        "lng": 43.5728,
+        "country": "IQ",
+        "operator": "Iraqi AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-111",
+        "name": "Fort Cavazos",
+        "lat": 31.1325,
+        "lng": -97.7753,
+        "country": "US",
+        "operator": "US Army",
+        "type": "Army Base",
+        "status": "active"
+    },
+    {
+        "id": "base-112",
+        "name": "Fort Moore",
+        "lat": 32.3614,
+        "lng": -84.9480,
+        "country": "US",
+        "operator": "US Army",
+        "type": "Army Base",
+        "status": "active"
+    },
+    {
+        "id": "base-113",
+        "name": "Fort Bragg/Liberty",
+        "lat": 35.1392,
+        "lng": -79.0065,
+        "country": "US",
+        "operator": "US Army",
+        "type": "Army Base",
+        "status": "active"
+    },
+    {
+        "id": "base-114",
+        "name": "Joint Base Lewis-McChord",
+        "lat": 47.0853,
+        "lng": -122.5828,
+        "country": "US",
+        "operator": "US Army/USAF",
+        "type": "Joint Base",
+        "status": "active"
+    },
+    {
+        "id": "base-115",
+        "name": "Nellis Air Force Base",
+        "lat": 36.2360,
+        "lng": -115.0343,
+        "country": "US",
+        "operator": "USAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-116",
+        "name": "Edwards Air Force Base",
+        "lat": 34.9054,
+        "lng": -117.8839,
+        "country": "US",
+        "operator": "USAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-117",
+        "name": "Vandenberg Space Force Base",
+        "lat": 34.7420,
+        "lng": -120.5724,
+        "country": "US",
+        "operator": "USSF",
+        "type": "Space Force Base",
+        "status": "active"
+    },
+    {
+        "id": "base-118",
+        "name": "Buckley Space Force Base",
+        "lat": 39.7017,
+        "lng": -104.7517,
+        "country": "US",
+        "operator": "USSF",
+        "type": "Space Force Base",
+        "status": "active"
+    },
+    {
+        "id": "base-119",
+        "name": "Peterson Space Force Base",
+        "lat": 38.8242,
+        "lng": -104.7150,
+        "country": "US",
+        "operator": "USSF",
+        "type": "Space Force Base",
+        "status": "active"
+    },
+    {
+        "id": "base-120",
+        "name": "Kings Bay Naval Submarine Base",
+        "lat": 30.7964,
+        "lng": -81.5150,
+        "country": "US",
+        "operator": "USN",
+        "type": "Submarine Base",
+        "status": "active"
+    },
+    {
+        "id": "base-121",
+        "name": "Naval Base Kitsap",
+        "lat": 47.5617,
+        "lng": -122.6533,
+        "country": "US",
+        "operator": "USN",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-122",
+        "name": "Naval Station Mayport",
+        "lat": 30.3922,
+        "lng": -81.4017,
+        "country": "US",
+        "operator": "USN",
+        "type": "Naval Station",
+        "status": "active"
+    },
+    {
+        "id": "base-123",
+        "name": "Naval Air Station Jacksonville",
+        "lat": 30.2358,
+        "lng": -81.6806,
+        "country": "US",
+        "operator": "USN",
+        "type": "Naval Air Station",
+        "status": "active"
+    },
+    {
+        "id": "base-124",
+        "name": "Whiteman Air Force Base",
+        "lat": 38.7267,
+        "lng": -93.5478,
+        "country": "US",
+        "operator": "USAF",
+        "type": "Strategic Bomber Base",
+        "status": "active"
+    },
+    {
+        "id": "base-125",
+        "name": "Minot Air Force Base",
+        "lat": 48.4158,
+        "lng": -101.3472,
+        "country": "US",
+        "operator": "USAF",
+        "type": "Strategic Bomber/ICBM Base",
+        "status": "active"
+    },
+    {
+        "id": "base-126",
+        "name": "Barksdale Air Force Base",
+        "lat": 32.5013,
+        "lng": -93.6627,
+        "country": "US",
+        "operator": "USAF",
+        "type": "Strategic Bomber Base",
+        "status": "active"
+    },
+    {
+        "id": "base-127",
+        "name": "Offutt Air Force Base",
+        "lat": 41.1183,
+        "lng": -95.9122,
+        "country": "US",
+        "operator": "USSTRATCOM",
+        "type": "Command HQ",
+        "status": "active"
+    },
+    {
+        "id": "base-128",
+        "name": "Creech Air Force Base",
+        "lat": 36.5822,
+        "lng": -115.6711,
+        "country": "US",
+        "operator": "USAF",
+        "type": "Drone Operations Base",
+        "status": "active"
+    },
+    {
+        "id": "base-129",
+        "name": "Beale Air Force Base",
+        "lat": 39.1316,
+        "lng": -121.4367,
+        "country": "US",
+        "operator": "USAF",
+        "type": "Reconnaissance Base",
+        "status": "active"
+    },
+    {
+        "id": "base-130",
+        "name": "Ellsworth Air Force Base",
+        "lat": 44.1453,
+        "lng": -103.1003,
+        "country": "US",
+        "operator": "USAF",
+        "type": "Strategic Bomber Base",
+        "status": "active"
+    },
+    {
+        "id": "base-131",
+        "name": "Torrejon Air Base",
+        "lat": 40.4967,
+        "lng": -3.4467,
+        "country": "ES",
+        "operator": "Spanish AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-132",
+        "name": "Zaragoza Air Base",
+        "lat": 41.6617,
+        "lng": -1.0481,
+        "country": "ES",
+        "operator": "Spanish AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-133",
+        "name": "Naval Station Ferrol",
+        "lat": 43.4833,
+        "lng": -8.2167,
+        "country": "ES",
+        "operator": "Spanish Navy",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-134",
+        "name": "Monte Real Air Base",
+        "lat": 39.8286,
+        "lng": -8.8875,
+        "country": "PT",
+        "operator": "Portuguese AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-135",
+        "name": "Lajes Field",
+        "lat": 38.7618,
+        "lng": -27.0901,
+        "country": "PT",
+        "operator": "PoAF/USAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-136",
+        "name": "Pantelleria Air Force Base",
+        "lat": 36.8164,
+        "lng": 11.9681,
+        "country": "IT",
+        "operator": "AMI",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-137",
+        "name": "Amendola Air Base",
+        "lat": 41.5364,
+        "lng": 15.7178,
+        "country": "IT",
+        "operator": "AMI",
+        "type": "Air Base/Drone",
+        "status": "active"
+    },
+    {
+        "id": "base-138",
+        "name": "Pratica di Mare Air Base",
+        "lat": 41.6547,
+        "lng": 12.4497,
+        "country": "IT",
+        "operator": "AMI",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-139",
+        "name": "Decimomannu Air Base",
+        "lat": 39.3539,
+        "lng": 8.9733,
+        "country": "IT",
+        "operator": "AMI",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-140",
+        "name": "Araxos Air Base",
+        "lat": 38.1514,
+        "lng": 21.4250,
+        "country": "GR",
+        "operator": "Hellenic AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-141",
+        "name": "Larissa Air Base",
+        "lat": 39.6503,
+        "lng": 22.4653,
+        "country": "GR",
+        "operator": "Hellenic AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-142",
+        "name": "Tanagra Air Base",
+        "lat": 38.3394,
+        "lng": 23.5647,
+        "country": "GR",
+        "operator": "Hellenic AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-143",
+        "name": "Alexandroupoli",
+        "lat": 40.8558,
+        "lng": 25.9531,
+        "country": "GR",
+        "operator": "Hellenic Army/NATO",
+        "type": "Forward Base",
+        "status": "active"
+    },
+    {
+        "id": "base-144",
+        "name": "Konya Air Base",
+        "lat": 37.9789,
+        "lng": 32.5617,
+        "country": "TR",
+        "operator": "TuAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-145",
+        "name": "Mersin Naval Base",
+        "lat": 36.8000,
+        "lng": 34.6333,
+        "country": "TR",
+        "operator": "Turkish Navy",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-146",
+        "name": "Gölcük Naval Base",
+        "lat": 40.7178,
+        "lng": 29.8153,
+        "country": "TR",
+        "operator": "Turkish Navy",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-147",
+        "name": "Ali Al Salem Air Base",
+        "lat": 29.3467,
+        "lng": 47.5211,
+        "country": "KW",
+        "operator": "USAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-148",
+        "name": "Al Dhafra Air Base",
+        "lat": 24.2481,
+        "lng": 54.5475,
+        "country": "AE",
+        "operator": "USAF/UAEAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-149",
+        "name": "Arifjan Camp",
+        "lat": 29.2128,
+        "lng": 48.0808,
+        "country": "KW",
+        "operator": "US Army",
+        "type": "Army Base",
+        "status": "active"
+    },
+    {
+        "id": "base-150",
+        "name": "Prince Sultan Air Base",
+        "lat": 24.0625,
+        "lng": 47.5803,
+        "country": "SA",
+        "operator": "USAF/RSAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-151",
+        "name": "Masirah Island Air Base",
+        "lat": 20.6736,
+        "lng": 58.8903,
+        "country": "OM",
+        "operator": "RAFO/USAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-152",
+        "name": "Duqm Naval Base",
+        "lat": 19.6600,
+        "lng": 57.7000,
+        "country": "OM",
+        "operator": "Royal Navy of Oman/UK",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-153",
+        "name": "Assab Naval Base",
+        "lat": 13.0833,
+        "lng": 42.7333,
+        "country": "ER",
+        "operator": "UAE",
+        "type": "Naval/Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-154",
+        "name": "Berbera Air Base",
+        "lat": 10.3892,
+        "lng": 45.0353,
+        "country": "SO",
+        "operator": "UAE",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-155",
+        "name": "Ream Naval Base",
+        "lat": 10.5167,
+        "lng": 103.6117,
+        "country": "KH",
+        "operator": "PLA Navy",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-156",
+        "name": "Cam Ranh Bay",
+        "lat": 11.9960,
+        "lng": 109.2195,
+        "country": "VN",
+        "operator": "VPN",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-157",
+        "name": "Subic Bay",
+        "lat": 14.7942,
+        "lng": 120.2722,
+        "country": "PH",
+        "operator": "Philippine Navy",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-158",
+        "name": "Clark Air Base",
+        "lat": 15.1856,
+        "lng": 120.5603,
+        "country": "PH",
+        "operator": "PAF/USAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-159",
+        "name": "Iwakuni MCAS",
+        "lat": 34.1439,
+        "lng": 132.2356,
+        "country": "JP",
+        "operator": "USMC",
+        "type": "Marine Corps Air Station",
+        "status": "active"
+    },
+    {
+        "id": "base-160",
+        "name": "Camp Butler",
+        "lat": 26.4933,
+        "lng": 127.7533,
+        "country": "JP",
+        "operator": "USMC",
+        "type": "Marine Corps Base",
+        "status": "active"
+    },
+    {
+        "id": "base-161",
+        "name": "Osan Air Base",
+        "lat": 37.0906,
+        "lng": 127.0300,
+        "country": "KR",
+        "operator": "USAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-162",
+        "name": "Kunsan Air Base",
+        "lat": 35.9033,
+        "lng": 126.6158,
+        "country": "KR",
+        "operator": "USAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-163",
+        "name": "Jinhae Naval Base",
+        "lat": 35.1333,
+        "lng": 128.6667,
+        "country": "KR",
+        "operator": "ROKN",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-164",
+        "name": "Pyeongtaek",
+        "lat": 36.9917,
+        "lng": 127.0011,
+        "country": "KR",
+        "operator": "US Army",
+        "type": "Army Garrison",
+        "status": "active"
+    },
+    {
+        "id": "base-165",
+        "name": "RAAF Amberley",
+        "lat": -27.6306,
+        "lng": 152.7122,
+        "country": "AU",
+        "operator": "RAAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-166",
+        "name": "RAAF Williamtown",
+        "lat": -32.7931,
+        "lng": 151.8431,
+        "country": "AU",
+        "operator": "RAAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-167",
+        "name": "RAAF Darwin",
+        "lat": -12.4147,
+        "lng": 130.8722,
+        "country": "AU",
+        "operator": "RAAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-168",
+        "name": "Robertson Barracks",
+        "lat": -12.4578,
+        "lng": 130.8867,
+        "country": "AU",
+        "operator": "ADF",
+        "type": "Army Base",
+        "status": "active"
+    },
+    {
+        "id": "base-169",
+        "name": "RNZN Devonport",
+        "lat": -36.8250,
+        "lng": 174.7988,
+        "country": "NZ",
+        "operator": "RNZN",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-170",
+        "name": "RNZAF Ohakea",
+        "lat": -40.2056,
+        "lng": 175.3910,
+        "country": "NZ",
+        "operator": "RNZAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-171",
+        "name": "Butterworth Air Base",
+        "lat": 5.4597,
+        "lng": 100.3869,
+        "country": "MY",
+        "operator": "RMAF/RAAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-172",
+        "name": "Lumut Naval Base",
+        "lat": 4.2417,
+        "lng": 100.6167,
+        "country": "MY",
+        "operator": "RMN",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-173",
+        "name": "U-Tapao Royal Thai Navy Airfield",
+        "lat": 12.6797,
+        "lng": 101.0050,
+        "country": "TH",
+        "operator": "RTN",
+        "type": "Naval Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-174",
+        "name": "Sattahip Naval Base",
+        "lat": 12.6739,
+        "lng": 100.9208,
+        "country": "TH",
+        "operator": "RTN",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-175",
+        "name": "Halim Perdanakusuma AFB",
+        "lat": -6.2667,
+        "lng": 106.8906,
+        "country": "ID",
+        "operator": "TNI-AU",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-176",
+        "name": "Natuna Air Base",
+        "lat": 3.9083,
+        "lng": 108.3878,
+        "country": "ID",
+        "operator": "TNI-AU",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-177",
+        "name": "Karachi Naval Base",
+        "lat": 24.8047,
+        "lng": 66.9811,
+        "country": "PK",
+        "operator": "Pakistan Navy",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-178",
+        "name": "Kamra Air Base",
+        "lat": 33.8690,
+        "lng": 72.4008,
+        "country": "PK",
+        "operator": "PAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-179",
+        "name": "Sargodha Air Base",
+        "lat": 32.0486,
+        "lng": 72.6652,
+        "country": "PK",
+        "operator": "PAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-180",
+        "name": "Ambala Air Force Station",
+        "lat": 30.3700,
+        "lng": 76.8200,
+        "country": "IN",
+        "operator": "IAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-181",
+        "name": "Hashimara Air Force Station",
+        "lat": 26.7042,
+        "lng": 89.3693,
+        "country": "IN",
+        "operator": "IAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-182",
+        "name": "Port Blair Air Force Station",
+        "lat": 11.6394,
+        "lng": 92.7340,
+        "country": "IN",
+        "operator": "IAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-183",
+        "name": "Cairo West Air Base",
+        "lat": 30.1161,
+        "lng": 30.9153,
+        "country": "EG",
+        "operator": "EAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-184",
+        "name": "Berenice Military Base",
+        "lat": 23.9769,
+        "lng": 35.4328,
+        "country": "EG",
+        "operator": "Egyptian Military",
+        "type": "Naval/Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-185",
+        "name": "Asmara Air Base",
+        "lat": 15.2920,
+        "lng": 38.9108,
+        "country": "ER",
+        "operator": "Eritrean AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-186",
+        "name": "Assab",
+        "lat": 13.0714,
+        "lng": 42.6411,
+        "country": "ER",
+        "operator": "Multiple/disputed",
+        "type": "Port/Navy",
+        "status": "active"
+    },
+    {
+        "id": "base-187",
+        "name": "Niamey Air Base",
+        "lat": 13.4800,
+        "lng": 2.1725,
+        "country": "NE",
+        "operator": "Nigerien AF/Russia",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-188",
+        "name": "Agadez Drone Base",
+        "lat": 16.9660,
+        "lng": 7.9872,
+        "country": "NE",
+        "operator": "USAF",
+        "type": "Drone Base",
+        "status": "uncertain"
+    },
+    {
+        "id": "base-189",
+        "name": "Moron Air Base",
+        "lat": 37.1750,
+        "lng": -5.6151,
+        "country": "ES",
+        "operator": "Spanish AF/USMC",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-190",
+        "name": "Albacete Air Base",
+        "lat": 38.9486,
+        "lng": -1.8636,
+        "country": "ES",
+        "operator": "Spanish AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-191",
+        "name": "Novorossiysk Naval Base",
+        "lat": 44.7233,
+        "lng": 37.7683,
+        "country": "RU",
+        "operator": "Russian Black Sea Fleet",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-192",
+        "name": "Baltiysk Naval Base",
+        "lat": 54.6486,
+        "lng": 19.9203,
+        "country": "RU",
+        "operator": "Russian Baltic Fleet",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-193",
+        "name": "Kola Peninsula Bases",
+        "lat": 68.8700,
+        "lng": 33.0700,
+        "country": "RU",
+        "operator": "Russian Northern Fleet",
+        "type": "Naval/Submarine",
+        "status": "active"
+    },
+    {
+        "id": "base-194",
+        "name": "Kamchatka Submarine Base",
+        "lat": 53.0167,
+        "lng": 158.6500,
+        "country": "RU",
+        "operator": "Russian Pacific Fleet",
+        "type": "Submarine Base",
+        "status": "active"
+    },
+    {
+        "id": "base-195",
+        "name": "Saratov/Engels-2",
+        "lat": 51.4800,
+        "lng": 46.2000,
+        "country": "RU",
+        "operator": "Russian Long Range Aviation",
+        "type": "Strategic Bomber Base",
+        "status": "active"
+    },
+    {
+        "id": "base-196",
+        "name": "Shagol Air Base",
+        "lat": 55.2139,
+        "lng": 61.3153,
+        "country": "RU",
+        "operator": "Russian AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-197",
+        "name": "Krymsk Air Base",
+        "lat": 44.9653,
+        "lng": 37.9822,
+        "country": "RU",
+        "operator": "Russian AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-198",
+        "name": "Mozdok Air Base",
+        "lat": 43.7903,
+        "lng": 44.5861,
+        "country": "RU",
+        "operator": "Russian AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-199",
+        "name": "Primorsko-Akhtarsk",
+        "lat": 46.0500,
+        "lng": 36.5000,
+        "country": "RU",
+        "operator": "Russian Army",
+        "type": "Forward Base",
+        "status": "active"
+    },
+    {
+        "id": "base-200",
+        "name": "Tiyas (T4) Air Base",
+        "lat": 34.5225,
+        "lng": 37.6275,
+        "country": "SY",
+        "operator": "SyAAF/Russia",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-201",
+        "name": "Shayrat Air Base",
+        "lat": 34.4903,
+        "lng": 36.9106,
+        "country": "SY",
+        "operator": "SyAAF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-202",
+        "name": "Al Anad Air Base",
+        "lat": 13.1775,
+        "lng": 44.7617,
+        "country": "YE",
+        "operator": "contested",
+        "type": "Air Base",
+        "status": "contested"
+    },
+    {
+        "id": "base-203",
+        "name": "Hodeidah Port",
+        "lat": 14.7979,
+        "lng": 42.9540,
+        "country": "YE",
+        "operator": "Houthi",
+        "type": "Port",
+        "status": "contested"
+    },
+    {
+        "id": "base-204",
+        "name": "Mitiga International",
+        "lat": 32.8941,
+        "lng": 13.2760,
+        "country": "LY",
+        "operator": "GNA",
+        "type": "Air Base",
+        "status": "contested"
+    },
+    {
+        "id": "base-205",
+        "name": "Al-Jufra Air Base",
+        "lat": 29.1950,
+        "lng": 16.0000,
+        "country": "LY",
+        "operator": "LNA/Wagner",
+        "type": "Air Base",
+        "status": "contested"
+    },
+    {
+        "id": "base-206",
+        "name": "Ndjamena Air Base",
+        "lat": 12.1336,
+        "lng": 15.0344,
+        "country": "TD",
+        "operator": "Chad AF/France",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-207",
+        "name": "Tessalit",
+        "lat": 20.2028,
+        "lng": 0.9772,
+        "country": "ML",
+        "operator": "Malian Army",
+        "type": "Forward Base",
+        "status": "active"
+    },
+    {
+        "id": "base-208",
+        "name": "Bamako-Sénou",
+        "lat": 12.5335,
+        "lng": -8.0697,
+        "country": "ML",
+        "operator": "Malian AF/Russia",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-209",
+        "name": "Berengo",
+        "lat": 3.9667,
+        "lng": 18.5167,
+        "country": "CF",
+        "operator": "Russia/Wagner",
+        "type": "Training Base",
+        "status": "active"
+    },
+    {
+        "id": "base-210",
+        "name": "Maputo Naval Base",
+        "lat": -25.9653,
+        "lng": 32.5892,
+        "country": "MZ",
+        "operator": "Mozambican Navy",
+        "type": "Naval Base",
+        "status": "active"
+    },
+    {
+        "id": "base-211",
+        "name": "Nacala Port",
+        "lat": -14.5425,
+        "lng": 40.6722,
+        "country": "MZ",
+        "operator": "SADC/Rwanda",
+        "type": "Forward Base",
+        "status": "active"
+    },
+    {
+        "id": "base-212",
+        "name": "Goma Airport",
+        "lat": -1.6708,
+        "lng": 29.2386,
+        "country": "CD",
+        "operator": "Congolese AF/MONUSCO",
+        "type": "Air Base",
+        "status": "contested"
+    },
+    {
+        "id": "base-213",
+        "name": "Mogadishu Aden Abdulle",
+        "lat": 2.0144,
+        "lng": 45.3047,
+        "country": "SO",
+        "operator": "AMISOM/Somali forces",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-214",
+        "name": "Baledogle Airfield",
+        "lat": 2.3517,
+        "lng": 44.7778,
+        "country": "SO",
+        "operator": "US/Somali forces",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-215",
+        "name": "Manda Bay",
+        "lat": -2.2625,
+        "lng": 40.9136,
+        "country": "KE",
+        "operator": "US/Kenyan forces",
+        "type": "Airfield",
+        "status": "active"
+    },
+    {
+        "id": "base-216",
+        "name": "Entebbe",
+        "lat": 0.0444,
+        "lng": 32.4436,
+        "country": "UG",
+        "operator": "UPDF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-217",
+        "name": "Ouagadougou Air Base",
+        "lat": 12.3533,
+        "lng": -1.5122,
+        "country": "BF",
+        "operator": "Burkina Faso/Russia",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-218",
+        "name": "Conakry Air Base",
+        "lat": 9.5769,
+        "lng": -13.6119,
+        "country": "GN",
+        "operator": "Guinean AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-219",
+        "name": "Libreville Air Base",
+        "lat": 0.4586,
+        "lng": 9.4122,
+        "country": "GA",
+        "operator": "Gabonese AF",
+        "type": "Air Base",
+        "status": "active"
+    },
+    {
+        "id": "base-220",
+        "name": "Douala Air Base",
+        "lat": 4.0061,
+        "lng": 9.7194,
+        "country": "CM",
+        "operator": "Cameroon AF",
+        "type": "Air Base",
+        "status": "active"
+    }
+]

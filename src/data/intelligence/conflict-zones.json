@@ -1,0 +1,273 @@
+[
+    {
+        "id": "cz-001",
+        "name": "Russia-Ukraine War",
+        "region": "Eastern Europe",
+        "severity": "critical",
+        "parties": [
+            "Russia",
+            "Ukraine"
+        ],
+        "startDate": "2022-02-24",
+        "bounds": {
+            "north": 52.5,
+            "south": 44.0,
+            "east": 40.0,
+            "west": 22.0
+        }
+    },
+    {
+        "id": "cz-002",
+        "name": "Sudan Civil War",
+        "region": "East Africa",
+        "severity": "critical",
+        "parties": [
+            "SAF",
+            "RSF"
+        ],
+        "startDate": "2023-04-15",
+        "bounds": {
+            "north": 22.0,
+            "south": 3.5,
+            "east": 38.5,
+            "west": 21.5
+        }
+    },
+    {
+        "id": "cz-003",
+        "name": "Myanmar Civil War",
+        "region": "Southeast Asia",
+        "severity": "critical",
+        "parties": [
+            "Tatmadaw",
+            "NUG",
+            "Ethnic Armed Orgs"
+        ],
+        "startDate": "2021-02-01",
+        "bounds": {
+            "north": 28.5,
+            "south": 9.5,
+            "east": 101.5,
+            "west": 92.0
+        }
+    },
+    {
+        "id": "cz-004",
+        "name": "Syria Civil War",
+        "region": "Middle East",
+        "severity": "high",
+        "parties": [
+            "Assad Govt",
+            "HTS",
+            "SDF",
+            "Turkey",
+            "Russia",
+            "Iran"
+        ],
+        "startDate": "2011-03-15",
+        "bounds": {
+            "north": 37.5,
+            "south": 32.3,
+            "east": 42.5,
+            "west": 35.5
+        }
+    },
+    {
+        "id": "cz-005",
+        "name": "Yemen Civil War",
+        "region": "Middle East",
+        "severity": "high",
+        "parties": [
+            "Houthis",
+            "Saudi Coalition",
+            "STC"
+        ],
+        "startDate": "2014-09-21",
+        "bounds": {
+            "north": 18.5,
+            "south": 12.0,
+            "east": 54.0,
+            "west": 42.5
+        }
+    },
+    {
+        "id": "cz-006",
+        "name": "Haiti Gang Violence",
+        "region": "Caribbean",
+        "severity": "high",
+        "parties": [
+            "Armed gangs",
+            "PNH"
+        ],
+        "startDate": "2021-07-07",
+        "bounds": {
+            "north": 20.1,
+            "south": 18.0,
+            "east": -71.6,
+            "west": -74.5
+        }
+    },
+    {
+        "id": "cz-007",
+        "name": "Somalia / Al-Shabaab",
+        "region": "East Africa",
+        "severity": "high",
+        "parties": [
+            "FGS",
+            "AMISOM",
+            "Al-Shabaab"
+        ],
+        "startDate": "2006-01-01",
+        "bounds": {
+            "north": 12.0,
+            "south": -1.7,
+            "east": 51.5,
+            "west": 41.0
+        }
+    },
+    {
+        "id": "cz-008",
+        "name": "DR Congo Eastern Conflict",
+        "region": "Central Africa",
+        "severity": "high",
+        "parties": [
+            "FARDC",
+            "M23",
+            "Multiple armed groups"
+        ],
+        "startDate": "2022-03-01",
+        "bounds": {
+            "north": 3.0,
+            "south": -5.0,
+            "east": 31.0,
+            "west": 26.0
+        }
+    },
+    {
+        "id": "cz-009",
+        "name": "Sahel Insurgency",
+        "region": "West Africa",
+        "severity": "high",
+        "parties": [
+            "JNIM",
+            "ISGS",
+            "National armies",
+            "Wagner/Africa Corps"
+        ],
+        "startDate": "2012-01-01",
+        "bounds": {
+            "north": 25.0,
+            "south": 10.0,
+            "east": 16.0,
+            "west": -5.0
+        }
+    },
+    {
+        "id": "cz-010",
+        "name": "Gaza Conflict",
+        "region": "Middle East",
+        "severity": "critical",
+        "parties": [
+            "Israel",
+            "Hamas",
+            "PIJ"
+        ],
+        "startDate": "2023-10-07",
+        "bounds": {
+            "north": 31.6,
+            "south": 31.2,
+            "east": 34.6,
+            "west": 34.2
+        }
+    },
+    {
+        "id": "cz-011",
+        "name": "Red Sea / Houthi Shipping Attacks",
+        "region": "Middle East / Indian Ocean",
+        "severity": "critical",
+        "parties": [
+            "Houthis",
+            "US/UK Coalition",
+            "Commercial shipping"
+        ],
+        "startDate": "2023-11-19",
+        "bounds": {
+            "north": 18.0,
+            "south": 11.0,
+            "east": 46.0,
+            "west": 38.0
+        }
+    },
+    {
+        "id": "cz-012",
+        "name": "Nagorno-Karabakh Aftermath",
+        "region": "Caucasus",
+        "severity": "medium",
+        "parties": [
+            "Azerbaijan",
+            "Armenia"
+        ],
+        "startDate": "2020-09-27",
+        "bounds": {
+            "north": 40.5,
+            "south": 39.0,
+            "east": 47.5,
+            "west": 46.0
+        }
+    },
+    {
+        "id": "cz-013",
+        "name": "Mozambique Insurgency",
+        "region": "Southern Africa",
+        "severity": "medium",
+        "parties": [
+            "ISIS-Mozambique",
+            "FADM",
+            "Rwanda/SADC"
+        ],
+        "startDate": "2017-10-05",
+        "bounds": {
+            "north": -10.5,
+            "south": -14.5,
+            "east": 41.0,
+            "west": 38.5
+        }
+    },
+    {
+        "id": "cz-014",
+        "name": "Ethiopia Instability",
+        "region": "East Africa",
+        "severity": "medium",
+        "parties": [
+            "ENDF",
+            "TPLF",
+            "OLA",
+            "Fano"
+        ],
+        "startDate": "2020-11-04",
+        "bounds": {
+            "north": 14.9,
+            "south": 3.4,
+            "east": 48.0,
+            "west": 33.0
+        }
+    },
+    {
+        "id": "cz-015",
+        "name": "Taiwan Strait Tension",
+        "region": "East Asia",
+        "severity": "high",
+        "parties": [
+            "PRC",
+            "Taiwan",
+            "US"
+        ],
+        "startDate": "2022-08-01",
+        "bounds": {
+            "north": 26.0,
+            "south": 22.0,
+            "east": 122.5,
+            "west": 117.0
+        }
+    }
+]

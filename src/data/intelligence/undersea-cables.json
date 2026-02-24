@@ -1,0 +1,1530 @@
+[
+    {
+        "id": "cable-001",
+        "name": "TAT-14",
+        "points": [
+            {
+                "lat": 50.95,
+                "lng": 1.85
+            },
+            {
+                "lat": 51.0,
+                "lng": -0.5
+            },
+            {
+                "lat": 50.5,
+                "lng": -5.0
+            },
+            {
+                "lat": 48.0,
+                "lng": -10.0
+            },
+            {
+                "lat": 42.0,
+                "lng": -40.0
+            },
+            {
+                "lat": 41.0,
+                "lng": -70.0
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Norden",
+                "lat": 53.59,
+                "lng": 7.19,
+                "country": "DE"
+            },
+            {
+                "name": "Katwijk",
+                "lat": 52.2,
+                "lng": 4.4,
+                "country": "NL"
+            },
+            {
+                "name": "St Valery",
+                "lat": 49.87,
+                "lng": 0.71,
+                "country": "FR"
+            },
+            {
+                "name": "Bude",
+                "lat": 50.83,
+                "lng": -4.55,
+                "country": "GB"
+            },
+            {
+                "name": "Tuckerton",
+                "lat": 39.6,
+                "lng": -74.34,
+                "country": "US"
+            },
+            {
+                "name": "Manasquan",
+                "lat": 40.12,
+                "lng": -74.04,
+                "country": "US"
+            }
+        ],
+        "length_km": 15428,
+        "owner": "Multiple",
+        "year": 2001
+    },
+    {
+        "id": "cable-002",
+        "name": "SEA-ME-WE 3",
+        "points": [
+            {
+                "lat": 1.3,
+                "lng": 103.8
+            },
+            {
+                "lat": 6.0,
+                "lng": 80.0
+            },
+            {
+                "lat": 12.5,
+                "lng": 45.0
+            },
+            {
+                "lat": 27.0,
+                "lng": 34.0
+            },
+            {
+                "lat": 31.0,
+                "lng": 32.0
+            },
+            {
+                "lat": 35.0,
+                "lng": 24.0
+            },
+            {
+                "lat": 38.0,
+                "lng": 15.0
+            },
+            {
+                "lat": 43.0,
+                "lng": 5.0
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Singapore",
+                "lat": 1.3,
+                "lng": 103.8,
+                "country": "SG"
+            },
+            {
+                "name": "Chennai",
+                "lat": 13.08,
+                "lng": 80.27,
+                "country": "IN"
+            },
+            {
+                "name": "Djibouti",
+                "lat": 11.58,
+                "lng": 43.15,
+                "country": "DJ"
+            },
+            {
+                "name": "Jeddah",
+                "lat": 21.54,
+                "lng": 39.17,
+                "country": "SA"
+            },
+            {
+                "name": "Suez",
+                "lat": 29.97,
+                "lng": 32.55,
+                "country": "EG"
+            },
+            {
+                "name": "Marseille",
+                "lat": 43.3,
+                "lng": 5.37,
+                "country": "FR"
+            }
+        ],
+        "length_km": 39000,
+        "owner": "SEA-ME-WE Consortium",
+        "year": 1999
+    },
+    {
+        "id": "cable-003",
+        "name": "SEA-ME-WE 6",
+        "points": [
+            {
+                "lat": 1.3,
+                "lng": 103.8
+            },
+            {
+                "lat": 6.0,
+                "lng": 80.0
+            },
+            {
+                "lat": 12.0,
+                "lng": 45.0
+            },
+            {
+                "lat": 31.0,
+                "lng": 32.0
+            },
+            {
+                "lat": 43.3,
+                "lng": 5.4
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Singapore",
+                "lat": 1.3,
+                "lng": 103.8,
+                "country": "SG"
+            },
+            {
+                "name": "Mumbai",
+                "lat": 19.08,
+                "lng": 72.88,
+                "country": "IN"
+            },
+            {
+                "name": "Djibouti",
+                "lat": 11.58,
+                "lng": 43.15,
+                "country": "DJ"
+            },
+            {
+                "name": "Egypt",
+                "lat": 31.26,
+                "lng": 32.31,
+                "country": "EG"
+            },
+            {
+                "name": "Marseille",
+                "lat": 43.3,
+                "lng": 5.37,
+                "country": "FR"
+            }
+        ],
+        "length_km": 19200,
+        "owner": "SEA-ME-WE 6 Consortium",
+        "year": 2025
+    },
+    {
+        "id": "cable-004",
+        "name": "MAREA",
+        "points": [
+            {
+                "lat": 39.74,
+                "lng": -74.0
+            },
+            {
+                "lat": 40.0,
+                "lng": -30.0
+            },
+            {
+                "lat": 43.38,
+                "lng": -3.0
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Virginia Beach",
+                "lat": 36.85,
+                "lng": -75.98,
+                "country": "US"
+            },
+            {
+                "name": "Bilbao",
+                "lat": 43.26,
+                "lng": -2.93,
+                "country": "ES"
+            }
+        ],
+        "length_km": 6605,
+        "owner": "Microsoft/Meta/Telxius",
+        "year": 2017
+    },
+    {
+        "id": "cable-005",
+        "name": "DUNANT",
+        "points": [
+            {
+                "lat": 36.85,
+                "lng": -75.98
+            },
+            {
+                "lat": 40.0,
+                "lng": -30.0
+            },
+            {
+                "lat": 43.0,
+                "lng": -2.0
+            },
+            {
+                "lat": 43.3,
+                "lng": 5.4
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Virginia Beach",
+                "lat": 36.85,
+                "lng": -75.98,
+                "country": "US"
+            },
+            {
+                "name": "Saint-Hilaire-de-Riez",
+                "lat": 46.72,
+                "lng": -1.96,
+                "country": "FR"
+            }
+        ],
+        "length_km": 6600,
+        "owner": "Google",
+        "year": 2020
+    },
+    {
+        "id": "cable-006",
+        "name": "HAVFRUE/AEC-2",
+        "points": [
+            {
+                "lat": 40.6,
+                "lng": -74.0
+            },
+            {
+                "lat": 55.0,
+                "lng": -30.0
+            },
+            {
+                "lat": 57.5,
+                "lng": 10.5
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Wall Township",
+                "lat": 40.16,
+                "lng": -74.07,
+                "country": "US"
+            },
+            {
+                "name": "Blaabjerg",
+                "lat": 55.56,
+                "lng": 8.25,
+                "country": "DK"
+            },
+            {
+                "name": "Kristiansand",
+                "lat": 58.15,
+                "lng": 8.0,
+                "country": "NO"
+            }
+        ],
+        "length_km": 7860,
+        "owner": "Google/Aqua Comms",
+        "year": 2020
+    },
+    {
+        "id": "cable-007",
+        "name": "FLAG Europe-Asia",
+        "points": [
+            {
+                "lat": 50.0,
+                "lng": -5.0
+            },
+            {
+                "lat": 36.0,
+                "lng": -6.0
+            },
+            {
+                "lat": 31.0,
+                "lng": 32.0
+            },
+            {
+                "lat": 12.5,
+                "lng": 45.0
+            },
+            {
+                "lat": 19.0,
+                "lng": 73.0
+            },
+            {
+                "lat": 1.3,
+                "lng": 103.8
+            },
+            {
+                "lat": 22.3,
+                "lng": 114.2
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Porthcurno",
+                "lat": 50.04,
+                "lng": -5.66,
+                "country": "GB"
+            },
+            {
+                "name": "Estepona",
+                "lat": 36.43,
+                "lng": -5.15,
+                "country": "ES"
+            },
+            {
+                "name": "Port Said",
+                "lat": 31.26,
+                "lng": 32.31,
+                "country": "EG"
+            },
+            {
+                "name": "Mumbai",
+                "lat": 19.08,
+                "lng": 72.88,
+                "country": "IN"
+            },
+            {
+                "name": "Hong Kong",
+                "lat": 22.28,
+                "lng": 114.17,
+                "country": "HK"
+            }
+        ],
+        "length_km": 28000,
+        "owner": "Global Cloud Xchange",
+        "year": 1997
+    },
+    {
+        "id": "cable-008",
+        "name": "AAE-1",
+        "points": [
+            {
+                "lat": 43.3,
+                "lng": 5.4
+            },
+            {
+                "lat": 31.0,
+                "lng": 32.0
+            },
+            {
+                "lat": 12.5,
+                "lng": 45.0
+            },
+            {
+                "lat": 19.0,
+                "lng": 73.0
+            },
+            {
+                "lat": 1.3,
+                "lng": 103.8
+            },
+            {
+                "lat": 22.3,
+                "lng": 114.2
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Marseille",
+                "lat": 43.3,
+                "lng": 5.37,
+                "country": "FR"
+            },
+            {
+                "name": "Abu Talat",
+                "lat": 30.91,
+                "lng": 29.4,
+                "country": "EG"
+            },
+            {
+                "name": "Djibouti",
+                "lat": 11.58,
+                "lng": 43.15,
+                "country": "DJ"
+            },
+            {
+                "name": "Mumbai",
+                "lat": 19.08,
+                "lng": 72.88,
+                "country": "IN"
+            },
+            {
+                "name": "Singapore",
+                "lat": 1.3,
+                "lng": 103.8,
+                "country": "SG"
+            },
+            {
+                "name": "Hong Kong",
+                "lat": 22.28,
+                "lng": 114.17,
+                "country": "HK"
+            }
+        ],
+        "length_km": 25000,
+        "owner": "AAE-1 Consortium",
+        "year": 2017
+    },
+    {
+        "id": "cable-009",
+        "name": "BRUSA",
+        "points": [
+            {
+                "lat": 36.85,
+                "lng": -75.98
+            },
+            {
+                "lat": 20.0,
+                "lng": -40.0
+            },
+            {
+                "lat": -23.0,
+                "lng": -43.17
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Virginia Beach",
+                "lat": 36.85,
+                "lng": -75.98,
+                "country": "US"
+            },
+            {
+                "name": "Fortaleza",
+                "lat": -3.72,
+                "lng": -38.52,
+                "country": "BR"
+            },
+            {
+                "name": "Rio de Janeiro",
+                "lat": -22.91,
+                "lng": -43.17,
+                "country": "BR"
+            }
+        ],
+        "length_km": 10556,
+        "owner": "Google",
+        "year": 2021
+    },
+    {
+        "id": "cable-010",
+        "name": "2Africa",
+        "points": [
+            {
+                "lat": 50.0,
+                "lng": -5.0
+            },
+            {
+                "lat": 36.0,
+                "lng": -6.0
+            },
+            {
+                "lat": 6.0,
+                "lng": -2.0
+            },
+            {
+                "lat": -6.0,
+                "lng": 12.0
+            },
+            {
+                "lat": -34.0,
+                "lng": 18.0
+            },
+            {
+                "lat": -26.0,
+                "lng": 33.0
+            },
+            {
+                "lat": -4.0,
+                "lng": 40.0
+            },
+            {
+                "lat": 12.0,
+                "lng": 45.0
+            },
+            {
+                "lat": 31.0,
+                "lng": 32.0
+            },
+            {
+                "lat": 43.3,
+                "lng": 5.4
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Bude",
+                "lat": 50.83,
+                "lng": -4.55,
+                "country": "GB"
+            },
+            {
+                "name": "Genoa",
+                "lat": 44.41,
+                "lng": 8.93,
+                "country": "IT"
+            },
+            {
+                "name": "Lagos",
+                "lat": 6.45,
+                "lng": 3.39,
+                "country": "NG"
+            },
+            {
+                "name": "Cape Town",
+                "lat": -33.92,
+                "lng": 18.42,
+                "country": "ZA"
+            },
+            {
+                "name": "Maputo",
+                "lat": -25.97,
+                "lng": 32.59,
+                "country": "MZ"
+            },
+            {
+                "name": "Mombasa",
+                "lat": -4.04,
+                "lng": 39.66,
+                "country": "KE"
+            },
+            {
+                "name": "Djibouti",
+                "lat": 11.58,
+                "lng": 43.15,
+                "country": "DJ"
+            },
+            {
+                "name": "Oman",
+                "lat": 23.61,
+                "lng": 58.55,
+                "country": "OM"
+            },
+            {
+                "name": "Jeddah",
+                "lat": 21.54,
+                "lng": 39.17,
+                "country": "SA"
+            },
+            {
+                "name": "Mumbai",
+                "lat": 19.08,
+                "lng": 72.88,
+                "country": "IN"
+            }
+        ],
+        "length_km": 45000,
+        "owner": "Meta/MTN/others",
+        "year": 2024
+    },
+    {
+        "id": "cable-011",
+        "name": "APC (Asia Pacific Cable)",
+        "points": [
+            {
+                "lat": 22.3,
+                "lng": 114.2
+            },
+            {
+                "lat": 14.5,
+                "lng": 121.0
+            },
+            {
+                "lat": 1.3,
+                "lng": 103.8
+            },
+            {
+                "lat": 35.6,
+                "lng": 139.7
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Hong Kong",
+                "lat": 22.28,
+                "lng": 114.17,
+                "country": "HK"
+            },
+            {
+                "name": "Manila",
+                "lat": 14.6,
+                "lng": 120.98,
+                "country": "PH"
+            },
+            {
+                "name": "Singapore",
+                "lat": 1.3,
+                "lng": 103.8,
+                "country": "SG"
+            },
+            {
+                "name": "Chikura",
+                "lat": 34.93,
+                "lng": 139.95,
+                "country": "JP"
+            }
+        ],
+        "length_km": 15400,
+        "owner": "Multiple",
+        "year": 2001
+    },
+    {
+        "id": "cable-012",
+        "name": "JUPITER",
+        "points": [
+            {
+                "lat": 35.6,
+                "lng": 139.7
+            },
+            {
+                "lat": 25.0,
+                "lng": 170.0
+            },
+            {
+                "lat": 21.3,
+                "lng": -158.0
+            },
+            {
+                "lat": 33.7,
+                "lng": -118.0
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Maruyama",
+                "lat": 34.92,
+                "lng": 139.95,
+                "country": "JP"
+            },
+            {
+                "name": "Daet",
+                "lat": 14.1,
+                "lng": 122.95,
+                "country": "PH"
+            },
+            {
+                "name": "Los Angeles",
+                "lat": 33.74,
+                "lng": -118.27,
+                "country": "US"
+            }
+        ],
+        "length_km": 14300,
+        "owner": "Google/Meta/others",
+        "year": 2020
+    },
+    {
+        "id": "cable-013",
+        "name": "NorSea Com-1",
+        "points": [
+            {
+                "lat": 59.0,
+                "lng": 5.7
+            },
+            {
+                "lat": 57.8,
+                "lng": 1.0
+            },
+            {
+                "lat": 55.0,
+                "lng": -1.5
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Stavanger",
+                "lat": 58.97,
+                "lng": 5.73,
+                "country": "NO"
+            },
+            {
+                "name": "Newcastle",
+                "lat": 55.0,
+                "lng": -1.61,
+                "country": "GB"
+            }
+        ],
+        "length_km": 700,
+        "owner": "Tampnet/Altibox",
+        "year": 2008
+    },
+    {
+        "id": "cable-014",
+        "name": "Celtic Norse",
+        "points": [
+            {
+                "lat": 53.3,
+                "lng": -6.3
+            },
+            {
+                "lat": 54.0,
+                "lng": -3.0
+            },
+            {
+                "lat": 57.0,
+                "lng": 5.0
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Dublin",
+                "lat": 53.35,
+                "lng": -6.26,
+                "country": "IE"
+            },
+            {
+                "name": "Trondheim",
+                "lat": 63.43,
+                "lng": 10.4,
+                "country": "NO"
+            }
+        ],
+        "length_km": 1800,
+        "owner": "aqua comms",
+        "year": 2022
+    },
+    {
+        "id": "cable-015",
+        "name": "PEACE",
+        "points": [
+            {
+                "lat": 39.6,
+                "lng": 2.6
+            },
+            {
+                "lat": 31.0,
+                "lng": 32.0
+            },
+            {
+                "lat": 12.5,
+                "lng": 45.0
+            },
+            {
+                "lat": 24.8,
+                "lng": 67.0
+            },
+            {
+                "lat": 1.3,
+                "lng": 103.8
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Marseille",
+                "lat": 43.3,
+                "lng": 5.37,
+                "country": "FR"
+            },
+            {
+                "name": "Abu Talat",
+                "lat": 30.91,
+                "lng": 29.4,
+                "country": "EG"
+            },
+            {
+                "name": "Djibouti",
+                "lat": 11.58,
+                "lng": 43.15,
+                "country": "DJ"
+            },
+            {
+                "name": "Karachi",
+                "lat": 24.85,
+                "lng": 67.0,
+                "country": "PK"
+            },
+            {
+                "name": "Singapore",
+                "lat": 1.3,
+                "lng": 103.8,
+                "country": "SG"
+            }
+        ],
+        "length_km": 15800,
+        "owner": "HMN Tech (Hengtong)",
+        "year": 2022
+    },
+    {
+        "id": "cable-016",
+        "name": "EIG (Europe India Gateway)",
+        "points": [
+            {
+                "lat": 50.0,
+                "lng": -5.0
+            },
+            {
+                "lat": 36.0,
+                "lng": -6.0
+            },
+            {
+                "lat": 36.0,
+                "lng": 1.0
+            },
+            {
+                "lat": 31.0,
+                "lng": 32.0
+            },
+            {
+                "lat": 12.5,
+                "lng": 45.0
+            },
+            {
+                "lat": 19.0,
+                "lng": 73.0
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Bude",
+                "lat": 50.83,
+                "lng": -4.55,
+                "country": "GB"
+            },
+            {
+                "name": "Lisbon",
+                "lat": 38.72,
+                "lng": -9.14,
+                "country": "PT"
+            },
+            {
+                "name": "Marseille",
+                "lat": 43.3,
+                "lng": 5.37,
+                "country": "FR"
+            },
+            {
+                "name": "Abu Talat",
+                "lat": 30.91,
+                "lng": 29.4,
+                "country": "EG"
+            },
+            {
+                "name": "Djibouti",
+                "lat": 11.58,
+                "lng": 43.15,
+                "country": "DJ"
+            },
+            {
+                "name": "Mumbai",
+                "lat": 19.08,
+                "lng": 72.88,
+                "country": "IN"
+            }
+        ],
+        "length_km": 15000,
+        "owner": "EIG Consortium",
+        "year": 2011
+    },
+    {
+        "id": "cable-017",
+        "name": "EllaLink",
+        "points": [
+            {
+                "lat": 39.1,
+                "lng": -9.5
+            },
+            {
+                "lat": 15.0,
+                "lng": -30.0
+            },
+            {
+                "lat": -3.72,
+                "lng": -38.52
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Sines",
+                "lat": 37.95,
+                "lng": -8.87,
+                "country": "PT"
+            },
+            {
+                "name": "Marseille",
+                "lat": 43.3,
+                "lng": 5.37,
+                "country": "FR"
+            },
+            {
+                "name": "Fortaleza",
+                "lat": -3.72,
+                "lng": -38.52,
+                "country": "BR"
+            }
+        ],
+        "length_km": 12000,
+        "owner": "EllaLink",
+        "year": 2021
+    },
+    {
+        "id": "cable-018",
+        "name": "APRICOT",
+        "points": [
+            {
+                "lat": 35.6,
+                "lng": 139.7
+            },
+            {
+                "lat": 25.0,
+                "lng": 122.0
+            },
+            {
+                "lat": 1.3,
+                "lng": 103.8
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Tanguisson",
+                "lat": 13.55,
+                "lng": 144.81,
+                "country": "GU"
+            },
+            {
+                "name": "Tanegashima",
+                "lat": 30.73,
+                "lng": 131.0,
+                "country": "JP"
+            },
+            {
+                "name": "Manila",
+                "lat": 14.6,
+                "lng": 120.98,
+                "country": "PH"
+            },
+            {
+                "name": "Singapore",
+                "lat": 1.3,
+                "lng": 103.8,
+                "country": "SG"
+            },
+            {
+                "name": "Jakarta",
+                "lat": -6.21,
+                "lng": 106.85,
+                "country": "ID"
+            }
+        ],
+        "length_km": 12000,
+        "owner": "Google/Meta",
+        "year": 2024
+    },
+    {
+        "id": "cable-019",
+        "name": "AEConnect-1",
+        "points": [
+            {
+                "lat": 53.3,
+                "lng": -6.3
+            },
+            {
+                "lat": 50.0,
+                "lng": -30.0
+            },
+            {
+                "lat": 40.6,
+                "lng": -74.0
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Killala",
+                "lat": 54.21,
+                "lng": -9.22,
+                "country": "IE"
+            },
+            {
+                "name": "Shirley",
+                "lat": 40.76,
+                "lng": -72.87,
+                "country": "US"
+            }
+        ],
+        "length_km": 5536,
+        "owner": "Aqua Comms",
+        "year": 2016
+    },
+    {
+        "id": "cable-020",
+        "name": "Equiano",
+        "points": [
+            {
+                "lat": 50.0,
+                "lng": -5.0
+            },
+            {
+                "lat": 38.0,
+                "lng": -10.0
+            },
+            {
+                "lat": 6.0,
+                "lng": -2.0
+            },
+            {
+                "lat": -6.0,
+                "lng": 12.0
+            },
+            {
+                "lat": -34.0,
+                "lng": 18.0
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Bude",
+                "lat": 50.83,
+                "lng": -4.55,
+                "country": "GB"
+            },
+            {
+                "name": "Lisbon",
+                "lat": 38.72,
+                "lng": -9.14,
+                "country": "PT"
+            },
+            {
+                "name": "Lagos",
+                "lat": 6.45,
+                "lng": 3.39,
+                "country": "NG"
+            },
+            {
+                "name": "Swakopmund",
+                "lat": -22.68,
+                "lng": 14.53,
+                "country": "NA"
+            },
+            {
+                "name": "Cape Town",
+                "lat": -33.92,
+                "lng": 18.42,
+                "country": "ZA"
+            }
+        ],
+        "length_km": 15000,
+        "owner": "Google",
+        "year": 2023
+    },
+    {
+        "id": "cable-021",
+        "name": "Grace Hopper",
+        "points": [
+            {
+                "lat": 40.6,
+                "lng": -74.0
+            },
+            {
+                "lat": 50.0,
+                "lng": -5.0
+            },
+            {
+                "lat": 43.0,
+                "lng": -2.0
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "New York",
+                "lat": 40.74,
+                "lng": -73.8,
+                "country": "US"
+            },
+            {
+                "name": "Bude",
+                "lat": 50.83,
+                "lng": -4.55,
+                "country": "GB"
+            },
+            {
+                "name": "Bilbao",
+                "lat": 43.26,
+                "lng": -2.93,
+                "country": "ES"
+            }
+        ],
+        "length_km": 6200,
+        "owner": "Google",
+        "year": 2022
+    },
+    {
+        "id": "cable-022",
+        "name": "Curie",
+        "points": [
+            {
+                "lat": 33.7,
+                "lng": -118.0
+            },
+            {
+                "lat": 10.0,
+                "lng": -80.0
+            },
+            {
+                "lat": -33.45,
+                "lng": -70.67
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Los Angeles",
+                "lat": 33.74,
+                "lng": -118.27,
+                "country": "US"
+            },
+            {
+                "name": "Balboa",
+                "lat": 8.95,
+                "lng": -79.57,
+                "country": "PA"
+            },
+            {
+                "name": "Valparaíso",
+                "lat": -33.05,
+                "lng": -71.61,
+                "country": "CL"
+            }
+        ],
+        "length_km": 10476,
+        "owner": "Google",
+        "year": 2019
+    },
+    {
+        "id": "cable-023",
+        "name": "Firmina",
+        "points": [
+            {
+                "lat": 36.85,
+                "lng": -75.98
+            },
+            {
+                "lat": 10.0,
+                "lng": -40.0
+            },
+            {
+                "lat": -3.72,
+                "lng": -38.52
+            },
+            {
+                "lat": -23.0,
+                "lng": -43.17
+            },
+            {
+                "lat": -34.6,
+                "lng": -58.38
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Myrtle Beach",
+                "lat": 33.69,
+                "lng": -78.89,
+                "country": "US"
+            },
+            {
+                "name": "Praia Grande",
+                "lat": -24.01,
+                "lng": -46.41,
+                "country": "BR"
+            },
+            {
+                "name": "Las Toninas",
+                "lat": -36.48,
+                "lng": -56.97,
+                "country": "AR"
+            }
+        ],
+        "length_km": 14000,
+        "owner": "Google",
+        "year": 2023
+    },
+    {
+        "id": "cable-024",
+        "name": "INDIGO",
+        "points": [
+            {
+                "lat": 1.3,
+                "lng": 103.8
+            },
+            {
+                "lat": -6.0,
+                "lng": 106.0
+            },
+            {
+                "lat": -32.0,
+                "lng": 115.0
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Singapore",
+                "lat": 1.3,
+                "lng": 103.8,
+                "country": "SG"
+            },
+            {
+                "name": "Jakarta",
+                "lat": -6.21,
+                "lng": 106.85,
+                "country": "ID"
+            },
+            {
+                "name": "Perth",
+                "lat": -31.95,
+                "lng": 115.86,
+                "country": "AU"
+            }
+        ],
+        "length_km": 4600,
+        "owner": "Google/Indosat/SubPartners",
+        "year": 2019
+    },
+    {
+        "id": "cable-025",
+        "name": "C-Lion1",
+        "points": [
+            {
+                "lat": 60.17,
+                "lng": 24.94
+            },
+            {
+                "lat": 54.3,
+                "lng": 13.1
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Helsinki",
+                "lat": 60.17,
+                "lng": 24.94,
+                "country": "FI"
+            },
+            {
+                "name": "Rostock",
+                "lat": 54.08,
+                "lng": 12.14,
+                "country": "DE"
+            }
+        ],
+        "length_km": 1172,
+        "owner": "Cinia",
+        "year": 2016
+    },
+    {
+        "id": "cable-026",
+        "name": "NordBalt",
+        "points": [
+            {
+                "lat": 55.6,
+                "lng": 13.0
+            },
+            {
+                "lat": 55.7,
+                "lng": 21.0
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Klaipėda",
+                "lat": 55.71,
+                "lng": 21.13,
+                "country": "LT"
+            },
+            {
+                "name": "Karlshamn",
+                "lat": 56.17,
+                "lng": 14.86,
+                "country": "SE"
+            }
+        ],
+        "length_km": 453,
+        "owner": "Litgrid/Svenska Kraftnät",
+        "year": 2016
+    },
+    {
+        "id": "cable-027",
+        "name": "Baltic Connector",
+        "points": [
+            {
+                "lat": 60.17,
+                "lng": 24.94
+            },
+            {
+                "lat": 59.44,
+                "lng": 24.75
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Inkoo",
+                "lat": 60.05,
+                "lng": 24.0,
+                "country": "FI"
+            },
+            {
+                "name": "Paldiski",
+                "lat": 59.35,
+                "lng": 24.05,
+                "country": "EE"
+            }
+        ],
+        "length_km": 80,
+        "owner": "Gasgrid/Elering",
+        "year": 2020
+    },
+    {
+        "id": "cable-028",
+        "name": "Polar Express",
+        "points": [
+            {
+                "lat": 35.6,
+                "lng": 139.7
+            },
+            {
+                "lat": 60.0,
+                "lng": 170.0
+            },
+            {
+                "lat": 64.0,
+                "lng": -170.0
+            },
+            {
+                "lat": 70.0,
+                "lng": -120.0
+            },
+            {
+                "lat": 53.3,
+                "lng": -6.3
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Tokyo",
+                "lat": 35.68,
+                "lng": 139.77,
+                "country": "JP"
+            },
+            {
+                "name": "Murmansk",
+                "lat": 68.97,
+                "lng": 33.07,
+                "country": "RU"
+            },
+            {
+                "name": "Kirkenes",
+                "lat": 69.73,
+                "lng": 30.05,
+                "country": "NO"
+            },
+            {
+                "name": "Ireland",
+                "lat": 53.35,
+                "lng": -6.26,
+                "country": "IE"
+            }
+        ],
+        "length_km": 14000,
+        "owner": "MegaFon/Cinia",
+        "year": 2026
+    },
+    {
+        "id": "cable-029",
+        "name": "SouthEast Asia-Japan Cable 2",
+        "points": [
+            {
+                "lat": 22.3,
+                "lng": 114.2
+            },
+            {
+                "lat": 14.5,
+                "lng": 121.0
+            },
+            {
+                "lat": 1.3,
+                "lng": 103.8
+            },
+            {
+                "lat": 35.6,
+                "lng": 139.7
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Hong Kong",
+                "lat": 22.28,
+                "lng": 114.17,
+                "country": "HK"
+            },
+            {
+                "name": "Batangas",
+                "lat": 13.76,
+                "lng": 121.06,
+                "country": "PH"
+            },
+            {
+                "name": "Singapore",
+                "lat": 1.3,
+                "lng": 103.8,
+                "country": "SG"
+            },
+            {
+                "name": "Chikura",
+                "lat": 34.93,
+                "lng": 139.95,
+                "country": "JP"
+            }
+        ],
+        "length_km": 9700,
+        "owner": "SJC2 Consortium",
+        "year": 2020
+    },
+    {
+        "id": "cable-030",
+        "name": "Trans-Pacific Express",
+        "points": [
+            {
+                "lat": 33.7,
+                "lng": -118.0
+            },
+            {
+                "lat": 35.6,
+                "lng": 139.7
+            },
+            {
+                "lat": 39.7,
+                "lng": 122.0
+            },
+            {
+                "lat": 25.0,
+                "lng": 121.5
+            }
+        ],
+        "landingPoints": [
+            {
+                "name": "Oregon",
+                "lat": 44.62,
+                "lng": -124.06,
+                "country": "US"
+            },
+            {
+                "name": "Chongming",
+                "lat": 31.62,
+                "lng": 121.73,
+                "country": "CN"
+            },
+            {
+                "name": "Maruyama",
+                "lat": 34.92,
+                "lng": 139.95,
+                "country": "JP"
+            },
+            {
+                "name": "Toucheng",
+                "lat": 24.84,
+                "lng": 121.84,
+                "country": "TW"
+            }
+        ],
+        "length_km": 18000,
+        "owner": "Multiple",
+        "year": 2008
+    }
+]
