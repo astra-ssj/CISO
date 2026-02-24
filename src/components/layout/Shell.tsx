@@ -16,7 +16,6 @@ import {
     ChevronLeft,
     ChevronRight,
     Sparkles,
-    BookOpen,
     HelpCircle,
     Settings,
     Target,
@@ -40,9 +39,8 @@ const navItems = [
     { name: 'Incidents', href: '/incidents', icon: Siren },
     { name: 'Intelligence', href: '/intelligence', icon: BrainCircuit },
     { name: 'Vendor Risk', href: '/vendors', icon: Building2 },
-    { name: 'Knowledge Base', href: '/vendors', icon: BookOpen },
     { name: 'AppSec', href: '/appsec', icon: Shield },
-    { name: 'Settings', href: '/settings', icon: Settings },
+    { name: 'Settings', href: '/settings', icon: Settings, separator: true },
     { name: 'Help Center', href: '/help', icon: HelpCircle },
     { name: 'Roadmap', href: '/roadmap', icon: Map },
 ];
@@ -89,6 +87,10 @@ export function Shell({ children }: { children: React.ReactNode }) {
                         {navItems.map((item) => {
                             const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
 
+                            const separator = 'separator' in item && item.separator ? (
+                                <div className={cn("my-2 border-t border-sidebar-border", isCollapsed ? "mx-1" : "mx-2")} />
+                            ) : null;
+
                             const navButton = (
                                 <Link key={item.name} href={item.href}>
                                     <Button
@@ -116,18 +118,26 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
                             if (isCollapsed) {
                                 return (
-                                    <Tooltip key={item.name}>
-                                        <TooltipTrigger asChild>
-                                            {navButton}
-                                        </TooltipTrigger>
-                                        <TooltipContent side="right" className="font-medium">
-                                            {item.name}
-                                        </TooltipContent>
-                                    </Tooltip>
+                                    <div key={item.name}>
+                                        {separator}
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                {navButton}
+                                            </TooltipTrigger>
+                                            <TooltipContent side="right" className="font-medium">
+                                                {item.name}
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </div>
                                 );
                             }
 
-                            return navButton;
+                            return (
+                                <div key={item.name}>
+                                    {separator}
+                                    {navButton}
+                                </div>
+                            );
                         })}
                     </nav>
 
