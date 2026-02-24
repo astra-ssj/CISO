@@ -1,0 +1,37 @@
+# GitHub Labels
+
+This file documents the recommended label set for the Astra CISO repository.
+To apply these labels, use the [GitHub CLI](https://cli.github.com/):
+
+```bash
+# Create all labels (run from repo root)
+gh label create "bug"                --color "d73a4a" --description "Something isn't working"
+gh label create "enhancement"        --color "0075ca" --description "New feature or request"
+gh label create "documentation"      --color "0e8a16" --description "Documentation improvements"
+gh label create "security"           --color "e4811b" --description "Security fix or hardening"
+gh label create "caiq"               --color "7b3fc4" --description "CAIQ / vendor risk module"
+gh label create "intelligence"       --color "00bcd4" --description "World Monitor / intelligence module"
+gh label create "infrastructure"     --color "6e7781" --description "Docker, CI, deployment"
+gh label create "priority:critical"  --color "b60205" --description "Ship immediately — production impact"
+gh label create "priority:high"      --color "e11d48" --description "High priority — next sprint"
+gh label create "priority:medium"    --color "f59e0b" --description "Medium priority — planned"
+gh label create "priority:low"       --color "16a34a" --description "Low priority — backlog"
+gh label create "good first issue"   --color "60a5fa" --description "Good entry point for new contributors"
+```
+
+## Label Reference
+
+| Label | Colour | Description |
+|-------|--------|-------------|
+| `bug` | 🔴 `#d73a4a` | Something isn't working |
+| `enhancement` | 🔵 `#0075ca` | New feature or request |
+| `documentation` | 🟢 `#0e8a16` | Documentation improvements |
+| `security` | 🟠 `#e4811b` | Security fix or hardening |
+| `caiq` | 🟣 `#7b3fc4` | CAIQ / vendor risk module |
+| `intelligence` | 🩵 `#00bcd4` | World Monitor / intelligence module |
+| `infrastructure` | ⚫ `#6e7781` | Docker, CI, deployment |
+| `priority:critical` | 🔴 `#b60205` | Ship immediately — production impact |
+| `priority:high` | 🔴 `#e11d48` | High priority — next sprint |
+| `priority:medium` | 🟡 `#f59e0b` | Medium priority — planned |
+| `priority:low` | 🟢 `#16a34a` | Low priority — backlog |
+| `good first issue` | 🔵 `#60a5fa` | Good entry point for new contributors |

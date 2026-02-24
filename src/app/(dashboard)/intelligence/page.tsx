@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -12,11 +12,16 @@ import { LayerControlPanel } from '@/components/intelligence/world-monitor/Layer
 import { ThreatBriefingTab } from '@/components/intelligence/tabs/ThreatBriefingTab';
 import { SignalIntelligenceTab } from '@/components/intelligence/tabs/SignalIntelligenceTab';
 import { InfrastructureTab } from '@/components/intelligence/tabs/InfrastructureTab';
-
 import { LiveFeedsTab } from '@/components/intelligence/tabs/LiveFeedsTab';
 import type { MapDataPoint, OfficePin } from '@/components/intelligence/world-monitor/WorldMonitorMap';
-import { getCountryCoords, jurisdictionColor } from '@/lib/intelligence/country-coords';
 import { getFreshnessSummary, type FreshnessSummary } from '@/lib/intelligence/data-freshness';
+
+// ── Static data imports ───────────────────────────────────────
+import militaryBases from '@/data/intelligence/military-bases.json';
+import conflictZones from '@/data/intelligence/conflict-zones.json';
+import datacenters from '@/data/intelligence/datacenters.json';
+import nuclearFacilities from '@/data/intelligence/nuclear-facilities.json';
+import underseaCables from '@/data/intelligence/undersea-cables.json';
 
 // Dynamic imports (heavy dependencies)
 const WorldMonitorMap = dynamic(
@@ -47,70 +52,100 @@ const RansomwareDashboard = dynamic(
     }
 );
 
-// ── Mock data points ──────────────────────────────────────────
+// ── Hardcoded AstraLabs office locations ──────────────────────
+const OFFICE_LOCATIONS: OfficePin[] = [
+    { id: 'office-de', name: 'AstraLabs DE (HQ)', lat: 54.32, lng: 10.13, country: 'DE', jurisdiction: 'EU', ciiScore: 8, ciiLevel: 'low', nearbyThreats: 0 },
+    { id: 'office-gb', name: 'AstraLabs UK', lat: 51.50, lng: -0.12, country: 'GB', jurisdiction: 'UK', ciiScore: 10, ciiLevel: 'low', nearbyThreats: 0 },
+    { id: 'office-th', name: 'AstraLabs TH', lat: 13.75, lng: 100.50, country: 'TH', jurisdiction: 'APAC', ciiScore: 25, ciiLevel: 'low', nearbyThreats: 0 },
+    { id: 'office-au', name: 'AstraLabs AU', lat: -33.87, lng: 151.21, country: 'AU', jurisdiction: 'APAC', ciiScore: 8, ciiLevel: 'low', nearbyThreats: 0 },
+    { id: 'office-nz', name: 'AstraLabs NZ', lat: -36.85, lng: 174.76, country: 'NZ', jurisdiction: 'APAC', ciiScore: 5, ciiLevel: 'low', nearbyThreats: 0 },
+    { id: 'office-es', name: 'AstraLabs ES', lat: 41.39, lng: 2.17, country: 'ES', jurisdiction: 'EU', ciiScore: 12, ciiLevel: 'low', nearbyThreats: 0 },
+    { id: 'office-at', name: 'AstraLabs AT', lat: 48.21, lng: 16.37, country: 'AT', jurisdiction: 'EU', ciiScore: 7, ciiLevel: 'low', nearbyThreats: 0 },
+];
 
-function generateMockDataPoints(): MapDataPoint[] {
-    const hexToRgba = (hex: string): [number, number, number, number] => {
-        const r = parseInt(hex.slice(1, 3), 16);
-        const g = parseInt(hex.slice(3, 5), 16);
-        const b = parseInt(hex.slice(5, 7), 16);
-        return [r, g, b, 200];
-    };
+// ── Helper ────────────────────────────────────────────────────
+function hexToRgba(hex: string): [number, number, number, number] {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return [r, g, b, 200];
+}
 
-    return [
-        { id: 'pt-1', latitude: 48.8, longitude: 37.5, label: 'Active Conflict Zone', category: 'GEOPOLITICAL', severity: 'critical', details: 'Ongoing armed conflict — elevated cyber operations reported', layerId: 'conflicts', color: hexToRgba('#f43f5e'), timestamp: new Date().toISOString() },
-        { id: 'pt-2', latitude: 15.5, longitude: 32.5, label: 'Civil War Zone', category: 'GEOPOLITICAL', severity: 'critical', details: 'Humanitarian crisis with infrastructure targeting', layerId: 'conflicts', color: hexToRgba('#f43f5e'), timestamp: new Date().toISOString() },
-        { id: 'pt-3', latitude: 33.8, longitude: 35.8, label: 'Beirut — Social Unrest', category: 'GEOPOLITICAL', severity: 'high', details: 'Recurring protests linked to economic collapse', layerId: 'protests', color: hexToRgba('#fbbf24'), timestamp: new Date().toISOString() },
-        { id: 'pt-4', latitude: 13.5, longitude: 44.2, label: 'Yemen Conflict', category: 'GEOPOLITICAL', severity: 'high', details: 'Continued Houthi attacks on shipping lanes', layerId: 'conflicts', color: hexToRgba('#f43f5e'), timestamp: new Date().toISOString() },
-        { id: 'pt-5', latitude: 12.6, longitude: 43.1, label: 'Bab el-Mandeb Strait', category: 'GEOPOLITICAL', severity: 'critical', details: 'Critical chokepoint — active naval operations', layerId: 'intelligence_hotspots', color: hexToRgba('#ef4444'), timestamp: new Date().toISOString() },
-        { id: 'pt-6', latitude: 26.0, longitude: 56.0, label: 'Strait of Hormuz', category: 'GEOPOLITICAL', severity: 'high', details: 'Oil transit chokepoint under tension', layerId: 'intelligence_hotspots', color: hexToRgba('#ef4444'), timestamp: new Date().toISOString() },
-        { id: 'pt-7', latitude: 37.5, longitude: -122.4, label: 'Silicon Valley DC Cluster', category: 'INFRASTRUCTURE', severity: 'low', details: 'Major AI datacenter concentration', layerId: 'datacenters', color: hexToRgba('#8b5cf6'), timestamp: new Date().toISOString() },
-        { id: 'pt-8', latitude: 60.5, longitude: 25.0, label: 'Baltic Subsea Cable', category: 'INFRASTRUCTURE', severity: 'medium', details: 'Submarine cable near military exercise zone', layerId: 'undersea_cables', color: hexToRgba('#06b6d4'), timestamp: new Date().toISOString() },
-        { id: 'pt-9', latitude: 34.0, longitude: 136.0, label: 'Japan Quake Zone', category: 'ENVIRONMENTAL', severity: 'medium', details: 'Recent seismic activity near nuclear facilities', layerId: 'earthquakes', color: hexToRgba('#a3e635'), timestamp: new Date().toISOString() },
-        { id: 'pt-10', latitude: 55.7, longitude: 37.6, label: 'APT28 Origin', category: 'CYBER', severity: 'high', details: 'Fancy Bear — nation-state APT targeting NATO allies', layerId: 'apt_threats', color: hexToRgba('#f43f5e'), timestamp: new Date().toISOString() },
-        { id: 'pt-11', latitude: 39.9, longitude: 116.4, label: 'APT41 Origin', category: 'CYBER', severity: 'high', details: 'Double Dragon — espionage and financial crime', layerId: 'apt_threats', color: hexToRgba('#f43f5e'), timestamp: new Date().toISOString() },
-        { id: 'pt-12', latitude: 35.7, longitude: 51.4, label: 'Iran Nuclear Facility', category: 'INFRASTRUCTURE', severity: 'medium', details: 'Natanz — enrichment facility', layerId: 'nuclear', color: hexToRgba('#eab308'), timestamp: new Date().toISOString() },
-    ];
+// ── Build MapDataPoints from static data ──────────────────────
+function buildDataPoints(): MapDataPoint[] {
+    const points: MapDataPoint[] = [];
+    const now = new Date().toISOString();
+
+    // Conflict zones → center point
+    for (const cz of conflictZones) {
+        const centerLat = ((cz.bounds?.north ?? 0) + (cz.bounds?.south ?? 0)) / 2;
+        const centerLng = ((cz.bounds?.east ?? 0) + (cz.bounds?.west ?? 0)) / 2;
+        points.push({
+            id: cz.id, latitude: centerLat, longitude: centerLng,
+            label: cz.name, category: 'GEOPOLITICAL',
+            severity: cz.severity === 'critical' ? 'critical' : cz.severity === 'high' ? 'high' : 'medium',
+            details: `${cz.region} — ${(cz.parties ?? []).join(', ')}`,
+            layerId: 'conflicts', color: hexToRgba('#f43f5e'), timestamp: now,
+        });
+    }
+
+    // Military bases
+    for (const base of militaryBases) {
+        points.push({
+            id: base.id, latitude: base.lat, longitude: base.lng,
+            label: base.name, category: 'MILITARY',
+            severity: 'info', details: `${base.operator} — ${base.type} (${base.country})`,
+            layerId: 'military_bases', color: hexToRgba('#dc2626'), timestamp: now,
+        });
+    }
+
+    // Datacenters
+    for (const dc of datacenters) {
+        points.push({
+            id: dc.id, latitude: dc.lat, longitude: dc.lng,
+            label: dc.name, category: 'INFRASTRUCTURE',
+            severity: 'low', details: `${dc.operator} — ${dc.type} (${dc.capacity})`,
+            layerId: 'datacenters', color: hexToRgba('#8b5cf6'), timestamp: now,
+        });
+    }
+
+    // Nuclear facilities
+    for (const nuc of nuclearFacilities) {
+        points.push({
+            id: nuc.id, latitude: nuc.lat, longitude: nuc.lng,
+            label: nuc.name, category: 'INFRASTRUCTURE',
+            severity: nuc.status === 'occupied' ? 'critical' : nuc.status === 'construction' ? 'medium' : 'low',
+            details: `${nuc.type} — ${nuc.status} (${nuc.country})${nuc.capacity_mw ? ` ${nuc.capacity_mw} MW` : ''}`,
+            layerId: 'nuclear', color: hexToRgba('#eab308'), timestamp: now,
+        });
+    }
+
+    // Undersea cables → landing points as markers
+    for (const cable of underseaCables) {
+        for (const lp of (cable.landingPoints ?? [])) {
+            points.push({
+                id: `${cable.id}-${lp.name}`, latitude: lp.lat, longitude: lp.lng,
+                label: `${cable.name} — ${lp.name}`, category: 'INFRASTRUCTURE',
+                severity: 'low', details: `Cable: ${cable.name} | ${cable.length_km} km | Owner: ${cable.owner}`,
+                layerId: 'undersea_cables', color: hexToRgba('#06b6d4'), timestamp: now,
+            });
+        }
+    }
+
+    return points;
 }
 
 // ── Page Component ────────────────────────────────────────────
 
 export default function IntelligencePage() {
     const [enabledLayers, setEnabledLayers] = useState<Set<string>>(() => {
-        return new Set(DATA_LAYERS.filter((l) => l.enabled).map((l) => l.id));
+        // Enable key layers by default
+        const defaultOn = new Set(['conflicts', 'intelligence_hotspots', 'military_bases', 'datacenters', 'nuclear', 'undersea_cables', 'earthquakes']);
+        return defaultOn;
     });
 
-    const [dataPoints] = useState<MapDataPoint[]>(generateMockDataPoints);
-    const [officePins, setOfficePins] = useState<OfficePin[]>([]);
+    const dataPoints = useMemo(() => buildDataPoints(), []);
     const [freshnessSummary] = useState<FreshnessSummary>(() => getFreshnessSummary());
-
-    // Fetch company locations for office pins
-    useEffect(() => {
-        (async () => {
-            try {
-                const res = await fetch('/api/companies');
-                if (!res.ok) return;
-                const companies = await res.json();
-                const pins: OfficePin[] = companies.map((c: { id: string; name: string; country: string; jurisdiction: string }) => {
-                    const coords = getCountryCoords(c.country);
-                    return {
-                        id: c.id,
-                        name: c.name,
-                        lat: coords.lat,
-                        lng: coords.lng,
-                        jurisdiction: c.jurisdiction,
-                        country: c.country,
-                        ciiScore: 0,
-                        ciiLevel: 'low' as const,
-                        nearbyThreats: 0,
-                    };
-                });
-                setOfficePins(pins);
-            } catch {
-                // Companies API not available — skip office pins
-            }
-        })();
-    }, []);
 
     const handleToggleLayer = useCallback((layerId: string) => {
         setEnabledLayers((prev) => {
@@ -134,7 +169,6 @@ export default function IntelligencePage() {
     }, []);
 
     const handleCreateRisk = useCallback((point: MapDataPoint) => {
-        // Navigate to risk register with pre-filled data
         const params = new URLSearchParams({
             title: point.label,
             description: point.details || '',
@@ -184,7 +218,7 @@ export default function IntelligencePage() {
                     </TabsTrigger>
                     <TabsTrigger value="infra" className="gap-1.5 text-xs sm:text-sm">
                         <Building2 className="h-4 w-4" />
-                        Infrastructure & Military
+                        Infrastructure &amp; Military
                     </TabsTrigger>
                     <TabsTrigger value="feeds" className="gap-1.5 text-xs sm:text-sm">
                         <Rss className="h-4 w-4" />
@@ -206,14 +240,16 @@ export default function IntelligencePage() {
                     <div className="relative">
                         <div className="flex gap-4">
                             <div className="flex-1 min-w-0">
-                                <WorldMonitorMap
-                                    activeLayers={activeLayers}
-                                    dataPoints={visiblePoints}
-                                    officePins={officePins}
-                                    freshnessSummary={freshnessSummary}
-                                    onCreateRisk={handleCreateRisk}
-                                    onCreateIncident={handleCreateIncident}
-                                />
+                                <div style={{ width: '100%', height: 'calc(100vh - 280px)', position: 'relative', background: '#0a0e17', borderRadius: '0.5rem' }}>
+                                    <WorldMonitorMap
+                                        activeLayers={activeLayers}
+                                        dataPoints={visiblePoints}
+                                        officePins={OFFICE_LOCATIONS}
+                                        freshnessSummary={freshnessSummary}
+                                        onCreateRisk={handleCreateRisk}
+                                        onCreateIncident={handleCreateIncident}
+                                    />
+                                </div>
                             </div>
                             <div className="hidden lg:block">
                                 <LayerControlPanel
@@ -240,7 +276,6 @@ export default function IntelligencePage() {
                 <TabsContent value="infra" className="mt-6">
                     <InfrastructureTab />
                 </TabsContent>
-
 
                 <TabsContent value="feeds" className="mt-6">
                     <LiveFeedsTab />

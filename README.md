@@ -1,4 +1,12 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Astra CISO
+
+**Autonomous Security Operations Platform** — AI-powered compliance, risk management, and threat intelligence for multi-jurisdictional enterprises.
+
+[![CI](https://github.com/SristiNative/astra-ciso/actions/workflows/ci.yml/badge.svg)](https://github.com/SristiNative/astra-ciso/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Docker](https://img.shields.io/badge/container-ghcr.io%2Fsristinative%2Fastra--ciso-blue)](https://github.com/SristiNative/astra-ciso/pkgs/container/astra-ciso)
+
+> **Topics:** `ciso` · `security` · `compliance` · `iso27001` · `nist` · `gdpr` · `nis2` · `caiq` · `vendor-risk` · `threat-intelligence` · `docker` · `nextjs` · `typescript` · `ai`
 
 ## Getting Started
 
@@ -81,16 +89,16 @@ Create a `.env` file next to `docker-compose.yml` for secrets; Compose will subs
 
 ### Data sovereignty configuration
 
-- **Database**: SQLite is stored in the container volume at `/app/data`. Bind-mount a host path if you need the file on a specific disk or region (e.g. `./data:/app/data`).
-- **AI**: For air-gapped or in-region-only use, set `AI_PROVIDER` and only configure the provider(s) allowed in your environment (e.g. self-hosted Ollama). The CAIQ semantic matcher runs fully local (TF-IDF); only Tier 3 answers call the configured AI.
-- **Secrets**: Keep `AUTH_SECRET`, `JWT_SECRET`, and API keys in env or a secrets manager; do not bake them into the image.
+* **Database**: SQLite is stored in the container volume at `/app/data`. Bind-mount a host path if you need the file on a specific disk or region (e.g. `./data:/app/data`).
+* **AI**: For air-gapped or in-region-only use, set `AI_PROVIDER` and only configure the provider(s) allowed in your environment (e.g. self-hosted Ollama). The CAIQ semantic matcher runs fully local (TF-IDF); only Tier 3 answers call the configured AI.
+* **Secrets**: Keep `AUTH_SECRET`, `JWT_SECRET`, and API keys in env or a secrets manager; do not bake them into the image.
 
 ### Health check endpoint
 
-- **URL**: `GET /api/health`
-- **Purpose**: Used by Docker (and load balancers) to verify the app is up and optional dependencies are reachable.
-- **Response**: JSON with `status` (`healthy` | `degraded` | `unhealthy`), `timestamp`, `version`, `jurisdiction`, `services.database`, `services.ai` (circuit breaker state and provider), and `uptime`.
-- **Status**: `200` for healthy/degraded, `503` for unhealthy. Database failure sets unhealthy; AI circuit open sets degraded.
+* **URL**: `GET /api/health`
+* **Purpose**: Used by Docker (and load balancers) to verify the app is up and optional dependencies are reachable.
+* **Response**: JSON with `status` (`healthy` | `degraded` | `unhealthy`), `timestamp`, `version`, `jurisdiction`, `services.database`, `services.ai` (circuit breaker state and provider), and `uptime`.
+* **Status**: `200` for healthy/degraded, `503` for unhealthy. Database failure sets unhealthy; AI circuit open sets degraded.
 
 Docker Compose healthcheck runs every 30s: `wget -q --spider http://localhost:3000/api/health`.
 
@@ -100,21 +108,44 @@ For detailed features and usage instructions, please refer to the [User Guide](d
 
 ## Technical Documentation
 
-- [High-Level Design (HLD)](docs/HIGH_LEVEL_DESIGN.md)
+* [High-Level Design (HLD)](docs/HIGH_LEVEL_DESIGN.md)
+
 * [Low-Level Design (LLD)](docs/LOW_LEVEL_DESIGN.md)
 * [Security & QA Report](docs/SECURITY_AND_QA_REPORT.md)
 
-## Learn More
+## Contributing
 
-To learn more about Next.js, take a look at the following resources:
+We welcome contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, including:
 
-* [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-* [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+* Dev environment setup
+* Branch naming: `feature/*`, `fix/*`, `refactor/*`, `docs/*`, `security/*`
+* Commit format: [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `refactor:`, `docs:`, `security:`, `test:`)
+* PR process and quality gates
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Branch Protection (manual setup in GitHub)
 
-## Deploy on Vercel
+The `main` branch requires:
+* ✅ All CI checks pass (`.github/workflows/ci.yml`)
+* ✅ At least 1 approved review
+* ✅ No direct pushes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Tag Convention (releases)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Follows [Semantic Versioning](https://semver.org/): `v2.0.0`, `v2.1.0`, etc.  
+Docker images are published automatically on tag push via `.github/workflows/docker.yml`.
+
+### Repository Settings (manual setup in GitHub)
+
+* **Description:** Autonomous Security Operations Platform — AI-powered compliance, risk management, and threat intelligence for multi-jurisdictional enterprises
+* **Topics:** ciso, security, compliance, iso27001, nist, gdpr, nis2, caiq, vendor-risk, threat-intelligence, docker, nextjs, typescript, ai
+* **Disable:** Wiki (use `docs/` instead), Discussions (use Issues)
+* **Labels:** See `.github/labels.yml` for the full recommended label set with `gh label create` commands
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for our vulnerability reporting policy and security architecture overview.  
+To report a vulnerability: **[security@astralabs.com](mailto:security@astralabs.com)**
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for the full history of changes.

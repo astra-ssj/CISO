@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -24,7 +25,6 @@ import { DataSourceConnector } from '@/components/dashboard/data-source-connecto
 import { VulnerabilityFeed } from "@/components/dashboard/vulnerability-feed";
 import { RemediationVelocity } from "@/components/dashboard/remediation-velocity";
 import { BoardReportExport } from "@/components/reporting/board-export-btn";
-import { TrafficFlow } from "@/components/visualizations/traffic-flow";
 import { GitHubConnector, type GitHubStats } from "@/lib/connectors/github";
 import { PostureGauge } from "@/components/dashboard/posture-gauge";
 import { BoardDeckGenerator } from "@/components/reporting/board-deck-generator";
@@ -37,6 +37,11 @@ import { usePlaybookStore } from '@/lib/playbook-store';
 import { useEvidenceStore } from '@/lib/evidence-store';
 import { ExecutiveBriefTab } from '@/components/executive/executive-brief-tab';
 import { ReportsTab } from '@/components/reporting/reports-tab';
+
+const MiniWorldMap = dynamic(
+  () => import('@/components/intelligence/MiniWorldMap'),
+  { ssr: false }
+);
 
 function MetricCard({ label, value, icon: Icon, trend, trendValue, status }: {
   label: string; value: string; icon: React.ElementType;
@@ -92,8 +97,6 @@ function OverviewTab() {
   const [protocolDesc, setProtocolDesc] = useState('');
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
 
-  interface TrafficData { nodes: { id: string; label: string; type: 'internet' | 'security' | 'app' | 'data'; x: number; y: number; status: 'active' | 'idle' | 'warning' }[]; paths: { from: string; to: string; type: string }[] }
-  const [trafficData, setTrafficData] = useState<TrafficData | undefined>(undefined);
   const [githubStats, setGithubStats] = useState<GitHubStats | null>(null);
   const [caiqMetrics, setCaiqMetrics] = useState<{ lastAssessmentAt: string | null; coveragePercent: number; answersPendingReview: number; } | null>(null);
 
@@ -103,23 +106,6 @@ function OverviewTab() {
       const gh = new GitHubConnector();
       const stats = await gh.getStats();
       setGithubStats(stats);
-      setTrafficData({
-        nodes: [
-          { id: 'internet', label: 'Public Internet', type: 'internet', x: 10, y: 50, status: 'active' },
-          { id: 'waf', label: 'Cloudflare WAF', type: 'security', x: 30, y: 50, status: 'active' },
-          { id: 'lb', label: 'K8s Ingress', type: 'security', x: 45, y: 50, status: 'active' },
-          { id: 'app-1', label: 'GraphQL Gateway', type: 'app', x: 65, y: 30, status: 'active' },
-          { id: 'app-2', label: 'Auth Service', type: 'app', x: 65, y: 70, status: 'active' },
-          { id: 'db-primary', label: 'Postgres Primary', type: 'data', x: 85, y: 30, status: 'active' },
-          { id: 'db-cache', label: 'Redis Cluster', type: 'data', x: 85, y: 70, status: 'active' }
-        ],
-        paths: [
-          { from: 'internet', to: 'waf', type: 'http' }, { from: 'waf', to: 'lb', type: 'secure' },
-          { from: 'lb', to: 'app-1', type: 'http' }, { from: 'lb', to: 'app-2', type: 'secure' },
-          { from: 'app-1', to: 'db-primary', type: 'sql' }, { from: 'app-1', to: 'db-cache', type: 'sql' },
-          { from: 'app-2', to: 'db-primary', type: 'sql' },
-        ]
-      });
     };
     fetchData();
   }, []);
@@ -184,8 +170,8 @@ function OverviewTab() {
         <BoardDeckGenerator />
       </section>
 
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="h-[350px]"><TrafficFlow data={trafficData} /></div>
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2"><MiniWorldMap /></div>
         <div className="h-[350px]"><VulnerabilityFeed /></div>
       </section>
 

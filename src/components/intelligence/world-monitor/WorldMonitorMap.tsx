@@ -126,6 +126,10 @@ export default function WorldMonitorMap({
             map.on('load', () => {
                 if (!cancelled) {
                     mapRef.current = map;
+                    // Force canvas resize after mount to fix 0px height issue
+                    // when parent uses overflow:auto scroll container
+                    map.resize();
+                    requestAnimationFrame(() => map.resize());
                     setIsLoaded(true);
                 }
             });
@@ -432,8 +436,11 @@ export default function WorldMonitorMap({
     }, [handleResize]);
 
     return (
-        <div className="relative w-full h-full min-h-[500px] rounded-lg overflow-hidden border border-border/40">
-            <div ref={containerRef} className="absolute inset-0" />
+        <div
+            className="relative w-full rounded-lg overflow-hidden border border-border/40"
+            style={{ height: '100%', minHeight: '500px' }}
+        >
+            <div ref={containerRef} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
 
             {/* Loading */}
             {!isLoaded && (
@@ -485,8 +492,8 @@ export default function WorldMonitorMap({
                         </div>
                         {hoveredPoint.severity && (
                             <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${hoveredPoint.severity === 'critical' ? 'bg-red-500/20 text-red-400'
-                                    : hoveredPoint.severity === 'high' ? 'bg-amber-500/20 text-amber-400'
-                                        : 'bg-blue-500/20 text-blue-400'
+                                : hoveredPoint.severity === 'high' ? 'bg-amber-500/20 text-amber-400'
+                                    : 'bg-blue-500/20 text-blue-400'
                                 }`}>
                                 {hoveredPoint.severity}
                             </span>
