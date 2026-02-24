@@ -6,26 +6,15 @@ import {
     HelpCircle,
     Search,
     LayoutDashboard,
-    Presentation,
     Target,
-    BarChart3,
-    FolderKanban,
     Zap,
-    AlertTriangle,
     FileText,
-    ScrollText,
     Siren,
-    Gamepad2,
     BrainCircuit,
     Building2,
-    TicketCheck,
-    DollarSign,
-    FileBarChart,
-    Shield,
-    Server,
-    ShieldCheck,
-    Settings,
     BookOpen,
+    Shield,
+    Settings,
     ChevronRight,
     MessageSquare,
     Cpu,
@@ -50,24 +39,14 @@ import { cn } from "@/lib/utils";
 type ModuleId =
     | "getting-started"
     | "command-center"
-    | "executive-brief"
     | "strategy"
-    | "kpis"
-    | "projects"
-    | "decisions"
-    | "risk"
     | "governance"
-    | "policies"
+    | "decisions"
     | "incidents"
-    | "wargames"
     | "intelligence"
     | "vendors"
-    | "tickets"
-    | "budget"
-    | "reporting"
+    | "knowledge"
     | "appsec"
-    | "infrastructure"
-    | "privacy"
     | "settings";
 
 interface ModuleDef {
@@ -90,119 +69,47 @@ const MODULES: ModuleDef[] = [
         title: "Command Center",
         path: "/",
         icon: LayoutDashboard,
-        category: "Overview & Command",
+        category: "Core",
         content: {
-            what: "Real-time security posture overview.",
-            shows: "Posture gauge, threat pulse, key metrics, and active incidents.",
-            howToUse:
-                "Your daily starting point — check posture score, review alerts, and drill into any area needing attention.",
-        },
-    },
-    {
-        id: "executive-brief",
-        title: "Executive Brief",
-        path: "/executive-brief",
-        icon: Presentation,
-        category: "Overview & Command",
-        content: {
-            what: "Board-ready security summary.",
-            shows: "Investment heatmap, top risks, compliance status, bento layout.",
-            howToUse:
-                "Use before board meetings to get a snapshot of security posture. Export as board deck via Reporting module.",
+            what: "Real-time security posture overview with executive briefing and board reporting.",
+            shows: "Overview (posture gauge, threat pulse, metrics), Executive Brief (board-ready summary), Reports & Board Deck (export DOCX/PDF).",
+            howToUse: "Your daily starting point. Use the tabs to switch between live dashboard, executive summary, and report generation.",
         },
     },
     {
         id: "strategy",
-        title: "Strategy",
+        title: "Strategy & OKRs",
         path: "/strategy",
         icon: Target,
-        category: "Strategy & Execution",
+        category: "Core",
         content: {
-            what: "Security strategy and OKR tracking.",
-            shows: "OKRs, KPI rows, defense matrix (control grid).",
-            howToUse:
-                "Define security objectives, track key results, and visualize control coverage across your defense matrix.",
-            subPages: [
-                { label: "Defense Matrix", path: "/strategy/matrix" },
-            ],
-        },
-    },
-    {
-        id: "kpis",
-        title: "KPIs",
-        path: "/kpis",
-        icon: BarChart3,
-        category: "Strategy & Execution",
-        content: {
-            what: "20+ auto-computed security KPIs.",
-            shows: "KPI dashboard with health indicators, trends, sparklines.",
-            howToUse:
-                "Monitor security program health. Upload PPTX/DOCX files to import additional KPIs. Each KPI includes board-friendly translation.",
-        },
-    },
-    {
-        id: "projects",
-        title: "Projects",
-        path: "/projects",
-        icon: FolderKanban,
-        category: "Strategy & Execution",
-        content: {
-            what: "Security project and OKR tracking.",
-            howToUse:
-                "Track security initiatives, assign owners, monitor progress against strategic objectives.",
-            shows: "Project list, OKR linkage, status and owners.",
-        },
-    },
-    {
-        id: "decisions",
-        title: "Decisions",
-        path: "/decisions",
-        icon: Zap,
-        category: "Strategy & Execution",
-        content: {
-            what: "AI-assisted security decision support.",
-            shows: "Decision queue, scoring, recommendations, confidence levels.",
-            howToUse:
-                "Log security decisions needing evaluation. AI provides recommendations with confidence scores. Review, approve, or override.",
-        },
-    },
-    {
-        id: "risk",
-        title: "Risk Register",
-        path: "/risk",
-        icon: AlertTriangle,
-        category: "Risk & Governance",
-        content: {
-            what: "Quantitative risk management using FAIR methodology.",
-            shows: "Risk scenarios with ALE (Annualized Loss Expectancy), risk scores, history.",
-            howToUse:
-                "Create risk scenarios, define threat actors, estimate loss magnitudes. FAIR engine calculates quantitative risk scores for board reporting.",
+            what: "Security strategy, OKR tracking, KPIs, and project management.",
+            shows: "OKRs (objectives & key results), Defense Matrix (control coverage), KPI Dashboard (20+ auto-computed KPIs), Program Tracker (project Gantt & status).",
+            howToUse: "Define security objectives, track key results, monitor KPIs with board-friendly translations, and manage security projects — all in one tabbed view.",
         },
     },
     {
         id: "governance",
-        title: "Governance",
+        title: "Governance & Risk",
         path: "/governance",
         icon: FileText,
-        category: "Risk & Governance",
+        category: "Core",
         content: {
-            what: "Compliance management and evidence tracking.",
-            shows: "Evidence vault, compliance heatmap, audit readiness.",
-            howToUse:
-                "Upload and organize evidence artifacts. Track compliance status across frameworks (ISO 27001, NIST, GDPR, NIS2). Heatmap shows coverage gaps at a glance.",
+            what: "Compliance heatmap, FAIR-based risk register, and policy lifecycle management.",
+            shows: "Compliance (evidence vault, framework heatmap), Risk Register (FAIR methodology, ALE), Policy Engine (draft → review → approve → publish).",
+            howToUse: "Upload evidence, track compliance across frameworks (ISO 27001, NIST, GDPR). Create risk scenarios with quantitative scoring. Manage policies through templates and lifecycle stages.",
         },
     },
     {
-        id: "policies",
-        title: "Policies",
-        path: "/policies",
-        icon: ScrollText,
-        category: "Risk & Governance",
+        id: "decisions",
+        title: "Decision Center",
+        path: "/decisions",
+        icon: Zap,
+        category: "Core",
         content: {
-            what: "Policy lifecycle management.",
-            shows: "Policy editor, Kanban board, dependency graph, golden library.",
-            howToUse:
-                "Draft policies using templates. Track policy status through Kanban (Draft → Review → Approved → Published). View dependencies between policies. AI can generate policy drafts.",
+            what: "AI-assisted security decisions and action queue.",
+            shows: "Decisions (AI recommendations with confidence scores, pillar filters), Action Queue (security tickets and tasks).",
+            howToUse: "Review AI-generated recommendations, approve/defer decisions. Manage security action items and tickets in the Action Queue tab.",
         },
     },
     {
@@ -212,37 +119,22 @@ const MODULES: ModuleDef[] = [
         icon: Siren,
         category: "Operations",
         content: {
-            what: "Incident response management.",
-            shows: "Incident timeline, severity tracking, resolution status.",
-            howToUse:
-                "Log incidents, track severity, assign commanders. Use the War Room (/incidents/war-room) for active incidents — includes AI copilot and secure communications.",
+            what: "Incident response management and tabletop exercises.",
+            shows: "Incident Response (playbooks, war room, timeline), Tabletop Exercises (scenario planning, CRUD, status tracking).",
+            howToUse: "Manage active incidents and playbooks. Use the War Room (/incidents/war-room) for live response. Plan and run tabletop exercises for preparedness.",
             subPages: [{ label: "War Room", path: "/incidents/war-room" }],
         },
     },
     {
-        id: "wargames",
-        title: "War Games",
-        path: "/wargames",
-        icon: Gamepad2,
-        category: "Operations",
-        content: {
-            what: "Tabletop exercise and scenario simulation.",
-            shows: "Scenario builder, MITRE ATT&CK mapping, after-action review.",
-            howToUse:
-                "Build attack scenarios, simulate incidents, run tabletop exercises. AI generates realistic scenarios. Document lessons learned in AAR.",
-        },
-    },
-    {
         id: "intelligence",
-        title: "Threat Intelligence",
+        title: "Intelligence",
         path: "/intelligence",
         icon: BrainCircuit,
         category: "Operations",
         content: {
             what: "Threat monitoring and intelligence feeds.",
             shows: "Threat feed, MITRE ATT&CK matrix, ransomware statistics.",
-            howToUse:
-                "Monitor emerging threats relevant to your org. Ransomware dashboard (/intelligence/ransomware) tracks active groups and trends.",
+            howToUse: "Monitor emerging threats. Ransomware dashboard (/intelligence/ransomware) tracks active groups and trends.",
             subPages: [{ label: "Ransomware Dashboard", path: "/intelligence/ransomware" }],
         },
     },
@@ -251,70 +143,23 @@ const MODULES: ModuleDef[] = [
         title: "Vendor Risk",
         path: "/vendors",
         icon: Building2,
-        category: "Third Party & Compliance",
+        category: "Third Party",
         content: {
             what: "Third-party risk management and CAIQ automation.",
             shows: "Vendor Registry, CAIQ Automation, Knowledge Transfer, Review Queue.",
-            howToUse:
-                "Vendor Registry: track vendors, risk ratings, review dates. CAIQ Automation: upload CAIQ v4 and auto-fill 80–90% with AI. Knowledge Transfer: upload your completed questionnaire as source and customer's empty one as target; system matches and transfers answers with 4-tier confidence (Direct ID 0.95+, Semantic 0.80–0.95, AI-adapted 0.60–0.80, Manual under 0.60). Review Queue: review and approve AI answers before export.",
-            subPages: [
-                { label: "Vendor Registry", path: "/vendors" },
-                { label: "CAIQ Automation", path: "/vendors" },
-                { label: "Knowledge Transfer", path: "/vendors" },
-                { label: "Review Queue", path: "/vendors" },
-            ],
+            howToUse: "Track vendors and risk ratings. Use CAIQ Automation to auto-fill questionnaires with AI. Knowledge Transfer matches and transfers answers between questionnaires with 4-tier confidence.",
         },
     },
     {
-        id: "privacy",
-        title: "Privacy",
-        path: "/privacy",
-        icon: ShieldCheck,
-        category: "Third Party & Compliance",
+        id: "knowledge",
+        title: "Knowledge Base",
+        path: "/vendors/knowledge",
+        icon: BookOpen,
+        category: "Third Party",
         content: {
-            what: "Privacy compliance management.",
-            shows: "RoPA (Records of Processing Activities), DSAR tracking, breach simulation, vendor privacy risk.",
-            howToUse:
-                "Manage privacy obligations under GDPR and other regulations. Track data processing activities and subject access requests.",
-        },
-    },
-    {
-        id: "tickets",
-        title: "Tickets",
-        path: "/tickets",
-        icon: TicketCheck,
-        category: "Execution",
-        content: {
-            what: "Jira integration for security task management.",
-            shows: "Ticket queue, CISO-specific templates.",
-            howToUse:
-                "Create security tickets using pre-built templates (incident, risk, vendor, compliance). Syncs with Jira Cloud when configured. Works offline with local queue when Jira unavailable.",
-        },
-    },
-    {
-        id: "budget",
-        title: "Budget",
-        path: "/budget",
-        icon: DollarSign,
-        category: "Execution",
-        content: {
-            what: "Security budget planning and tracking.",
-            howToUse:
-                "Plan security investments, track spend against budget, justify costs with risk-reduction metrics.",
-            shows: "Budget breakdown, spend vs plan, investment justification.",
-        },
-    },
-    {
-        id: "reporting",
-        title: "Reporting",
-        path: "/reporting",
-        icon: FileBarChart,
-        category: "Execution",
-        content: {
-            what: "Board deck and report generation.",
-            howToUse:
-                "Generate board-ready reports and presentations. Export as DOCX, PDF, or Excel. Pull data from across all modules for comprehensive security reporting.",
-            shows: "Report builder, export options, cross-module data.",
+            what: "Centralized knowledge repository for vendor questionnaire answers.",
+            shows: "Knowledge entries, import/export, search.",
+            howToUse: "Build your organisation's answer library. Import from completed questionnaires; the system uses this to auto-fill future ones.",
         },
     },
     {
@@ -326,21 +171,7 @@ const MODULES: ModuleDef[] = [
         content: {
             what: "Application security posture.",
             shows: "SAST results, Trivy vulnerability scanning, security posture.",
-            howToUse:
-                "Review application vulnerabilities. Integrates with Trivy for container and dependency scanning.",
-        },
-    },
-    {
-        id: "infrastructure",
-        title: "Infrastructure",
-        path: "/infrastructure",
-        icon: Server,
-        category: "Technical",
-        content: {
-            what: "Infrastructure security overview.",
-            howToUse:
-                "Monitor infrastructure security posture, review configurations, track hardening status.",
-            shows: "Infrastructure posture, configuration status.",
+            howToUse: "Review application vulnerabilities. Integrates with Trivy for container and dependency scanning.",
         },
     },
     {
@@ -350,51 +181,19 @@ const MODULES: ModuleDef[] = [
         icon: Settings,
         category: "Platform",
         content: {
-            what: "Platform configuration.",
-            howToUse:
-                "Configure AI providers, integrations (Jira, GitHub), user roles, and organization settings.",
-            shows: "Integrations, roles, AI and org settings.",
+            what: "AI provider configuration, preferences, and AI economics.",
+            shows: "AI Provider (LLM selection, API keys, connection test), Preferences (notifications), AI Economics (cost tracking, burn rate, margin alerts).",
+            howToUse: "Configure which LLM powers Astra, manage notification preferences, and monitor API cost analytics.",
         },
     },
 ];
 
 const CATEGORIES: { id: string; label: string; moduleIds: ModuleId[] }[] = [
-    { id: "overview", label: "Overview & Command", moduleIds: ["command-center", "executive-brief"] },
-    {
-        id: "strategy",
-        label: "Strategy & Execution",
-        moduleIds: ["strategy", "kpis", "projects", "decisions"],
-    },
-    {
-        id: "risk",
-        label: "Risk & Governance",
-        moduleIds: ["risk", "governance", "policies"],
-    },
-    {
-        id: "ops",
-        label: "Operations",
-        moduleIds: ["incidents", "wargames", "intelligence"],
-    },
-    {
-        id: "third",
-        label: "Third Party & Compliance",
-        moduleIds: ["vendors", "privacy"],
-    },
-    {
-        id: "exec",
-        label: "Execution",
-        moduleIds: ["tickets", "budget", "reporting"],
-    },
-    {
-        id: "tech",
-        label: "Technical",
-        moduleIds: ["appsec", "infrastructure"],
-    },
-    {
-        id: "platform",
-        label: "Platform",
-        moduleIds: ["settings"],
-    },
+    { id: "core", label: "Core", moduleIds: ["command-center", "strategy", "governance", "decisions"] },
+    { id: "ops", label: "Operations", moduleIds: ["incidents", "intelligence"] },
+    { id: "third", label: "Third Party", moduleIds: ["vendors", "knowledge"] },
+    { id: "tech", label: "Technical", moduleIds: ["appsec"] },
+    { id: "platform", label: "Platform", moduleIds: ["settings"] },
 ];
 
 function GettingStartedContent() {
@@ -406,11 +205,11 @@ function GettingStartedContent() {
                     Quick start guide
                 </h2>
                 <ol className="list-decimal list-inside space-y-2 text-muted-foreground text-sm">
-                    <li>Start at the <Link href="/" className="text-primary hover:underline">Command Center</Link> to see your current posture and active alerts.</li>
-                    <li>Review the <Link href="/executive-brief" className="text-primary hover:underline">Executive Brief</Link> before board meetings and export via Reporting.</li>
-                    <li>Define objectives in <Link href="/strategy" className="text-primary hover:underline">Strategy</Link> and track KPIs in <Link href="/kpis" className="text-primary hover:underline">KPIs</Link>.</li>
-                    <li>Log risks in the <Link href="/risk" className="text-primary hover:underline">Risk Register</Link> and maintain evidence in <Link href="/governance" className="text-primary hover:underline">Governance</Link>.</li>
-                    <li>Use <Link href="/decisions" className="text-primary hover:underline">Decisions</Link> for AI-assisted choices and <Link href="/help" className="text-primary hover:underline">Help</Link> (or the AI chat) for questions.</li>
+                    <li>Start at the <Link href="/" className="text-primary hover:underline">Command Center</Link> to see your posture, executive brief, and reports — all under one roof.</li>
+                    <li>Define objectives in <Link href="/strategy" className="text-primary hover:underline">Strategy & OKRs</Link> and track KPIs, projects, and the defense matrix from its tabs.</li>
+                    <li>Log risks and manage policies in <Link href="/governance" className="text-primary hover:underline">Governance & Risk</Link>.</li>
+                    <li>Use the <Link href="/decisions" className="text-primary hover:underline">Decision Center</Link> for AI-assisted decisions and the Action Queue for tasks.</li>
+                    <li>Manage <Link href="/incidents" className="text-primary hover:underline">Incidents</Link> and run tabletop exercises from one place.</li>
                 </ol>
             </section>
 
