@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
     Cable, Fuel, Server, Atom, Wifi, WifiOff, RefreshCw, Loader2,
-    Globe, AlertTriangle, Shield, MapPin,
+    Globe, AlertTriangle, Shield, MapPin, Building2,
 } from 'lucide-react';
 
 interface InfraItem {
@@ -68,6 +68,15 @@ const INFRA_CATEGORIES = [
         border: 'border-yellow-500/20',
         description: 'Nuclear power plants & research reactors',
     },
+    {
+        id: 'military',
+        name: 'Military Bases',
+        icon: Building2,
+        color: 'text-orange-400',
+        bg: 'from-orange-500/5',
+        border: 'border-orange-500/20',
+        description: '220+ global military installations',
+    },
 ];
 
 export function InfrastructureTab() {
@@ -106,7 +115,7 @@ export function InfrastructureTab() {
     return (
         <div className="space-y-6">
             {/* Category Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 {INFRA_CATEGORIES.map((cat) => {
                     const Icon = cat.icon;
                     const isActive = selectedCategory === cat.id;
@@ -115,8 +124,8 @@ export function InfrastructureTab() {
                             key={cat.id}
                             onClick={() => setSelectedCategory(cat.id)}
                             className={`text-left p-4 rounded-xl border transition-all ${isActive
-                                    ? `bg-gradient-to-br ${cat.bg} ${cat.border} ring-1 ring-${cat.color.replace('text-', '')}/30`
-                                    : 'bg-card/20 border-border/30 hover:bg-card/40'
+                                ? `bg-gradient-to-br ${cat.bg} ${cat.border} ring-1 ring-${cat.color.replace('text-', '')}/30`
+                                : 'bg-card/20 border-border/30 hover:bg-card/40'
                                 }`}
                         >
                             <Icon className={`h-6 w-6 ${isActive ? cat.color : 'text-muted-foreground'} mb-2`} />

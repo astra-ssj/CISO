@@ -83,28 +83,7 @@ export const DATA_LAYERS: DataLayer[] = [
         source: 'static',
         color: '#dc2626',
     },
-    {
-        id: 'military_flights',
-        name: 'Military Flights',
-        category: 'MILITARY',
-        description: 'Real-time military aircraft ADS-B tracking',
-        icon: '✈️',
-        enabled: true,
-        refreshInterval: 30,
-        source: 'OpenSky ADS-B',
-        color: '#f97316',
-    },
-    {
-        id: 'naval_vessels',
-        name: 'Naval Vessels',
-        category: 'MILITARY',
-        description: 'AIS-tracked military and naval vessels',
-        icon: '🚢',
-        enabled: false,
-        refreshInterval: 60,
-        source: 'AIS',
-        color: '#3b82f6',
-    },
+
 
     // ─── INFRASTRUCTURE ──────────────────────────────
     {
@@ -168,17 +147,7 @@ export const DATA_LAYERS: DataLayer[] = [
     },
 
     // ─── ENVIRONMENTAL ───────────────────────────────
-    {
-        id: 'satellite_fires',
-        name: 'Satellite Fire Detection',
-        category: 'ENVIRONMENTAL',
-        description: 'NASA VIIRS satellite fire hotspots',
-        icon: '🔥',
-        enabled: false,
-        refreshInterval: 300,
-        source: 'NASA FIRMS VIIRS',
-        color: '#f97316',
-    },
+
     {
         id: 'earthquakes',
         name: 'Earthquakes',

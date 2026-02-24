@@ -5,14 +5,14 @@ import dynamic from 'next/dynamic';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
     BrainCircuit, Globe, Radio, Building2,
-    Plane, Rss, Skull,
+    Rss, Skull,
 } from "lucide-react";
 import { DATA_LAYERS, type DataLayerCategory } from '@/lib/intelligence/data-layers';
 import { LayerControlPanel } from '@/components/intelligence/world-monitor/LayerControlPanel';
 import { ThreatBriefingTab } from '@/components/intelligence/tabs/ThreatBriefingTab';
 import { SignalIntelligenceTab } from '@/components/intelligence/tabs/SignalIntelligenceTab';
 import { InfrastructureTab } from '@/components/intelligence/tabs/InfrastructureTab';
-import { MilitaryMaritimeTab } from '@/components/intelligence/tabs/MilitaryMaritimeTab';
+
 import { LiveFeedsTab } from '@/components/intelligence/tabs/LiveFeedsTab';
 import type { MapDataPoint, OfficePin } from '@/components/intelligence/world-monitor/WorldMonitorMap';
 import { getCountryCoords, jurisdictionColor } from '@/lib/intelligence/country-coords';
@@ -184,11 +184,7 @@ export default function IntelligencePage() {
                     </TabsTrigger>
                     <TabsTrigger value="infra" className="gap-1.5 text-xs sm:text-sm">
                         <Building2 className="h-4 w-4" />
-                        Infrastructure
-                    </TabsTrigger>
-                    <TabsTrigger value="military" className="gap-1.5 text-xs sm:text-sm">
-                        <Plane className="h-4 w-4" />
-                        Military
+                        Infrastructure & Military
                     </TabsTrigger>
                     <TabsTrigger value="feeds" className="gap-1.5 text-xs sm:text-sm">
                         <Rss className="h-4 w-4" />
@@ -245,9 +241,6 @@ export default function IntelligencePage() {
                     <InfrastructureTab />
                 </TabsContent>
 
-                <TabsContent value="military" className="mt-6">
-                    <MilitaryMaritimeTab />
-                </TabsContent>
 
                 <TabsContent value="feeds" className="mt-6">
                     <LiveFeedsTab />

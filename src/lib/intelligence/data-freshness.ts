@@ -42,9 +42,7 @@ const SOURCE_DEFINITIONS = [
     { id: 'anomalies', name: 'Anomaly Detector', category: 'Signal Intelligence', configRequired: undefined },
     { id: 'convergence', name: 'Convergence Alerts', category: 'Signal Intelligence', configRequired: undefined },
     { id: 'world_brief', name: 'AI World Brief', category: 'AI Analysis', configRequired: undefined },
-    { id: 'flights', name: 'Military Flights (OpenSky)', category: 'Military', configRequired: 'OPENSKY_USERNAME' },
-    { id: 'vessels', name: 'Naval Vessels (VesselFinder)', category: 'Maritime', configRequired: 'VESSELFINDER_API_KEY' },
-    { id: 'fires', name: 'Satellite Fires (NASA FIRMS)', category: 'Environmental', configRequired: 'NASA_FIRMS_API_KEY' },
+
     { id: 'classify', name: 'AI Threat Classification', category: 'AI Analysis', configRequired: 'GROQ_API_KEY' },
     { id: 'outages', name: 'Internet Outages (Cloudflare)', category: 'Infrastructure', configRequired: undefined },
     { id: 'video', name: 'Live Video Streams', category: 'OSINT', configRequired: undefined },
@@ -123,15 +121,7 @@ export function getFreshnessSummary(
     const disabledSources = sources.filter((s) => s.status === 'DISABLED');
     const errorSources = sources.filter((s) => s.status === 'ERROR');
 
-    if (disabledSources.some((s) => s.id === 'flights')) {
-        gaps.push('⚠️ Military flight monitoring unavailable — air threat assessment may be incomplete');
-    }
-    if (disabledSources.some((s) => s.id === 'vessels')) {
-        gaps.push('⚠️ Naval monitoring unavailable — maritime threat assessment may be incomplete');
-    }
-    if (disabledSources.some((s) => s.id === 'fires')) {
-        gaps.push('⚠️ Satellite fire detection unavailable — environmental monitoring degraded');
-    }
+
     if (errorSources.length > 0) {
         gaps.push(`⚠️ ${errorSources.length} source(s) reporting errors — data may be incomplete`);
     }

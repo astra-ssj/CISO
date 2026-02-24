@@ -212,10 +212,6 @@ function AIEconomicsTab() {
 
 // ─── Intelligence Integrations Tab ───
 const INTEL_API_KEYS = [
-    { key: 'OPENSKY_USERNAME', label: 'OpenSky Username', hint: 'Free account at opensky-network.org', group: 'OpenSky Network' },
-    { key: 'OPENSKY_PASSWORD', label: 'OpenSky Password', hint: 'OpenSky Network password', group: 'OpenSky Network' },
-    { key: 'VESSELFINDER_API_KEY', label: 'VesselFinder API Key', hint: 'AIS maritime vessel tracking', group: 'VesselFinder' },
-    { key: 'NASA_FIRMS_API_KEY', label: 'NASA FIRMS API Key', hint: 'Satellite fire detection (free)', group: 'NASA FIRMS' },
     { key: 'GROQ_API_KEY', label: 'Groq API Key', hint: 'Llama 3.1 for threat classification', group: 'Groq AI' },
     { key: 'UPSTASH_REDIS_REST_URL', label: 'Upstash Redis URL', hint: 'Cross-request caching', group: 'Upstash Redis' },
     { key: 'UPSTASH_REDIS_REST_TOKEN', label: 'Upstash Redis Token', hint: 'Upstash Redis auth token', group: 'Upstash Redis' },
