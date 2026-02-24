@@ -45,8 +45,6 @@ export function canAccessRoute(role: UserRole, path: string): boolean {
 
     // Route-based protection rules
     if (path.startsWith('/settings')) return role === 'SEC_ENGINEER'; // Only CISO/Eng can edit settings
-    if (path.startsWith('/audit')) return role === 'AUDITOR' || role === 'SEC_ENGINEER';
-
     // Default allow for dashboard
     return true;
 }

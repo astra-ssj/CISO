@@ -153,7 +153,7 @@ const MODULES: ModuleDef[] = [
     {
         id: "knowledge",
         title: "Knowledge Base",
-        path: "/vendors/knowledge",
+        path: "/vendors",
         icon: BookOpen,
         category: "Third Party",
         content: {
@@ -240,7 +240,7 @@ function GettingStartedContent() {
                     </div>
                     <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50">
                         <span className="font-medium text-foreground w-28">SEC_ENGINEER</span>
-                        <span className="text-muted-foreground">Operational modules: incidents, appsec, infrastructure, tickets.</span>
+                        <span className="text-muted-foreground">Operational modules: incidents, appsec, vendors, settings.</span>
                     </div>
                     <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50">
                         <span className="font-medium text-foreground w-28">AUDITOR</span>

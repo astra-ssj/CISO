@@ -39,7 +39,7 @@ const navItems = [
     { name: 'Incidents', href: '/incidents', icon: Siren },
     { name: 'Intelligence', href: '/intelligence', icon: BrainCircuit },
     { name: 'Vendor Risk', href: '/vendors', icon: Building2 },
-    { name: 'Knowledge Base', href: '/vendors/knowledge', icon: BookOpen },
+    { name: 'Knowledge Base', href: '/vendors', icon: BookOpen },
     { name: 'AppSec', href: '/appsec', icon: Shield },
     { name: 'Settings', href: '/settings', icon: Settings },
     { name: 'Help Center', href: '/help', icon: HelpCircle },
