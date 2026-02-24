@@ -1,140 +1,163 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getDynamicControls, calculateComplianceScore } from "@/lib/governance";
-import { usePolicyStore } from "@/lib/policy-store";
-import { usePlaybookStore } from "@/lib/playbook-store";
-import { useEvidenceStore } from "@/lib/evidence-store";
-import { CheckCircle, XCircle, FileText, Scale, FileUp } from "lucide-react";
-import { ComplianceHeatmap } from "@/components/governance/compliance-heatmap";
-import { AuditManager } from "@/components/governance/audit-manager";
-import { ContractAnalysis } from "@/components/governance/contract-analysis";
-import { EvidenceVault } from "@/components/governance/evidence-vault";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Shield, AlertTriangle, ScrollText, Plus, Search } from "lucide-react";
+import { ComplianceHeatmap } from "@/components/governance/compliance-heatmap";
+import { useRiskRegisterStore } from "@/lib/risk-register-store";
+import { usePolicyStore, Policy } from "@/lib/policy-store";
+import { useEvidenceStore } from "@/lib/evidence-store";
+import { cn } from "@/lib/utils";
+import { POLICY_TEMPLATES } from "@/lib/policy-templates";
+import {
+    DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+    DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-export default function GovernancePage() {
-    const { policies, fetchPolicies } = usePolicyStore();
-    const { playbooks, fetchPlaybooks } = usePlaybookStore();
-    const { fetchEvidence } = useEvidenceStore();
-    const [controls, setControls] = useState(getDynamicControls([], []));
+// ─── Risk Register Tab (from /risk) ───
+function RiskRegisterTab() {
+    const { entries, fetchEntries, isLoading } = useRiskRegisterStore();
+    const [search, setSearch] = useState("");
+    useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
-    useEffect(() => {
-        fetchPolicies();
-        fetchPlaybooks();
-        fetchEvidence();
-    }, [fetchPolicies, fetchPlaybooks, fetchEvidence]);
-
-    useEffect(() => {
-        setControls(getDynamicControls(policies, playbooks));
-    }, [policies, playbooks]);
-
-    // Use dynamic score
-    const score = calculateComplianceScore(controls);
+    const filtered = entries.filter(e => e.scenario.assetName.toLowerCase().includes(search.toLowerCase()));
+    const grouped = {
+        CRITICAL: filtered.filter(e => e.analysis.riskScore >= 80),
+        HIGH: filtered.filter(e => e.analysis.riskScore >= 60 && e.analysis.riskScore < 80),
+        MEDIUM: filtered.filter(e => e.analysis.riskScore >= 30 && e.analysis.riskScore < 60),
+        LOW: filtered.filter(e => e.analysis.riskScore < 30),
+    };
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-2">
-                <div className="flex justify-between items-start">
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-white">Governance & Legal</h1>
-                        <p className="text-muted-foreground">Manage compliance frameworks, audit artifacts, and vendor contracts.</p>
-                    </div>
+            <div className="flex items-center justify-between">
+                <p className="text-muted-foreground">Quantitative risk management using FAIR methodology.</p>
+                <div className="flex gap-2">
+                    <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input className="pl-9 w-64" placeholder="Search risks..." value={search} onChange={e => setSearch(e.target.value)} /></div>
+                    <Button size="sm"><Plus className="h-4 w-4 mr-2" />New Risk</Button>
                 </div>
             </div>
 
-            <Tabs defaultValue="compliance" className="space-y-6">
-                <TabsList>
-                    <TabsTrigger value="compliance" className="gap-2">
-                        <FileText className="h-4 w-4" />
-                        Compliance Controls
-                    </TabsTrigger>
-                    <TabsTrigger value="evidence" className="gap-2">
-                        <FileUp className="h-4 w-4" />
-                        Evidence Vault
-                    </TabsTrigger>
-                    <TabsTrigger value="legal" className="gap-2">
-                        <Scale className="h-4 w-4" />
-                        Legal Intelligence
-                    </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="compliance" className="space-y-6">
-                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 w-fit mb-4">
-                        <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                        </span>
-                        <span className="text-xs font-medium text-emerald-500">Live System State</span>
-                    </div>
-
-                    <div className="grid gap-6 md:grid-cols-3">
-                        {/* Score Card */}
-                        <Card className="md:col-span-1 bg-card/30 border-primary/20 backdrop-blur-sm">
-                            <CardHeader><CardTitle>Overall Compliance</CardTitle></CardHeader>
-                            <CardContent className="flex flex-col items-center justify-center py-6">
-                                <div className="relative flex items-center justify-center h-32 w-32 rounded-full border-4 border-primary/20 bg-primary/5">
-                                    <span className="text-4xl font-bold text-primary">{score}%</span>
-                                </div>
-                                <p className="mt-4 text-sm text-center text-muted-foreground">
-                                    Real-time score based on {controls.length} active controls across {policies.length} policies and {playbooks.length} incidents.
-                                </p>
-                            </CardContent>
-                        </Card>
-
-                        {/* Audit Manager (Interactive) */}
-                        <div className="md:col-span-2">
-                            <AuditManager />
-                        </div>
-                    </div>
-
-                    {/* Interactive Heatmap */}
-                    <ComplianceHeatmap />
-
-                    {/* Controls List (Visual Verification) */}
-                    <Card className="bg-card/20 border-primary/10">
-                        <CardHeader><CardTitle>Active Control Status</CardTitle></CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                {controls.map(control => (
-                                    <div key={control.id} className="flex items-center justify-between p-3 border border-border/40 rounded-lg bg-background/20">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`p-2 rounded-full ${control.status === 'COMPLIANT' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
-                                                {control.status === 'COMPLIANT' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+            {isLoading ? <Card className="border-dashed"><CardContent className="text-center py-12 text-muted-foreground">Loading risk data...</CardContent></Card> : (
+                <div className="space-y-6">
+                    {Object.entries(grouped).map(([tier, risks]) => risks.length > 0 && (
+                        <div key={tier} className="space-y-3">
+                            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                                <span className={cn("h-2 w-2 rounded-full", tier === "CRITICAL" ? "bg-red-500" : tier === "HIGH" ? "bg-orange-500" : tier === "MEDIUM" ? "bg-amber-500" : "bg-blue-500")} />
+                                {tier} ({risks.length})
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {risks.map(risk => (
+                                    <Card key={risk.id} className="border-border hover:border-primary/30 transition-all">
+                                        <CardContent className="p-4">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <h4 className="font-medium text-sm truncate">{risk.scenario.assetName}</h4>
+                                                <Badge variant="outline" className="text-[10px]">Score: {risk.analysis.riskScore}</Badge>
                                             </div>
-                                            <div>
-                                                <div className="font-medium">{control.id}: {control.name}</div>
-                                                <div className="text-xs text-muted-foreground">{control.details || control.description}</div>
+                                            <p className="text-xs text-muted-foreground line-clamp-2">{risk.notes}</p>
+                                            <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
+                                                <span>Owner: {risk.owner}</span>
+                                                <Badge variant={risk.status === "OPEN" ? "destructive" : "secondary"} className="text-[10px]">{risk.status}</Badge>
                                             </div>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            {control.mappedStandards.map(s => (
-                                                <span key={s} className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground border border-border">
-                                                    {s.replace('_', ' ')}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
+                                        </CardContent>
+                                    </Card>
                                 ))}
                             </div>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-
-                <TabsContent value="evidence" className="space-y-6 animate-fade-in">
-                    <EvidenceVault />
-                </TabsContent>
-
-                <TabsContent value="legal" className="space-y-6 animate-fade-in">
-                    <div className="flex justify-between items-center bg-card/50 p-4 rounded-lg border border-border/50">
-                        <div>
-                            <h2 className="text-lg font-semibold text-white">Contract Analysis Engine</h2>
-                            <p className="text-sm text-muted-foreground">AI-driven analysis of Master Services Agreements (MSAs) and vendor contracts.</p>
                         </div>
-                    </div>
+                    ))}
+                    {filtered.length === 0 && <Card className="border-dashed"><CardContent className="text-center py-12 text-muted-foreground">No risk scenarios found. Create one to start assessing risks.</CardContent></Card>}
+                </div>
+            )}
+        </div>
+    );
+}
 
-                    <ContractAnalysis />
+// ─── Policy Engine Tab (from /policies) ───
+function PolicyEngineTab() {
+    const { policies, fetchPolicies, isLoading, addPolicy, updatePolicy } = usePolicyStore();
+    const [search, setSearch] = useState("");
+    useEffect(() => { fetchPolicies(); }, [fetchPolicies]);
+
+    const filtered = policies.filter(p => p.title.toLowerCase().includes(search.toLowerCase()));
+
+    return (
+        <div className="space-y-6">
+            <div className="flex items-center justify-between">
+                <p className="text-muted-foreground">Policy lifecycle management — draft, review, approve, publish.</p>
+                <div className="flex gap-2">
+                    <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input className="pl-9 w-64" placeholder="Search policies..." value={search} onChange={e => setSearch(e.target.value)} /></div>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild><Button size="sm"><Plus className="h-4 w-4 mr-2" />New Policy</Button></DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-64">
+                            <DropdownMenuLabel>From Template</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {POLICY_TEMPLATES.map(t => (
+                                <DropdownMenuItem key={t.id} onClick={() => addPolicy({
+                                    id: `pol-${Date.now()}`, title: t.title, type: 'ISMS', version: '1.0.0',
+                                    status: 'DRAFT', owner: 'CISO', lastUpdated: new Date().toISOString(),
+                                    sections: [{ id: 's1', title: 'Main', content: t.content }],
+                                    mappings: [], dependencies: [],
+                                    acknowledgment: { status: 'PENDING', totalUsers: 0, signedUsers: 0 },
+                                    changelog: [{ version: '1.0.0', date: new Date().toISOString(), author: 'CISO', notes: 'Created from template' }],
+                                })}>
+                                    <ScrollText className="h-4 w-4 mr-2" />{t.title}
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            </div>
+
+            {isLoading ? <Card className="border-dashed"><CardContent className="text-center py-12 text-muted-foreground">Loading policies...</CardContent></Card> : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {filtered.map(policy => (
+                        <Card key={policy.id} className="border-border hover:border-primary/30 transition-all">
+                            <CardContent className="p-4">
+                                <div className="flex items-center justify-between mb-2">
+                                    <h4 className="font-medium text-sm truncate flex items-center gap-2"><ScrollText className="h-4 w-4 text-muted-foreground" />{policy.title}</h4>
+                                    <Badge variant="outline" className="text-[10px]">{policy.status}</Badge>
+                                </div>
+                                <p className="text-xs text-muted-foreground mb-2">v{policy.version} · {policy.owner}</p>
+                                <p className="text-xs text-muted-foreground line-clamp-2">{policy.sections[0]?.content.slice(0, 120) ?? 'No content'}...</p>
+                            </CardContent>
+                        </Card>
+                    ))}
+                    {filtered.length === 0 && <Card className="border-dashed col-span-2"><CardContent className="text-center py-12 text-muted-foreground">No policies found.</CardContent></Card>}
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ─── Main Governance page with tabs ───
+export default function GovernancePage() {
+    const evidenceFetch = useEvidenceStore(s => s.fetchEvidence);
+    useEffect(() => { evidenceFetch(); }, [evidenceFetch]);
+
+    return (
+        <div className="space-y-6 max-w-7xl mx-auto">
+            <h1 className="text-3xl font-bold tracking-tight">Governance & Risk</h1>
+
+            <Tabs defaultValue="compliance" className="space-y-6">
+                <TabsList>
+                    <TabsTrigger value="compliance" className="gap-2"><Shield className="h-4 w-4" />Compliance</TabsTrigger>
+                    <TabsTrigger value="risk" className="gap-2"><AlertTriangle className="h-4 w-4" />Risk Register</TabsTrigger>
+                    <TabsTrigger value="policies" className="gap-2"><ScrollText className="h-4 w-4" />Policy Engine</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="compliance">
+                    <div className="space-y-6">
+                        <p className="text-muted-foreground">Evidence vault, compliance heatmap, and audit readiness.</p>
+                        <ComplianceHeatmap />
+                    </div>
                 </TabsContent>
+
+                <TabsContent value="risk"><RiskRegisterTab /></TabsContent>
+                <TabsContent value="policies"><PolicyEngineTab /></TabsContent>
             </Tabs>
         </div>
     );

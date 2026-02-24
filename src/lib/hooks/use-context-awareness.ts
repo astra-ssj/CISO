@@ -19,16 +19,16 @@ export function useContextAwareness(): ContextPayload {
     // Derive readable page name
     const getPageName = (path: string) => {
         if (path === '/') return 'Command Center';
-        if (path.includes('nexus')) return 'Nexus Graph';
         if (path.includes('policies')) return 'Policy Governance';
-        if (path.includes('executive')) return 'Executive Brief';
         if (path.includes('intelligence')) return 'Threat Intelligence';
-        if (path.includes('strategy')) return 'Strategy Pyramid';
+        if (path.includes('strategy')) return 'Strategy & OKRs';
         if (path.includes('appsec')) return 'AppSec Dashboard';
-        if (path.includes('threat-modeling')) return 'Threat Modeling';
-        if (path.includes('wargames')) return 'Wargames';
+        if (path.includes('governance')) return 'Governance & Risk';
+        if (path.includes('incidents')) return 'Incidents';
+        if (path.includes('decisions')) return 'Decision Center';
+        if (path.includes('vendors')) return 'Vendor Risk';
+        if (path.includes('settings')) return 'Settings';
         if (path.includes('help')) return 'Help Center';
-        if (path.includes('reporting')) return 'Reporting';
         return 'Unknown Module';
     };
 

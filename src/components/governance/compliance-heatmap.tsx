@@ -6,19 +6,58 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { CheckCircle, AlertTriangle, XCircle, Shield } from "lucide-react";
-import { useComplianceStore } from "@/stores/compliance-store";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
+
+// Inline control type (was in deleted compliance-store)
+interface ComplianceControl {
+    id: string;
+    name: string;
+    domain: string;
+    description: string;
+    status: 'COMPLIANT' | 'PARTIAL' | 'NON_COMPLIANT';
+    evidenceCount: number;
+    lastChecked: Date;
+    failureReason?: string;
+}
+
+const ANNEX_A_SEED: Omit<ComplianceControl, 'lastChecked'>[] = [
+    { id: 'A.5', name: 'Info Security Policies', domain: 'Organizational', description: 'Policies for information security.', status: 'COMPLIANT', evidenceCount: 4 },
+    { id: 'A.6', name: 'Org of Info Security', domain: 'Organizational', description: 'Organization of information security.', status: 'COMPLIANT', evidenceCount: 3 },
+    { id: 'A.7', name: 'HR Security', domain: 'People', description: 'Human resource security.', status: 'PARTIAL', evidenceCount: 2, failureReason: 'Background checks incomplete for contractors.' },
+    { id: 'A.8', name: 'Asset Management', domain: 'Organizational', description: 'Asset management controls.', status: 'COMPLIANT', evidenceCount: 5 },
+    { id: 'A.9', name: 'Access Control', domain: 'Technological', description: 'Access control requirements.', status: 'COMPLIANT', evidenceCount: 6 },
+    { id: 'A.10', name: 'Cryptography', domain: 'Technological', description: 'Cryptographic controls.', status: 'COMPLIANT', evidenceCount: 3 },
+    { id: 'A.11', name: 'Physical Security', domain: 'Physical', description: 'Physical and environmental security.', status: 'PARTIAL', evidenceCount: 2, failureReason: 'Visitor logs not digitized.' },
+    { id: 'A.12', name: 'Ops Security', domain: 'Technological', description: 'Operations security.', status: 'COMPLIANT', evidenceCount: 7 },
+    { id: 'A.13', name: 'Comms Security', domain: 'Technological', description: 'Communications security.', status: 'COMPLIANT', evidenceCount: 4 },
+    { id: 'A.14', name: 'System Acquisition', domain: 'Technological', description: 'System acquisition, development and maintenance.', status: 'NON_COMPLIANT', evidenceCount: 1, failureReason: 'SDLC security review not implemented.' },
+    { id: 'A.15', name: 'Supplier Relations', domain: 'Organizational', description: 'Supplier relationships.', status: 'PARTIAL', evidenceCount: 2, failureReason: 'Missing SLAs for 3 vendors.' },
+    { id: 'A.16', name: 'Incident Mgmt', domain: 'Organizational', description: 'Information security incident management.', status: 'COMPLIANT', evidenceCount: 5 },
+    { id: 'A.17', name: 'Business Continuity', domain: 'Organizational', description: 'Business continuity management.', status: 'COMPLIANT', evidenceCount: 3 },
+    { id: 'A.18', name: 'Compliance', domain: 'Organizational', description: 'Compliance with legal and contractual requirements.', status: 'COMPLIANT', evidenceCount: 4 },
+];
 
 export function ComplianceHeatmap() {
-    const { controls, initialize, refreshStatus, overallScore } = useComplianceStore();
+    const [controls, setControls] = useState<ComplianceControl[]>([]);
+    const overallScore = useMemo(() => {
+        if (controls.length === 0) return 0;
+        const compliant = controls.filter(c => c.status === 'COMPLIANT').length;
+        return Math.round((compliant / controls.length) * 100);
+    }, [controls]);
+
+    const initialize = useCallback(() => {
+        setControls(ANNEX_A_SEED.map(c => ({ ...c, lastChecked: new Date() })));
+    }, []);
+
+    const fixControl = useCallback((id: string) => {
+        setControls(prev => prev.map(c => c.id === id ? { ...c, status: 'COMPLIANT' as const, failureReason: undefined, lastChecked: new Date() } : c));
+    }, []);
     const [selectedControl, setSelectedControl] = useState<typeof controls[0] | null>(null);
 
     // Initialize data on mount
     useEffect(() => {
         initialize();
-        const interval = setInterval(refreshStatus, 5000);
-        return () => clearInterval(interval);
-    }, [initialize, refreshStatus]);
+    }, [initialize]);
 
     return (
         <Card className="bg-card/30 border-primary/10 h-full flex flex-col">
@@ -126,7 +165,7 @@ export function ComplianceHeatmap() {
                                 <Button
                                     className="bg-primary text-primary-foreground hover:bg-primary/90"
                                     onClick={() => {
-                                        useComplianceStore.getState().fixControl(selectedControl.id);
+                                        fixControl(selectedControl.id);
                                         setSelectedControl(null);
                                     }}
                                 >
