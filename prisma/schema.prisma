@@ -232,24 +232,41 @@ model VendorAssessment {
 }
 
 // -----------------------------------------------------------------------------
-// 7. Evidence (governance vault)
+// 7. Evidence Vault (governance)
 // -----------------------------------------------------------------------------
 
 model Evidence {
-  id          String   @id @default(cuid())
-  name        String
-  type        String
-  fileName    String
-  fileSize    Int
-  controlIds  String   // JSON array
-  framework   String
-  status      String
-  uploadDate  String
-  expiryDate  String?
-  uploadedBy  String
-  notes       String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String         @id @default(cuid())
+  title          String         // "ISO 27001 Cert 2025"
+  description    String?
+  fileName       String         // "iso27001-cert-2025.pdf"
+  fileSize       Int            // bytes
+  mimeType       String         // "application/pdf"
+  filePath       String         // local storage path
+  category       String         // POLICY, CERTIFICATE, REPORT, SCREENSHOT, CONFIG, ASSESSMENT, TRAINING, CONTRACT, AUDIT_REPORT, PENETRATION_TEST, OTHER
+  status         String         @default("ACTIVE") // ACTIVE, EXPIRED, ARCHIVED, PENDING_REVIEW
+  expiresAt      DateTime?      // cert expiry, policy review date
+  uploadedBy     String
+  uploadedByName String?
+  approvedBy     String?
+  approvedAt     DateTime?
+  tags           String?        // JSON array: ["encryption", "SOC2"]
+  frameworks     String?        // JSON: ["ISO 27001:A.8.24", "SOC 2:CC6.1"]
+  companyId      String?        // scope to specific company
+  metadata       String?        // JSON: additional context
+  links          EvidenceLink[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model EvidenceLink {
+  id         String   @id @default(cuid())
+  evidenceId String
+  evidence   Evidence @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+  linkType   String   // COMPLIANCE_CONTROL, RISK, POLICY, INCIDENT, VENDOR, KNOWLEDGE_ENTRY
+  linkId     String   // ID of the linked resource
+  linkName   String   // Human readable: "ISO 27001:A.8.24"
+  createdAt  DateTime @default(now())
 }
 
 // -----------------------------------------------------------------------------
@@ -335,17 +352,29 @@ model Playbook {
 }
 
 // -----------------------------------------------------------------------------
-// 11. Immutable audit fabric (append-only; never update or delete)
+// 11. Immutable audit trail (append-only; never update or delete)
 // -----------------------------------------------------------------------------
 
 model AuditLog {
-  id         String   @id @default(cuid())
-  timestamp  DateTime @default(now())
-  actor      String   // userId or 'SYSTEM'
-  action     String   // event type
-  resource   String   // e.g. 'caiq:AIS-01.1'
-  resourceId String?
-  metadata   String?  // JSON
+  id          String   @id @default(cuid())
+  timestamp   DateTime @default(now())
+  userId      String?
+  userName    String?
+  userRole    String?
+  action      String   // CREATE, READ, UPDATE, DELETE, LOGIN, LOGOUT, EXPORT, IMPORT, TEST, APPROVE, REJECT, ESCALATE, CONFIGURE
+  category    String   // AUTH, COMPLIANCE, RISK, INCIDENT, VENDOR, INTELLIGENCE, APPSEC, SETTINGS, INTEGRATION, CAIQ, EVIDENCE, POLICY
+  resource    String   // "KnowledgeEntry", "Integration", "User"
+  resourceId  String?  // ID of the affected resource
+  description String   // Human-readable: "User connected Slack integration"
+  metadata    String?  // JSON: additional context, old/new values
+  ipAddress   String?
+  userAgent   String?
+  severity    String   @default("INFO") // INFO, WARNING, CRITICAL
+
+  @@index([timestamp])
+  @@index([userId])
+  @@index([category])
+  @@index([action])
 }
 
 // -----------------------------------------------------------------------------

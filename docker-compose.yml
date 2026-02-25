@@ -29,8 +29,10 @@ services:
     volumes:
       # Writable data dir for SQLite (DB, WAL, journal files)
       - astra-ciso-data:/app/data
+      # Evidence file storage
+      - evidence-data:/data/evidence
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -39,3 +41,6 @@ services:
 
 volumes:
   astra-ciso-data:
+  evidence-data:
+
+

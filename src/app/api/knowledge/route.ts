@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { KnowledgeRepository } from '@/lib/knowledge/repository';
 import { parseBodyWithZod, knowledgeCreateBodySchema, log } from '@/lib/api-validation';
+import { logAudit } from '@/lib/audit/audit-service';
 
 const repo = new KnowledgeRepository(prisma as any);
 
@@ -71,6 +72,13 @@ export async function POST(request: NextRequest) {
         if (Array.isArray(body.entries)) {
             const source = body.source || 'Manual Import';
             const result = await repo.bulkIngest(body.entries, source);
+            await logAudit({
+                action: 'IMPORT',
+                category: 'COMPLIANCE',
+                resource: 'KnowledgeEntry',
+                description: `Bulk imported ${result.created} knowledge entries (${result.skipped} skipped)`,
+                metadata: { source, created: result.created, skipped: result.skipped },
+            });
             return NextResponse.json({
                 success: true,
                 created: result.created,
@@ -91,6 +99,14 @@ export async function POST(request: NextRequest) {
             frameworks: body.frameworks,
             jurisdiction: body.jurisdiction,
             tags: body.tags,
+        });
+
+        await logAudit({
+            action: 'CREATE',
+            category: 'COMPLIANCE',
+            resource: 'KnowledgeEntry',
+            resourceId: entry.id,
+            description: `Created knowledge entry: ${body.questionText?.slice(0, 60) ?? 'Unknown'}`,
         });
 
         return NextResponse.json({ success: true, entry }, { status: 201 });

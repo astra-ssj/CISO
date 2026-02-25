@@ -43,9 +43,12 @@ export async function POST(
     // Audit log
     await prisma.auditLog.create({
         data: {
-            actor: userId,
-            action: 'integration.disconnected',
-            resource: `integration:${id}`,
+            userId: userId,
+            action: 'CONFIGURE',
+            category: 'INTEGRATION',
+            resource: 'Integration',
+            resourceId: id,
+            description: `Disconnected integration: ${def.name}`,
             metadata: JSON.stringify({ category: def.category }),
         },
     });

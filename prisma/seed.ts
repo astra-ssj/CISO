@@ -115,8 +115,8 @@ async function main() {
     // 6. Evidence
     await prisma.evidence.createMany({
         data: [
-            { name: 'Information Security Policy v3.1', type: 'POLICY', fileName: 'infosec-policy-v3.1.pdf', fileSize: 245000, controlIds: JSON.stringify(['A.5.1', 'GV.OC-01']), framework: 'ISO_27001_2022', status: 'VERIFIED', uploadDate: '2026-01-15', uploadedBy: 'CISO Office', notes: 'Annual review completed.' },
-            { name: 'SOC 2 Type II Report 2025', type: 'REPORT', fileName: 'soc2-typeii-2025.pdf', fileSize: 1800000, controlIds: JSON.stringify(['PR.AA-01', 'PR.DS-01']), framework: 'NIST_CSF_2_0', status: 'VERIFIED', uploadDate: '2025-12-20', expiryDate: '2026-12-20', uploadedBy: 'External Auditor', notes: 'No exceptions.' },
+            { title: 'Information Security Policy v3.1', fileName: 'infosec-policy-v3.1.pdf', fileSize: 245000, mimeType: 'application/pdf', filePath: '', category: 'POLICY', status: 'ACTIVE', uploadedBy: ciso.id, uploadedByName: 'CISO Office', frameworks: JSON.stringify(['ISO 27001:A.5.1', 'NIST CSF:GV.OC-01']), tags: JSON.stringify(['policy', 'annual-review']) },
+            { title: 'SOC 2 Type II Report 2025', fileName: 'soc2-typeii-2025.pdf', fileSize: 1800000, mimeType: 'application/pdf', filePath: '', category: 'AUDIT_REPORT', status: 'ACTIVE', expiresAt: new Date('2026-12-20'), uploadedBy: ciso.id, uploadedByName: 'External Auditor', frameworks: JSON.stringify(['SOC 2:CC6.1', 'NIST CSF:PR.AA-01']), tags: JSON.stringify(['soc2', 'audit']) },
         ],
     })
 

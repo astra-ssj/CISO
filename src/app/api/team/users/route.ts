@@ -52,9 +52,12 @@ export async function PATCH(req: NextRequest) {
     const actorId = (session.user as { id?: string }).id ?? 'unknown';
     await prisma.auditLog.create({
         data: {
-            actor: actorId,
-            action: 'team.role_changed',
-            resource: `user:${userId}`,
+            userId: actorId,
+            action: 'UPDATE',
+            category: 'SETTINGS',
+            resource: 'User',
+            resourceId: userId,
+            description: `Changed user role to ${role}`,
             metadata: JSON.stringify({ newRole: role }),
         },
     });
