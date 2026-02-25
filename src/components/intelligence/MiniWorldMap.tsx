@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import 'maplibre-gl/dist/maplibre-gl.css';
+import { useState } from 'react';
 
-// ── Hardcoded office locations ────────────────────────────────
+// ── Hardcoded office locations ──────────────────────────────────
 const OFFICES = [
     { id: 'de', name: 'AstraLabs DE (HQ)', lat: 54.32, lng: 10.13, country: 'DE', cii: 8 },
     { id: 'gb', name: 'AstraLabs UK', lat: 51.50, lng: -0.12, country: 'GB', cii: 10 },
@@ -15,7 +15,7 @@ const OFFICES = [
     { id: 'at', name: 'AstraLabs AT', lat: 48.21, lng: 16.37, country: 'AT', cii: 7 },
 ];
 
-// ── Conflict zones (subset for mini map) ──────────────────────
+// ── Conflict zones ──────────────────────────────────────────────
 const CONFLICT_CENTERS = [
     { id: 'cz-ua', lat: 48.0, lng: 31.0, name: 'Ukraine', severity: 'critical' },
     { id: 'cz-gaza', lat: 31.4, lng: 34.4, name: 'Gaza', severity: 'critical' },
@@ -35,143 +35,146 @@ function ciiColor(score: number): string {
     return '#ef4444';
 }
 
+const DARK_TILES = 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png';
+const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; CARTO';
+
+// ── Inner Leaflet map (browser-only) ────────────────────────────
+function LeafletMiniMap({ onLoaded }: { onLoaded: () => void }) {
+    const [loaded, setLoaded] = useState(false);
+    const [RL, setRL] = useState<typeof import('react-leaflet') | null>(null);
+
+    // Load react-leaflet on mount
+    useState(() => {
+        import('react-leaflet').then(mod => {
+            setRL(mod);
+            setLoaded(true);
+            onLoaded();
+        });
+    });
+
+    if (!RL || !loaded) {
+        return (
+            <div className="absolute inset-0 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-2">
+                    <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-cyan-500" />
+                    <span className="text-[10px] font-mono text-cyan-400/60 uppercase tracking-widest">Loading...</span>
+                </div>
+            </div>
+        );
+    }
+
+    const { MapContainer, TileLayer, CircleMarker, Popup } = RL;
+
+    return (
+        <MapContainer
+            center={[25, 20]}
+            zoom={2}
+            minZoom={1}
+            maxZoom={6}
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+            zoomControl={false}
+            dragging={true}
+            scrollWheelZoom={false}
+            doubleClickZoom={true}
+            attributionControl={true}
+        >
+            <TileLayer url={DARK_TILES} attribution={TILE_ATTR} subdomains="abcd" />
+
+            {/* Conflict zones */}
+            {CONFLICT_CENTERS.map(cz => (
+                <CircleMarker
+                    key={cz.id}
+                    center={[cz.lat, cz.lng]}
+                    radius={cz.severity === 'critical' ? 6 : 5}
+                    pathOptions={{
+                        fillColor: '#ef4444',
+                        fillOpacity: 0.85,
+                        color: '#fca5a5',
+                        weight: 1,
+                        opacity: 1,
+                    }}
+                >
+                    <Popup>
+                        <div className="text-slate-200">
+                            <div className="font-semibold text-sm mb-0.5">{cz.name}</div>
+                            <span className="text-[10px] bg-red-500/30 text-red-300 px-1.5 py-0.5 rounded font-bold uppercase">
+                                {cz.severity}
+                            </span>
+                        </div>
+                    </Popup>
+                </CircleMarker>
+            ))}
+
+            {/* Conflict pulse rings */}
+            {CONFLICT_CENTERS.filter(c => c.severity === 'critical').map(cz => (
+                <CircleMarker
+                    key={`${cz.id}-ring`}
+                    center={[cz.lat, cz.lng]}
+                    radius={11}
+                    pathOptions={{
+                        fillColor: '#ef4444',
+                        fillOpacity: 0.1,
+                        color: '#ef4444',
+                        weight: 1,
+                        opacity: 0.3,
+                    }}
+                    interactive={false}
+                />
+            ))}
+
+            {/* Office pins */}
+            {OFFICES.map(o => (
+                <CircleMarker
+                    key={o.id}
+                    center={[o.lat, o.lng]}
+                    radius={7}
+                    pathOptions={{
+                        fillColor: '#22c55e',
+                        fillOpacity: 0.9,
+                        color: '#ffffff',
+                        weight: 2,
+                        opacity: 1,
+                    }}
+                >
+                    <Popup>
+                        <div className="text-slate-200">
+                            <div className="font-semibold text-sm mb-1">{o.name}</div>
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-[10px] text-slate-400">CII: </span>
+                                <span className="text-xs font-bold font-mono" style={{ color: ciiColor(o.cii) }}>
+                                    {o.cii}
+                                </span>
+                            </div>
+                        </div>
+                    </Popup>
+                </CircleMarker>
+            ))}
+
+            {/* Office pulse rings */}
+            {OFFICES.map(o => (
+                <CircleMarker
+                    key={`${o.id}-ring`}
+                    center={[o.lat, o.lng]}
+                    radius={13}
+                    pathOptions={{
+                        fillColor: '#22c55e',
+                        fillOpacity: 0.1,
+                        color: '#22c55e',
+                        weight: 1,
+                        opacity: 0.25,
+                    }}
+                    interactive={false}
+                />
+            ))}
+        </MapContainer>
+    );
+}
+
+const LeafletMiniMapDynamic = dynamic(() => Promise.resolve(LeafletMiniMap), { ssr: false });
+
+// ── Main export ─────────────────────────────────────────────────
 export default function MiniWorldMap() {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const mapInstanceRef = useRef<maplibregl.Map | null>(null);
     const [isLoaded, setIsLoaded] = useState(false);
-
-    useEffect(() => {
-        if (!containerRef.current || mapInstanceRef.current) return;
-        let cancelled = false;
-
-        (async () => {
-            const maplibregl = (await import('maplibre-gl')).default;
-            if (cancelled || !containerRef.current) return;
-
-            const map = new maplibregl.Map({
-                container: containerRef.current,
-                style: {
-                    version: 8,
-                    name: 'Dark',
-                    sources: {
-                        'carto-dark': {
-                            type: 'raster',
-                            tiles: [
-                                'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
-                                'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
-                                'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
-                            ],
-                            tileSize: 256,
-                            attribution: '&copy; OpenStreetMap &copy; CARTO',
-                        },
-                    },
-                    layers: [
-                        { id: 'carto-dark-layer', type: 'raster', source: 'carto-dark', minzoom: 0, maxzoom: 19 },
-                    ],
-                    glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
-                },
-                center: [20, 25],
-                zoom: 1.5,
-                minZoom: 1,
-                maxZoom: 6,
-                attributionControl: false,
-                interactive: true,
-                dragRotate: false,
-                pitchWithRotate: false,
-            });
-
-            map.on('load', () => {
-                if (cancelled) return;
-                mapInstanceRef.current = map;
-
-                // Conflict zone points
-                const conflictFeatures: GeoJSON.Feature[] = CONFLICT_CENTERS.map(cz => ({
-                    type: 'Feature',
-                    geometry: { type: 'Point', coordinates: [cz.lng, cz.lat] },
-                    properties: { name: cz.name, severity: cz.severity },
-                }));
-
-                map.addSource('conflicts', {
-                    type: 'geojson',
-                    data: { type: 'FeatureCollection', features: conflictFeatures },
-                });
-
-                // Conflict pulse ring
-                map.addLayer({
-                    id: 'conflict-pulse',
-                    type: 'circle',
-                    source: 'conflicts',
-                    paint: {
-                        'circle-radius': ['match', ['get', 'severity'], 'critical', 14, 10],
-                        'circle-color': 'rgba(239, 68, 68, 0.15)',
-                        'circle-stroke-width': 1,
-                        'circle-stroke-color': 'rgba(239, 68, 68, 0.35)',
-                    },
-                });
-
-                // Conflict dots
-                map.addLayer({
-                    id: 'conflict-dots',
-                    type: 'circle',
-                    source: 'conflicts',
-                    paint: {
-                        'circle-radius': ['match', ['get', 'severity'], 'critical', 5, 4],
-                        'circle-color': '#ef4444',
-                        'circle-stroke-width': 1,
-                        'circle-stroke-color': '#fca5a5',
-                    },
-                });
-
-                // Office pins
-                const officeFeatures: GeoJSON.Feature[] = OFFICES.map(o => ({
-                    type: 'Feature',
-                    geometry: { type: 'Point', coordinates: [o.lng, o.lat] },
-                    properties: { name: o.name, cii: o.cii },
-                }));
-
-                map.addSource('offices', {
-                    type: 'geojson',
-                    data: { type: 'FeatureCollection', features: officeFeatures },
-                });
-
-                // Office pulse ring
-                map.addLayer({
-                    id: 'office-pulse',
-                    type: 'circle',
-                    source: 'offices',
-                    paint: {
-                        'circle-radius': 12,
-                        'circle-color': 'rgba(34, 197, 94, 0.12)',
-                        'circle-stroke-width': 1,
-                        'circle-stroke-color': 'rgba(34, 197, 94, 0.3)',
-                    },
-                });
-
-                // Office dots
-                map.addLayer({
-                    id: 'office-dots',
-                    type: 'circle',
-                    source: 'offices',
-                    paint: {
-                        'circle-radius': 6,
-                        'circle-color': '#22c55e',
-                        'circle-stroke-width': 2,
-                        'circle-stroke-color': '#ffffff',
-                    },
-                });
-
-                setIsLoaded(true);
-            });
-        })();
-
-        return () => {
-            cancelled = true;
-            if (mapInstanceRef.current) {
-                mapInstanceRef.current.remove();
-                mapInstanceRef.current = null;
-            }
-        };
-    }, []);
 
     return (
         <div className="rounded-xl border border-border/40 bg-card overflow-hidden">
@@ -192,9 +195,9 @@ export default function MiniWorldMap() {
 
             {/* Map */}
             <div className="relative" style={{ height: 300, background: '#0a0e17' }}>
-                <div ref={containerRef} className="absolute inset-0" />
+                <LeafletMiniMapDynamic onLoaded={() => setIsLoaded(true)} />
                 {!isLoaded && (
-                    <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute inset-0 flex items-center justify-center z-[200]">
                         <div className="flex flex-col items-center gap-2">
                             <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-cyan-500" />
                             <span className="text-[10px] font-mono text-cyan-400/60 uppercase tracking-widest">Loading...</span>
@@ -210,10 +213,7 @@ export default function MiniWorldMap() {
                         {OFFICES.map(o => (
                             <div key={o.id} className="flex items-center gap-1.5">
                                 <span className="text-[10px] font-mono text-slate-400 uppercase">{o.country}:</span>
-                                <span
-                                    className="text-xs font-bold font-mono"
-                                    style={{ color: ciiColor(o.cii) }}
-                                >
+                                <span className="text-xs font-bold font-mono" style={{ color: ciiColor(o.cii) }}>
                                     {o.cii}
                                 </span>
                             </div>

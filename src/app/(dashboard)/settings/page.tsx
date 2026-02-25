@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import {
     Brain, Loader2, Sparkles, Key, Eye, EyeOff, RefreshCw, Bell,
     Settings as SettingsIcon, Coins, Flame, Activity, Users, ShieldAlert, Cpu, Building2,
-    Globe, CheckCircle2,
+    CheckCircle2,
 } from "lucide-react";
 import { CompaniesProductsTab } from '@/components/settings/CompaniesProductsTab';
 import {
@@ -213,101 +213,254 @@ function AIEconomicsTab() {
     );
 }
 
-// ─── Intelligence Integrations Tab ───
-const INTEL_API_KEYS = [
-    { key: 'GROQ_API_KEY', label: 'Groq API Key', hint: 'Llama 3.1 for threat classification', group: 'Groq AI' },
-    { key: 'UPSTASH_REDIS_REST_URL', label: 'Upstash Redis URL', hint: 'Cross-request caching', group: 'Upstash Redis' },
-    { key: 'UPSTASH_REDIS_REST_TOKEN', label: 'Upstash Redis Token', hint: 'Upstash Redis auth token', group: 'Upstash Redis' },
+// ─── Team Management Tab ───
+type TeamUser = { id: string; name: string | null; email: string; role: string; ssoProvider?: string | null; mfaEnabled?: boolean; lastActiveAt?: string | null; };
+type TeamInvite = { id: string; email: string; role: string; status: string; createdAt: string; };
+
+const ROLE_COLORS: Record<string, string> = {
+    CISO: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+    SEC_ENGINEER: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+    AUDITOR: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+    VIEWER: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/30',
+};
+
+const ROLE_PERMISSIONS: { role: string; modules: string[] }[] = [
+    { role: 'CISO', modules: ['All modules', 'Settings', 'Team Management', 'AI Config', 'Billing'] },
+    { role: 'SEC_ENGINEER', modules: ['Command Center', 'Incidents', 'AppSec', 'Intelligence', 'Vendors', 'Integrations'] },
+    { role: 'AUDITOR', modules: ['Governance', 'Evidence', 'Audit Logs', 'Compliance Reports'] },
+    { role: 'VIEWER', modules: ['Command Center (read-only)', 'Dashboards', 'Reports'] },
 ];
 
-function IntegrationsTab() {
-    const [values, setValues] = useState<Record<string, string>>({});
-    const [showKeys, setShowKeys] = useState<Set<string>>(new Set());
-    const [saved, setSaved] = useState(false);
+function TeamManagementTab() {
+    const [users, setUsers] = useState<TeamUser[]>([]);
+    const [invites, setInvites] = useState<TeamInvite[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [showInviteModal, setShowInviteModal] = useState(false);
+    const [inviteEmail, setInviteEmail] = useState('');
+    const [inviteRole, setInviteRole] = useState('VIEWER');
+    const [isSending, setIsSending] = useState(false);
+    const [inviteSuccess, setInviteSuccess] = useState(false);
 
-    const toggleShow = (key: string) => {
-        setShowKeys((prev) => {
-            const next = new Set(prev);
-            if (next.has(key)) next.delete(key); else next.add(key);
-            return next;
-        });
+    useEffect(() => {
+        fetch('/api/team/users').then(r => r.json()).then((d: { users: TeamUser[]; invites: TeamInvite[] }) => {
+            setUsers(d.users ?? []);
+            setInvites(d.invites ?? []);
+        }).catch(() => { }).finally(() => setIsLoading(false));
+    }, []);
+
+    const sendInvite = async () => {
+        setIsSending(true);
+        try {
+            const res = await fetch('/api/team/invite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: inviteEmail, role: inviteRole }) });
+            if (res.ok) { setInviteSuccess(true); setInviteEmail(''); setTimeout(() => { setInviteSuccess(false); setShowInviteModal(false); }, 2000); }
+        } finally { setIsSending(false); }
     };
 
-    const handleSave = () => {
-        // In production, these would be persisted server-side
-        setSaved(true);
-        setTimeout(() => setSaved(false), 3000);
+    const updateRole = async (userId: string, role: string) => {
+        await fetch('/api/team/users', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId, role }) });
+        setUsers(prev => prev.map(u => u.id === userId ? { ...u, role } : u));
     };
 
-    const groups = [...new Set(INTEL_API_KEYS.map((k) => k.group))];
+    const ssoCount = users.filter(u => u.ssoProvider).length;
+    const mfaCount = users.filter(u => u.mfaEnabled).length;
+
+    if (isLoading) return <div className="flex items-center justify-center min-h-[200px]"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
     return (
         <div className="space-y-6">
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                    { label: 'Total Users', value: users.length, icon: '👥' },
+                    { label: 'SSO Users', value: ssoCount, icon: '🔐' },
+                    { label: 'MFA Enabled', value: mfaCount, icon: '🛡️' },
+                    { label: 'Pending Invites', value: invites.length, icon: '📨' },
+                ].map(s => (
+                    <Card key={s.label} className="border-primary/10">
+                        <CardContent className="pt-4 pb-3">
+                            <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">{s.icon} {s.label}</div>
+                            <div className="text-2xl font-bold">{s.value}</div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+
+            {/* Team Table */}
             <Card className="border-primary/10">
-                <CardHeader>
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-cyan-500/10 rounded-lg"><Globe className="h-6 w-6 text-cyan-400" /></div>
-                        <div>
-                            <CardTitle>Intelligence API Keys</CardTitle>
-                            <CardDescription className="mt-1">Configure external data source credentials for the World Monitor and Intelligence tabs.</CardDescription>
-                        </div>
-                    </div>
+                <CardHeader className="flex flex-row items-center justify-between pb-3">
+                    <div><CardTitle>Team Members</CardTitle><CardDescription className="mt-0.5">Manage roles and access</CardDescription></div>
+                    <Button size="sm" className="gap-2" onClick={() => setShowInviteModal(true)}><Users className="h-4 w-4" />Invite Member</Button>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                    {groups.map((group) => (
-                        <div key={group} className="space-y-3">
-                            <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{group}</h4>
-                            {INTEL_API_KEYS.filter((k) => k.group === group).map((apiKey) => (
-                                <div key={apiKey.key} className="space-y-1.5">
-                                    <Label htmlFor={apiKey.key}>{apiKey.label}</Label>
-                                    <div className="relative">
-                                        <Input
-                                            id={apiKey.key}
-                                            type={showKeys.has(apiKey.key) ? 'text' : 'password'}
-                                            placeholder={apiKey.hint}
-                                            value={values[apiKey.key] || ''}
-                                            onChange={(e) => setValues((prev) => ({ ...prev, [apiKey.key]: e.target.value }))}
-                                            className="pr-10 font-mono text-sm"
-                                        />
-                                        <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => toggleShow(apiKey.key)}>
-                                            {showKeys.has(apiKey.key) ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                        </Button>
+                <CardContent>
+                    {users.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-8">No team members found.</p>
+                    ) : (
+                        <div className="space-y-2">
+                            {users.map(user => {
+                                const initials = (user.name ?? user.email).slice(0, 2).toUpperCase();
+                                return (
+                                    <div key={user.id} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors">
+                                        <div className="w-9 h-9 rounded-full bg-primary/15 flex items-center justify-center text-sm font-bold text-primary shrink-0">{initials}</div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="font-medium text-sm truncate">{user.name ?? 'Unknown'}</div>
+                                            <div className="text-xs text-muted-foreground truncate">{user.email}</div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            {user.ssoProvider && <span className="text-[11px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">SSO</span>}
+                                            {user.mfaEnabled && <span className="text-[11px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">MFA</span>}
+                                        </div>
+                                        <Select value={user.role} onValueChange={(r) => void updateRole(user.id, r)}>
+                                            <SelectTrigger className={`w-36 h-7 text-xs border ${ROLE_COLORS[user.role] ?? ''}`}><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                {['CISO', 'SEC_ENGINEER', 'AUDITOR', 'VIEWER'].map(r => <SelectItem key={r} value={r} className="text-xs">{r}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
+            {/* Pending Invites */}
+            {invites.length > 0 && (
+                <Card className="border-primary/10">
+                    <CardHeader><CardTitle className="text-base">Pending Invites</CardTitle></CardHeader>
+                    <CardContent>
+                        <div className="space-y-2">
+                            {invites.map(inv => (
+                                <div key={inv.id} className="flex items-center gap-3 p-3 rounded-lg border border-border">
+                                    <div className="flex-1">
+                                        <span className="text-sm font-medium">{inv.email}</span>
+                                        <span className={`ml-2 text-[11px] px-1.5 py-0.5 rounded border ${ROLE_COLORS[inv.role] ?? ''}`}>{inv.role}</span>
+                                    </div>
+                                    <span className="text-xs text-muted-foreground">Sent {new Date(inv.createdAt).toLocaleDateString()}</span>
                                 </div>
                             ))}
                         </div>
-                    ))}
-                    <div className="flex items-center gap-3 pt-2">
-                        <Button onClick={handleSave} className="gap-2">
-                            {saved ? <><CheckCircle2 className="h-4 w-4" /> Saved</> : <><Key className="h-4 w-4" /> Save API Keys</>}
-                        </Button>
-                        <p className="text-xs text-muted-foreground">Keys are stored securely and used only for server-side API calls.</p>
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Role Permissions Matrix */}
+            <Card className="border-primary/10">
+                <CardHeader><CardTitle className="text-base">Role Permissions</CardTitle><CardDescription>Access by role across platform modules</CardDescription></CardHeader>
+                <CardContent>
+                    <div className="space-y-3">
+                        {ROLE_PERMISSIONS.map(rp => (
+                            <div key={rp.role} className="flex items-start gap-3">
+                                <span className={`text-xs px-2 py-1 rounded border font-mono w-28 shrink-0 text-center ${ROLE_COLORS[rp.role] ?? ''}`}>{rp.role}</span>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {rp.modules.map(m => <span key={m} className="text-[11px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{m}</span>)}
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Invite Modal */}
+            {showInviteModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowInviteModal(false)}>
+                    <div className="bg-card border border-border rounded-xl p-6 w-full max-w-md mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-lg font-bold mb-4">Invite Team Member</h3>
+                        <div className="space-y-4">
+                            <div>
+                                <Label htmlFor="invite-email">Email Address</Label>
+                                <Input id="invite-email" type="email" placeholder="colleague@company.com" value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} className="mt-1.5" />
+                            </div>
+                            <div>
+                                <Label htmlFor="invite-role">Role</Label>
+                                <Select value={inviteRole} onValueChange={setInviteRole}>
+                                    <SelectTrigger id="invite-role" className="mt-1.5"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        {['CISO', 'SEC_ENGINEER', 'AUDITOR', 'VIEWER'].map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="p-3 rounded-lg bg-muted/40 border border-border text-xs text-muted-foreground">
+                                <strong className="text-foreground">{inviteRole}</strong> permissions: {ROLE_PERMISSIONS.find(r => r.role === inviteRole)?.modules.join(', ')}
+                            </div>
+                        </div>
+                        <div className="flex gap-2 mt-5">
+                            <Button variant="outline" className="flex-1" onClick={() => setShowInviteModal(false)}>Cancel</Button>
+                            <Button className="flex-1 gap-2" onClick={() => void sendInvite()} disabled={isSending || !inviteEmail}>
+                                {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : inviteSuccess ? <CheckCircle2 className="h-4 w-4" /> : null}
+                                {inviteSuccess ? 'Sent!' : 'Send Invite'}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ─── Security Policies Tab ───
+function SecurityPoliciesTab() {
+    const [enforceSSO, setEnforceSSO] = useState(false);
+    const [requireMFA, setRequireMFA] = useState(false);
+    const [autoProvision, setAutoProvision] = useState(true);
+    const [defaultRole, setDefaultRole] = useState('VIEWER');
+    const [sessionTimeout, setSessionTimeout] = useState('24');
+    const [saved, setSaved] = useState(false);
+
+    const handleSave = () => {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+    };
+
+    return (
+        <div className="space-y-5">
+            <Card className="border-primary/10">
+                <CardHeader><div className="flex items-center gap-3"><div className="p-2 bg-primary/10 rounded-lg"><ShieldAlert className="h-5 w-5 text-primary" /></div><div><CardTitle>Authentication Policies</CardTitle><CardDescription className="mt-1">Control how users sign in.</CardDescription></div></div></CardHeader>
+                <CardContent className="space-y-5">
+                    <div className="flex items-center justify-between"><div><Label>Enforce SSO</Label><p className="text-sm text-muted-foreground">Hide password login when SSO is connected</p></div><Switch checked={enforceSSO} onCheckedChange={setEnforceSSO} /></div>
+                    <div className="flex items-center justify-between"><div><Label>Require MFA</Label><p className="text-sm text-muted-foreground">Enforce multi-factor authentication for all users</p></div><Switch checked={requireMFA} onCheckedChange={setRequireMFA} /></div>
+                    <div className="space-y-1.5"><Label>Session Timeout (hours)</Label><Input type="number" value={sessionTimeout} onChange={e => setSessionTimeout(e.target.value)} className="w-32" min="1" max="168" /><p className="text-xs text-muted-foreground">Sessions expire after this period of inactivity</p></div>
+                </CardContent>
+            </Card>
+            <Card className="border-primary/10">
+                <CardHeader><div className="flex items-center gap-3"><div className="p-2 bg-primary/10 rounded-lg"><Users className="h-5 w-5 text-primary" /></div><div><CardTitle>User Provisioning</CardTitle><CardDescription className="mt-1">Control auto-provisioning for SSO users.</CardDescription></div></div></CardHeader>
+                <CardContent className="space-y-5">
+                    <div className="flex items-center justify-between"><div><Label>Auto-provision SSO Users</Label><p className="text-sm text-muted-foreground">Create accounts automatically on first SSO login</p></div><Switch checked={autoProvision} onCheckedChange={setAutoProvision} /></div>
+                    {autoProvision && (
+                        <div className="space-y-1.5"><Label>Default Role for Provisioned Users</Label>
+                            <Select value={defaultRole} onValueChange={setDefaultRole}>
+                                <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+                                <SelectContent>{['CISO', 'SEC_ENGINEER', 'AUDITOR', 'VIEWER'].map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+                            </Select>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+            <Button onClick={handleSave} className="gap-2">{saved ? <><CheckCircle2 className="h-4 w-4" /> Saved</> : 'Save Policies'}</Button>
         </div>
     );
 }
 
 export default function SettingsPage() {
     return (
-        <div className="space-y-6 max-w-4xl mx-auto">
+        <div className="space-y-6 max-w-5xl mx-auto">
             <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
 
             <Tabs defaultValue="ai" className="space-y-6">
-                <TabsList>
+                <TabsList className="flex-wrap h-auto gap-1">
                     <TabsTrigger value="ai" className="gap-2"><Sparkles className="h-4 w-4" />AI Provider</TabsTrigger>
+                    <TabsTrigger value="team" className="gap-2"><Users className="h-4 w-4" />Team</TabsTrigger>
+                    <TabsTrigger value="security" className="gap-2"><ShieldAlert className="h-4 w-4" />Security Policies</TabsTrigger>
                     <TabsTrigger value="preferences" className="gap-2"><SettingsIcon className="h-4 w-4" />Preferences</TabsTrigger>
                     <TabsTrigger value="economics" className="gap-2"><Coins className="h-4 w-4" />AI Economics</TabsTrigger>
                     <TabsTrigger value="companies" className="gap-2"><Building2 className="h-4 w-4" />Companies & Products</TabsTrigger>
-                    <TabsTrigger value="integrations" className="gap-2"><Globe className="h-4 w-4" />Integrations</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="ai"><AIProviderConfig /></TabsContent>
+                <TabsContent value="team"><TeamManagementTab /></TabsContent>
+                <TabsContent value="security"><SecurityPoliciesTab /></TabsContent>
                 <TabsContent value="preferences"><div className="space-y-4"><NotificationSettings /></div></TabsContent>
                 <TabsContent value="economics"><AIEconomicsTab /></TabsContent>
                 <TabsContent value="companies"><CompaniesProductsTab /></TabsContent>
-                <TabsContent value="integrations"><IntegrationsTab /></TabsContent>
             </Tabs>
         </div>
     );

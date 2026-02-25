@@ -7,12 +7,10 @@ import { cn } from '@/lib/utils';
 import {
     ShieldAlert,
     LayoutDashboard,
-    Siren,
     Menu,
-    BrainCircuit,
+    Brain,
     LogOut,
     Shield,
-    FileText,
     ChevronLeft,
     ChevronRight,
     Sparkles,
@@ -20,8 +18,13 @@ import {
     Settings,
     Target,
     Building2,
-    Zap,
+    Radar,
     Map,
+    AlertTriangle,
+    Code,
+    Plug,
+    Siren,
+    Zap,
 } from 'lucide-react';
 import { useAstraStore } from '@/lib/store';
 import { signOut } from 'next-auth/react';
@@ -33,13 +36,14 @@ import { NotificationCenter } from '@/components/notifications/notification-cent
 
 const navItems = [
     { name: 'Command Center', href: '/', icon: LayoutDashboard },
+    { name: 'Decision Center', href: '/decisions', icon: Brain },
     { name: 'Strategy & OKRs', href: '/strategy', icon: Target },
-    { name: 'Governance & Risk', href: '/governance', icon: FileText },
-    { name: 'Decision Center', href: '/decisions', icon: Zap },
-    { name: 'Incidents', href: '/incidents', icon: Siren },
-    { name: 'Intelligence', href: '/intelligence', icon: BrainCircuit },
+    { name: 'Governance & Risk', href: '/governance', icon: Shield },
     { name: 'Vendor Risk', href: '/vendors', icon: Building2 },
-    { name: 'AppSec', href: '/appsec', icon: Shield },
+    { name: 'Incidents', href: '/incidents', icon: AlertTriangle },
+    { name: 'Threat Intel', href: '/intelligence', icon: Radar },
+    { name: 'AppSec', href: '/appsec', icon: Code },
+    { name: 'Integrations', href: '/integrations', icon: Plug },
     { name: 'Settings', href: '/settings', icon: Settings, separator: true },
     { name: 'Help Center', href: '/help', icon: HelpCircle },
     { name: 'Roadmap', href: '/roadmap', icon: Map },

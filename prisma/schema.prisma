@@ -22,6 +22,9 @@ model User {
   image         String?
   password      String?
   role          String    @default("VIEWER")
+  ssoProvider   String?   // "azure-ad", "okta", "google", null
+  mfaEnabled    Boolean   @default(false)
+  lastActiveAt  DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   
@@ -432,4 +435,38 @@ model KnowledgeOverride {
   approvedAt       DateTime?
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// 15. Integration Hub
+// -----------------------------------------------------------------------------
+
+model Integration {
+  id              String    @id @default(cuid())
+  integrationId   String    @unique // "azure-ad", "slack", "jira"
+  category        String    // "identity", "collaboration", etc.
+  status          String    @default("available") // available, connected, error
+  config          String    @default("") // AES-256-GCM encrypted JSON blob
+  lastTestedAt    DateTime?
+  lastTestResult  String?   // "success", "failed", "timeout"
+  connectedBy     String?   // userId who connected it
+  connectedAt     DateTime?
+  metadata        String?   // JSON: channel names, project keys, etc.
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// 16. Team Invites
+// -----------------------------------------------------------------------------
+
+model TeamInvite {
+  id        String   @id @default(cuid())
+  email     String
+  role      String   // CISO, SEC_ENGINEER, AUDITOR, VIEWER
+  token     String   @unique // random invite token
+  status    String   @default("pending") // pending, accepted, expired
+  invitedBy String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
