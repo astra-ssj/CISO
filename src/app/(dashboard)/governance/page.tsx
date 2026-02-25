@@ -2,15 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Shield, AlertTriangle, ScrollText, Plus, Search } from "lucide-react";
+import { Shield, AlertTriangle, ScrollText, Plus, Search, FileSearch, Archive } from "lucide-react";
 import { ComplianceHeatmap } from "@/components/governance/compliance-heatmap";
+import { AuditLogViewer } from "@/components/governance/audit-log-viewer";
+import { EvidenceVaultV2 } from "@/components/governance/evidence-vault-v2";
 import { useRiskRegisterStore } from "@/lib/risk-register-store";
-import { usePolicyStore, Policy } from "@/lib/policy-store";
-import { useEvidenceStore } from "@/lib/evidence-store";
+import { usePolicyStore } from "@/lib/policy-store";
 import { cn } from "@/lib/utils";
 import { POLICY_TEMPLATES } from "@/lib/policy-templates";
 import {
@@ -18,7 +19,7 @@ import {
     DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// ─── Risk Register Tab (from /risk) ───
+// ─── Risk Register Tab ───
 function RiskRegisterTab() {
     const { entries, fetchEntries, isLoading } = useRiskRegisterStore();
     const [search, setSearch] = useState("");
@@ -69,16 +70,16 @@ function RiskRegisterTab() {
                             </div>
                         </div>
                     ))}
-                    {filtered.length === 0 && <Card className="border-dashed"><CardContent className="text-center py-12 text-muted-foreground">No risk scenarios found. Create one to start assessing risks.</CardContent></Card>}
+                    {filtered.length === 0 && <Card className="border-dashed"><CardContent className="text-center py-12 text-muted-foreground">No risk scenarios found.</CardContent></Card>}
                 </div>
             )}
         </div>
     );
 }
 
-// ─── Policy Engine Tab (from /policies) ───
+// ─── Policy Engine Tab ───
 function PolicyEngineTab() {
-    const { policies, fetchPolicies, isLoading, addPolicy, updatePolicy } = usePolicyStore();
+    const { policies, fetchPolicies, isLoading, addPolicy } = usePolicyStore();
     const [search, setSearch] = useState("");
     useEffect(() => { fetchPolicies(); }, [fetchPolicies]);
 
@@ -135,9 +136,6 @@ function PolicyEngineTab() {
 
 // ─── Main Governance page with tabs ───
 export default function GovernancePage() {
-    const evidenceFetch = useEvidenceStore(s => s.fetchEvidence);
-    useEffect(() => { evidenceFetch(); }, [evidenceFetch]);
-
     return (
         <div className="space-y-6 max-w-7xl mx-auto">
             <h1 className="text-3xl font-bold tracking-tight">Governance & Risk</h1>
@@ -147,6 +145,8 @@ export default function GovernancePage() {
                     <TabsTrigger value="compliance" className="gap-2"><Shield className="h-4 w-4" />Compliance</TabsTrigger>
                     <TabsTrigger value="risk" className="gap-2"><AlertTriangle className="h-4 w-4" />Risk Register</TabsTrigger>
                     <TabsTrigger value="policies" className="gap-2"><ScrollText className="h-4 w-4" />Policy Engine</TabsTrigger>
+                    <TabsTrigger value="audit" className="gap-2"><FileSearch className="h-4 w-4" />Audit Logs</TabsTrigger>
+                    <TabsTrigger value="evidence" className="gap-2"><Archive className="h-4 w-4" />Evidence Vault</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="compliance">
@@ -158,6 +158,8 @@ export default function GovernancePage() {
 
                 <TabsContent value="risk"><RiskRegisterTab /></TabsContent>
                 <TabsContent value="policies"><PolicyEngineTab /></TabsContent>
+                <TabsContent value="audit"><AuditLogViewer /></TabsContent>
+                <TabsContent value="evidence"><EvidenceVaultV2 /></TabsContent>
             </Tabs>
         </div>
     );

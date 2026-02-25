@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // ── Hardcoded office locations ──────────────────────────────────
 const OFFICES = [
@@ -39,18 +39,21 @@ const DARK_TILES = 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/
 const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; CARTO';
 
 // ── Inner Leaflet map (browser-only) ────────────────────────────
-function LeafletMiniMap({ onLoaded }: { onLoaded: () => void }) {
-    const [loaded, setLoaded] = useState(false);
+function LeafletMiniMap() {
     const [RL, setRL] = useState<typeof import('react-leaflet') | null>(null);
+    const [loaded, setLoaded] = useState(false);
 
-    // Load react-leaflet on mount
-    useState(() => {
+    // Load react-leaflet on mount — must be in useEffect, NOT useState
+    useEffect(() => {
+        let cancelled = false;
         import('react-leaflet').then(mod => {
-            setRL(mod);
-            setLoaded(true);
-            onLoaded();
+            if (!cancelled) {
+                setRL(mod);
+                setLoaded(true);
+            }
         });
-    });
+        return () => { cancelled = true; };
+    }, []);
 
     if (!RL || !loaded) {
         return (
@@ -176,6 +179,12 @@ const LeafletMiniMapDynamic = dynamic(() => Promise.resolve(LeafletMiniMap), { s
 export default function MiniWorldMap() {
     const [isLoaded, setIsLoaded] = useState(false);
 
+    // Track loading via timer after mount — no callback prop needed
+    useEffect(() => {
+        const timer = setTimeout(() => setIsLoaded(true), 1000);
+        return () => clearTimeout(timer);
+    }, []);
+
     return (
         <div className="rounded-xl border border-border/40 bg-card overflow-hidden">
             {/* Title bar */}
@@ -195,7 +204,7 @@ export default function MiniWorldMap() {
 
             {/* Map */}
             <div className="relative" style={{ height: 300, background: '#0a0e17' }}>
-                <LeafletMiniMapDynamic onLoaded={() => setIsLoaded(true)} />
+                <LeafletMiniMapDynamic />
                 {!isLoaded && (
                     <div className="absolute inset-0 flex items-center justify-center z-[200]">
                         <div className="flex flex-col items-center gap-2">

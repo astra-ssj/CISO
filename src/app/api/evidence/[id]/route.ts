@@ -1,43 +1,35 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { auth } from '@/auth';
+import { logAudit, getRequestIp, getRequestUserAgent } from '@/lib/audit/audit-service';
 
-export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+// GET /api/evidence/[id] — single evidence with links
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
+        const session = await auth();
+        const role = (session?.user as { role?: string })?.role;
+        if (!role || !['CISO', 'SEC_ENGINEER', 'AUDITOR'].includes(role)) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+
         const { id } = await params;
-        const body = await req.json();
-        const e = await prisma.evidence.update({
+        const evidence = await prisma.evidence.findUnique({
             where: { id },
-            data: {
-                ...(body.name != null && { name: body.name }),
-                ...(body.type != null && { type: body.type }),
-                ...(body.fileName != null && { fileName: body.fileName }),
-                ...(body.fileSize != null && { fileSize: body.fileSize }),
-                ...(body.controlIds != null && { controlIds: JSON.stringify(body.controlIds) }),
-                ...(body.framework != null && { framework: body.framework }),
-                ...(body.status != null && { status: body.status }),
-                ...(body.uploadDate != null && { uploadDate: body.uploadDate }),
-                ...(body.expiryDate !== undefined && { expiryDate: body.expiryDate || null }),
-                ...(body.uploadedBy != null && { uploadedBy: body.uploadedBy }),
-                ...(body.notes != null && { notes: body.notes }),
-            },
+            include: { links: true },
         });
+
+        if (!evidence) {
+            return NextResponse.json({ error: 'Not found' }, { status: 404 });
+        }
+
         return NextResponse.json({
-            id: e.id,
-            name: e.name,
-            type: e.type,
-            fileName: e.fileName,
-            fileSize: e.fileSize,
-            controlIds: JSON.parse(e.controlIds || '[]'),
-            framework: e.framework,
-            status: e.status,
-            uploadDate: e.uploadDate,
-            expiryDate: e.expiryDate ?? undefined,
-            uploadedBy: e.uploadedBy,
-            notes: e.notes,
+            ...evidence,
+            tags: evidence.tags ? JSON.parse(evidence.tags) : [],
+            frameworks: evidence.frameworks ? JSON.parse(evidence.frameworks) : [],
+            metadata: evidence.metadata ? JSON.parse(evidence.metadata) : null,
         });
     } catch (error: unknown) {
-        if ((error as { code?: string })?.code === 'P2025') return NextResponse.json({ error: 'Not found' }, { status: 404 });
-        console.error('Evidence PUT:', error);
+        console.error('Evidence GET [id]:', error);
         return NextResponse.json(
             { error: error instanceof Error ? error.message : 'Unknown error' },
             { status: 500 }
@@ -45,13 +37,40 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     }
 }
 
-export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+// DELETE /api/evidence/[id] — soft delete (set status to ARCHIVED)
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
+        const session = await auth();
+        const user = session?.user as { id?: string; name?: string; role?: string };
+        if (!user?.role || user.role !== 'CISO') {
+            return NextResponse.json({ error: 'Forbidden — CISO only' }, { status: 403 });
+        }
+
         const { id } = await params;
-        await prisma.evidence.delete({ where: { id } });
+        const evidence = await prisma.evidence.update({
+            where: { id },
+            data: { status: 'ARCHIVED' },
+        });
+
+        await logAudit({
+            userId: user.id,
+            userName: user.name,
+            userRole: user.role,
+            action: 'DELETE',
+            category: 'EVIDENCE',
+            resource: 'Evidence',
+            resourceId: evidence.id,
+            description: `Archived evidence: ${evidence.title}`,
+            severity: 'WARNING',
+            ipAddress: getRequestIp(req),
+            userAgent: getRequestUserAgent(req),
+        });
+
         return new NextResponse(null, { status: 204 });
     } catch (error: unknown) {
-        if ((error as { code?: string })?.code === 'P2025') return NextResponse.json({ error: 'Not found' }, { status: 404 });
+        if ((error as { code?: string })?.code === 'P2025') {
+            return NextResponse.json({ error: 'Not found' }, { status: 404 });
+        }
         console.error('Evidence DELETE:', error);
         return NextResponse.json(
             { error: error instanceof Error ? error.message : 'Unknown error' },

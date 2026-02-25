@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { calculateRisk, type RiskScenario } from '@/lib/risk-engine/fair';
 import prisma from '@/lib/prisma';
+import { logAudit } from '@/lib/audit/audit-service';
 
 const THREAT_ACTORS: RiskScenario['threatActor'][] = ['NATION_STATE', 'CYBER_CRIMINAL', 'INSIDER', 'HACKTIVIST', 'SCRIPT_KIDDIE'];
 
@@ -122,6 +123,16 @@ export async function POST(req: Request) {
             createdAt: r.createdAt.toISOString().split('T')[0],
             updatedAt: r.updatedAt.toISOString().split('T')[0],
         };
+
+        await logAudit({
+            action: 'CREATE',
+            category: 'RISK',
+            resource: 'RiskScenario',
+            resourceId: risk.id,
+            description: `Created risk scenario: ${scenario.assetName} (score: ${analysis.riskScore})`,
+            metadata: { threatActor: scenario.threatActor, riskScore: analysis.riskScore },
+        });
+
         return NextResponse.json(entry, { status: 201 });
     } catch (error: unknown) {
         console.error('Risk Create Error:', error);

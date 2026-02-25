@@ -54,6 +54,8 @@ export interface AuditFabricInput {
     resource: string;
     resourceId?: string | null;
     metadata?: Record<string, unknown> | null;
+    category?: string;
+    description?: string;
 }
 
 // In-memory store for legacy MVP (will reset on restart)
@@ -103,7 +105,7 @@ export async function logAction(
             ip: entry.ip,
             userAgent: entry.userAgent,
         },
-    }).catch(() => {});
+    }).catch(() => { });
 }
 
 // -----------------------------------------------------------------------------
@@ -119,17 +121,19 @@ export async function appendToFabric(input: AuditFabricInput): Promise<AuditFabr
     try {
         const row = await prisma.auditLog.create({
             data: {
-                actor: input.actor,
+                userId: input.actor,
                 action: input.action,
+                category: input.category ?? 'COMPLIANCE',
                 resource: input.resource,
                 resourceId: input.resourceId ?? null,
+                description: input.description ?? `${input.action} on ${input.resource}`,
                 metadata: input.metadata ? JSON.stringify(input.metadata) : null,
             },
         });
         return {
             id: row.id,
             timestamp: row.timestamp.toISOString(),
-            actor: row.actor,
+            actor: row.userId ?? '',
             action: row.action,
             resource: row.resource,
             resourceId: row.resourceId,
@@ -153,9 +157,9 @@ export async function getAuditFabricLogs(filter?: {
 }): Promise<AuditFabricEntry[]> {
     try {
         const limit = Math.min(filter?.limit ?? 500, 2000);
-        const where: { action?: string; actor?: string; resource?: { startsWith: string } } = {};
+        const where: { action?: string; userId?: string; resource?: { startsWith: string } } = {};
         if (filter?.action) where.action = filter.action;
-        if (filter?.actor) where.actor = filter.actor;
+        if (filter?.actor) where.userId = filter.actor;
         if (filter?.resourcePrefix) where.resource = { startsWith: filter.resourcePrefix };
 
         const rows = await prisma.auditLog.findMany({
@@ -166,7 +170,7 @@ export async function getAuditFabricLogs(filter?: {
         return rows.map((r) => ({
             id: r.id,
             timestamp: r.timestamp.toISOString(),
-            actor: r.actor,
+            actor: r.userId ?? '',
             action: r.action,
             resource: r.resource,
             resourceId: r.resourceId,

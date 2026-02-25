@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { logAudit } from '@/lib/audit/audit-service';
 
 function mapPolicy(p: { id: string; title: string; content: string; version: string; status: string; type: string | null; owner: string | null; frameworks: string; controls: string; sections: string | null; mappings: string | null; dependencies: string | null; acknowledgment: string | null; changelog: string | null; lastUpdated: string | null; updatedAt?: Date }) {
     return {
@@ -53,6 +54,14 @@ export async function POST(req: Request) {
                 lastUpdated: body.lastUpdated ?? new Date().toISOString(),
             },
         });
+        await logAudit({
+            action: 'CREATE',
+            category: 'POLICY',
+            resource: 'Policy',
+            resourceId: p.id,
+            description: `Created policy: ${body.title} (v${body.version ?? '1.0.0'})`,
+        });
+
         return NextResponse.json(mapPolicy(p), { status: 201 });
     } catch (error: unknown) {
         console.error('Policies POST:', error);
