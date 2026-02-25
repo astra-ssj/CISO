@@ -444,11 +444,43 @@ export default function IntegrationsPage() {
     const fetchIntegrations = useCallback(async () => {
         try {
             const res = await fetch("/api/integrations");
-            if (!res.ok) return;
-            const data = await res.json() as { integrations: IntegrationWithStatus[] };
-            setIntegrations(data.integrations);
+            if (!res.ok) {
+                // Fallback: use registry directly with default status
+                setIntegrations(INTEGRATIONS_REGISTRY.map((def) => ({
+                    ...def,
+                    status: "available" as const,
+                    connectedAt: null,
+                    lastTestResult: null,
+                })));
+                return;
+            }
+            const data = await res.json() as {
+                integrations: Array<{
+                    id: string;
+                    status: "available" | "connected" | "error";
+                    connectedAt: string | null;
+                    lastTestResult: string | null;
+                }>;
+            };
+            // Merge API status onto full registry definitions so steps/configSchema are preserved
+            const statusMap = new Map(data.integrations.map((i) => [i.id, i]));
+            setIntegrations(INTEGRATIONS_REGISTRY.map((def) => {
+                const apiStatus = statusMap.get(def.id);
+                return {
+                    ...def,
+                    status: apiStatus?.status ?? ("available" as const),
+                    connectedAt: apiStatus?.connectedAt ?? null,
+                    lastTestResult: apiStatus?.lastTestResult ?? null,
+                };
+            }));
         } catch {
-            // silent
+            // Fallback: use registry directly with default status
+            setIntegrations(INTEGRATIONS_REGISTRY.map((def) => ({
+                ...def,
+                status: "available" as const,
+                connectedAt: null,
+                lastTestResult: null,
+            })));
         } finally {
             setIsLoading(false);
         }
