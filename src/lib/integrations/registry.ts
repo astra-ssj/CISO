@@ -16,6 +16,7 @@ export type IntegrationCategory =
     | 'scanning'
     | 'email'
     | 'grc'
+    | 'threat-intel'
     | 'other';
 
 export interface IntegrationField {
@@ -590,6 +591,90 @@ const drata: IntegrationDefinition = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// THREAT INTELLIGENCE PLATFORMS (2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const opencti: IntegrationDefinition = {
+    id: 'opencti',
+    name: 'OpenCTI',
+    description: 'Cyber threat intelligence platform — campaigns, actors, IOCs, MITRE ATT&CK',
+    category: 'threat-intel',
+    logo: '🔷',
+    popular: true,
+    phase1: true,
+    configSchema: z.object({
+        url: z.string().url('Must be a valid URL'),
+        apiToken: z.string().min(1, 'API Token is required'),
+    }),
+    steps: [
+        {
+            title: 'Deploy OpenCTI',
+            description: 'Run docker compose -f docker-compose.yml -f docker-compose.intel.yml up -d to start the OpenCTI stack.',
+            action: { label: 'View Docker Guide', actionType: 'none' },
+        },
+        {
+            title: 'Get API Token',
+            description: 'Open http://localhost:8080, login as admin (admin@opencti.io / changeme), go to Settings → Parameters → API Access → Copy token.',
+            fields: [
+                { key: 'url', label: 'OpenCTI URL', placeholder: 'http://localhost:8080', type: 'url', required: true },
+                { key: 'apiToken', label: 'API Token', placeholder: 'your-opencti-token', type: 'password', required: true },
+            ],
+        },
+        {
+            title: 'Verify Connectors',
+            description: 'Check that MITRE ATT&CK, CVE, and AlienVault connectors are running in OpenCTI → Data → Connectors.',
+            action: { label: 'Open Connectors', url: 'http://localhost:8080/dashboard/data/connectors', actionType: 'external_link' },
+        },
+        {
+            title: 'Test Connection',
+            description: 'Verify that Astra CISO can reach the OpenCTI GraphQL API and data is flowing.',
+            action: { label: 'Test Connection', actionType: 'test' },
+        },
+    ],
+    docsUrl: 'https://docs.opencti.io/latest/',
+};
+
+const misp: IntegrationDefinition = {
+    id: 'misp',
+    name: 'MISP',
+    description: 'Threat intelligence sharing platform — IOC feeds, community events, STIX/TAXII',
+    category: 'threat-intel',
+    logo: '🟢',
+    popular: true,
+    phase1: true,
+    configSchema: z.object({
+        url: z.string().url('Must be a valid URL'),
+        apiKey: z.string().min(1, 'API Key is required'),
+    }),
+    steps: [
+        {
+            title: 'Deploy MISP',
+            description: 'MISP is included in docker-compose.intel.yml and should already be running on port 8443.',
+            action: { label: 'Open MISP', url: 'https://localhost:8443', actionType: 'external_link' },
+        },
+        {
+            title: 'Get API Key',
+            description: 'Login to MISP (admin@admin.test / admin), go to Administration → Auth Keys → Add Authentication Key.',
+            fields: [
+                { key: 'url', label: 'MISP URL', placeholder: 'https://localhost:8443', type: 'url', required: true },
+                { key: 'apiKey', label: 'API Key', placeholder: 'your-misp-api-key', type: 'password', required: true },
+            ],
+        },
+        {
+            title: 'Enable Feeds',
+            description: 'Go to Sync Actions → Feeds → Enable recommended feeds (CIRCL, abuse.ch, AlienVault OTX).',
+            action: { label: 'Open Feed Manager', url: 'https://localhost:8443/feeds/index', actionType: 'external_link' },
+        },
+        {
+            title: 'Test Connection',
+            description: 'Verify that feeds are being ingested and events are visible.',
+            action: { label: 'Test Connection', actionType: 'test' },
+        },
+    ],
+    docsUrl: 'https://www.misp-project.org/documentation/',
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // REGISTRY EXPORTS
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -610,6 +695,8 @@ export const INTEGRATIONS_REGISTRY: IntegrationDefinition[] = [
     sendgrid, ses,
     // GRC & Compliance
     vanta, drata,
+    // Threat Intelligence Platforms
+    opencti, misp,
 ];
 
 export interface CategoryMeta {
@@ -627,6 +714,7 @@ export const INTEGRATION_CATEGORIES: CategoryMeta[] = [
     { id: 'scanning', label: 'Vulnerability Scanning', icon: '🔍' },
     { id: 'email', label: 'Email & Notifications', icon: '📧' },
     { id: 'grc', label: 'GRC & Compliance', icon: '✅' },
+    { id: 'threat-intel', label: 'Threat Intelligence', icon: '🛡️' },
 ];
 
 export function getIntegration(id: string): IntegrationDefinition | undefined {
