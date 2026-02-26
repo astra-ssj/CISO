@@ -1,0 +1,182 @@
+# ─────────────────────────────────────────────────────────────────
+# Threat Intelligence Backbone — Docker Compose Overlay
+# Usage: docker compose -f docker-compose.yml -f docker-compose.intel.yml up
+# ─────────────────────────────────────────────────────────────────
+
+services:
+  # ══════════════════════════════════════════════════════════════
+  # OpenCTI Stack
+  # ══════════════════════════════════════════════════════════════
+
+  opencti-redis:
+    image: redis:7
+    restart: unless-stopped
+    volumes:
+      - opencti-redis-data:/data
+
+  opencti-elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    volumes:
+      - opencti-es-data:/usr/share/elasticsearch/data
+
+  opencti-minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: opencti
+      MINIO_ROOT_PASSWORD: changeme123
+    volumes:
+      - opencti-minio-data:/data
+
+  opencti-rabbitmq:
+    image: rabbitmq:3-management
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: opencti
+      RABBITMQ_DEFAULT_PASS: changeme123
+
+  opencti:
+    image: opencti/platform:6.4.4
+    restart: unless-stopped
+    depends_on:
+      - opencti-redis
+      - opencti-elasticsearch
+      - opencti-minio
+      - opencti-rabbitmq
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=4096
+      - APP__PORT=8080
+      - APP__BASE_URL=http://localhost:8080
+      - APP__ADMIN__EMAIL=admin@astralabs.com
+      - APP__ADMIN__PASSWORD=AstraAdmin2026!
+      - APP__ADMIN__TOKEN=${OPENCTI_ADMIN_TOKEN:-changeme-opencti-token}
+      - REDIS__HOSTNAME=opencti-redis
+      - ELASTICSEARCH__URL=http://opencti-elasticsearch:9200
+      - MINIO__ENDPOINT=opencti-minio
+      - MINIO__PORT=9000
+      - MINIO__ACCESS_KEY=opencti
+      - MINIO__SECRET_KEY=changeme123
+      - RABBITMQ__HOSTNAME=opencti-rabbitmq
+      - RABBITMQ__USERNAME=opencti
+      - RABBITMQ__PASSWORD=changeme123
+
+  # ── OpenCTI Connectors (free data feeds) ────────────────────
+
+  opencti-connector-mitre:
+    image: opencti/connector-mitre:6.4.4
+    restart: unless-stopped
+    depends_on:
+      - opencti
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN:-changeme-opencti-token}
+      - CONNECTOR_ID=connector-mitre
+      - CONNECTOR_NAME=MITRE ATT&CK
+      - CONNECTOR_SCOPE=marking-definition,identity,attack-pattern,course-of-action,intrusion-set,campaign,malware,tool,vulnerability,incident
+      - CONNECTOR_CONFIDENCE_LEVEL=75
+      - CONNECTOR_RUN_AND_TERMINATE=false
+      - MITRE_INTERVAL=7 # days
+
+  opencti-connector-cve:
+    image: opencti/connector-cve:6.4.4
+    restart: unless-stopped
+    depends_on:
+      - opencti
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN:-changeme-opencti-token}
+      - CONNECTOR_ID=connector-cve
+      - CONNECTOR_NAME=CVE
+      - CONNECTOR_SCOPE=vulnerability
+      - CONNECTOR_CONFIDENCE_LEVEL=75
+      - CVE_INTERVAL=2 # hours
+
+  opencti-connector-alienvault:
+    image: opencti/connector-alienvault:6.4.4
+    restart: unless-stopped
+    depends_on:
+      - opencti
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN:-changeme-opencti-token}
+      - CONNECTOR_ID=connector-alienvault
+      - CONNECTOR_NAME=AlienVault
+      - CONNECTOR_SCOPE=alienvault
+      - CONNECTOR_CONFIDENCE_LEVEL=50
+      - ALIENVAULT_BASE_URL=https://otx.alienvault.com
+      - ALIENVAULT_API_KEY=${ALIENVAULT_OTX_KEY:-}
+      - ALIENVAULT_INTERVAL=2 # hours
+
+  # ══════════════════════════════════════════════════════════════
+  # MISP Stack
+  # ══════════════════════════════════════════════════════════════
+
+  misp-redis:
+    image: redis:7
+    restart: unless-stopped
+
+  misp-db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: misp
+      MYSQL_USER: misp
+      MYSQL_PASSWORD: misp123
+      MYSQL_ROOT_PASSWORD: misp-root-123
+    volumes:
+      - misp-db-data:/var/lib/mysql
+
+  misp:
+    image: ghcr.io/misp/misp-docker/misp-core:latest
+    restart: unless-stopped
+    depends_on:
+      - misp-redis
+      - misp-db
+    ports:
+      - "8443:443"
+    environment:
+      - MYSQL_HOST=misp-db
+      - MYSQL_DATABASE=misp
+      - MYSQL_USER=misp
+      - MYSQL_PASSWORD=misp123
+      - MISP_BASEURL=https://localhost:8443
+      - MISP_ADMIN_EMAIL=admin@astralabs.com
+      - MISP_ADMIN_PASSPHRASE=AstraMISP2026!
+    volumes:
+      - misp-data:/var/www/MISP
+
+  # ── OpenCTI ↔ MISP connector (pulls MISP data into OpenCTI) ─
+
+  opencti-connector-misp:
+    image: opencti/connector-misp:6.4.4
+    restart: unless-stopped
+    depends_on:
+      - opencti
+      - misp
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN:-changeme-opencti-token}
+      - CONNECTOR_ID=connector-misp
+      - CONNECTOR_NAME=MISP
+      - CONNECTOR_SCOPE=misp
+      - CONNECTOR_CONFIDENCE_LEVEL=50
+      - MISP_URL=https://misp:443
+      - MISP_REFERENCE_URL=https://localhost:8443
+      - MISP_KEY=${MISP_API_KEY:-}
+      - MISP_SSL_VERIFY=false
+      - MISP_INTERVAL=2 # minutes
+
+volumes:
+  opencti-redis-data:
+  opencti-es-data:
+  opencti-minio-data:
+  misp-db-data:
+  misp-data:
