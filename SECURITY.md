@@ -4,66 +4,54 @@
 
 | Version | Supported |
 |---------|-----------|
-| v2.0.x  | ✅ Active |
-| < v2.0  | ❌ End of life |
+| 2.0.x   | ✅ Active |
+| < 2.0   | ❌ No     |
 
 ---
 
 ## Reporting a Vulnerability
 
-**Please do not report security vulnerabilities through public GitHub issues.**
+If you discover a security vulnerability in Astra-CISO, please report it responsibly.
 
-If you discover a security vulnerability in Astra CISO, please disclose it responsibly by emailing our security team:
+### How to Report
 
-📧 **[security@astralabs.com](mailto:security@astralabs.com)**
+**Email:** [security@sristinative.com](mailto:security@sristinative.com)
 
-Include as much of the following information as possible to help us understand and reproduce the issue:
+Please include:
 
-- **Description** — clear explanation of the vulnerability and its impact
-- **Steps to reproduce** — exact steps, commands, or payloads
-- **Affected versions** — which version(s) are affected
-- **Proof of Concept** — PoC code, screenshots, or logs (if available)
-- **Suggested fix** — if you have ideas for remediation
+1. **Description** of the vulnerability
+2. **Steps to reproduce** the issue
+3. **Impact assessment** — what could an attacker achieve?
+4. **Affected version(s)**
+5. **Suggested fix** (if you have one)
 
-We aim to acknowledge all reports **within 48 hours** and provide a resolution timeline **within 7 days** for critical issues.
+### What to Expect
 
----
+| Timeframe | Action |
+|-----------|--------|
+| **24 hours** | Acknowledgment of your report |
+| **72 hours** | Initial assessment and severity classification |
+| **7 days** | Status update with remediation plan |
+| **30 days** | Fix released (critical) or scheduled (moderate/low) |
 
-## Responsible Disclosure Policy
+### Responsible Disclosure
 
-We follow a coordinated disclosure process:
-
-1. You report the vulnerability to us privately.
-2. We acknowledge receipt and begin investigation.
-3. We develop and test a fix.
-4. We release the fix and notify you.
-5. You may publicly disclose after 90 days, or sooner if we mutually agree.
-
-We will credit researchers who report valid vulnerabilities in our release notes unless they prefer to remain anonymous.
+- **Do not** open public GitHub issues for security vulnerabilities
+- **Do not** exploit the vulnerability beyond what's needed to demonstrate it
+- **Do** give us reasonable time to fix the issue before disclosure
+- We will credit you in the release notes (unless you prefer anonymity)
 
 ---
 
 ## Security Architecture
 
-Astra CISO is designed with security in mind:
+Astra-CISO implements multiple security layers:
 
-- **Authentication** — NextAuth v5 with JWT sessions; secrets stored in environment variables, never in source.
-- **Database** — SQLite via Prisma; all queries use parameterised statements (no raw SQL interpolation).
-- **AI API Keys** — Provider keys are runtime secrets; the circuit breaker pattern protects against provider failures.
-- **Transport** — Production deployments should be served exclusively over HTTPS/TLS.
-- **Cryptography** — Web Crypto API (`crypto.getRandomValues`) for all random operations in Edge contexts; no custom cryptographic implementations.
-- **Input Validation** — All external data boundaries validated with [Zod](https://zod.dev/) schemas before processing.
+- **Authentication:** NextAuth 5 with credentials provider
+- **Authorization:** RBAC with 4 roles (CISO, SEC_ENGINEER, AUDITOR, VIEWER)
+- **API Security:** Zod validation, rate limiting, CSP headers
+- **Data Protection:** Encrypted integration credentials (AES-256-GCM)
+- **Audit Trail:** Immutable append-only audit log
+- **AI Safety:** Circuit breaker pattern, Dynamic Autonomy Router
 
----
-
-## Security Updates
-
-Security patches are released as patch versions (e.g. `v2.0.1`) and will be tagged `security` and `priority:critical` in GitHub releases.
-
-Subscribe to [GitHub Security Advisories](../../security/advisories) for this repository to be notified of new advisories.
-
----
-
-## PGP Key
-
-If you would prefer to encrypt your report, please request our PGP key at the email address above.
+For architecture details, see [docs/HIGH_LEVEL_DESIGN.md](docs/HIGH_LEVEL_DESIGN.md).

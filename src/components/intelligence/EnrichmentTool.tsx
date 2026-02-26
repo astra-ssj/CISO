@@ -312,6 +312,16 @@ export function EnrichmentTool() {
                                             </div>
                                         </div>
                                     )}
+                                    {result.shodan?.ip && (
+                                        <a
+                                            href={`https://maps.shodan.io/#search/ip:${result.shodan.ip}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300 mt-1 transition-colors"
+                                        >
+                                            View on Shodan Maps →
+                                        </a>
+                                    )}
                                 </div>
                             ) : (
                                 <p className="text-sm text-muted-foreground text-center py-4">No Shodan results for this IOC</p>

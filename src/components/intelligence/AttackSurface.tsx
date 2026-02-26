@@ -550,6 +550,62 @@ export function AttackSurface() {
                     </p>
                 </div>
             )}
+
+            {/* ── Shodan Maps ─────────────────────────────────── */}
+            {configured !== null && (
+                <div
+                    className="rounded-xl border overflow-hidden"
+                    style={{ background: CARD_BG, borderColor: CARD_BD }}
+                >
+                    <div className="flex items-center justify-between px-5 pt-4 pb-2">
+                        <div className="flex items-center gap-2">
+                            <Globe className="h-4 w-4 text-cyan-400" />
+                            <span className="text-sm font-semibold text-white uppercase tracking-wider"
+                                style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>
+                                Shodan Maps
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                            {[
+                                { label: 'Our Assets', query: `org:${domains[0] || 'AstraLabs'}` },
+                                { label: 'Our SSL Certs', query: `ssl:${domains[0] || 'astralabs.com'}` },
+                                { label: 'Exposed RDP', query: `port:3389+org:${domains[0] || 'AstraLabs'}` },
+                                { label: 'Exposed DBs', query: `port:3306,5432,27017+org:${domains[0] || 'AstraLabs'}` },
+                            ].map((btn) => (
+                                <a
+                                    key={btn.label}
+                                    href={`https://maps.shodan.io/#search/${encodeURIComponent(btn.query)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[10px] px-2 py-1 rounded-md font-medium transition-colors
+                                        bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 border border-cyan-500/15"
+                                >
+                                    {btn.label} ↗
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                    <a
+                        href={`https://maps.shodan.io/#search/${encodeURIComponent(`org:${domains[0] || 'AstraLabs'}`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block mx-4 mb-4 rounded-lg overflow-hidden group cursor-pointer"
+                        style={{ background: 'linear-gradient(135deg, rgba(6,182,212,0.08) 0%, rgba(6,95,130,0.12) 100%)', border: '1px solid rgba(6,182,212,0.15)' }}
+                    >
+                        <div className="flex items-center justify-center gap-3 py-12">
+                            <Globe className="h-10 w-10 text-cyan-400/40 group-hover:text-cyan-400/70 transition-colors" />
+                            <div className="text-center">
+                                <p className="text-sm font-medium text-cyan-300 group-hover:text-cyan-200 transition-colors">
+                                    Open Shodan Maps ↗
+                                </p>
+                                <p className="text-[10px] text-slate-500 mt-0.5">
+                                    Interactive map of org:{domains[0] || 'AstraLabs'}
+                                </p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            )}
         </div>
     );
 }

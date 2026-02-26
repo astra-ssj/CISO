@@ -1,104 +1,73 @@
-# Contributing to Astra CISO
+# Contributing to Astra-CISO
 
-Thank you for your interest in contributing! This guide covers everything you need to get started.
+Thank you for your interest in contributing! This guide covers the development setup and conventions.
 
 ---
 
-## Development Environment Setup
+## Development Setup
 
 ### Prerequisites
 
-- **Node.js** 22+
-- **npm** 10+
-- **Docker** 26+ (optional, for container testing)
-- **Git**
+- **Node.js 22+** (LTS recommended)
+- **npm** (included with Node.js)
+- Git
 
-### Local Setup
+### Getting Started
 
 ```bash
-# 1. Clone the repository
 git clone https://github.com/SristiNative/astra-ciso.git
 cd astra-ciso
-
-# 2. Install dependencies
-npm ci
-
-# 3. Copy environment variables
+npm install
 cp .env.example .env.local
-# Fill in required values (see README for reference)
-
-# 4. Set up the database
-npx prisma migrate dev
-
-# 5. Start the development server
+# Edit .env.local — add at least one AI provider key
+npx prisma db push
 npm run dev
+# Open http://localhost:3000
 ```
 
-The app will be available at [http://localhost:3000](http://localhost:3000).
+### Verifying Your Setup
+
+```bash
+npx tsc --noEmit       # Type check
+npx eslint src/        # Lint
+npx vitest run         # Tests
+npm run build          # Production build
+```
 
 ---
 
-## Branch Naming Convention
+## Branch Naming
 
-| Branch type | Pattern | Example |
-|-------------|---------|---------|
-| Feature | `feature/<short-description>` | `feature/caiq-4-tier-matching` |
-| Bug fix | `fix/<short-description>` | `fix/map-render-height` |
-| Refactor | `refactor/<short-description>` | `refactor/vendor-risk-tabs` |
-| Docs | `docs/<short-description>` | `docs/contributing-guide` |
-| Security | `security/<short-description>` | `security/jwt-secret-rotation` |
+```
+feature/  — New features (feature/caiq-export-pdf)
+fix/      — Bug fixes (fix/threat-feed-cache)
+refactor/ — Code restructuring (refactor/intelligence-client)
+docs/     — Documentation only (docs/update-roadmap)
+```
 
 ---
 
-## Commit Message Format (Conventional Commits)
+## Commit Format
 
-We follow [Conventional Commits](https://www.conventionalcommits.org/):
-
-```
-<type>: <short imperative description>
-
-[optional body]
-
-[optional footer, e.g. Closes #123]
-```
-
-### Allowed types
-
-| Type | When to use |
-|------|-------------|
-| `feat` | New feature or capability |
-| `fix` | Bug fix |
-| `refactor` | Code restructuring (no behaviour change) |
-| `docs` | Documentation only |
-| `security` | Security fix or hardening |
-| `test` | Adding or updating tests |
-| `chore` | Build, CI, deps, tooling |
-
-### Examples
+We use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
-feat: add 4-tier CAIQ matching with semantic fallback
-
-fix: correct map container height for World Monitor
-
-security: replace randomBytes with crypto.getRandomValues in middleware
-
-docs: update README with Docker data sovereignty instructions
-
-Closes #42
+feat: add Shodan vendor scan endpoint
+fix: resolve circuit breaker timeout race condition
+refactor: extract signal aggregator from intelligence service
+docs: update HIGH_LEVEL_DESIGN for v2.0
+chore: upgrade Prisma to 7.4
 ```
 
 ---
 
 ## Pull Request Process
 
-1. **Branch** from `main` using the naming convention above.
-2. **Implement** your change, keeping commits atomic and well-described.
-3. **Self-review** using the PR checklist.
-4. **Open a PR** targeting `main` — fill in the PR template completely.
-5. **CI must pass** before a PR can be merged (see `.github/workflows/ci.yml`).
-6. **Request review** from `@SristiNative` (auto-assigned via CODEOWNERS).
-7. **Squash and merge** is the preferred merge strategy.
+1. Fork the repository and create your feature branch
+2. Make your changes with clear, focused commits
+3. Ensure all checks pass (`tsc --noEmit`, `eslint`, `vitest run`, `npm run build`)
+4. Open a PR against `main` using the PR template
+5. Request review from `@SristiNative`
 
 ---
 
@@ -106,81 +75,72 @@ Closes #42
 
 ### TypeScript
 
-- **Strict mode** is enabled — no `@ts-ignore`, no `any` types.
-- Use `unknown` and type guards instead of `any`.
-- All external data boundaries (API responses, form inputs, file parsing) **must** use [Zod](https://zod.dev/) schemas.
-- Prefer `const` over `let`; avoid `var`.
+- **Strict mode** — no `any` types (use `unknown` and narrow)
+- **Zod validation** at API boundaries — all request bodies validated
+- **Explicit return types** on exported functions
+- **Prefer `interface` over `type`** for object shapes
 
-### React / Next.js
+### Imports
 
-- Use the **App Router** (`src/app/`) exclusively — no Pages Router.
-- Prefer **Server Components** unless client interactivity is required.
-- Client Components must start with `'use client'`.
+- Use `@/` path alias for project imports
+- Group imports: externals → internals → types
+- No circular imports
 
-### Formatting
+### Components
 
-ESLint is configured via `eslint.config.mjs`. Run before commit:
-
-```bash
-npx eslint src/
-npx tsc --noEmit
-```
+- One component per file
+- Use React Server Components by default, `'use client'` only when needed
+- JetBrains Mono for metrics/numbers, DM Sans for labels/text
 
 ---
 
-## Testing Expectations
+## Intelligence Module Conventions
 
-- All new logic must have corresponding unit tests in `src/**/__tests__/` or colocated `.test.ts` files.
-- Run the full test suite with:
+If you're working on the intelligence module (`src/lib/intelligence/`), follow these patterns:
 
-```bash
-npx vitest run
-```
+### API Clients
 
-- Include edge cases and error paths, not just happy paths.
-- For UI components, a basic render test is the minimum bar.
+- All API clients use the **circuit breaker** pattern
+- **Cache with TTL** — never make uncached API calls
+- **Graceful degradation** — return cached data or empty state on failure
+- **Rate limiting** — respect provider limits (Shodan: 1 req/sec)
 
----
+### Abuse.ch APIs
 
-## Branch Protection Rules (for maintainers)
+- **ThreatFox & MalwareBazaar:** JSON POST bodies
+- **URLhaus:** Form-encoded POST bodies
+- All three are free, no API key required
 
-The `main` branch is protected:
+### Shodan
 
-- Direct pushes are **disabled** — all changes go through PRs.
-- CI pipeline (`.github/workflows/ci.yml`) **must pass** before merging.
-- At least **1 review** required.
-- Feature branches follow: `feature/*`, `fix/*`, `refactor/*`, `docs/*`, `security/*`.
+- Free tier: 1 request/second, limited search credits
+- Cache host lookups for 24 hours, search results for 1 hour
+- All lookups logged to the immutable audit trail
 
-### Tag convention (releases)
+### Data Layers
 
-We follow [Semantic Versioning](https://semver.org/):
-
-```
-v<MAJOR>.<MINOR>.<PATCH>
-```
-
-Examples: `v2.0.0`, `v2.1.0`, `v2.1.1`
-
-Docker images are tagged with both `latest` and the version tag automatically via `.github/workflows/docker.yml`.
+- Static layers load from `src/data/intelligence/*.json`
+- API-fed layers show "Configure in Settings" if key is missing
+- All layers support toggle on/off in LayerControlPanel
 
 ---
 
-## Recommended GitHub Labels
+## Dark Theme
 
-See `.github/labels.yml` for the full label set. Key labels:
+The platform uses a dark hacker theme (Bloomberg Terminal aesthetic):
 
-| Label | Colour | Use |
-|-------|--------|-----|
-| `bug` | 🔴 Red | Something isn't working |
-| `enhancement` | 🔵 Blue | New feature or improvement |
-| `security` | 🟠 Orange | Security fix or hardening |
-| `caiq` | 🟣 Purple | CAIQ / vendor risk module |
-| `intelligence` | 🩵 Cyan | World Monitor / intel module |
-| `priority:critical` | 🔴 Dark red | Must ship immediately |
-| `good first issue` | 🔵 Light blue | Good entry-point for new contributors |
+| Token | Value | Usage |
+|-------|-------|-------|
+| Background | `#050508` | Page background |
+| Card BG | `rgba(8,12,24,0.85)` | Card backgrounds |
+| Card Border | `rgba(56,189,248,0.06)` | Card borders |
+| Primary accent | `#38bdf8` | Primary actions |
+| Success | `#4ade80` | Positive metrics |
+| Warning | `#fbbf24` | Caution states |
+| Critical | `#ef4444` | Alerts, errors |
 
 ---
 
 ## Questions?
 
-Open a [GitHub Discussion](../../discussions) or an [Issue](../../issues) with the `question` label.
+Open an issue or reach out to [@SristiNative](https://github.com/SristiNative).

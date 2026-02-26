@@ -1,0 +1,98 @@
+# Astra-CISO v2.0 — Cursor Rules
+# Architecture context for AI-assisted development
+
+## Platform Overview
+- CISO command center built on ZTAIP (Zero Trust AI Platform) architecture
+- Next.js 16, React 19, TypeScript 5, Prisma 7, SQLite, Zustand
+- Dark hacker theme (Bloomberg Terminal aesthetic) — never use light backgrounds
+- 8 modules, 11 sidebar items, tab-based internal navigation
+
+## Modules (8 total)
+1. Command Center — Overview, Executive Brief, Reports & Board Deck
+2. Decision Center — Decisions, Action Queue
+3. Strategy & OKRs — OKRs, Defense Matrix, KPI Dashboard, Program Tracker
+4. Governance & Risk — Compliance, Risk Register, Policy Engine, Audit Logs, Evidence Vault
+5. Vendor Risk — Quick Answer, Knowledge Transfer, Knowledge Base, CAIQ Review, Vendor Registry
+6. Incidents — Active Incidents, War Room, Tabletop Exercises
+7. Intelligence — Threat Briefing, World Monitor, Attack Surface, Signal Intelligence, Infrastructure, Military & Maritime, Live Feeds, Ransomware
+8. AppSec — Vulnerability Feed, SAST Scanner, Remediation Tracking
+
+## Sidebar Items (11)
+Command Center, Decision Center, Strategy & OKRs, Governance & Risk, Vendor Risk, Incidents, Intelligence, AppSec, Settings, Help, Roadmap
+
+## Architecture Patterns
+- ZTAIP: Zero Trust AI Platform — never trust, always verify
+- Circuit Breaker: CLOSED → OPEN → HALF_OPEN per AI provider and intel API
+- Dynamic Autonomy Router: AUTONOMOUS / SUPERVISED / MANUAL
+- Immutable Audit Fabric: append-only AuditLog, never update/delete
+
+## AI Providers (multi-provider)
+- Anthropic Claude, Google Gemini, Ollama (local)
+- Always use circuit breaker per provider
+- AI Economics: track tokens, cost, queries
+
+## Intelligence Module Patterns
+### API Clients (src/lib/intelligence/clients/)
+- All clients use circuit breaker pattern
+- All clients cache with TTL (never uncached API calls)
+- Graceful degradation: return cached data or empty state on failure
+
+### Shodan
+- Rate limit: 1 request/second (free tier)
+- Cache: host lookups 24h, search 1h
+- All lookups logged to audit trail
+
+### Abuse.ch
+- ThreatFox: JSON POST to threatfox-api.abuse.ch
+- URLhaus: Form-encoded POST to urlhaus-api.abuse.ch (NOT JSON)
+- MalwareBazaar: JSON POST to mb-api.abuse.ch
+- No API key needed for any Abuse.ch service
+
+### Data Layers (World Monitor)
+- Static layers: load from src/data/intelligence/*.json (always available)
+- API-fed layers: show "Configure in Settings" if key missing
+- All layers toggleable in LayerControlPanel
+
+## Dark Theme Colors
+- Background: #050508
+- Card BG: rgba(8,12,24,0.85)
+- Card Border: rgba(56,189,248,0.06)
+- Primary accent: #38bdf8
+- Success: #4ade80
+- Warning: #fbbf24
+- Critical: #ef4444
+
+## Typography
+- JetBrains Mono — numbers, metrics, KPIs (bold, colored)
+- DM Sans — labels, descriptions, body text
+
+## Component Organization
+- src/components/command/ — Command Center widgets
+- src/components/intelligence/ — Intelligence components
+- src/components/intelligence/world-monitor/ — World Monitor map components
+- src/components/intelligence/tabs/ — Intelligence tab wrappers
+
+## Code Conventions
+- TypeScript strict mode, no `any` types
+- Zod validation at all API boundaries
+- React Server Components by default, 'use client' only when needed
+- Prisma for all persistent data (never localStorage for business data)
+- Zustand for UI state only (sidebar collapse, theme, active tab)
+- @/ path alias for imports
+
+## Database
+- SQLite via Prisma 7
+- 17 models (see prisma/schema.prisma)
+- Key models: KnowledgeEntry (1000+ entries), AttackSurfaceScan, AuditLog
+
+## Deleted Features (DO NOT reference or recreate)
+- Wargames module (replaced by Tabletop Exercises)
+- Budget module
+- Infrastructure placeholder
+- Privacy placeholder
+- Network telemetry widget
+- OpenClaw agent (replaced by native AI)
+- MISP integration (replaced by Abuse.ch)
+- Light/purple theme (replaced by dark hacker theme)
+- Docker-based threat intel stack (replaced by cloud APIs)
+- 20-item sidebar (now 11 items)

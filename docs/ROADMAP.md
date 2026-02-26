@@ -1,74 +1,68 @@
-# Product Roadmap — Astra CISO
+# Astra-CISO Product Roadmap
 
-> Last updated: 2026-02-26
+## v2.0 — Foundation ✅ Released (2026-02-26)
+
+- ✅ ZTAIP architecture alignment
+- ✅ Docker deployment (single-command setup)
+- ✅ CAIQ Knowledge Transfer Engine with 4-tier confidence matching
+- ✅ Knowledge Repository with 1,000+ pre-validated Q&A
+- ✅ Multi-company, multi-product CAIQ configuration
+- ✅ Quick Answer 3-step flow
+- ✅ JSON import/export for knowledge base
+- ✅ World Monitor intelligence dashboard (MapLibre GL, 25+ data layers)
+- ✅ Country Instability Index for 8 office locations
+- ✅ Signal intelligence and anomaly detection
+- ✅ Infrastructure monitoring (cables, datacenters, nuclear, pipelines)
+- ✅ Abuse.ch integration (ThreatFox, URLhaus, MalwareBazaar)
+- ✅ Shodan integration (attack surface, enrichment, vendor scanning)
+- ✅ Attack Surface Monitor with dangerous service detection
+- ✅ AI CISO Assistant (Astra persona)
+- ✅ Circuit breaker pattern for AI resilience
+- ✅ Dynamic Autonomy Router (AUTONOMOUS / SUPERVISED / MANUAL)
+- ✅ Immutable Audit Fabric
+- ✅ Tabletop exercises (replaced wargames)
+- ✅ Dark hacker theme (Bloomberg Terminal aesthetic)
+- ✅ Command Center with KPI bar, threat monitor, compliance posture
+- ✅ Interactive product roadmap page
+- ✅ Help center with module documentation
+- ✅ AI Economics tracking (tokens, cost, provider health)
 
 ---
 
-## v2.0 — Foundation ✅ RELEASED
+## v2.1 — Enterprise Ready
 
-The foundational platform with all core security operations modules.
+**Target:** Q2 2026
 
-- ✅ Command Center Dashboard
-- ✅ FAIR Risk Quantification Engine
-- ✅ Multi-Framework Compliance (ISO 27001, NIST CSF, GDPR, NIS2, SOC 2)
-- ✅ Policy Lifecycle Management
-- ✅ Incident Management + War Room
-- ✅ Threat Intelligence Feed (MITRE ATT&CK)
-- ✅ AI-Powered Decision Support
-- ✅ CAIQ v4 Knowledge Base + Knowledge Transfer Engine
-- ✅ AI CISO Assistant (Astra)
-- ✅ AppSec Dashboard
-- ✅ Docker Deployment
-- ✅ Dark Hacker Theme
-- ✅ Tabletop Exercise Framework
-- ✅ Help Center
-
----
-
-## v2.1 — Enterprise Ready 🔄 IN PROGRESS
-
-**Status: 80% complete**
-
-### ✅ Completed
-
-- Integration Hub (24 integrations, 9 categories)
-- SSO/SAML configuration (Azure AD, Okta, Google Workspace)
-- Multi-User Team Management (invite, roles, permissions)
-- Security Policies (SSO enforcement, MFA, session timeout)
-- Help Center redesign (7 sections, 35 articles, search)
-- QA audit — 0 crashes across 17 routes and 35+ tabs
-
-### 🔄 In Progress
-
-- Google SSO end-to-end testing on localhost
-- Slack webhook integration testing
-- MiniWorldMap bug fix
-
-### 📋 Remaining
-
-- Audit Log Viewer (searchable UI for audit trail)
-- Evidence Vault (file upload, framework linking, expiry)
+- SSO/SAML (Azure AD, Okta, Google Workspace)
+- Multi-User Team Management
+- Audit Log Viewer UI
+- Evidence Vault File Storage
 - Board Report Generator (DOCX/PDF export)
-- Email Notifications (incident alerts, policy reminders)
+- Email Notifications
+- AlienVault OTX deep integration
 
 ---
 
 ## v2.2 — Integrations
 
+**Target:** Q3 2026
+
 - Jira Cloud Bi-Directional Sync
-- Slack Integration (alerts, digest, slash commands)
-- Microsoft Teams Integration (adaptive cards, bot commands)
-- REST API + Webhooks (OpenAPI spec, API keys)
-- Live Threat Intelligence Feeds
-- GitHub / GitLab Security Alerts import
+- Slack Integration
+- Microsoft Teams Integration
+- REST API + Webhooks (OpenAPI spec)
+- GitHub/GitLab Security Alerts
+- OpenCTI integration (self-hosted or demo)
 
 ---
 
 ## v2.3 — Cloud Security
 
+**Target:** Q4 2026
+
 - AWS SecurityHub Integration
 - Azure Defender Integration
-- Vulnerability Scanner Integration (Nessus, Qualys, Trivy)
+- Vulnerability Scanner Integration (Nessus, Qualys)
 - Automated Evidence Collection
 - Compliance Drift Detection
 
@@ -76,10 +70,12 @@ The foundational platform with all core security operations modules.
 
 ## v3.0 — Autonomous CISO
 
-- Multi-Tenant Architecture (PostgreSQL, per-org isolation)
+**Target:** 2027
+
+- Multi-Tenant Architecture
 - Natural Language Queries
-- Predictive Risk Scoring (ML trend analysis)
-- AI Audit Preparation (auto-generate evidence packages)
+- Predictive Risk Scoring
+- AI Audit Preparation
 - Regulatory Change Monitoring
-- Self-Healing Compliance (Dynamic Autonomy Router)
-- Marketplace (community templates and playbooks)
+- Self-Healing Compliance
+- Marketplace (community templates, policies, playbooks)

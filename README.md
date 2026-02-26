@@ -1,157 +1,189 @@
-# Astra CISO
+# Astra-CISO v2.0
 
 **Autonomous Security Operations Platform** — AI-powered compliance, risk management, and threat intelligence for multi-jurisdictional enterprises.
 
-![Version](https://img.shields.io/badge/version-v2.1.0-blue)
-[![CI](https://github.com/SristiNative/astra-ciso/actions/workflows/ci.yml/badge.svg)](https://github.com/SristiNative/astra-ciso/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Docker](https://img.shields.io/badge/container-ghcr.io%2Fsristinative%2Fastra--ciso-blue)](https://github.com/SristiNative/astra-ciso/pkgs/container/astra-ciso)
+---
 
-> **Topics:** `ciso` · `security` · `compliance` · `iso27001` · `nist` · `gdpr` · `nis2` · `caiq` · `vendor-risk` · `threat-intelligence` · `sso` · `integrations` · `docker` · `nextjs` · `typescript` · `ai`
+## Overview
 
-## Getting Started
+Astra-CISO is a CISO command center built on **ZTAIP (Zero Trust AI Platform)** architecture. It manages security operations across **8 countries** (DE, UK, TH, AU, NZ, ES, AT, US) and provides unified visibility into compliance posture, threat landscape, vendor risk, and incident response.
 
-First, run the development server:
+**Key differentiator:** CAIQ Knowledge Transfer engine with **1,000+ pre-validated Q&A pairs** — reducing vendor risk assessments from days to hours.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## Core Modules
+
+| Module | Description |
+|--------|-------------|
+| **Command Center** | Real-time security posture dashboard with Global Threat Monitor, KPI metrics, active threats feed, compliance overview, and AI activity monitoring. |
+| **Decision Center** | AI-assisted security decision queue with prioritized action items aggregated from across the platform. |
+| **Strategy & OKRs** | Security strategy management with OKRs, defense matrix, KPI dashboards, and program tracking. |
+| **Governance & Risk** | Multi-framework compliance tracking (ISO 27001, SOC 2, NIS2, GDPR, Cyber Essentials, EU AI Act), FAIR risk quantification, and policy lifecycle management. |
+| **Vendor Risk** | CAIQ v4 automation with Knowledge Transfer engine (4-tier confidence matching), 1,000+ entry knowledge base, multi-company/product configuration, and Shodan-powered vendor scanning. |
+| **Incidents** | Incident management with war room collaboration, tabletop exercises linked to real threat data, and after-action reporting. |
+| **Threat Intelligence** | World Monitor with interactive map (25+ data layers), attack surface monitoring via Shodan, live threat feeds from Abuse.ch (ThreatFox, URLhaus, MalwareBazaar), signal intelligence with anomaly detection, infrastructure monitoring, and ransomware tracking. |
+| **AppSec** | Vulnerability feed, SAST scanning, Trivy integration, and remediation velocity tracking. |
+
+---
+
+## Threat Intelligence Stack
+
+| Source | Data | API Key | Cost |
+|--------|------|---------|------|
+| Abuse.ch ThreatFox | IOCs, malware families, C2 servers | None needed | Free |
+| Abuse.ch URLhaus | Malicious URLs, hosting info | None needed | Free |
+| Abuse.ch MalwareBazaar | Malware samples, hashes, signatures | None needed | Free |
+| Shodan | Attack surface, open ports, CVEs, SSL | Free account | Free tier |
+| AlienVault OTX | 100k+ IOCs, community pulses | Free account | Free |
+| USGS | Earthquake data (BCDR) | None needed | Free |
+| GDELT | Global news events, geolocation | None needed | Free |
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                      Astra-CISO                         │
+│                                                         │
+│  Next.js 16 · React 19 · TypeScript 5 · Prisma 7       │
+│                                                         │
+│  ┌──────────┐  ┌──────────┐  ┌───────────────────┐     │
+│  │ Zustand  │  │ NextAuth │  │ Circuit Breaker   │     │
+│  │ UI State │  │ 5 Auth   │  │ AI Resilience     │     │
+│  └──────────┘  └──────────┘  └───────────────────┘     │
+│                                                         │
+│  ┌──────────────────────────────────────────────────┐   │
+│  │           Intelligence API Layer                 │   │
+│  │  Abuse.ch · Shodan · OTX · USGS · GDELT         │   │
+│  └──────────────────────────────────────────────────┘   │
+│                                                         │
+│  ┌──────────────────────────────────────────────────┐   │
+│  │         AI Providers (multi-provider)            │   │
+│  │  Anthropic Claude · Google Gemini · Ollama       │   │
+│  └──────────────────────────────────────────────────┘   │
+│                                                         │
+│  ┌──────────┐  ┌──────────┐  ┌───────────────────┐     │
+│  │ SQLite   │  │ MapLibre │  │ Immutable Audit   │     │
+│  │ (Prisma) │  │ GL Maps  │  │ Fabric            │     │
+│  └──────────┘  └──────────┘  └───────────────────┘     │
+└─────────────────────────────────────────────────────────┘
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Patterns:** ZTAIP · Circuit Breaker · Dynamic Autonomy Router · Immutable Audit Fabric
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Quick Start
 
-## Key Modules (9 core + Integration Hub)
-
-| # | Module | Description |
-|---|--------|-------------|
-| 1 | **Command Center** | Real-time security posture overview with executive briefing |
-| 2 | **Risk Quantification** | FAIR methodology with ALE calculations and normalized scoring |
-| 3 | **Multi-Framework Compliance** | ISO 27001, NIST CSF, GDPR, NIS2, SOC 2 with evidence tracking |
-| 4 | **Policy Lifecycle** | Draft → Review → Approved → Published with version history |
-| 5 | **Incident Management** | War Room collaboration, playbooks, and timeline |
-| 6 | **Threat Intelligence** | MITRE ATT&CK mapping and ransomware tracking |
-| 7 | **AI CISO Assistant** | Multi-provider AI (Gemini + Claude) with circuit breaker pattern |
-| 8 | **CAIQ Knowledge Base** | 261-question auto-fill with 4-tier knowledge transfer engine |
-| 9 | **AppSec Dashboard** | Container and dependency scanning (Trivy) |
-| 🔌 | **Integration Hub** | 24 integrations across 9 categories (SIEM, Cloud, DevOps, etc.) |
-
-### Additional Features
-
-* **SSO / SAML Authentication** — Azure AD, Okta, Google Workspace
-* **Team Management** — Invite members, assign roles, RBAC permissions
-* **Security Policies** — SSO enforcement, MFA, session timeout
-* **Help Center** — 7 sections, 35 articles, search, keyboard shortcuts
-* **World Monitor** — Interactive geopolitical intelligence map (Leaflet)
-* **Tabletop Exercises** — Scenario-based security exercise runner
-* **Dark Hacker Theme** — Glassmorphism, micro-animations, JetBrains Mono
-
-### Sidebar Navigation (13 items)
-
-Command Center · Governance · Intelligence · Incidents · Strategy · AppSec · CAIQ · Integrations · Settings · Help · Roadmap · Tabletop · World Monitor
-
-## Docker
-
-### Quick start with Docker Compose
+### With Docker
 
 ```bash
-# Build and run (app on port 3000, SQLite in named volume)
+git clone https://github.com/SristiNative/astra-ciso.git
+cd astra-ciso
+cp .env.example .env.local
+# Edit .env.local — add AI provider key (minimum)
+docker compose build
 docker compose up -d
-
-# View logs
-docker compose logs -f astra-ciso
+# Open http://localhost:3000
 ```
 
-The app is served at [http://localhost:3000](http://localhost:3000). Data (e.g. SQLite DB) is persisted in the `astra-ciso-data` volume.
+### Without Docker
 
-### Environment variable reference
+```bash
+npm install
+cp .env.example .env.local
+# Edit .env.local
+npx prisma db push
+npm run dev
+# Open http://localhost:3000
+```
+
+---
+
+## Environment Variables
+
+### Core
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `NODE_ENV` | Runtime mode | `production` (in Docker) |
-| `DATABASE_URL` | Prisma DB URL (SQLite path in container) | `file:/app/data/astra-ciso.db` |
-| `AUTH_SECRET` | Auth/session secret | Set in production |
-| `JWT_SECRET` | JWT signing secret | Falls back to `AUTH_SECRET` |
-| `AI_PROVIDER` | Primary AI provider | `GEMINI` |
-| `GOOGLE_API_KEY` | Gemini API key | — |
-| `ANTHROPIC_API_KEY` | Claude API key (fallback) | — |
-| `ASTRA_ORG_NAME` | Organization name (CAIQ / branding) | — |
-| `ASTRA_INDUSTRY` | Industry (CAIQ context) | — |
-| `ASTRA_ORG_SIZE` | Startup / SMB / Enterprise | — |
-| `ASTRA_CLOUD_MODEL` | IaaS / PaaS / SaaS / Hybrid | — |
-| `ASTRA_JURISDICTION` | Comma-separated jurisdictions | — |
-| `VERSION` | App version (health response) | From package.json |
+| `DATABASE_URL` | SQLite path | `file:./dev.db` |
+| `NEXTAUTH_SECRET` | Random 32+ char string | — |
+| `NEXTAUTH_URL` | Application URL | `http://localhost:3000` |
 
-Create a `.env` file next to `docker-compose.yml` for secrets; Compose will substitute `${VAR}`. Never commit `.env` with real keys.
+### AI Providers (configure at least one)
 
-### Data sovereignty configuration
+| Variable | Description |
+|----------|-------------|
+| `ANTHROPIC_API_KEY` | Claude API key |
+| `GOOGLE_API_KEY` | Gemini API key |
+| `OLLAMA_BASE_URL` | Local Ollama endpoint |
 
-* **Database**: SQLite is stored in the container volume at `/app/data`. Bind-mount a host path if you need the file on a specific disk or region (e.g. `./data:/app/data`).
-* **AI**: For air-gapped or in-region-only use, set `AI_PROVIDER` and only configure the provider(s) allowed in your environment (e.g. self-hosted Ollama). The CAIQ semantic matcher runs fully local (TF-IDF); only Tier 3 answers call the configured AI.
-* **Secrets**: Keep `AUTH_SECRET`, `JWT_SECRET`, and API keys in env or a secrets manager; do not bake them into the image.
+### Threat Intelligence (all optional, all free)
 
-### Health check endpoint
+| Variable | Description |
+|----------|-------------|
+| `SHODAN_API_KEY` | [account.shodan.io](https://account.shodan.io) |
+| `ALIENVAULT_OTX_KEY` | [otx.alienvault.com](https://otx.alienvault.com) |
+| `ABUSECH_ENABLED` | `true` (no key needed) |
+| `USGS_ENABLED` | `true` (no key needed) |
+| `GDELT_ENABLED` | `true` (no key needed) |
 
-* **URL**: `GET /api/health`
-* **Purpose**: Used by Docker (and load balancers) to verify the app is up and optional dependencies are reachable.
-* **Response**: JSON with `status` (`healthy` | `degraded` | `unhealthy`), `timestamp`, `version`, `jurisdiction`, `services.database`, `services.ai` (circuit breaker state and provider), and `uptime`.
-* **Status**: `200` for healthy/degraded, `503` for unhealthy. Database failure sets unhealthy; AI circuit open sets degraded.
+### Intelligence (optional, for advanced features)
 
-Docker Compose healthcheck runs every 30s: `wget -q --spider http://localhost:3000/api/health`.
+| Variable | Description |
+|----------|-------------|
+| `OPENSKY_USERNAME` / `OPENSKY_PASSWORD` | Military flight tracking |
+| `VESSELFINDER_API_KEY` | Naval vessel tracking |
+| `NASA_FIRMS_API_KEY` | Satellite fire detection |
+| `GROQ_API_KEY` | AI threat classification |
 
-## Documentation
+---
 
-For detailed features and usage instructions, please refer to the [User Guide](docs/USER_GUIDE.md).
+## CAIQ Knowledge Transfer
 
-## Technical Documentation
+The flagship feature for vendor risk automation:
 
-* [High-Level Design (HLD)](docs/HIGH_LEVEL_DESIGN.md)
-* [Low-Level Design (LLD)](docs/LOW_LEVEL_DESIGN.md)
-* [Product Roadmap](docs/ROADMAP.md)
-* [Security & QA Report](docs/SECURITY_AND_QA_REPORT.md)
+- **1,000+ pre-validated** security Q&A entries
+- **Multi-company, multi-product** configuration
+- **4-tier confidence matching:** Direct → Semantic → AI Adapted → Manual
+- **JSON import/export** for knowledge portability
+- **Learning loop** — gets smarter with each assessment
+- Reduces vendor risk assessments from **days to hours**
+
+---
+
+## Compliance Frameworks
+
+ISO 27001:2022 · NIST CSF 2.0 · SOC 2 Type II · GDPR · NIS2 · EU AI Act · Cyber Essentials
+
+---
+
+## Roadmap
+
+See [docs/ROADMAP.md](docs/ROADMAP.md) for the full product roadmap.
+
+---
 
 ## Contributing
 
-We welcome contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, including:
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
 
-* Dev environment setup
-* Branch naming: `feature/*`, `fix/*`, `refactor/*`, `docs/*`, `security/*`
-* Commit format: [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `refactor:`, `docs:`, `security:`, `test:`)
-* PR process and quality gates
-
-### Branch Protection (manual setup in GitHub)
-
-The `main` branch requires:
-
-* ✅ All CI checks pass (`.github/workflows/ci.yml`)
-* ✅ At least 1 approved review
-* ✅ No direct pushes
-
-### Tag Convention (releases)
-
-Follows [Semantic Versioning](https://semver.org/): `v2.0.0`, `v2.1.0`, etc.  
-Docker images are published automatically on tag push via `.github/workflows/docker.yml`.
-
-### Repository Settings (manual setup in GitHub)
-
-* **Description:** Autonomous Security Operations Platform — AI-powered compliance, risk management, and threat intelligence for multi-jurisdictional enterprises
-* **Topics:** ciso, security, compliance, iso27001, nist, gdpr, nis2, caiq, vendor-risk, threat-intelligence, docker, nextjs, typescript, ai
-* **Disable:** Wiki (use `docs/` instead), Discussions (use Issues)
-* **Labels:** See `.github/labels.yml` for the full recommended label set with `gh label create` commands
+---
 
 ## Security
 
-See [SECURITY.md](SECURITY.md) for our vulnerability reporting policy and security architecture overview.  
-To report a vulnerability: **[security@astralabs.com](mailto:security@astralabs.com)**
+See [SECURITY.md](SECURITY.md) for vulnerability reporting.
 
-## Changelog
+---
 
-See [CHANGELOG.md](CHANGELOG.md) for the full history of changes.
+## License
+
+[MIT](LICENSE)
+
+---
+
+## Author
+
+Built by [@SristiNative](https://github.com/SristiNative)

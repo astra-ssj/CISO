@@ -1,87 +1,60 @@
 # Changelog
 
-All notable changes to **Astra CISO** are documented here.
+All notable changes to Astra-CISO are documented in this file.
 
-Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).  
-Versioning follows [Semantic Versioning](https://semver.org/).
-
----
-
-## [v2.1.1] — In Progress
-
-### Added
-
-- **Help Center redesign** — 7 sections, 35 articles, search, expandable cards, keyboard shortcuts
-- **Google Workspace SSO integration** (OAuth 2.0)
-- **Integration Hub** — 24 integrations across 9 categories
-- **Team Management** with invite flow and RBAC
-- **Security Policies** — SSO enforcement, MFA, session timeout
-
-### Fixed
-
-- **MiniWorldMap `useState` crash** — moved dynamic import to `useEffect`
-- **Integration page crash** — fixed during QA
-
-### In Progress
-
-- Google SSO end-to-end testing
-- Slack webhook testing
-- Sprint 2: Audit Log Viewer + Evidence Vault
+Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
-## [v2.0.0] — 2026-02-24
+## [2.0.0] — 2026-02-26
 
 ### Added
 
-- **ZTAIP architecture alignment** — Zero-Trust AI Platform design principles across the stack
-- **Docker deployment support** — Production-ready `Dockerfile`, `docker-compose.yml`, `entrypoint.sh`, and health-check endpoint (`/api/health`)
-- **CAIQ Knowledge Transfer Engine** — 4-tier matching pipeline: Exact → TF-IDF Semantic → AI Semantic → AI Context Generation
-- **Knowledge Repository** — 1,000+ pre-validated Q&A pairs; JSON import/export; multi-layer view (Common / Company / Product)
-- **Multi-company, multi-product CAIQ configuration** — Environment-driven org and product context for tailored questionnaire responses
-- **Quick Answer 3-step flow** — Upload questionnaire → Knowledge Base match → AI enhancement → Export
-- **JSON import/export** for knowledge base (full and incremental)
-- **World Monitor intelligence dashboard** — Interactive map via MapLibre GL with real data points
-- **Country Instability Index** — Risk scoring for office locations with live indicator overlays
-- **Signal intelligence & anomaly detection** — Geopolitical, cyber, and infrastructure signals
-- **Infrastructure monitoring** — Undersea cables, data centres, nuclear facility tracking
-- **AI CISO Assistant** — Native multi-provider AI (Gemini + Claude fallback) with circuit breaker pattern; replaces OpenClaw
-- **Circuit breaker pattern** — Resilient AI calls with automatic fallback and degraded-mode handling
-- **Tabletop Exercises** — Scenario-based security exercise runner (replaced Wargames module)
-- **Dark hacker theme** — Cohesive dark UI with neon accent system throughout
-- **Interactive Product Roadmap page** — `/roadmap` with release cards, status indicators, priority badges, and effort estimates
-- **Comprehensive Help Centre** — Module-level documentation with working deep-links
+- **ZTAIP architecture** alignment (Zero Trust AI Platform)
+- **Docker deployment** with single-command setup (`docker compose up`)
+- **CAIQ Knowledge Transfer Engine** with 4-tier confidence matching (Direct → Semantic → AI Adapted → Manual)
+- **Knowledge Repository** with 1,000+ pre-validated security Q&A entries
+- **Multi-company, multi-product** CAIQ configuration with 3-layer override hierarchy
+- **Quick Answer** 3-step flow for rapid vendor risk assessment
+- **JSON import/export** for knowledge base portability
+- **World Monitor** intelligence dashboard — MapLibre GL interactive map with 25+ data layers
+- **Country Instability Index** for 8 office locations (DE, UK, TH, AU, NZ, ES, AT, US)
+- **Signal intelligence** and anomaly detection with baseline tracking
+- **Infrastructure monitoring** — undersea cables, datacenters, nuclear facilities, pipelines
+- **Abuse.ch integration** — ThreatFox (IOCs), URLhaus (malicious URLs), MalwareBazaar (malware samples)
+- **Shodan integration** — attack surface monitoring, enrichment, vendor scanning
+- **Attack Surface Monitor** with dangerous service detection and CVE exposure
+- **AI CISO Assistant** (Astra persona) — native, multi-provider conversational AI
+- **Circuit breaker pattern** for AI provider resilience (CLOSED → OPEN → HALF_OPEN)
+- **Dynamic Autonomy Router** — AUTONOMOUS / SUPERVISED / MANUAL modes
+- **Immutable Audit Fabric** — append-only audit trail with indexed queries
+- **Tabletop exercises** for incident response training
+- **Dark hacker theme** — Bloomberg Terminal aesthetic with JetBrains Mono metrics
+- **Command Center** with KPI status bar, threat monitor, compliance posture, AI activity
+- **Interactive product roadmap** page
+- **Help center** with searchable module documentation
+- **AI Economics tracking** — token usage, cost per query, provider health monitoring
+- **Evidence Vault** — compliance evidence storage with framework linking
+- **Policy Engine** — full lifecycle management (Draft → Review → Approved → Retired)
+- **FAIR risk quantification** with Annual Loss Expectancy calculation
+- **Team management** with role-based invitations
 
 ### Changed
 
-- **Sidebar reduced** from 20 items to 11 — focused to core CISO workflows
-- **Routes merged** into tab-based navigation to eliminate shallow pages
-- **Auth consolidated** to NextAuth v5 with edge-compatible middleware
-- **Storage migrating** from `localStorage` to Prisma / SQLite for persistence
-- **README** rewritten — added Docker, environment reference, data sovereignty, and health-check documentation
+- Sidebar reduced from **20 to 11 items**
+- Routes merged into **tab-based navigation** (8 modules with internal tabs)
+- Auth consolidated to **NextAuth 5** (from custom implementation)
+- Threat intelligence: **Docker stack → free cloud APIs** (Abuse.ch, Shodan, USGS, GDELT)
+- Storage migrated from **localStorage to Prisma** (SQLite)
+- AI architecture: **single-provider → multi-provider** (Anthropic, Gemini, Ollama)
 
 ### Removed
 
-- **Wargames module** — replaced by Tabletop Exercises
-- **Budget module** — removed (100% mock data, no real data pipeline)
-- **Infrastructure placeholder** — consolidated into World Monitor
-- **Privacy placeholder** — removed pending full reimplementation
-- **Network telemetry widget** — removed (generated fake data)
-- **OpenClaw agent dependency** — replaced by native AI CISO Assistant
-- **75 KB hardcoded wargames data file** — removed with the module
-
-### Security
-
-- Middleware rewritten for Edge runtime compatibility (replaced Node.js `fs` and `crypto.randomBytes`)
-- All external data boundaries validated with Zod schemas
-- `AUTH_SECRET` and `JWT_SECRET` required as runtime environment variables; build fails if missing in production
-- Docker image runs as non-root user
-
----
-
-## [v1.x] — Legacy
-
-> Prior versions were internal prototypes. Public release history begins at v2.0.0.
-
-[v2.1.1]: https://github.com/SristiNative/astra-ciso/compare/v2.0.0...HEAD
-[v2.0.0]: https://github.com/SristiNative/astra-ciso/releases/tag/v2.0.0
+- Wargames module (replaced by Tabletop Exercises)
+- Budget module (100% mock data, no real value)
+- Infrastructure placeholder page (empty shell)
+- Privacy placeholder page (empty shell)
+- Network telemetry widget (fake data)
+- OpenClaw agent dependency (replaced by native AI assistant)
+- MISP integration (replaced by Abuse.ch free APIs)
+- 75KB hardcoded wargames data file

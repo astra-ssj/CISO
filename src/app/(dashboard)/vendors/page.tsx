@@ -511,6 +511,14 @@ export default function VendorsPage() {
                                         <Badge className={`${scanResult.riskLevel === 'CRITICAL' ? 'bg-red-500/20 text-red-400' : scanResult.riskLevel === 'HIGH' ? 'bg-orange-500/20 text-orange-400' : scanResult.riskLevel === 'MEDIUM' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
                                             {scanResult.riskLevel}
                                         </Badge>
+                                        <a
+                                            href={`https://maps.shodan.io/#search/${encodeURIComponent(`org:${scanResult.domain}`)}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300 transition-colors ml-2"
+                                        >
+                                            Explore on Shodan Maps →
+                                        </a>
                                     </div>
                                 )}
                             </CardContent>

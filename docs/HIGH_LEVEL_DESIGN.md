@@ -1,306 +1,325 @@
-# High-Level Design (HLD) — Astra CISO Platform
+# High-Level Design — Astra-CISO v2.0
 
-**Version**: 2.0  
-**Date**: February 18, 2026  
-**Status**: Production-Ready (Staging)
+## 1. System Context
 
----
-
-## 1. System Overview
-
-**Astra CISO** is an AI-powered Governance, Risk, and Compliance (GRC) platform engineered for Chief Information Security Officers. It provides real-time security posture visualization, automated compliance management, threat intelligence, vendor risk assessment, and strategic decision support — all within a unified command center.
-
-### Design Pillars
-
-| Pillar | Description |
-|--------|-------------|
-| **Agentic AI** | Autonomous agents for policy drafting, threat analysis, CAIQ automation, and OSINT intelligence |
-| **Privacy-First Hybrid AI** | Supports Google Gemini, Anthropic Claude, and local Ollama for air-gapped environments |
-| **Visual Intelligence** | Nexus Graph topology, traffic flow diagrams, posture gauges, and investment heatmaps |
-| **Offline-First Architecture** | All core features work without external APIs via Zustand persistence and local stores |
-| **Enterprise Security** | RBAC, audit logging, session management, and middleware-enforced authentication |
-
----
-
-## 2. Platform Architecture
-
-```mermaid
-graph TB
-    subgraph "Client Layer"
-        UI["Next.js 14 Frontend<br/>React Server Components"]
-        Shell["Dashboard Shell<br/>22 Pages / Modules"]
-    end
-
-    subgraph "State Management"
-        ZS["Zustand Stores (10+)<br/>Persist Middleware"]
-    end
-
-    subgraph "API Layer"
-        API["Next.js API Routes (14)<br/>Server Actions (3)"]
-    end
-
-    subgraph "Intelligence Engines"
-        AI["AI Engine<br/>Gemini / Claude / Ollama"]
-        KPI["KPI Engine<br/>Computation + File Import"]
-        RISK["Risk Engine<br/>FAIR Quantitative Model"]
-        DEC["Decision Engine<br/>Rule-Based Scoring"]
-        CAIQ["CAIQ Engine<br/>CSA Questionnaire Automation"]
-        OSINT["OSINT Engine<br/>Threat Intelligence"]
-    end
-
-    subgraph "Security Layer"
-        AUTH["Auth Middleware"]
-        RBAC["RBAC + Audit Logs"]
-        SESSION["Session Management"]
-    end
-
-    subgraph "External Integrations"
-        GH["GitHub Connector"]
-        JIRA["Jira Cloud API v3"]
-        TRIVY["Trivy Scanner"]
-        OFFICE["OfficeParser<br/>PPTX / DOCX"]
-    end
-
-    UI --> Shell
-    Shell --> ZS
-    Shell --> API
-    API --> AI
-    API --> KPI
-    API --> RISK
-    API --> DEC
-    API --> CAIQ
-    API --> OSINT
-    API --> GH
-    API --> JIRA
-    API --> TRIVY
-    API --> OFFICE
-    AUTH --> API
-    RBAC --> API
-    SESSION --> AUTH
+```
+                    ┌──────────────┐
+                    │  CISO / Ops  │
+                    │   (Browser)  │
+                    └──────┬───────┘
+                           │ HTTPS
+                    ┌──────▼───────────────────────────┐
+                    │         Astra-CISO                │
+                    │  Next.js 16 · React 19 · TS 5    │
+                    │  Prisma 7 · SQLite · Zustand     │
+                    └──┬────┬────┬────┬────┬────┬──────┘
+                       │    │    │    │    │    │
+              ┌────────┘    │    │    │    │    └────────┐
+              ▼             ▼    ▼    ▼    ▼             ▼
+        ┌──────────┐  ┌─────┐ ┌────┐ ┌────┐ ┌──────┐ ┌───────┐
+        │ Anthropic│  │Gemini│ │OTX │ │USGS│ │GDELT │ │Shodan │
+        │  Claude  │  │      │ │    │ │    │ │      │ │       │
+        └──────────┘  └─────┘ └────┘ └────┘ └──────┘ └───────┘
+                                 │
+                          ┌──────┘
+                          ▼
+                    ┌──────────┐
+                    │ Abuse.ch │
+                    │ ThreatFox│
+                    │ URLhaus  │
+                    │ Malware  │
+                    │ Bazaar   │
+                    └──────────┘
 ```
 
 ---
 
-## 3. Module Map
+## 2. Module Architecture
 
-### 3.1 Dashboard Pages (22 Routes)
+The platform has **8 modules**, each accessible via the sidebar. Modules use tab-based navigation internally.
 
-| Module | Route | Purpose |
-|--------|-------|---------|
-| **Command Center** | `/` | Executive dashboard with posture gauge, threat map, active metrics |
-| **Executive Brief** | `/executive-brief` | Board-ready bento grid with investment heatmap, top risks, revenue velocity |
-| **Strategy** | `/strategy` | Security strategy alignment with OKR tracking and KPI rows |
-| **Defense Matrix** | `/strategy/matrix` | High-density compliance control grid with status pills and filters |
-| **KPI Dashboard** | `/kpis` | 20 auto-computed KPIs + file-imported KPIs with confidence scoring |
-| **Projects & OKRs** | `/projects` | Project tracking with progress, milestones, and team assignments |
-| **Decisions** | `/decisions` | AI-assisted decision support with scoring and recommendation engine |
-| **Risk** | `/risk` | Risk register with FAIR-based quantitative analysis |
-| **Governance** | `/governance` | Policy lifecycle management with evidence vault |
-| **Policies** | `/policies` | Policy editor with Kanban workflow and dependency graphs |
-| **Compliance** | `/appsec` | Application security posture and SAST findings |
-| **Incidents** | `/incidents` | Incident timeline and response tracking |
-| **War Room** | `/incidents/war-room` | Real-time war room for active incident response |
-| **War Games** | `/wargames` | 10 attack scenarios with MITRE ATT&CK mapping and AAR |
-| **Intelligence** | `/intelligence` | Threat intelligence feed with MITRE matrix and system health |
-| **Ransomware Intel** | `/intelligence/ransomware` | Ransomware group monitoring and victim tracking |
-| **Vendors** | `/vendors` | Third-party vendor risk management with CAIQ automation |
-| **Tickets** | `/tickets` | Jira-integrated ticketing with 15 CISO templates |
-| **Budget** | `/budget` | Security budget and financial planning dashboard |
-| **Reporting** | `/reporting` | Board deck generator and export tools |
-| **Settings** | `/settings` | Platform configuration and preferences |
-| **Help** | `/help` | Knowledge base and platform documentation |
+### 2.1 Command Center
 
-### 3.2 API Routes (14 Endpoints)
+| Tab | Purpose |
+|-----|---------|
+| Overview | KPI status bar, Global Threat Monitor, active threats, pending actions, compliance posture, recent incidents, AI activity |
+| Executive Brief | AI-generated security summary for board reporting |
+| Reports & Board Deck | Report generation, PDF/DOCX export |
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/agent/chat` | POST | General CISO AI assistant |
-| `/api/agent/wargame` | POST | War game simulation engine |
-| `/api/agent/generate-policy` | POST | AI-powered policy drafting |
-| `/api/agent/analyze` | POST | Threat/request analysis |
-| `/api/agent/analyze-policy` | POST | Policy gap analysis |
-| `/api/notebook/chat` | POST | Notebook-style AI conversations |
-| `/api/intelligence/osint` | POST | OSINT threat intelligence gathering |
-| `/api/kpi-upload` | POST | PPTX/DOCX file upload and KPI extraction |
-| `/api/jira` | GET/POST | Jira connection check and ticket creation |
-| `/api/vendors/caiq` | POST | CSA CAIQ questionnaire automation |
-| `/api/security/scan` | POST | Security configuration scanning |
-| `/api/security/audit` | GET | Audit log retrieval |
-| `/api/auth/login` | POST | Authentication endpoint |
-| `/api/integrations/trivy` | GET | Trivy vulnerability scanner integration |
+### 2.2 Decision Center
 
-### 3.3 Intelligence Engines (6 Engines)
+| Tab | Purpose |
+|-----|---------|
+| Decisions | AI-prioritized security decision queue |
+| Action Queue | Aggregated action items from all modules |
 
-| Engine | File | Purpose |
-|--------|------|---------|
-| **AI Engine** | `lib/ai/engine.ts` | Multi-provider AI client (Gemini, Claude, Ollama) |
-| **KPI Engine** | `lib/kpi-engine/kpi-engine.ts` | Computes 20 security KPIs across 8 categories |
-| **KPI Extractor** | `lib/kpi-engine/kpi-extractor.ts` | Regex/heuristic extraction from PPTX/DOCX (35+ patterns) |
-| **Risk Engine** | `lib/risk-engine/fair.ts` | FAIR-model quantitative risk analysis (ALE, SLE, ARO) |
-| **Decision Engine** | `lib/decision-engine/router.ts` | Rule-based scoring with confidence and impact modeling |
-| **CAIQ Engine** | `lib/caiq/caiq-answer-engine.ts` | Automated CSA CAIQ questionnaire responses (4-tier pipeline) |
-| **OSINT Engine** | `lib/ai/osint-engine.ts` | Open-source intelligence gathering and analysis |
+### 2.3 Strategy & OKRs
 
-### 3.4 CAIQ Module Architecture
+| Tab | Purpose |
+|-----|---------|
+| OKRs | Security objectives and key results tracking |
+| Defense Matrix | MITRE ATT&CK defense coverage matrix |
+| KPI Dashboard | Security metrics and trend analysis |
+| Program Tracker | Project portfolio management |
 
-The CAIQ (Consensus Assessments Initiative Questionnaire) module automates CSA CAIQ v4 vendor assessments with a 4-tier confidence pipeline and optional validation/export.
+### 2.4 Governance & Risk
 
-```mermaid
-graph TB
-    subgraph "Input"
-        EXCEL["CAIQ v4 Excel<br/>Upload"]
-        ORG["Organization Context<br/>Stores + Env"]
-    end
+| Tab | Purpose |
+|-----|---------|
+| Compliance | Multi-framework tracking: ISO 27001, SOC 2, NIS2, GDPR, Cyber Essentials, EU AI Act |
+| Risk Register | FAIR risk quantification with ALE calculation |
+| Policy Engine | Policy lifecycle: draft → review → approved → retired |
+| Audit Logs | Immutable audit trail viewer |
+| Evidence Vault | Compliance evidence storage and linking |
 
-    subgraph "CAIQ Pipeline"
-        PARSER["CAIQ Excel Parser<br/>caiq-excel-parser.ts"]
-        KB["Knowledge Base<br/>caiq-knowledge-base.ts"]
-        MATCHER["Semantic Matcher<br/>caiq-semantic-matcher.ts<br/>TF-IDF local"]
-        ENGINE["Answer Engine<br/>caiq-answer-engine.ts"]
-        CB["Circuit Breaker<br/>circuit-breaker.ts"]
-        AI["AI Provider<br/>Gemini / Claude / Ollama"]
-        VALID["Validator<br/>caiq-validator.ts"]
-        EXPORT["Export<br/>caiq-export.ts"]
-    end
+### 2.5 Vendor Risk
 
-    subgraph "4-Tier Confidence"
-        T1["Tier 1: Exact KB match<br/>0.95–0.99"]
-        T2["Tier 2: Semantic KB match<br/>0.80–0.95"]
-        T3["Tier 3: AI-generated<br/>0.60–0.80"]
-        T4["Tier 4: Flagged<br/>0.0"]
-    end
+| Tab | Purpose |
+|-----|---------|
+| Quick Answer | 3-step CAIQ answer flow with confidence matching |
+| Knowledge Transfer | Bulk Q&A processing with 4-tier matching |
+| Knowledge Base | 1000+ entry repository management, JSON import/export |
+| CAIQ Review | Assessment review and approval |
+| Vendor Registry | Vendor management with Shodan scanning |
 
-    EXCEL --> PARSER
-    ORG --> ENGINE
-    PARSER --> ENGINE
-    KB --> ENGINE
-    KB --> MATCHER
-    MATCHER --> ENGINE
-    ENGINE --> T1
-    ENGINE --> T2
-    ENGINE --> CB
-    CB --> AI
-    AI --> T3
-    ENGINE --> T4
-    T1 --> VALID
-    T2 --> VALID
-    T3 --> VALID
-    T4 --> VALID
-    VALID --> EXPORT
-```
+### 2.6 Incidents
 
-**4-tier confidence system**
+| Tab | Purpose |
+|-----|---------|
+| Active Incidents | Incident tracking with severity and status |
+| War Room | Real-time incident collaboration |
+| Tabletop Exercises | Scenario-based exercises linked to real threat data |
 
-| Tier | Name | Source | Confidence | Description |
-|------|------|--------|------------|-------------|
-| 1 | EXACT_MATCH | Knowledge base by question ID | 0.95–0.99 | Direct KB hit; org overrides and evidence applied. |
-| 2 | SEMANTIC_MATCH | KB via TF-IDF/cosine similarity | 0.80–0.95 | Local matcher (`CAIQSemanticMatcher`); no external API. |
-| 3 | AI_GENERATED | Primary or fallback AI | 0.60–0.80 | Circuit breaker gates calls; fallback provider optional. |
-| 4 | FLAGGED | — | 0.0 | Human must answer; no KB or AI result. |
+### 2.7 Intelligence
 
-**Circuit breaker pattern**
+| Tab | Purpose |
+|-----|---------|
+| Threat Briefing | AI-generated threat intelligence summary |
+| World Monitor | Interactive MapLibre GL map with 25+ data layers |
+| Attack Surface | Shodan-powered asset discovery, open ports, CVE detection |
+| Signal Intelligence | Signal aggregation, anomaly detection, Country Instability Index |
+| Infrastructure | Undersea cables, datacenters, nuclear facilities, pipelines |
+| Military & Maritime | Flight tracking (OpenSky), vessel tracking (VesselFinder) |
+| Live Feeds | ThreatFox, URLhaus, MalwareBazaar real-time feeds |
+| Ransomware | Ransomware group tracking, victim feeds, statistics |
 
-- **Purpose**: Avoid cascading failures when the AI provider is down or rate-limited.
-- **State**: Per-provider state is `closed` (healthy), `open` (failing; no calls), or `half-open` (probing).
-- **Usage**: Answer engine and validator check `getCircuitState(provider)` before calling AI. On failure, `setCircuitState(provider, 'open')` is called; optional secondary provider is tried.
-- **Health**: Health check API exposes `getAllCircuitBreakerMetrics()` for AI availability.
+### 2.8 AppSec
 
-**CAIQ component list**
-
-| Component | File | Purpose |
-|-----------|------|---------|
-| **Types** | `lib/caiq/types.ts` | CAIQ domains, answer types, confidence tiers, OrgContext, ParsedCAIQ*, ValidationResult |
-| **Knowledge Base** | `lib/caiq/caiq-knowledge-base.ts` | CAIQ v4 KB entries, getEntryByQuestionId, getEntriesByDomain |
-| **Excel Parser** | `lib/caiq/caiq-excel-parser.ts` | Parse/write CAIQ v4 Excel; column detection; existing answers |
-| **Semantic Matcher** | `lib/caiq/caiq-semantic-matcher.ts` | Local TF-IDF + cosine similarity for Tier 2 |
-| **Answer Engine** | `lib/caiq/caiq-answer-engine.ts` | 4-tier pipeline; org context; circuit breaker; audit |
-| **Validator** | `lib/caiq/caiq-validator.ts` | Alignment, consistency, evidence, framework mapping, AI self-check |
-| **Org Context** | `lib/caiq/caiq-org-context.ts` | buildOrgContext from stores + env; getRelevantControls; getEvidenceForQuestion |
-| **Export** | `lib/caiq/caiq-export.ts` | exportToCAIQExcel (v4); exportToAuditPDF |
-| **Transfer Engine** | `lib/caiq/caiq-transfer-engine.ts` | Source-to-target Q&A transfer (3-tier match + AI) |
-| **Metrics** | `lib/caiq/caiq-metrics.ts` | In-memory last assessment, coverage, pending review |
-| **Circuit Breaker** | `lib/ai/circuit-breaker.ts` | get/set circuit state per AI provider; health metrics |
-
-### 3.5 State Stores (10+ Zustand Stores)
-
-| Store | File | Persistence |
-|-------|------|-------------|
-| **Main Store** | `lib/store.ts` | ✅ `astra-store` |
-| **Jira Store** | `lib/jira/jira-store.ts` | ✅ `astra-jira-tickets` |
-| **Uploaded KPI Store** | `lib/kpi-engine/uploaded-kpi-store.ts` | ✅ `astra-uploaded-kpis` |
-| **OKR/Project Store** | `lib/okr-project-store.ts` | ✅ `astra-okr-projects` |
-| **Notification Store** | `lib/notification-store.ts` | ✅ `astra-notifications` |
-| **Risk Register** | `lib/risk-register-store.ts` | ✅ `astra-risk-register` |
-| **Vendor Risk Store** | `lib/vendor-risk-store.ts` | ✅ `astra-vendor-risk` |
-| **Evidence Store** | `lib/evidence-store.ts` | ✅ `astra-evidence` |
-| **Policy Store** | `lib/policy-store.ts` | ✅ |
-| **Playbook Store** | `lib/playbook-store.ts` | ✅ |
-| **AppSec Store** | `lib/appsec-store.ts` | ✅ |
+| Tab | Purpose |
+|-----|---------|
+| Vulnerability Feed | CVE tracking and vulnerability management |
+| SAST Scanner | Static analysis with Trivy integration |
+| Remediation Tracking | Remediation velocity and SLA monitoring |
 
 ---
 
-## 4. Security Architecture
+## 3. ZTAIP Architecture
 
-```mermaid
-graph LR
-    REQ["Incoming Request"] --> MW["Middleware<br/>src/middleware.ts"]
-    MW --> AUTH{"Authenticated?"}
-    AUTH -->|No| LOGIN["/login"]
-    AUTH -->|Yes| RBAC["RBAC Check<br/>lib/auth/rbac.ts"]
-    RBAC --> AUDIT["Audit Log<br/>lib/auth/audit.ts"]
-    AUDIT --> ROUTE["API Route / Page"]
-    ROUTE --> SESSION["Session Mgmt<br/>lib/auth/session.ts"]
+### 3.1 Zero Trust AI Platform Principles
+
+All AI operations follow ZTAIP principles:
+
+- **Never trust, always verify** — every AI response is validated
+- **Least privilege** — AI has read-only access to data by default
+- **Assume breach** — circuit breakers prevent cascade failures
+- **Immutable audit** — every AI action is logged
+
+### 3.2 Circuit Breaker
+
+```
+  CLOSED ──(failure threshold)──► OPEN
+     ▲                              │
+     │                         (timeout)
+     │                              │
+     └────(success)──── HALF_OPEN ◄─┘
 ```
 
-| Layer | Implementation | Status |
-|-------|---------------|--------|
-| **Authentication** | Cookie-based session with middleware enforcement | ✅ Active |
-| **Authorization** | Role-based access control (Admin, Analyst, Viewer) | ✅ Active |
-| **Audit Trail** | Structured event logging with user/action/resource tracking | ✅ Active |
-| **Session Management** | Secure token handling with expiry and refresh | ✅ Active |
-| **API Security** | Input validation, type checking, error sanitization | ✅ Active |
-| **Secrets Management** | Server-side only env vars, no client-side key exposure | ✅ Active |
+- **CLOSED:** Requests pass through normally. Failures increment counter.
+- **OPEN:** All requests immediately fail. Timer starts.
+- **HALF_OPEN:** One probe request allowed. Success → CLOSED, failure → OPEN.
+
+Applied per AI provider (Anthropic, Gemini, Ollama) and per intelligence API.
+
+### 3.3 Dynamic Autonomy Router
+
+```
+┌────────────────┬──────────────────────────────────────┐
+│ Mode           │ Behavior                             │
+├────────────────┼──────────────────────────────────────┤
+│ AUTONOMOUS     │ AI executes without human approval   │
+│ SUPERVISED     │ AI recommends, human approves        │
+│ MANUAL         │ Human decides, AI assists on request │
+└────────────────┴──────────────────────────────────────┘
+```
+
+### 3.4 Immutable Audit Fabric
+
+- Append-only `AuditLog` model — no updates or deletes
+- Every significant action logged: CREATE, READ, UPDATE, DELETE, LOGIN, EXPORT, IMPORT, etc.
+- Indexed by timestamp, userId, category, and action
+- Supports compliance evidence and forensic investigation
 
 ---
 
-## 5. External Integration Architecture
+## 4. Intelligence Architecture
 
-```mermaid
-graph TD
-    ASTRA["Astra Platform"] --> |REST API v3| JIRA["Jira Cloud<br/>Ticket Management"]
-    ASTRA --> |REST API| GH["GitHub<br/>Repo Security Scanning"]
-    ASTRA --> |CLI / API| TRIVY["Trivy<br/>Vulnerability Scanning"]
-    ASTRA --> |File Parse| OFFICE["OfficeParser<br/>PPTX / DOCX KPI Import"]
-    ASTRA --> |SDK| GEMINI["Google Gemini<br/>AI Provider"]
-    ASTRA --> |SDK| CLAUDE["Anthropic Claude<br/>AI Provider"]
-    ASTRA --> |HTTP| OLLAMA["Ollama (Local)<br/>Air-Gapped AI"]
-```
+### 4.1 Data Layer System
+
+The World Monitor uses a **layered data architecture**:
+
+| Layer Type | Source | Examples |
+|-----------|--------|----------|
+| **Static** (local JSON) | Bundled data files | Conflict zones (15), military bases (220), undersea cables (30), nuclear facilities (50), datacenters (111), pipelines (25), office locations (8) |
+| **API-fed** (free, no key) | Abuse.ch, USGS, GDELT | ThreatFox IOCs, URLhaus URLs, MalwareBazaar samples, earthquakes, global news events |
+| **API-fed** (free account) | Shodan, AlienVault OTX | Attack surface assets, open ports, community IOC pulses |
+| **API-fed** (optional) | OpenSky, VesselFinder, NASA FIRMS | Military flights, naval vessels, satellite fire detection |
+
+### 4.2 Abuse.ch Integration
+
+| Service | Endpoint | Data | Protocol |
+|---------|----------|------|----------|
+| ThreatFox | `threatfox-api.abuse.ch/api/v1/` | IOCs, malware families, C2 | JSON POST |
+| URLhaus | `urlhaus-api.abuse.ch/v1/` | Malicious URLs, hosting info | Form-encoded POST |
+| MalwareBazaar | `mb-api.abuse.ch/api/v1/` | Malware samples, hashes | JSON POST |
+
+### 4.3 Shodan Integration
+
+- **Attack Surface:** Discover internet-facing assets, detect dangerous services, SSL analysis
+- **Enrichment:** Enrich IPs/domains with port, CVE, and technology data
+- **Vendor Scan:** Scan vendor infrastructure for security posture assessment
+- **Rate Limit:** 1 request/second (free tier)
+- **Cache TTL:** 1 hour for search results, 24 hours for host lookups
+
+### 4.4 Country Instability Index (CII)
+
+Aggregated score for each of the 8 office locations based on:
+
+- Active conflict proximity
+- Recent earthquake activity
+- Cyber threat density (from IOC data)
+- GDELT event tone and volume
+- Infrastructure proximity (nuclear, pipelines)
+
+### 4.5 Signal Aggregation & Anomaly Detection
+
+- Signals aggregated across all intelligence sources
+- Baseline-based anomaly detection with configurable thresholds
+- Threat classification pipeline: keyword-based + AI-assisted
+- Data freshness monitoring with stale detection
+
+### 4.6 Graceful Degradation
+
+When APIs are unavailable:
+
+- Static layers always available (bundled JSON)
+- API layers show "Configure in Settings" if key missing
+- Failed API calls return cached data (if available) or empty state
+- Circuit breaker prevents repeated calls to failing endpoints
+- Data freshness indicators go amber/red for stale data
 
 ---
 
-## 6. Technology Stack
+## 5. Data Architecture
 
-| Layer | Technology | Version |
+### 5.1 Database
+
+- **Engine:** SQLite via Prisma 7
+- **17 models** covering: users, auth, risks, policies, incidents, vendors, evidence, OKRs, projects, notifications, playbooks, audit logs, knowledge, companies, products, knowledge overrides, integrations, team invites, attack surface scans
+
+### 5.2 State Management
+
+| Layer | Technology | Purpose |
 |-------|-----------|---------|
-| **Framework** | Next.js (App Router) | 14.x |
-| **Language** | TypeScript | 5.x |
-| **UI Library** | React | 18.x |
-| **State** | Zustand + Persist | 4.x |
-| **UI Components** | Radix UI + shadcn/ui | Latest |
-| **Styling** | Tailwind CSS | 3.x |
-| **AI** | Google Generative AI SDK, Anthropic SDK | Latest |
-| **Animation** | Framer Motion | Latest |
-| **Charts** | Recharts | Latest |
-| **Icons** | Lucide React | Latest |
-| **Document Parsing** | OfficeParser | 5.x |
-| **Auth** | Custom middleware + RBAC | Custom |
+| Persistent | SQLite (Prisma) | All domain data, auth, audit trail |
+| Client UI | Zustand | Ephemeral UI state only (no business data in client stores) |
+
+### 5.3 Knowledge Repository
+
+```
+┌──────────────────────┐
+│   KnowledgeEntry     │ ← 1000+ common entries
+│   (global answers)   │
+└──────────┬───────────┘
+           │
+    ┌──────▼──────┐
+    │   Company   │ ← Company-specific overrides
+    │ (overrides) │
+    └──────┬──────┘
+           │
+     ┌─────▼─────┐
+     │  Product   │ ← Product-specific overrides
+     │ (overrides)│
+     └───────────┘
+```
+
+Three-layer hierarchy: KnowledgeEntry → Company → Product (via KnowledgeOverride).
 
 ---
 
-## 7. Deployment Architecture
+## 6. AI Architecture
 
-- **Development**: `npm run dev` — Hot reload on `localhost:3000`
-- **Build**: `npx next build` — Static + dynamic page compilation
-- **Production**: Node.js server or serverless (Vercel-compatible)
-- **Environment**: Requires `GOOGLE_API_KEY` or `ANTHROPIC_API_KEY` for AI features
-- **Offline Mode**: Full functionality except AI endpoints (graceful degradation)
+### 6.1 Multi-Provider Support
+
+| Provider | Use Cases | Config |
+|----------|----------|--------|
+| Anthropic Claude | CAIQ enhancement, threat briefings, policy generation | `ANTHROPIC_API_KEY` |
+| Google Gemini | Alternative AI provider | `GOOGLE_API_KEY` |
+| Ollama | Local/self-hosted inference | `OLLAMA_BASE_URL` |
+
+### 6.2 AI CISO Assistant (Astra)
+
+- Native AI assistant (replaced OpenClaw dependency)
+- Multi-turn conversational interface
+- Context-aware: has access to policies, risks, compliance state
+- Uses Dynamic Autonomy Router for action permissions
+
+### 6.3 AI Economics
+
+- Token usage tracking per provider
+- Cost calculation per query
+- Provider health monitoring (circuit breaker state)
+- Query history and analytics
+
+---
+
+## 7. Security Architecture
+
+### 7.1 Authentication
+
+- **NextAuth 5** with credentials provider
+- Session-based authentication with JWT tokens
+- SSO-ready architecture (Azure AD, Okta, Google — v2.1)
+
+### 7.2 Authorization (RBAC)
+
+| Role | Permissions |
+|------|-------------|
+| `CISO` | Full access, admin operations |
+| `SEC_ENGINEER` | Create/edit resources, run scans |
+| `AUDITOR` | Read-only access, audit log viewer |
+| `VIEWER` | Read-only dashboard access |
+
+### 7.3 Security Measures
+
+- CSP headers via middleware
+- Rate limiting on API routes
+- Encrypted integration credentials (AES-256-GCM)
+- Shodan lookups logged to immutable audit trail
+- Input validation with Zod at API boundaries
+
+---
+
+## 8. Deployment
+
+### Docker Multi-Stage Build
+
+```
+Stage 1: deps      → Install dependencies
+Stage 2: builder   → Build Next.js application
+Stage 3: runner    → Minimal production image
+```
+
+- Non-root container user (`nextjs:nodejs`)
+- Health check endpoint: `GET /api/health`
+- Volume mount for SQLite persistence: `./dev.db:/app/dev.db`
+- Evidence data stored in `./data/evidence/`
