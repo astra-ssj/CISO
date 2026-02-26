@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -38,10 +37,7 @@ import { useEvidenceStore } from '@/lib/evidence-store';
 import { ExecutiveBriefTab } from '@/components/executive/executive-brief-tab';
 import { ReportsTab } from '@/components/reporting/reports-tab';
 
-const MiniWorldMap = dynamic(
-  () => import('@/components/intelligence/MiniWorldMap'),
-  { ssr: false }
-);
+import ThreatIntelWidget from '@/components/intelligence/ThreatIntelWidget';
 
 function MetricCard({ label, value, icon: Icon, trend, trendValue, status }: {
   label: string; value: string; icon: React.ElementType;
@@ -171,7 +167,7 @@ function OverviewTab() {
       </section>
 
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2"><MiniWorldMap /></div>
+        <div className="lg:col-span-2"><ThreatIntelWidget /></div>
         <div className="h-[350px]"><VulnerabilityFeed /></div>
       </section>
 
