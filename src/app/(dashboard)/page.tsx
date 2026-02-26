@@ -34,7 +34,10 @@ function CommandCenterOverview() {
   }, [riskFetch, vendorRiskFetch, policyFetch, playbookFetch, evidenceFetch]);
 
   return (
-    <div className="space-y-4 max-w-[1600px] mx-auto">
+    <div
+      className="space-y-4 max-w-[1600px] mx-auto -mx-4 md:-mx-6 lg:-mx-8 -mb-4 md:-mb-6 lg:-mb-8 px-4 md:px-6 lg:px-8 pb-4 md:pb-6 lg:pb-8 pt-2"
+      style={{ background: '#050508', fontFamily: 'var(--font-dm-sans), sans-serif', minHeight: '100%' }}
+    >
       {/* ═══ ROW 1: KPI STATUS BAR ═══ */}
       <KPIStatusBar />
 

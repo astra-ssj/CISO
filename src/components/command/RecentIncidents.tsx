@@ -3,6 +3,10 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
+/* ── Design tokens ─────────────────────────────────── */
+const CARD_BG = 'rgba(8, 12, 24, 0.85)';
+const CARD_BD = 'rgba(56, 189, 248, 0.06)';
+
 interface IncidentItem {
     id: string;
     title: string;
@@ -22,7 +26,7 @@ const SAMPLE_INCIDENTS: IncidentItem[] = [
 
 const SEVERITY_COLORS: Record<string, string> = {
     P1: '#f43f5e',
-    P2: '#f97316',
+    P2: '#fb923c',
     P3: '#fbbf24',
     P4: '#94a3b8',
 };
@@ -37,13 +41,15 @@ export function RecentIncidents() {
     return (
         <div
             className="rounded-xl border flex flex-col h-full"
-            style={{
-                background: 'rgba(15, 23, 42, 0.6)',
-                borderColor: 'rgba(56, 189, 248, 0.08)',
-            }}
+            style={{ background: CARD_BG, borderColor: CARD_BD }}
         >
-            <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'rgba(56, 189, 248, 0.08)' }}>
-                <span className="text-xs font-semibold uppercase tracking-wider text-white">Recent Incidents</span>
+            <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: CARD_BD }}>
+                <span
+                    className="text-xs font-semibold uppercase tracking-wider text-white"
+                    style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}
+                >
+                    Recent Incidents
+                </span>
                 <Link href="/incidents" className="text-[10px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors">
                     View All <ArrowRight className="h-3 w-3" />
                 </Link>
@@ -55,25 +61,35 @@ export function RecentIncidents() {
                         <Link key={inc.id} href="/incidents">
                             <div className="flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-white/[0.02] transition-colors cursor-pointer group">
                                 <span
-                                    className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0"
-                                    style={{ background: `${SEVERITY_COLORS[inc.severity]}15`, color: SEVERITY_COLORS[inc.severity] }}
+                                    className="text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0"
+                                    style={{ background: `${SEVERITY_COLORS[inc.severity]}15`, color: SEVERITY_COLORS[inc.severity], fontFamily: 'var(--font-jetbrains), monospace' }}
                                 >
                                     {inc.id}
                                 </span>
-                                <span className="text-[11px] text-slate-300 flex-1 min-w-0 truncate group-hover:text-white transition-colors">{inc.title}</span>
+                                <span
+                                    className="text-[11px] text-slate-300 flex-1 min-w-0 truncate group-hover:text-white transition-colors"
+                                    style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}
+                                >
+                                    {inc.title}
+                                </span>
                                 <span
                                     className="text-[9px] font-medium px-1.5 py-0.5 rounded shrink-0"
                                     style={{ background: statusStyle.bg, color: statusStyle.text }}
                                 >
                                     {inc.status}
                                 </span>
-                                <span className="text-[9px] text-slate-600 shrink-0 w-10 text-right">{inc.time}</span>
+                                <span
+                                    className="text-[9px] text-slate-600 shrink-0 w-10 text-right"
+                                    style={{ fontFamily: 'var(--font-jetbrains), monospace' }}
+                                >
+                                    {inc.time}
+                                </span>
                             </div>
                         </Link>
                     );
                 })}
                 <div className="flex items-center justify-center pt-1 pb-1">
-                    <span className="text-[9px] px-2 py-0.5 rounded bg-slate-800/40 text-slate-500">Sample Data</span>
+                    <span className="text-[9px] px-2 py-0.5 rounded text-slate-500" style={{ background: 'rgba(15,23,42,0.6)' }}>Sample Data</span>
                 </div>
             </div>
         </div>

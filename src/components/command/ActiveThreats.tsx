@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowRight, MapPin } from 'lucide-react';
 
+/* ── Design tokens ─────────────────────────────────── */
+const CARD_BG = 'rgba(8, 12, 24, 0.85)';
+const CARD_BD = 'rgba(56, 189, 248, 0.06)';
+
 interface ThreatItem {
     id: string;
     title: string;
@@ -26,7 +30,7 @@ const SAMPLE_THREATS: ThreatItem[] = [
 
 const SEVERITY_COLORS = {
     critical: '#f43f5e',
-    high: '#f97316',
+    high: '#fb923c',
     medium: '#fbbf24',
     low: '#22d3ee',
 };
@@ -36,7 +40,6 @@ export function ActiveThreats() {
     const [isLive, setIsLive] = useState(false);
 
     useEffect(() => {
-        // Try to fetch real threat data
         fetch('/api/intelligence/threatfox')
             .then(r => r.ok ? r.json() : null)
             .then(data => {
@@ -59,17 +62,19 @@ export function ActiveThreats() {
     return (
         <div
             className="rounded-xl border flex flex-col h-full"
-            style={{
-                background: 'rgba(15, 23, 42, 0.6)',
-                borderColor: 'rgba(56, 189, 248, 0.08)',
-            }}
+            style={{ background: CARD_BG, borderColor: CARD_BD }}
         >
-            <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'rgba(56, 189, 248, 0.08)' }}>
+            <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: CARD_BD }}>
                 <div className="flex items-center gap-2">
                     <div className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
-                    <span className="text-xs font-semibold uppercase tracking-wider text-white">Active Threats</span>
+                    <span
+                        className="text-xs font-semibold uppercase tracking-wider text-white"
+                        style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}
+                    >
+                        Active Threats
+                    </span>
                     {!isLive && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-700/60 text-slate-400 font-medium">Sample Data</span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'rgba(30,41,59,0.6)', color: '#94a3b8' }}>Sample Data</span>
                     )}
                 </div>
                 <Link href="/intelligence" className="text-[10px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors">
@@ -89,13 +94,16 @@ export function ActiveThreats() {
                             <div className="h-2 w-2 rounded-full" style={{ background: SEVERITY_COLORS[t.severity] }} />
                         </div>
                         <div className="min-w-0 flex-1">
-                            <p className="text-[11px] text-slate-300 leading-snug line-clamp-2 group-hover:text-white transition-colors">{t.title}</p>
+                            <p className="text-[11px] text-slate-300 leading-snug line-clamp-2 group-hover:text-white transition-colors" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>{t.title}</p>
                             <div className="flex items-center gap-2 mt-1">
-                                <span className="text-[9px] px-1.5 py-0.5 rounded font-medium" style={{ background: `${SEVERITY_COLORS[t.severity]}15`, color: SEVERITY_COLORS[t.severity] }}>
+                                <span
+                                    className="text-[9px] px-1.5 py-0.5 rounded font-bold"
+                                    style={{ background: `${SEVERITY_COLORS[t.severity]}15`, color: SEVERITY_COLORS[t.severity], fontFamily: 'var(--font-jetbrains), monospace' }}
+                                >
                                     {t.severity.toUpperCase()}
                                 </span>
                                 <span className="text-[9px] text-slate-500">{t.source}</span>
-                                <span className="text-[9px] text-slate-600">{t.time}</span>
+                                <span className="text-[9px] text-slate-600" style={{ fontFamily: 'var(--font-jetbrains), monospace' }}>{t.time}</span>
                                 {t.region && (
                                     <span className="text-[9px] text-slate-600 flex items-center gap-0.5">
                                         <MapPin className="h-2 w-2" />{t.region}

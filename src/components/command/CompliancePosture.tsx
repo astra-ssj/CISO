@@ -3,6 +3,10 @@
 import Link from 'next/link';
 import { ArrowRight, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
 
+/* ── Design tokens ─────────────────────────────────── */
+const CARD_BG = 'rgba(8, 12, 24, 0.85)';
+const CARD_BD = 'rgba(56, 189, 248, 0.06)';
+
 interface FrameworkScore {
     id: string;
     name: string;
@@ -29,13 +33,15 @@ export function CompliancePosture() {
     return (
         <div
             className="rounded-xl border flex flex-col h-full"
-            style={{
-                background: 'rgba(15, 23, 42, 0.6)',
-                borderColor: 'rgba(56, 189, 248, 0.08)',
-            }}
+            style={{ background: CARD_BG, borderColor: CARD_BD }}
         >
-            <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'rgba(56, 189, 248, 0.08)' }}>
-                <span className="text-xs font-semibold uppercase tracking-wider text-white">Compliance Posture</span>
+            <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: CARD_BD }}>
+                <span
+                    className="text-xs font-semibold uppercase tracking-wider text-white"
+                    style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}
+                >
+                    Compliance Posture
+                </span>
                 <Link href="/governance" className="text-[10px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors">
                     Details <ArrowRight className="h-3 w-3" />
                 </Link>
@@ -48,9 +54,19 @@ export function CompliancePosture() {
                         <Link key={fw.id} href="/governance">
                             <div className="flex items-center gap-2.5 px-1.5 py-1.5 rounded-lg hover:bg-white/[0.02] transition-colors cursor-pointer group">
                                 <Icon className="h-3.5 w-3.5 shrink-0" style={{ color: cfg.color }} />
-                                <span className="text-[11px] text-slate-300 flex-1 min-w-0 truncate group-hover:text-white transition-colors">{fw.name}</span>
-                                <span className="text-[11px] font-mono font-bold shrink-0" style={{ color: cfg.color }}>{fw.score}%</span>
-                                <div className="w-16 h-1.5 rounded-full bg-slate-800 shrink-0 overflow-hidden">
+                                <span
+                                    className="text-[11px] text-slate-300 flex-1 min-w-0 truncate group-hover:text-white transition-colors"
+                                    style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}
+                                >
+                                    {fw.name}
+                                </span>
+                                <span
+                                    className="text-[11px] font-bold shrink-0"
+                                    style={{ color: cfg.color, fontFamily: 'var(--font-jetbrains), monospace' }}
+                                >
+                                    {fw.score}%
+                                </span>
+                                <div className="w-16 h-1.5 rounded-full shrink-0 overflow-hidden" style={{ background: 'rgba(15,23,42,0.8)' }}>
                                     <div
                                         className="h-full rounded-full transition-all duration-500"
                                         style={{ width: `${fw.score}%`, background: cfg.barColor }}

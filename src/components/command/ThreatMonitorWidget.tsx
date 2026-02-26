@@ -6,6 +6,10 @@ import { ArrowRight, Globe } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import officeLocations from '@/data/intelligence/office-locations.json';
 
+/* ── Design tokens ─────────────────────────────────── */
+const CARD_BG = 'rgba(8, 12, 24, 0.85)';
+const CARD_BD = 'rgba(56, 189, 248, 0.06)';
+
 // ── CII scores per office country ────────────────────────────
 const CII_SCORES: Record<string, number> = {
     DE: 8, GB: 10, TH: 25, AU: 8, NZ: 5, ES: 12, AT: 7, US: 15,
@@ -24,8 +28,8 @@ function CIIScoreRow() {
                 return (
                     <div
                         key={o.id}
-                        className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold"
-                        style={{ background: `${color}10`, color }}
+                        className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                        style={{ background: `${color}10`, color, fontFamily: 'var(--font-jetbrains), monospace' }}
                     >
                         <span>{flagEmoji[o.country] || ''}</span>
                         <span>{o.country}</span>
@@ -52,36 +56,38 @@ export function ThreatMonitorWidget() {
     return (
         <div
             className="rounded-xl border overflow-hidden flex flex-col"
-            style={{
-                background: 'rgba(15, 23, 42, 0.6)',
-                borderColor: 'rgba(56, 189, 248, 0.08)',
-            }}
+            style={{ background: CARD_BG, borderColor: CARD_BD }}
         >
-            <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'rgba(56, 189, 248, 0.08)' }}>
+            <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: CARD_BD }}>
                 <div className="flex items-center gap-2">
                     <Globe className="h-3.5 w-3.5 text-cyan-400" />
-                    <span className="text-xs font-semibold uppercase tracking-wider text-white">Global Threat Monitor</span>
+                    <span
+                        className="text-xs font-semibold uppercase tracking-wider text-white"
+                        style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}
+                    >
+                        Global Threat Monitor
+                    </span>
                 </div>
                 <Link href="/intelligence" className="text-[10px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors">
                     View Full Monitor <ArrowRight className="h-3 w-3" />
                 </Link>
             </div>
-            <div style={{ height: '320px', position: 'relative', background: '#0a0e17' }}>
+            <div style={{ height: '320px', position: 'relative', background: '#050508' }}>
                 {mapReady ? (
                     <MiniLeafletMap />
                 ) : (
                     <div className="absolute inset-0 flex items-center justify-center">
                         <div className="flex flex-col items-center gap-2">
                             <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-cyan-500" />
-                            <span className="text-[9px] font-mono text-cyan-400/60 uppercase tracking-widest">Loading map...</span>
+                            <span className="text-[9px] text-cyan-400/60 uppercase tracking-widest" style={{ fontFamily: 'var(--font-jetbrains), monospace' }}>Loading map...</span>
                         </div>
                     </div>
                 )}
             </div>
             {/* CII Score Row */}
-            <div className="border-t" style={{ borderColor: 'rgba(56, 189, 248, 0.06)' }}>
+            <div className="border-t" style={{ borderColor: CARD_BD }}>
                 <div className="flex items-center justify-between px-3 pt-2 pb-0">
-                    <span className="text-[9px] text-slate-500 uppercase tracking-wider">CII Scores by Office</span>
+                    <span className="text-[9px] text-slate-500 uppercase tracking-wider" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>CII Scores by Office</span>
                 </div>
                 <CIIScoreRow />
             </div>
