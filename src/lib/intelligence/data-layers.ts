@@ -10,6 +10,8 @@ export type DataLayerCategory =
     | 'ENVIRONMENTAL'
     | 'CYBER';
 
+export type DataLayerSourceType = 'static' | 'free-api' | 'api-key';
+
 export interface DataLayer {
     id: string;
     name: string;
@@ -20,7 +22,9 @@ export interface DataLayer {
     zoomThreshold?: number;
     refreshInterval: number; // seconds
     source: string;
+    sourceType: DataLayerSourceType;
     color: string;
+    envKey?: string; // env var required for api-key sources
 }
 
 export const DATA_LAYERS: DataLayer[] = [
@@ -32,8 +36,9 @@ export const DATA_LAYERS: DataLayer[] = [
         description: 'Armed conflicts and violence events worldwide',
         icon: '⚔️',
         enabled: true,
-        refreshInterval: 300,
-        source: 'ACLED+GDELT',
+        refreshInterval: 86400,
+        source: 'Static JSON',
+        sourceType: 'static',
         color: '#f43f5e',
     },
     {
@@ -45,6 +50,7 @@ export const DATA_LAYERS: DataLayer[] = [
         enabled: false,
         refreshInterval: 300,
         source: 'ACLED',
+        sourceType: 'api-key',
         color: '#fbbf24',
     },
     {
@@ -54,38 +60,65 @@ export const DATA_LAYERS: DataLayer[] = [
         description: 'Countries under active sanctions programs',
         icon: '🚫',
         enabled: false,
-        refreshInterval: 3600,
-        source: 'static',
+        refreshInterval: 86400,
+        source: 'Static JSON',
+        sourceType: 'static',
         color: '#a855f7',
     },
     {
         id: 'intelligence_hotspots',
         name: 'Intelligence Hotspots',
         category: 'GEOPOLITICAL',
-        description: 'Areas with elevated intelligence activity',
+        description: 'News-based intelligence activity from GDELT',
         icon: '🎯',
         enabled: true,
-        refreshInterval: 120,
-        source: 'aggregated',
+        refreshInterval: 600,
+        source: 'GDELT',
+        sourceType: 'free-api',
         color: '#ef4444',
     },
 
     // ─── MILITARY ────────────────────────────────────
     {
         id: 'military_bases',
-        name: 'Military Bases (220+)',
+        name: 'Military Bases (60+)',
         category: 'MILITARY',
         description: 'Known military installations globally',
         icon: '🏗️',
         enabled: false,
-        zoomThreshold: 5,
+        zoomThreshold: 4,
         refreshInterval: 86400,
-        source: 'static',
-        color: '#dc2626',
+        source: 'Static JSON',
+        sourceType: 'static',
+        color: '#f97316',
+    },
+    {
+        id: 'military_flights',
+        name: 'Military Flights',
+        category: 'MILITARY',
+        description: 'Live military aircraft tracking',
+        icon: '✈️',
+        enabled: false,
+        refreshInterval: 30,
+        source: 'OpenSky Network',
+        sourceType: 'api-key',
+        envKey: 'OPENSKY_USERNAME',
+        color: '#facc15',
     },
 
-
     // ─── INFRASTRUCTURE ──────────────────────────────
+    {
+        id: 'offices',
+        name: 'AstraLabs Offices',
+        category: 'INFRASTRUCTURE',
+        description: 'Company office locations across the globe',
+        icon: '🏢',
+        enabled: true,
+        refreshInterval: 86400,
+        source: 'Static JSON',
+        sourceType: 'static',
+        color: '#22d3ee',
+    },
     {
         id: 'undersea_cables',
         name: 'Undersea Cables',
@@ -95,7 +128,8 @@ export const DATA_LAYERS: DataLayer[] = [
         enabled: false,
         zoomThreshold: 3,
         refreshInterval: 86400,
-        source: 'TeleGeography',
+        source: 'Static JSON',
+        sourceType: 'static',
         color: '#06b6d4',
     },
     {
@@ -107,7 +141,8 @@ export const DATA_LAYERS: DataLayer[] = [
         enabled: false,
         zoomThreshold: 4,
         refreshInterval: 86400,
-        source: 'static',
+        source: 'Static JSON',
+        sourceType: 'static',
         color: '#84cc16',
     },
     {
@@ -119,7 +154,8 @@ export const DATA_LAYERS: DataLayer[] = [
         enabled: false,
         zoomThreshold: 5,
         refreshInterval: 86400,
-        source: 'static',
+        source: 'Static JSON',
+        sourceType: 'static',
         color: '#8b5cf6',
     },
     {
@@ -129,9 +165,10 @@ export const DATA_LAYERS: DataLayer[] = [
         description: 'Nuclear power plants and research reactors',
         icon: '☢️',
         enabled: false,
-        zoomThreshold: 5,
+        zoomThreshold: 4,
         refreshInterval: 86400,
-        source: 'static',
+        source: 'Static JSON',
+        sourceType: 'static',
         color: '#eab308',
     },
     {
@@ -140,23 +177,24 @@ export const DATA_LAYERS: DataLayer[] = [
         category: 'INFRASTRUCTURE',
         description: 'Real-time internet connectivity disruptions',
         icon: '🌐',
-        enabled: true,
+        enabled: false,
         refreshInterval: 60,
         source: 'Cloudflare Radar',
+        sourceType: 'api-key',
         color: '#ef4444',
     },
 
     // ─── ENVIRONMENTAL ───────────────────────────────
-
     {
         id: 'earthquakes',
         name: 'Earthquakes',
         category: 'ENVIRONMENTAL',
-        description: 'USGS seismic event monitoring',
+        description: 'USGS seismic event monitoring (M2.5+)',
         icon: '🌍',
         enabled: true,
         refreshInterval: 300,
         source: 'USGS',
+        sourceType: 'free-api',
         color: '#a3e635',
     },
     {
@@ -168,6 +206,7 @@ export const DATA_LAYERS: DataLayer[] = [
         enabled: false,
         refreshInterval: 600,
         source: 'NOAA',
+        sourceType: 'api-key',
         color: '#38bdf8',
     },
 
@@ -176,23 +215,50 @@ export const DATA_LAYERS: DataLayer[] = [
         id: 'apt_threats',
         name: 'APT Threat Actors',
         category: 'CYBER',
-        description: 'Known APT group activity mapped by origin',
+        description: 'Active APT IOCs from ThreatFox',
         icon: '🕵️',
         enabled: false,
-        refreshInterval: 3600,
-        source: 'MITRE ATT&CK',
+        refreshInterval: 1800,
+        source: 'Abuse.ch ThreatFox',
+        sourceType: 'free-api',
         color: '#f43f5e',
     },
     {
         id: 'ransomware',
         name: 'Ransomware Groups',
         category: 'CYBER',
-        description: 'Active ransomware group geolocation',
+        description: 'Recent malware samples & ransomware families',
         icon: '💀',
         enabled: false,
         refreshInterval: 1800,
-        source: 'ransomware feed',
+        source: 'Abuse.ch MalwareBazaar',
+        sourceType: 'free-api',
         color: '#dc2626',
+    },
+    {
+        id: 'malicious_urls',
+        name: 'Malicious URLs',
+        category: 'CYBER',
+        description: 'Recently reported malicious URLs',
+        icon: '🔗',
+        enabled: false,
+        refreshInterval: 900,
+        source: 'Abuse.ch URLhaus',
+        sourceType: 'free-api',
+        color: '#fb923c',
+    },
+    {
+        id: 'otx_pulses',
+        name: 'OTX Threat Pulses',
+        category: 'CYBER',
+        description: 'AlienVault OTX community threat intelligence',
+        icon: '📡',
+        enabled: false,
+        refreshInterval: 3600,
+        source: 'AlienVault OTX',
+        sourceType: 'api-key',
+        envKey: 'ALIENVAULT_OTX_KEY',
+        color: '#a78bfa',
     },
 ];
 
@@ -204,6 +270,11 @@ export function getLayersByCategory(category: DataLayerCategory): DataLayer[] {
 /** Get all enabled layers (default state) */
 export function getDefaultEnabledLayers(): DataLayer[] {
     return DATA_LAYERS.filter((l) => l.enabled);
+}
+
+/** Get all static layers (always active) */
+export function getStaticLayers(): DataLayer[] {
+    return DATA_LAYERS.filter((l) => l.sourceType === 'static');
 }
 
 /** Category metadata for UI rendering */

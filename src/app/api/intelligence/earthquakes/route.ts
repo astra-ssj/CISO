@@ -14,7 +14,7 @@ export async function GET() {
 
         // USGS public API — no key required
         const res = await fetch(
-            'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_day.geojson',
+            'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson',
             { signal: controller.signal }
         );
         clearTimeout(timeout);

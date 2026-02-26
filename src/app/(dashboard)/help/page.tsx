@@ -8,13 +8,21 @@ import {
     type SearchableArticle,
 } from "@/lib/help/help-content";
 
-// ─── Theme tokens ──────────────────────────────────────────
-const bgDeep = '#0a0e17';
-const bgSurface = '#111827';
-const borderSubtle = 'rgba(255,255,255,0.07)';
-const textMuted = '#64748b';
-const textDim = '#94a3b8';
-const textBright = '#e2e8f0';
+// ─── Light theme tokens (scoped to Help page only) ─────────
+const bgMain = '#ffffff';
+const bgSidebar = '#f8fafc';
+const bgSurface = '#f1f5f9';
+const bgHover = '#e2e8f0';
+const bgActive = '#dbeafe';
+
+const borderDefault = '#e2e8f0';
+const borderHover = '#cbd5e1';
+
+const textPrimary = '#0f172a';
+const textSecondary = '#475569';
+const textMuted = '#94a3b8';
+
+const accentBlue = '#2563eb';
 
 // ─── Types ─────────────────────────────────────────────────
 interface ExpandedMap { [articleId: string]: boolean }
@@ -87,7 +95,7 @@ function ArticleContent({
                             >
                                 {stepMatch[1]}.
                             </span>
-                            <span style={{ color: textDim, fontSize: 13, lineHeight: 1.6 }}>
+                            <span style={{ color: textSecondary, fontSize: 13, lineHeight: 1.6 }}>
                                 {stepMatch[2]}
                             </span>
                         </div>
@@ -117,14 +125,14 @@ function ArticleContent({
                                     marginTop: 7,
                                 }}
                             />
-                            <span style={{ color: textDim, fontSize: 13, lineHeight: 1.6 }}>
+                            <span style={{ color: textSecondary, fontSize: 13, lineHeight: 1.6 }}>
                                 {text}
                             </span>
                         </div>
                     );
                 }
 
-                // Special block headings (ALL CAPS or Title Case lines that end without a period, short)
+                // Special block headings
                 const isHeading =
                     trimmed.length < 60 &&
                     !trimmed.endsWith('.') &&
@@ -135,7 +143,6 @@ function ArticleContent({
                         /^[A-Z][a-z]+\s+\(/.test(trimmed));
 
                 if (isHeading) {
-                    // Tier / state block header (e.g., "CLOSED (Normal)")
                     const isStateBlock = /\(.+\)/.test(trimmed) || trimmed === trimmed.toUpperCase();
                     if (isStateBlock) {
                         return (
@@ -168,7 +175,7 @@ function ArticleContent({
                         <div
                             key={i}
                             style={{
-                                color: textBright,
+                                color: textPrimary,
                                 fontWeight: 600,
                                 fontSize: 14,
                                 marginTop: 14,
@@ -185,7 +192,7 @@ function ArticleContent({
                     <p
                         key={i}
                         style={{
-                            color: textDim,
+                            color: textSecondary,
                             fontSize: 13,
                             lineHeight: 1.7,
                             marginBottom: 2,
@@ -218,19 +225,22 @@ function ArticleCard({
     return (
         <div
             style={{
-                background: bgDeep,
-                border: `1px solid ${isExpanded ? color + '40' : borderSubtle}`,
+                background: bgMain,
+                border: `1px solid ${isExpanded ? color + '60' : borderDefault}`,
                 borderRadius: 10,
-                transition: 'border-color 0.2s ease',
+                transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
                 overflow: 'hidden',
+                boxShadow: isExpanded
+                    ? `0 2px 8px ${color}15`
+                    : '0 1px 3px rgba(0,0,0,0.04)',
             }}
             onMouseEnter={(e) => {
                 if (!isExpanded)
-                    (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.15)';
+                    (e.currentTarget as HTMLDivElement).style.borderColor = borderHover;
             }}
             onMouseLeave={(e) => {
                 if (!isExpanded)
-                    (e.currentTarget as HTMLDivElement).style.borderColor = borderSubtle;
+                    (e.currentTarget as HTMLDivElement).style.borderColor = borderDefault;
             }}
         >
             {/* Header */}
@@ -255,7 +265,7 @@ function ArticleCard({
                         fontSize: 13,
                         fontWeight: 700,
                         color,
-                        background: `${color}15`,
+                        background: `${color}12`,
                         borderRadius: 6,
                         padding: '4px 8px',
                         minWidth: 32,
@@ -268,7 +278,7 @@ function ArticleCard({
 
                 {/* Title + description */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ color: textBright, fontWeight: 600, fontSize: 14 }}>
+                    <div style={{ color: textPrimary, fontWeight: 600, fontSize: 14 }}>
                         {article.title}
                     </div>
                     <div
@@ -292,9 +302,10 @@ function ArticleCard({
                             fontFamily: "'JetBrains Mono', monospace",
                             fontSize: 11,
                             color: textMuted,
-                            background: 'rgba(255,255,255,0.05)',
+                            background: bgSurface,
                             padding: '3px 8px',
                             borderRadius: 4,
+                            border: `1px solid ${borderDefault}`,
                             flexShrink: 0,
                         }}
                     >
@@ -360,19 +371,22 @@ function SearchResult({
                 alignItems: 'center',
                 gap: 12,
                 padding: '12px 16px',
-                background: bgDeep,
-                border: `1px solid ${borderSubtle}`,
+                background: bgMain,
+                border: `1px solid ${borderDefault}`,
                 borderRadius: 8,
                 cursor: 'pointer',
                 textAlign: 'left',
-                transition: 'border-color 0.2s ease',
+                transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
             }}
             onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.borderColor =
-                    article.sectionColor + '60';
+                const el = e.currentTarget as HTMLButtonElement;
+                el.style.borderColor = article.sectionColor + '60';
+                el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)';
             }}
             onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.borderColor = borderSubtle;
+                const el = e.currentTarget as HTMLButtonElement;
+                el.style.borderColor = borderDefault;
+                el.style.boxShadow = 'none';
             }}
         >
             <span style={{ fontSize: 18, flexShrink: 0 }}>{article.sectionIcon}</span>
@@ -380,7 +394,7 @@ function SearchResult({
                 <div style={{ color: textMuted, fontSize: 11, marginBottom: 2 }}>
                     {article.sectionTitle}
                 </div>
-                <div style={{ color: textBright, fontSize: 13, fontWeight: 600 }}>
+                <div style={{ color: textPrimary, fontSize: 13, fontWeight: 600 }}>
                     {article.title}
                 </div>
                 <div
@@ -446,7 +460,6 @@ export default function HelpPage() {
         setActiveSection(article.sectionId);
         setExpanded((prev) => ({ ...prev, [article.id]: true }));
         setSearch('');
-        // Give React one tick to render, then scroll into view
         setTimeout(() => {
             document
                 .getElementById(`article-${article.id}`)
@@ -458,7 +471,7 @@ export default function HelpPage() {
 
     return (
         <>
-            {/* Inject keyframe for fade-in */}
+            {/* Inject keyframe for fade-in + light scrollbar */}
             <style>{`
         @keyframes helpFadeIn {
           from { opacity: 0; transform: translateY(4px); }
@@ -467,11 +480,11 @@ export default function HelpPage() {
         .help-scrollbar::-webkit-scrollbar { width: 6px; }
         .help-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .help-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255,255,255,0.1);
+          background: #cbd5e1;
           border-radius: 3px;
         }
         .help-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(255,255,255,0.2);
+          background: #94a3b8;
         }
       `}</style>
 
@@ -482,6 +495,9 @@ export default function HelpPage() {
                     overflow: 'hidden',
                     fontFamily:
                         "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                    background: bgMain,
+                    color: textPrimary,
+                    borderRadius: 12,
                 }}
             >
                 {/* ─── LEFT SIDEBAR ───────────────────────────────── */}
@@ -491,8 +507,8 @@ export default function HelpPage() {
                         minWidth: 280,
                         display: 'flex',
                         flexDirection: 'column',
-                        background: bgDeep,
-                        borderRight: `1px solid ${borderSubtle}`,
+                        background: bgSidebar,
+                        borderRight: `1px solid ${borderDefault}`,
                         overflow: 'hidden',
                     }}
                 >
@@ -506,10 +522,10 @@ export default function HelpPage() {
                                 marginBottom: 14,
                             }}
                         >
-                            <span style={{ fontSize: 22 }}>❓</span>
+                            <span style={{ fontSize: 22 }}>📖</span>
                             <span
                                 style={{
-                                    color: textBright,
+                                    color: textPrimary,
                                     fontSize: 17,
                                     fontWeight: 700,
                                     letterSpacing: '-0.01em',
@@ -522,9 +538,10 @@ export default function HelpPage() {
                                     fontFamily: "'JetBrains Mono', monospace",
                                     fontSize: 10,
                                     color: textMuted,
-                                    background: 'rgba(255,255,255,0.06)',
+                                    background: bgSurface,
                                     padding: '2px 8px',
                                     borderRadius: 4,
+                                    border: `1px solid ${borderDefault}`,
                                     marginLeft: 'auto',
                                 }}
                             >
@@ -562,22 +579,24 @@ export default function HelpPage() {
                                 style={{
                                     width: '100%',
                                     padding: '8px 12px 8px 32px',
-                                    background: 'rgba(255,255,255,0.04)',
-                                    border: `1px solid ${borderSubtle}`,
+                                    background: bgMain,
+                                    border: `1px solid ${borderDefault}`,
                                     borderRadius: 6,
-                                    color: textBright,
+                                    color: textPrimary,
                                     fontSize: 13,
                                     outline: 'none',
-                                    transition: 'border-color 0.2s ease',
+                                    transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
                                 }}
-                                onFocus={(e) =>
-                                ((e.target as HTMLInputElement).style.borderColor =
-                                    'rgba(255,255,255,0.2)')
-                                }
-                                onBlur={(e) =>
-                                ((e.target as HTMLInputElement).style.borderColor =
-                                    borderSubtle)
-                                }
+                                onFocus={(e) => {
+                                    const el = e.target as HTMLInputElement;
+                                    el.style.borderColor = accentBlue;
+                                    el.style.boxShadow = `0 0 0 3px ${accentBlue}20`;
+                                }}
+                                onBlur={(e) => {
+                                    const el = e.target as HTMLInputElement;
+                                    el.style.borderColor = borderDefault;
+                                    el.style.boxShadow = 'none';
+                                }}
                             />
                         </div>
                     </div>
@@ -621,7 +640,7 @@ export default function HelpPage() {
                                         gap: 10,
                                         padding: '10px 12px',
                                         marginBottom: 2,
-                                        background: isActive ? `${section.color}10` : 'transparent',
+                                        background: isActive ? bgMain : 'transparent',
                                         border: 'none',
                                         borderLeft: isActive
                                             ? `3px solid ${section.color}`
@@ -630,11 +649,12 @@ export default function HelpPage() {
                                         cursor: 'pointer',
                                         textAlign: 'left',
                                         transition: 'all 0.2s ease',
+                                        boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.06)' : 'none',
                                     }}
                                     onMouseEnter={(e) => {
                                         if (!isActive) {
                                             (e.currentTarget as HTMLButtonElement).style.background =
-                                                'rgba(255,255,255,0.03)';
+                                                bgHover;
                                         }
                                     }}
                                     onMouseLeave={(e) => {
@@ -650,7 +670,7 @@ export default function HelpPage() {
                                     <span
                                         style={{
                                             flex: 1,
-                                            color: isActive ? textBright : textDim,
+                                            color: isActive ? textPrimary : textSecondary,
                                             fontSize: 13,
                                             fontWeight: isActive ? 600 : 400,
                                         }}
@@ -663,8 +683,8 @@ export default function HelpPage() {
                                             fontSize: 11,
                                             color: isActive ? section.color : textMuted,
                                             background: isActive
-                                                ? `${section.color}20`
-                                                : 'rgba(255,255,255,0.04)',
+                                                ? `${section.color}15`
+                                                : bgSurface,
                                             padding: '1px 6px',
                                             borderRadius: 4,
                                             flexShrink: 0,
@@ -681,7 +701,7 @@ export default function HelpPage() {
                     <div
                         style={{
                             padding: '14px 18px',
-                            borderTop: `1px solid ${borderSubtle}`,
+                            borderTop: `1px solid ${borderDefault}`,
                         }}
                     >
                         <div
@@ -710,11 +730,12 @@ export default function HelpPage() {
                                     style={{
                                         fontFamily: "'JetBrains Mono', monospace",
                                         fontSize: 11,
-                                        color: textBright,
-                                        background: 'rgba(255,255,255,0.06)',
+                                        color: textPrimary,
+                                        background: bgMain,
                                         padding: '2px 6px',
                                         borderRadius: 4,
-                                        border: `1px solid ${borderSubtle}`,
+                                        border: `1px solid ${borderDefault}`,
+                                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                                     }}
                                 >
                                     {s.keys}
@@ -735,7 +756,7 @@ export default function HelpPage() {
                         flex: 1,
                         overflowY: 'auto',
                         padding: '28px 36px',
-                        background: 'transparent',
+                        background: bgMain,
                     }}
                 >
                     {isSearching ? (
@@ -791,7 +812,7 @@ export default function HelpPage() {
                                     </div>
                                     <div
                                         style={{
-                                            color: textBright,
+                                            color: textPrimary,
                                             fontSize: 16,
                                             fontWeight: 600,
                                             marginBottom: 6,
@@ -821,7 +842,7 @@ export default function HelpPage() {
                                 <div>
                                     <h1
                                         style={{
-                                            color: textBright,
+                                            color: textPrimary,
                                             fontSize: 24,
                                             fontWeight: 700,
                                             letterSpacing: '-0.02em',
@@ -835,7 +856,7 @@ export default function HelpPage() {
                                             fontFamily: "'JetBrains Mono', monospace",
                                             fontSize: 12,
                                             color: currentSection.color,
-                                            background: `${currentSection.color}15`,
+                                            background: `${currentSection.color}12`,
                                             padding: '2px 10px',
                                             borderRadius: 10,
                                             marginTop: 4,

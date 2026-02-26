@@ -19,8 +19,8 @@ interface Feed {
     provider: string;
     url: string;
     enabled: boolean;
-    lastFetch: string;
-    eventCount: number;
+    lastFetch?: string;
+    eventCount?: number;
 }
 
 interface FeedStatus {
@@ -40,6 +40,7 @@ const RECOMMENDED_FEEDS = [
 
 function feedStatusBadge(feed: Feed): { icon: React.ElementType; color: string; label: string } {
     if (!feed.enabled) return { icon: XCircle, color: 'text-muted-foreground', label: 'Disabled' };
+    if (!feed.lastFetch) return { icon: AlertTriangle, color: 'text-red-400', label: 'Unknown' };
     const age = Date.now() - new Date(feed.lastFetch).getTime();
     if (age < 300_000) return { icon: CheckCircle2, color: 'text-emerald-400', label: 'Fresh' };
     if (age < 3_600_000) return { icon: Clock, color: 'text-yellow-400', label: 'Stale' };
@@ -89,7 +90,7 @@ export function FeedManager() {
         );
     }
 
-    const totalEvents = feeds.reduce((acc, f) => acc + f.eventCount, 0);
+    const totalEvents = feeds.reduce((acc, f) => acc + (f.eventCount ?? 0), 0);
 
     return (
         <div className="space-y-6">
@@ -149,8 +150,8 @@ export function FeedManager() {
                                                 </div>
                                                 <div className="flex items-center gap-3 text-[10px] text-muted-foreground mt-0.5">
                                                     <span>{feed.provider}</span>
-                                                    <span>{feed.eventCount.toLocaleString()} events</span>
-                                                    <span>{new Date(feed.lastFetch).toLocaleString()}</span>
+                                                    <span>{(feed.eventCount ?? 0).toLocaleString()} events</span>
+                                                    <span>{feed.lastFetch ? new Date(feed.lastFetch).toLocaleString() : 'Never'}</span>
                                                 </div>
                                             </div>
                                             <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${feed.enabled ? 'bg-emerald-500/10 text-emerald-400' : 'bg-muted text-muted-foreground'}`}>

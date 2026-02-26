@@ -229,8 +229,8 @@ function InnerMap({
                                     </div>
                                     {pt.severity && (
                                         <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${pt.severity === 'critical' ? 'bg-red-500/30 text-red-300'
-                                                : pt.severity === 'high' ? 'bg-amber-500/30 text-amber-300'
-                                                    : 'bg-blue-500/30 text-blue-300'
+                                            : pt.severity === 'high' ? 'bg-amber-500/30 text-amber-300'
+                                                : 'bg-blue-500/30 text-blue-300'
                                             }`}>
                                             {pt.severity}
                                         </span>
@@ -247,9 +247,9 @@ function InnerMap({
 
             {/* Office pins */}
             {officePins.map(pin => {
-                const color = JURISDICTION_COLORS[pin.jurisdiction?.toUpperCase()] ?? '#94a3b8';
                 const ciiScore = pin.ciiScore ?? 0;
                 const ciiColor = ciiScore >= 60 ? '#ef4444' : ciiScore >= 30 ? '#eab308' : '#22c55e';
+                const OFFICE_TEAL = '#22d3ee';
 
                 return (
                     <CircleMarker
@@ -257,16 +257,32 @@ function InnerMap({
                         center={[pin.lat, pin.lng]}
                         radius={8}
                         pathOptions={{
-                            fillColor: color,
+                            fillColor: OFFICE_TEAL,
                             fillOpacity: 0.9,
                             color: '#ffffff',
                             weight: 2,
                             opacity: 1,
+                            className: 'office-pin-pulse',
                         }}
                     >
+                        {/* Pulse ring for office visibility */}
+                        <CircleMarker
+                            center={[pin.lat, pin.lng]}
+                            radius={14}
+                            pathOptions={{
+                                fillColor: OFFICE_TEAL,
+                                fillOpacity: 0.08,
+                                color: OFFICE_TEAL,
+                                weight: 1,
+                                opacity: 0.25,
+                            }}
+                        />
                         <Popup>
                             <div className="text-slate-200 min-w-[200px]">
-                                <div className="font-semibold text-sm mb-1">{pin.name}</div>
+                                <div className="font-semibold text-sm mb-1 flex items-center gap-2">
+                                    <span className="w-2.5 h-2.5 rounded-full" style={{ background: OFFICE_TEAL }} />
+                                    {pin.name}
+                                </div>
                                 <div className="flex items-center gap-2 flex-wrap">
                                     <span className="text-[11px] text-slate-400">{pin.jurisdiction} · {pin.country}</span>
                                 </div>

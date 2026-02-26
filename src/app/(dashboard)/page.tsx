@@ -1,34 +1,10 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Activity, ShieldCheck, AlertTriangle, FileCheck, Send, ShieldQuestion, Terminal,
-  TrendingUp, TrendingDown, ArrowRight, Sparkles, Zap, BrainCircuit, BarChart3,
-  FolderKanban, ClipboardCheck, LayoutDashboard, Presentation, FileBarChart
+  LayoutDashboard, Presentation, FileBarChart
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { useAstraStore } from '@/lib/store';
-import {
-  Dialog, DialogContent, DialogDescription, DialogFooter,
-  DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { SecurityFeed } from "@/components/dashboard/security-feed";
-import { DecisionConsole } from '@/components/governance/decision-console';
-import { DataSourceConnector } from '@/components/dashboard/data-source-connector';
-import { VulnerabilityFeed } from "@/components/dashboard/vulnerability-feed";
-import { RemediationVelocity } from "@/components/dashboard/remediation-velocity";
-import { BoardReportExport } from "@/components/reporting/board-export-btn";
-import { GitHubConnector, type GitHubStats } from "@/lib/connectors/github";
-import { PostureGauge } from "@/components/dashboard/posture-gauge";
-import { BoardDeckGenerator } from "@/components/reporting/board-deck-generator";
-import { useDecisionStore } from '@/lib/decision-engine/router';
-import { DecisionCard } from '@/components/decisions/decision-card';
 import { useRiskRegisterStore } from '@/lib/risk-register-store';
 import { useVendorRiskStore } from '@/lib/vendor-risk-store';
 import { usePolicyStore } from '@/lib/policy-store';
@@ -37,188 +13,78 @@ import { useEvidenceStore } from '@/lib/evidence-store';
 import { ExecutiveBriefTab } from '@/components/executive/executive-brief-tab';
 import { ReportsTab } from '@/components/reporting/reports-tab';
 
-import ThreatIntelWidget from '@/components/intelligence/ThreatIntelWidget';
+// Command Center components
+import { KPIStatusBar } from '@/components/command/KPIStatusBar';
+import { ThreatMonitorWidget } from '@/components/command/ThreatMonitorWidget';
+import { ActiveThreats } from '@/components/command/ActiveThreats';
+import { PendingActions } from '@/components/command/PendingActions';
+import { CompliancePosture } from '@/components/command/CompliancePosture';
+import { RecentIncidents } from '@/components/command/RecentIncidents';
+import { AIActivity } from '@/components/command/AIActivity';
 
-function MetricCard({ label, value, icon: Icon, trend, trendValue, status }: {
-  label: string; value: string; icon: React.ElementType;
-  trend?: 'up' | 'down' | 'neutral'; trendValue?: string;
-  status?: 'success' | 'warning' | 'danger' | 'neutral';
-}) {
-  const statusColors = { success: 'text-emerald-500', warning: 'text-amber-500', danger: 'text-red-500', neutral: 'text-primary' };
-  const statusBg = { success: 'bg-emerald-500/10', warning: 'bg-amber-500/10', danger: 'bg-red-500/10', neutral: 'bg-primary/10' };
-  return (
-    <Card className="relative overflow-hidden group transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
-        <div className={`p-2 rounded-lg ${statusBg[status || 'neutral']} transition-colors`}>
-          <Icon className={`h-4 w-4 ${statusColors[status || 'neutral']}`} />
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-bold tracking-tight tabular-nums">{value}</span>
-          {trend && trendValue && (
-            <span className={`flex items-center text-xs font-medium ${trend === 'up' ? 'text-emerald-500' : trend === 'down' ? 'text-red-500' : 'text-muted-foreground'}`}>
-              {trend === 'up' && <TrendingUp className="h-3 w-3 mr-0.5" />}
-              {trend === 'down' && <TrendingDown className="h-3 w-3 mr-0.5" />}
-              {trendValue}
-            </span>
-          )}
-        </div>
-        <div className="mt-3 h-8 flex items-end gap-0.5">
-          {[40, 65, 50, 75, 60, 80, 70, 90, 85].map((h, i) => (
-            <div key={i} className="flex-1 bg-primary/20 rounded-sm transition-all group-hover:bg-primary/30" style={{ height: `${h}%` }} />
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function OverviewTab() {
-  const { complianceScore, activeThreats, decisionQueue, systemStatus, addDecisionRequest } = useAstraStore();
-  const v2Decisions = useDecisionStore(s => s.decisions);
-  const v2Pending = useMemo(() => v2Decisions.filter(d => d.status === 'PENDING'), [v2Decisions]);
-
+function CommandCenterOverview() {
   const riskFetch = useRiskRegisterStore(s => s.fetchEntries);
   const vendorRiskFetch = useVendorRiskStore(s => s.fetchVendors);
   const policyFetch = usePolicyStore(s => s.fetchPolicies);
   const playbookFetch = usePlaybookStore(s => s.fetchPlaybooks);
   const evidenceFetch = useEvidenceStore(s => s.fetchEvidence);
-  useEffect(() => { riskFetch(); vendorRiskFetch(); policyFetch(); playbookFetch(); evidenceFetch(); }, [riskFetch, vendorRiskFetch, policyFetch, playbookFetch, evidenceFetch]);
 
-  const [isProtocolOpen, setIsProtocolOpen] = useState(false);
-  const [protocolTitle, setProtocolTitle] = useState('');
-  const [protocolDesc, setProtocolDesc] = useState('');
-  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
-
-  const [githubStats, setGithubStats] = useState<GitHubStats | null>(null);
-  const [caiqMetrics, setCaiqMetrics] = useState<{ lastAssessmentAt: string | null; coveragePercent: number; answersPendingReview: number; } | null>(null);
-
-  useEffect(() => { fetch('/api/vendors/caiq/metrics').then(r => r.ok ? r.json() : null).then(d => d && setCaiqMetrics(d)).catch(() => { }); }, []);
   useEffect(() => {
-    const fetchData = async () => {
-      const gh = new GitHubConnector();
-      const stats = await gh.getStats();
-      setGithubStats(stats);
-    };
-    fetchData();
-  }, []);
-
-  const pendingDecisions = decisionQueue.filter(d => d.status === 'PENDING');
-  const statusColor = systemStatus === 'NOMINAL' ? 'text-emerald-500' : 'text-red-500';
-
-  const handleSubmitProtocol = () => {
-    if (!protocolTitle || !protocolDesc) return;
-    addDecisionRequest({ title: protocolTitle, description: protocolDesc, requester: "Security Architect", riskLevel: "MEDIUM", timestamp: new Date().toISOString() });
-    setProtocolTitle(''); setProtocolDesc(''); setIsProtocolOpen(false);
-  };
+    riskFetch(); vendorRiskFetch(); policyFetch(); playbookFetch(); evidenceFetch();
+  }, [riskFetch, vendorRiskFetch, policyFetch, playbookFetch, evidenceFetch]);
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
-      <section className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
-        <div>
-          <p className="text-muted-foreground mt-1 flex items-center gap-2">
-            System Status:
-            <span className={`inline-flex items-center gap-1.5 font-mono font-semibold ${statusColor}`}>
-              <span className={`h-2 w-2 rounded-full ${systemStatus === 'NOMINAL' ? 'bg-emerald-500' : 'bg-red-500'} animate-pulse`} />
-              {systemStatus}
-            </span>
-          </p>
+    <div className="space-y-4 max-w-[1600px] mx-auto">
+      {/* ═══ ROW 1: KPI STATUS BAR ═══ */}
+      <KPIStatusBar />
+
+      {/* ═══ ROW 2: MAIN CONTENT (2-column split) ═══ */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        {/* LEFT (60%): Global Threat Monitor */}
+        <div className="lg:col-span-3">
+          <ThreatMonitorWidget />
         </div>
-        <div className="flex gap-2">
-          <DataSourceConnector />
-          <BoardReportExport />
-          <Dialog open={isProtocolOpen} onOpenChange={setIsProtocolOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="h-9"><Sparkles className="h-4 w-4 mr-2" />Initiate Protocol</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[525px]">
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2"><ShieldQuestion className="h-5 w-5 text-primary" />Security Consultation Request</DialogTitle>
-                <DialogDescription>Submit a proposed architecture, vendor, or access request for CISO governance review.</DialogDescription>
-              </DialogHeader>
-              <form onSubmit={(e) => { e.preventDefault(); handleSubmitProtocol(); }}>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2"><Label htmlFor="title">Protocol Title</Label><Input id="title" placeholder="e.g. Deploy New Kubernetes Cluster" value={protocolTitle} onChange={(e) => setProtocolTitle(e.target.value)} /></div>
-                  <div className="grid gap-2"><Label htmlFor="desc">Technical Description</Label><Textarea id="desc" placeholder="Describe architectural changes..." className="min-h-[100px]" value={protocolDesc} onChange={(e) => setProtocolDesc(e.target.value)} /></div>
-                </div>
-                <DialogFooter><Button type="submit" className="w-full"><Send className="mr-2 h-4 w-4" />Submit for Analysis</Button></DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </section>
 
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard label="Compliance Score" value={`${complianceScore}%`} icon={FileCheck} trend="up" trendValue="+2.3%" status="success" />
-        <MetricCard label="Active Threats" value={githubStats ? String(githubStats.openAlerts) : activeThreats.toString()} icon={ShieldCheck} status={(githubStats?.openAlerts ?? activeThreats) > 0 ? 'danger' : 'success'} />
-        <MetricCard label="Pending Reviews" value={pendingDecisions.length.toString()} icon={Activity} status={pendingDecisions.length > 0 ? 'warning' : 'neutral'} />
-        <MetricCard label="Risk Exposure" value="Low" icon={AlertTriangle} trend="down" trendValue="-5%" status="success" />
-        <MetricCard label="Last CAIQ Assessment" value={caiqMetrics?.lastAssessmentAt ? new Date(caiqMetrics.lastAssessmentAt).toLocaleDateString() : '—'} icon={ClipboardCheck} status="neutral" />
-        <MetricCard label="CAIQ Coverage" value={caiqMetrics ? `${caiqMetrics.coveragePercent}%` : '—'} icon={FileCheck} status={caiqMetrics && caiqMetrics.coveragePercent >= 80 ? 'success' : caiqMetrics && caiqMetrics.coveragePercent > 0 ? 'warning' : 'neutral'} />
-        <MetricCard label="Answers Pending Review" value={caiqMetrics ? caiqMetrics.answersPendingReview.toString() : '—'} icon={Activity} status={caiqMetrics && caiqMetrics.answersPendingReview > 0 ? 'warning' : 'neutral'} />
-      </section>
-
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2"><PostureGauge /></div>
-        <BoardDeckGenerator />
-      </section>
-
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2"><ThreatIntelWidget /></div>
-        <div className="h-[350px]"><VulnerabilityFeed /></div>
-      </section>
-
-      <section className="grid grid-cols-1"><RemediationVelocity /></section>
-
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Zap className="h-5 w-5 text-amber-400" />
-            <h2 className="text-lg font-semibold">Rapid Decisions</h2>
-            {v2Pending.length > 0 && <span className="text-xs font-medium px-2 py-1 rounded-full bg-amber-500/10 text-amber-500">{v2Pending.length} awaiting</span>}
+        {/* RIGHT (40%): Active Threats + Pending Actions */}
+        <div className="lg:col-span-2 flex flex-col gap-4">
+          <div className="flex-1 min-h-0">
+            <ActiveThreats />
           </div>
-          <Link href="/decisions" className="text-xs text-primary hover:underline flex items-center gap-1">View all <BrainCircuit className="h-3 w-3" /></Link>
-        </div>
-        {v2Pending.length === 0 ? (
-          <Card className="bg-card/30 border-border/30"><CardContent className="text-center py-8"><ShieldCheck className="h-10 w-10 text-muted-foreground/20 mx-auto mb-2" /><p className="text-sm text-muted-foreground">All caught up — no pending decisions.</p></CardContent></Card>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">{v2Pending.slice(0, 3).map(decision => <DecisionCard key={decision.id} decision={decision} />)}</div>
-        )}
-      </section>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-4">
-          <h2 className="text-lg font-semibold">Quick Actions</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Link href="/incidents"><Card className="h-full transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer border-primary/30 bg-primary/5 hover:bg-primary/10"><CardContent className="p-5 flex flex-col gap-3"><div className="p-2.5 rounded-lg w-fit bg-primary/20"><Terminal className="h-5 w-5 text-primary" /></div><div><h4 className="font-semibold text-foreground">Tabletop Exercises</h4><p className="text-sm text-muted-foreground mt-0.5">Run tabletop exercises from real threat data</p></div></CardContent></Card></Link>
-            <Link href="/strategy"><Card className="h-full transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer border-border hover:border-primary/30 hover:bg-primary/5"><CardContent className="p-5 flex flex-col gap-3"><div className="p-2.5 rounded-lg w-fit bg-secondary"><BarChart3 className="h-5 w-5 text-muted-foreground" /></div><div><h4 className="font-semibold text-foreground">KPI Dashboard</h4><p className="text-sm text-muted-foreground mt-0.5">20 auto-computed security metrics</p></div></CardContent></Card></Link>
-            <Link href="/governance"><Card className="h-full transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer border-border hover:border-primary/30 hover:bg-primary/5"><CardContent className="p-5 flex flex-col gap-3"><div className="p-2.5 rounded-lg w-fit bg-secondary"><ShieldQuestion className="h-5 w-5 text-muted-foreground" /></div><div><h4 className="font-semibold text-foreground">Risk Assessment</h4><p className="text-sm text-muted-foreground mt-0.5">View governance and compliance status</p></div></CardContent></Card></Link>
+          <div className="flex-1 min-h-0">
+            <PendingActions />
           </div>
         </div>
-        <div className="lg:col-span-1"><SecurityFeed /></div>
       </div>
 
-      <DecisionConsole open={!!selectedRequestId} onOpenChange={(open) => !open && setSelectedRequestId(null)} requestId={selectedRequestId} />
+      {/* ═══ ROW 3: BOTTOM PANELS (3-column grid) ═══ */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <CompliancePosture />
+        <RecentIncidents />
+        <AIActivity />
+      </div>
     </div>
   );
 }
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold tracking-tight">Command Center</h1>
+    <div className="space-y-6 max-w-[1600px] mx-auto">
+      <div className="flex items-center gap-3">
+        <h1 className="text-3xl font-bold tracking-tight text-white">Command Center</h1>
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(34,211,238,0.08)' }}>
+          <div className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+          <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-wider">Live</span>
+        </div>
+      </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList>
           <TabsTrigger value="overview" className="gap-2"><LayoutDashboard className="h-4 w-4" />Overview</TabsTrigger>
           <TabsTrigger value="executive" className="gap-2"><Presentation className="h-4 w-4" />Executive Brief</TabsTrigger>
-          <TabsTrigger value="reports" className="gap-2"><FileBarChart className="h-4 w-4" />Reports & Board Deck</TabsTrigger>
+          <TabsTrigger value="reports" className="gap-2"><FileBarChart className="h-4 w-4" />Reports &amp; Board Deck</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview"><OverviewTab /></TabsContent>
+        <TabsContent value="overview"><CommandCenterOverview /></TabsContent>
         <TabsContent value="executive"><ExecutiveBriefTab /></TabsContent>
         <TabsContent value="reports"><ReportsTab /></TabsContent>
       </Tabs>

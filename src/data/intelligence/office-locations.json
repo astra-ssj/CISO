@@ -1,0 +1,66 @@
+[
+    {
+        "id": "office-de",
+        "name": "AstraLabs DE (HQ)",
+        "lat": 54.32,
+        "lng": 10.13,
+        "country": "DE",
+        "jurisdiction": "EU"
+    },
+    {
+        "id": "office-gb",
+        "name": "AstraLabs UK",
+        "lat": 51.50,
+        "lng": -0.12,
+        "country": "GB",
+        "jurisdiction": "UK"
+    },
+    {
+        "id": "office-th",
+        "name": "AstraLabs TH",
+        "lat": 13.75,
+        "lng": 100.50,
+        "country": "TH",
+        "jurisdiction": "APAC"
+    },
+    {
+        "id": "office-au",
+        "name": "AstraLabs AU",
+        "lat": -33.87,
+        "lng": 151.21,
+        "country": "AU",
+        "jurisdiction": "APAC"
+    },
+    {
+        "id": "office-nz",
+        "name": "AstraLabs NZ",
+        "lat": -36.85,
+        "lng": 174.76,
+        "country": "NZ",
+        "jurisdiction": "APAC"
+    },
+    {
+        "id": "office-es",
+        "name": "AstraLabs ES",
+        "lat": 41.39,
+        "lng": 2.17,
+        "country": "ES",
+        "jurisdiction": "EU"
+    },
+    {
+        "id": "office-at",
+        "name": "AstraLabs AT",
+        "lat": 48.21,
+        "lng": 16.37,
+        "country": "AT",
+        "jurisdiction": "EU"
+    },
+    {
+        "id": "office-us",
+        "name": "AstraLabs US",
+        "lat": 37.77,
+        "lng": -122.42,
+        "country": "US",
+        "jurisdiction": "US"
+    }
+]

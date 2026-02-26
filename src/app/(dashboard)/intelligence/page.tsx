@@ -24,6 +24,8 @@ import conflictZones from '@/data/intelligence/conflict-zones.json';
 import datacenters from '@/data/intelligence/datacenters.json';
 import nuclearFacilities from '@/data/intelligence/nuclear-facilities.json';
 import underseaCables from '@/data/intelligence/undersea-cables.json';
+import pipelines from '@/data/intelligence/pipelines.json';
+import officeLocations from '@/data/intelligence/office-locations.json';
 
 // Dynamic imports (heavy dependencies)
 const WorldMonitorMap = dynamic(
@@ -54,16 +56,18 @@ const RansomwareDashboard = dynamic(
     }
 );
 
-// ── Hardcoded AstraLabs office locations ──────────────────────
-const OFFICE_LOCATIONS: OfficePin[] = [
-    { id: 'office-de', name: 'AstraLabs DE (HQ)', lat: 54.32, lng: 10.13, country: 'DE', jurisdiction: 'EU', ciiScore: 8, ciiLevel: 'low', nearbyThreats: 0 },
-    { id: 'office-gb', name: 'AstraLabs UK', lat: 51.50, lng: -0.12, country: 'GB', jurisdiction: 'UK', ciiScore: 10, ciiLevel: 'low', nearbyThreats: 0 },
-    { id: 'office-th', name: 'AstraLabs TH', lat: 13.75, lng: 100.50, country: 'TH', jurisdiction: 'APAC', ciiScore: 25, ciiLevel: 'low', nearbyThreats: 0 },
-    { id: 'office-au', name: 'AstraLabs AU', lat: -33.87, lng: 151.21, country: 'AU', jurisdiction: 'APAC', ciiScore: 8, ciiLevel: 'low', nearbyThreats: 0 },
-    { id: 'office-nz', name: 'AstraLabs NZ', lat: -36.85, lng: 174.76, country: 'NZ', jurisdiction: 'APAC', ciiScore: 5, ciiLevel: 'low', nearbyThreats: 0 },
-    { id: 'office-es', name: 'AstraLabs ES', lat: 41.39, lng: 2.17, country: 'ES', jurisdiction: 'EU', ciiScore: 12, ciiLevel: 'low', nearbyThreats: 0 },
-    { id: 'office-at', name: 'AstraLabs AT', lat: 48.21, lng: 16.37, country: 'AT', jurisdiction: 'EU', ciiScore: 7, ciiLevel: 'low', nearbyThreats: 0 },
-];
+// ── Build office locations from JSON ─────────────────────────
+const OFFICE_LOCATIONS: OfficePin[] = officeLocations.map((o) => ({
+    id: o.id,
+    name: o.name,
+    lat: o.lat,
+    lng: o.lng,
+    country: o.country,
+    jurisdiction: o.jurisdiction,
+    ciiScore: o.country === 'TH' ? 25 : o.country === 'US' ? 15 : o.country === 'ES' ? 12 : o.country === 'GB' ? 10 : o.country === 'DE' ? 8 : o.country === 'AU' ? 8 : o.country === 'AT' ? 7 : 5,
+    ciiLevel: 'low' as const,
+    nearbyThreats: 0,
+}));
 
 // ── Helper ────────────────────────────────────────────────────
 function hexToRgba(hex: string): [number, number, number, number] {
@@ -95,7 +99,7 @@ function buildDataPoints(): MapDataPoint[] {
             id: base.id, latitude: base.lat, longitude: base.lng,
             label: base.name, category: 'MILITARY',
             severity: 'info', details: `${base.operator} — ${base.type} (${base.country})`,
-            layerId: 'military_bases', color: hexToRgba('#dc2626'), timestamp: now,
+            layerId: 'military_bases', color: hexToRgba('#f97316'), timestamp: now,
         });
     }
 
@@ -129,6 +133,23 @@ function buildDataPoints(): MapDataPoint[] {
         }
     }
 
+    // Pipeline segment midpoints
+    for (const pipe of pipelines) {
+        const pts = pipe.points ?? [];
+        if (pts.length > 0) {
+            const midIdx = Math.floor(pts.length / 2);
+            const mid = pts[midIdx];
+            points.push({
+                id: pipe.id, latitude: mid.lat, longitude: mid.lng,
+                label: pipe.name, category: 'INFRASTRUCTURE',
+                severity: 'info',
+                details: `${pipe.type} — ${pipe.operator} | ${(pipe as Record<string, unknown>).capacity ?? ''} | ${pipe.status}`,
+                layerId: 'pipelines', color: hexToRgba('#84cc16'), timestamp: now,
+                metadata: { segments: pts },
+            });
+        }
+    }
+
     return points;
 }
 
@@ -136,7 +157,7 @@ function buildDataPoints(): MapDataPoint[] {
 
 export default function IntelligencePage() {
     const [enabledLayers, setEnabledLayers] = useState<Set<string>>(() => {
-        const defaultOn = new Set(['conflicts', 'intelligence_hotspots', 'military_bases', 'datacenters', 'nuclear', 'undersea_cables', 'earthquakes']);
+        const defaultOn = new Set(['conflicts', 'intelligence_hotspots', 'offices', 'military_bases', 'datacenters', 'nuclear', 'undersea_cables', 'earthquakes', 'pipelines']);
         return defaultOn;
     });
 

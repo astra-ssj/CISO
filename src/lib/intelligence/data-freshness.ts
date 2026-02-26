@@ -2,7 +2,7 @@
  * Data Freshness Monitor — Tracks all intelligence data sources.
  *
  * Categorizes each source as:
- * - FRESH: < 15 min since last update
+ * - FRESH: < 15 min since last update (or static = always fresh)
  * - STALE: > 1h since last update
  * - VERY_STALE: > 6h since last update
  * - ERROR: source returned error
@@ -35,19 +35,37 @@ export interface FreshnessSummary {
 
 // ── Source Registry ────────────────────────────────────────────
 
-const SOURCE_DEFINITIONS = [
-    { id: 'news_rss', name: 'RSS News Feeds', category: 'OSINT', configRequired: undefined },
-    { id: 'earthquakes', name: 'USGS Earthquakes', category: 'Environmental', configRequired: undefined },
-    { id: 'instability', name: 'Country Instability Index', category: 'Geopolitical', configRequired: undefined },
-    { id: 'anomalies', name: 'Anomaly Detector', category: 'Signal Intelligence', configRequired: undefined },
-    { id: 'convergence', name: 'Convergence Alerts', category: 'Signal Intelligence', configRequired: undefined },
-    { id: 'world_brief', name: 'AI World Brief', category: 'AI Analysis', configRequired: undefined },
+type SourceType = 'static' | 'free-api' | 'api-key';
 
-    { id: 'classify', name: 'AI Threat Classification', category: 'AI Analysis', configRequired: 'GROQ_API_KEY' },
-    { id: 'outages', name: 'Internet Outages (Cloudflare)', category: 'Infrastructure', configRequired: undefined },
-    { id: 'video', name: 'Live Video Streams', category: 'OSINT', configRequired: undefined },
-    { id: 'osint', name: 'Existing OSINT Brief', category: 'AI Analysis', configRequired: undefined },
-    { id: 'ransomware', name: 'Ransomware Dashboard', category: 'Cyber', configRequired: undefined },
+interface SourceDefinition {
+    id: string;
+    name: string;
+    category: string;
+    type: SourceType;
+    configRequired?: string;
+}
+
+const SOURCE_DEFINITIONS: SourceDefinition[] = [
+    // Static layers — always FRESH (loaded from local JSON)
+    { id: 'conflicts', name: 'Conflict Zones', category: 'Geopolitical', type: 'static' },
+    { id: 'military_bases', name: 'Military Bases', category: 'Military', type: 'static' },
+    { id: 'undersea_cables', name: 'Undersea Cables', category: 'Infrastructure', type: 'static' },
+    { id: 'nuclear', name: 'Nuclear Facilities', category: 'Infrastructure', type: 'static' },
+    { id: 'datacenters', name: 'AI Datacenters', category: 'Infrastructure', type: 'static' },
+    { id: 'pipelines', name: 'Oil & Gas Pipelines', category: 'Infrastructure', type: 'static' },
+    { id: 'offices', name: 'Office Locations', category: 'Infrastructure', type: 'static' },
+
+    // Free API layers — no key needed
+    { id: 'earthquakes', name: 'USGS Earthquakes', category: 'Environmental', type: 'free-api' },
+    { id: 'gdelt', name: 'GDELT News Intel', category: 'Geopolitical', type: 'free-api' },
+    { id: 'threatfox', name: 'ThreatFox IOCs', category: 'Cyber', type: 'free-api' },
+    { id: 'malware', name: 'MalwareBazaar', category: 'Cyber', type: 'free-api' },
+    { id: 'urlhaus', name: 'URLhaus', category: 'Cyber', type: 'free-api' },
+
+    // API-key layers — need configuration
+    { id: 'alienvault_otx', name: 'AlienVault OTX', category: 'Cyber', type: 'api-key', configRequired: 'ALIENVAULT_OTX_KEY' },
+    { id: 'opensky', name: 'OpenSky Military Flights', category: 'Military', type: 'api-key', configRequired: 'OPENSKY_USERNAME' },
+    { id: 'classify', name: 'AI Threat Classification', category: 'AI Analysis', type: 'api-key', configRequired: 'GROQ_API_KEY' },
 ];
 
 // ── In-Memory State ───────────────────────────────────────────
@@ -72,7 +90,14 @@ export function recordError(sourceId: string, error: string): void {
 /**
  * Get the freshness status for a source based on its last update time.
  */
-function computeStatus(lastUpdate: Date | null, hasError: boolean, isDisabled: boolean): FreshnessStatus {
+function computeStatus(
+    lastUpdate: Date | null,
+    hasError: boolean,
+    isDisabled: boolean,
+    sourceType: SourceType,
+): FreshnessStatus {
+    // Static layers are always FRESH — loaded from local JSON
+    if (sourceType === 'static') return 'FRESH';
     if (isDisabled) return 'DISABLED';
     if (hasError) return 'ERROR';
     if (!lastUpdate) return 'STALE';
@@ -98,14 +123,14 @@ export function getFreshnessSummary(
         const state = sourceState.get(def.id);
         const isDisabled = def.configRequired ? !(envCheck?.(def.configRequired) ?? false) : false;
         const hasError = !!state?.error;
-        const status = computeStatus(state?.lastUpdate ?? null, hasError, isDisabled);
+        const status = computeStatus(state?.lastUpdate ?? null, hasError, isDisabled, def.type);
 
         return {
             id: def.id,
             name: def.name,
             category: def.category,
             status,
-            lastUpdate: state?.lastUpdate ?? null,
+            lastUpdate: def.type === 'static' ? new Date() : (state?.lastUpdate ?? null),
             error: state?.error,
             configRequired: isDisabled ? def.configRequired : undefined,
         };
@@ -118,12 +143,14 @@ export function getFreshnessSummary(
 
     // Generate intelligence gap warnings
     const gaps: string[] = [];
-    const disabledSources = sources.filter((s) => s.status === 'DISABLED');
     const errorSources = sources.filter((s) => s.status === 'ERROR');
-
+    const disabledSources = sources.filter((s) => s.status === 'DISABLED');
 
     if (errorSources.length > 0) {
         gaps.push(`⚠️ ${errorSources.length} source(s) reporting errors — data may be incomplete`);
+    }
+    if (disabledSources.length > 0) {
+        gaps.push(`🔑 ${disabledSources.length} source(s) need API keys — configure in Settings → Integrations`);
     }
 
     return {

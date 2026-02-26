@@ -32,7 +32,7 @@ import type {
 // ── Constants ──────────────────────────────────────────────────
 
 const PROVIDER_KEY = 'OPENCTI';
-const DEFAULT_URL = 'http://localhost:8080';
+const DEFAULT_URL = 'https://demo.opencti.io';
 
 // ── Mock Data ──────────────────────────────────────────────────
 
@@ -227,7 +227,7 @@ export class OpenCTIClient {
 
     constructor(url?: string, token?: string) {
         this.url = url || process.env.OPENCTI_URL || DEFAULT_URL;
-        this.token = token || process.env.OPENCTI_ADMIN_TOKEN || '';
+        this.token = token || process.env.OPENCTI_TOKEN || process.env.OPENCTI_ADMIN_TOKEN || '';
     }
 
     // ── Internal GraphQL helper ─────────────────────────────────
@@ -460,6 +460,54 @@ export class OpenCTIClient {
                 modified: obj.modified,
             }));
             return all.filter(r => r.name.toLowerCase().includes(q) || r.description?.toLowerCase().includes(q));
+        }
+    }
+
+    // ── Enrichment ──────────────────────────────────────────────
+
+    async enrichIndicator(value: string, type: string): Promise<{
+        found: boolean;
+        indicator: Indicator | null;
+        relatedCampaigns: string[];
+        relatedMalware: string[];
+        tags: string[];
+    }> {
+        try {
+            const data = await this.graphql<{ stixCyberObservables: { edges: Array<{ node: { id: string; entity_type: string; observable_value: string; indicators: { edges: Array<{ node: Indicator }> } } }> } }>(
+                `query($value: String) {
+                    stixCyberObservables(search: $value, first: 5) {
+                        edges {
+                            node {
+                                id entity_type observable_value
+                                indicators { edges { node { id name pattern pattern_type indicator_types valid_from confidence created modified entity_type standard_id } } }
+                            }
+                        }
+                    }
+                }`,
+                { value },
+            );
+            const obs = data.stixCyberObservables.edges[0]?.node;
+            if (!obs) return { found: false, indicator: null, relatedCampaigns: [], relatedMalware: [], tags: [] };
+            const indicator = obs.indicators?.edges[0]?.node ?? null;
+            return {
+                found: true,
+                indicator,
+                relatedCampaigns: [],
+                relatedMalware: [],
+                tags: indicator?.indicator_types ?? [],
+            };
+        } catch {
+            // Attempt mock enrichment
+            const mock = MOCK_INDICATORS.find(i =>
+                i.observableValue?.toLowerCase() === value.toLowerCase()
+            );
+            return {
+                found: !!mock,
+                indicator: mock ?? null,
+                relatedCampaigns: mock ? ['SolarStorm 2.0'] : [],
+                relatedMalware: mock ? ['SUNBURST'] : [],
+                tags: mock?.indicator_types ?? [],
+            };
         }
     }
 
