@@ -191,7 +191,7 @@ export default function IntelligencePage() {
             description: point.details || '',
             severity: point.severity || 'medium',
         });
-        window.open(`/risk?action=create&${params.toString()}`, '_blank');
+        window.open(`/governance?tab=risk&action=create&${params.toString()}`, '_blank');
     }, []);
 
     const handleCreateIncident = useCallback((point: MapDataPoint) => {
@@ -199,7 +199,7 @@ export default function IntelligencePage() {
             title: `[INTEL] ${point.label}`,
             severity: point.severity === 'critical' ? 'P1' : point.severity === 'high' ? 'P2' : 'P3',
         });
-        window.open(`/war-games?action=create&${params.toString()}`, '_blank');
+        window.open(`/incidents/war-room?action=create&${params.toString()}`, '_blank');
     }, []);
 
     const activeLayers = DATA_LAYERS.filter((l) => enabledLayers.has(l.id));
