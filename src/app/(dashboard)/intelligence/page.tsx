@@ -4,15 +4,17 @@ import { useState, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-    BrainCircuit, Globe, Radio, Building2,
-    Rss, Skull,
+    BrainCircuit, Globe, Crosshair, Activity,
+    Rss, Skull, Search, Shield,
 } from "lucide-react";
 import { DATA_LAYERS, type DataLayerCategory } from '@/lib/intelligence/data-layers';
 import { LayerControlPanel } from '@/components/intelligence/world-monitor/LayerControlPanel';
-import { ThreatBriefingTab } from '@/components/intelligence/tabs/ThreatBriefingTab';
-import { SignalIntelligenceTab } from '@/components/intelligence/tabs/SignalIntelligenceTab';
-import { InfrastructureTab } from '@/components/intelligence/tabs/InfrastructureTab';
-import { LiveFeedsTab } from '@/components/intelligence/tabs/LiveFeedsTab';
+import { ThreatBriefing } from '@/components/intelligence/ThreatBriefing';
+import { CampaignsView } from '@/components/intelligence/CampaignsView';
+import { IOCExplorer } from '@/components/intelligence/IOCExplorer';
+import { AttackHeatmap } from '@/components/intelligence/AttackHeatmap';
+import { FeedManager } from '@/components/intelligence/FeedManager';
+import { EnrichmentTool } from '@/components/intelligence/EnrichmentTool';
 import type { MapDataPoint, OfficePin } from '@/components/intelligence/world-monitor/WorldMonitorMap';
 import { getFreshnessSummary, type FreshnessSummary } from '@/lib/intelligence/data-freshness';
 
@@ -76,7 +78,6 @@ function buildDataPoints(): MapDataPoint[] {
     const points: MapDataPoint[] = [];
     const now = new Date().toISOString();
 
-    // Conflict zones → center point
     for (const cz of conflictZones) {
         const centerLat = ((cz.bounds?.north ?? 0) + (cz.bounds?.south ?? 0)) / 2;
         const centerLng = ((cz.bounds?.east ?? 0) + (cz.bounds?.west ?? 0)) / 2;
@@ -89,7 +90,6 @@ function buildDataPoints(): MapDataPoint[] {
         });
     }
 
-    // Military bases
     for (const base of militaryBases) {
         points.push({
             id: base.id, latitude: base.lat, longitude: base.lng,
@@ -99,7 +99,6 @@ function buildDataPoints(): MapDataPoint[] {
         });
     }
 
-    // Datacenters
     for (const dc of datacenters) {
         points.push({
             id: dc.id, latitude: dc.lat, longitude: dc.lng,
@@ -109,7 +108,6 @@ function buildDataPoints(): MapDataPoint[] {
         });
     }
 
-    // Nuclear facilities
     for (const nuc of nuclearFacilities) {
         points.push({
             id: nuc.id, latitude: nuc.lat, longitude: nuc.lng,
@@ -120,7 +118,6 @@ function buildDataPoints(): MapDataPoint[] {
         });
     }
 
-    // Undersea cables → landing points as markers
     for (const cable of underseaCables) {
         for (const lp of (cable.landingPoints ?? [])) {
             points.push({
@@ -139,7 +136,6 @@ function buildDataPoints(): MapDataPoint[] {
 
 export default function IntelligencePage() {
     const [enabledLayers, setEnabledLayers] = useState<Set<string>>(() => {
-        // Enable key layers by default
         const defaultOn = new Set(['conflicts', 'intelligence_hotspots', 'military_bases', 'datacenters', 'nuclear', 'undersea_cables', 'earthquakes']);
         return defaultOn;
     });
@@ -197,32 +193,40 @@ export default function IntelligencePage() {
                     Intelligence Center
                 </h1>
                 <p className="text-muted-foreground text-lg">
-                    Geopolitical monitoring, threat intelligence, and infrastructure awareness for CISO operations.
+                    Threat intelligence, geopolitical monitoring, and cyber defense awareness powered by OpenCTI &amp; MISP.
                 </p>
             </div>
 
-            {/* 7-Tab Layout */}
+            {/* Tab Layout */}
             <Tabs defaultValue="briefing" className="w-full">
                 <TabsList className="flex w-full overflow-x-auto lg:w-auto bg-secondary/20 p-1 rounded-lg">
                     <TabsTrigger value="briefing" className="gap-1.5 text-xs sm:text-sm">
                         <BrainCircuit className="h-4 w-4" />
                         <span className="hidden sm:inline">Threat</span> Briefing
                     </TabsTrigger>
-                    <TabsTrigger value="monitor" className="gap-1.5 text-xs sm:text-sm">
-                        <Globe className="h-4 w-4" />
-                        <span className="hidden sm:inline">World</span> Monitor
+                    <TabsTrigger value="campaigns" className="gap-1.5 text-xs sm:text-sm">
+                        <Crosshair className="h-4 w-4" />
+                        Campaigns
                     </TabsTrigger>
-                    <TabsTrigger value="signals" className="gap-1.5 text-xs sm:text-sm">
-                        <Radio className="h-4 w-4" />
-                        <span className="hidden sm:inline">Signal</span> Intel
+                    <TabsTrigger value="ioc" className="gap-1.5 text-xs sm:text-sm">
+                        <Activity className="h-4 w-4" />
+                        <span className="hidden sm:inline">IOC</span> Explorer
                     </TabsTrigger>
-                    <TabsTrigger value="infra" className="gap-1.5 text-xs sm:text-sm">
-                        <Building2 className="h-4 w-4" />
-                        Infrastructure &amp; Military
+                    <TabsTrigger value="heatmap" className="gap-1.5 text-xs sm:text-sm">
+                        <Shield className="h-4 w-4" />
+                        ATT&CK <span className="hidden sm:inline">Heatmap</span>
                     </TabsTrigger>
                     <TabsTrigger value="feeds" className="gap-1.5 text-xs sm:text-sm">
                         <Rss className="h-4 w-4" />
-                        Live Feeds
+                        <span className="hidden sm:inline">Feed</span> Manager
+                    </TabsTrigger>
+                    <TabsTrigger value="enrichment" className="gap-1.5 text-xs sm:text-sm">
+                        <Search className="h-4 w-4" />
+                        Enrichment
+                    </TabsTrigger>
+                    <TabsTrigger value="monitor" className="gap-1.5 text-xs sm:text-sm">
+                        <Globe className="h-4 w-4" />
+                        <span className="hidden sm:inline">World</span> Monitor
                     </TabsTrigger>
                     <TabsTrigger value="ransomware" className="gap-1.5 text-xs sm:text-sm">
                         <Skull className="h-4 w-4" />
@@ -232,10 +236,35 @@ export default function IntelligencePage() {
 
                 {/* Tab: Threat Briefing */}
                 <TabsContent value="briefing" className="mt-6">
-                    <ThreatBriefingTab />
+                    <ThreatBriefing />
                 </TabsContent>
 
-                {/* Tab: World Monitor (enhanced) */}
+                {/* Tab: Campaigns */}
+                <TabsContent value="campaigns" className="mt-6">
+                    <CampaignsView />
+                </TabsContent>
+
+                {/* Tab: IOC Explorer */}
+                <TabsContent value="ioc" className="mt-6">
+                    <IOCExplorer />
+                </TabsContent>
+
+                {/* Tab: ATT&CK Heatmap */}
+                <TabsContent value="heatmap" className="mt-6">
+                    <AttackHeatmap />
+                </TabsContent>
+
+                {/* Tab: Feed Manager */}
+                <TabsContent value="feeds" className="mt-6">
+                    <FeedManager />
+                </TabsContent>
+
+                {/* Tab: Enrichment */}
+                <TabsContent value="enrichment" className="mt-6">
+                    <EnrichmentTool />
+                </TabsContent>
+
+                {/* Tab: World Monitor */}
                 <TabsContent value="monitor" className="mt-6">
                     <div className="relative">
                         <div className="flex gap-4">
@@ -269,18 +298,7 @@ export default function IntelligencePage() {
                     </div>
                 </TabsContent>
 
-                <TabsContent value="signals" className="mt-6">
-                    <SignalIntelligenceTab />
-                </TabsContent>
-
-                <TabsContent value="infra" className="mt-6">
-                    <InfrastructureTab />
-                </TabsContent>
-
-                <TabsContent value="feeds" className="mt-6">
-                    <LiveFeedsTab />
-                </TabsContent>
-
+                {/* Tab: Ransomware */}
                 <TabsContent value="ransomware" className="mt-6">
                     <RansomwareDashboard />
                 </TabsContent>
