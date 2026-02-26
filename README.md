@@ -2,11 +2,12 @@
 
 **Autonomous Security Operations Platform** — AI-powered compliance, risk management, and threat intelligence for multi-jurisdictional enterprises.
 
+![Version](https://img.shields.io/badge/version-v2.1.0-blue)
 [![CI](https://github.com/SristiNative/astra-ciso/actions/workflows/ci.yml/badge.svg)](https://github.com/SristiNative/astra-ciso/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/container-ghcr.io%2Fsristinative%2Fastra--ciso-blue)](https://github.com/SristiNative/astra-ciso/pkgs/container/astra-ciso)
 
-> **Topics:** `ciso` · `security` · `compliance` · `iso27001` · `nist` · `gdpr` · `nis2` · `caiq` · `vendor-risk` · `threat-intelligence` · `docker` · `nextjs` · `typescript` · `ai`
+> **Topics:** `ciso` · `security` · `compliance` · `iso27001` · `nist` · `gdpr` · `nis2` · `caiq` · `vendor-risk` · `threat-intelligence` · `sso` · `integrations` · `docker` · `nextjs` · `typescript` · `ai`
 
 ## Getting Started
 
@@ -28,30 +29,34 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Key Modules
+## Key Modules (9 core + Integration Hub)
 
-### 1. Privacy Operations Center
+| # | Module | Description |
+|---|--------|-------------|
+| 1 | **Command Center** | Real-time security posture overview with executive briefing |
+| 2 | **Risk Quantification** | FAIR methodology with ALE calculations and normalized scoring |
+| 3 | **Multi-Framework Compliance** | ISO 27001, NIST CSF, GDPR, NIS2, SOC 2 with evidence tracking |
+| 4 | **Policy Lifecycle** | Draft → Review → Approved → Published with version history |
+| 5 | **Incident Management** | War Room collaboration, playbooks, and timeline |
+| 6 | **Threat Intelligence** | MITRE ATT&CK mapping and ransomware tracking |
+| 7 | **AI CISO Assistant** | Multi-provider AI (Gemini + Claude) with circuit breaker pattern |
+| 8 | **CAIQ Knowledge Base** | 261-question auto-fill with 4-tier knowledge transfer engine |
+| 9 | **AppSec Dashboard** | Container and dependency scanning (Trivy) |
+| 🔌 | **Integration Hub** | 24 integrations across 9 categories (SIEM, Cloud, DevOps, etc.) |
 
-A comprehensive GDPR/CCPA command center featuring:
+### Additional Features
 
-* **RoPA Data Mapper**: Visualize cross-border data flows.
-* **DSAR Manager**: Handle subject access requests.
-* **Breach Simulator**: Gamified 72-hour incident response training.
-* **Vendor Risk Radar**: AI-driven third-party risk assessment.
+* **SSO / SAML Authentication** — Azure AD, Okta, Google Workspace
+* **Team Management** — Invite members, assign roles, RBAC permissions
+* **Security Policies** — SSO enforcement, MFA, session timeout
+* **Help Center** — 7 sections, 35 articles, search, keyboard shortcuts
+* **World Monitor** — Interactive geopolitical intelligence map (Leaflet)
+* **Tabletop Exercises** — Scenario-based security exercise runner
+* **Dark Hacker Theme** — Glassmorphism, micro-animations, JetBrains Mono
 
-### 2. CISO Board Presentation Mode
+### Sidebar Navigation (13 items)
 
-Transform your security data into a full-screen executive slide deck (`/reporting`).
-
-* **Interactive Slides**: Risk Scorecards, Budget Analysis, and Strategic Roadmaps.
-* **Live Data**: Slides are powered by real-time application state.
-
-### 3. Strategic Intelligence
-
-AI-powered analysis of your security posture (`/intelligence`).
-
-* **Initiative Generator**: Auto-suggests projects based on vulnerability data.
-* **Context Analysis**: Connects threat feeds to your specific architecture.
+Command Center · Governance · Intelligence · Incidents · Strategy · AppSec · CAIQ · Integrations · Settings · Help · Roadmap · Tabletop · World Monitor
 
 ## Docker
 
@@ -109,8 +114,8 @@ For detailed features and usage instructions, please refer to the [User Guide](d
 ## Technical Documentation
 
 * [High-Level Design (HLD)](docs/HIGH_LEVEL_DESIGN.md)
-
 * [Low-Level Design (LLD)](docs/LOW_LEVEL_DESIGN.md)
+* [Product Roadmap](docs/ROADMAP.md)
 * [Security & QA Report](docs/SECURITY_AND_QA_REPORT.md)
 
 ## Contributing
@@ -125,6 +130,7 @@ We welcome contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for the
 ### Branch Protection (manual setup in GitHub)
 
 The `main` branch requires:
+
 * ✅ All CI checks pass (`.github/workflows/ci.yml`)
 * ✅ At least 1 approved review
 * ✅ No direct pushes

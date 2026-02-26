@@ -7,6 +7,29 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v2.1.1] — In Progress
+
+### Added
+
+- **Help Center redesign** — 7 sections, 35 articles, search, expandable cards, keyboard shortcuts
+- **Google Workspace SSO integration** (OAuth 2.0)
+- **Integration Hub** — 24 integrations across 9 categories
+- **Team Management** with invite flow and RBAC
+- **Security Policies** — SSO enforcement, MFA, session timeout
+
+### Fixed
+
+- **MiniWorldMap `useState` crash** — moved dynamic import to `useEffect`
+- **Integration page crash** — fixed during QA
+
+### In Progress
+
+- Google SSO end-to-end testing
+- Slack webhook testing
+- Sprint 2: Audit Log Viewer + Evidence Vault
+
+---
+
 ## [v2.0.0] — 2026-02-24
 
 ### Added
@@ -60,4 +83,5 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 > Prior versions were internal prototypes. Public release history begins at v2.0.0.
 
+[v2.1.1]: https://github.com/SristiNative/astra-ciso/compare/v2.0.0...HEAD
 [v2.0.0]: https://github.com/SristiNative/astra-ciso/releases/tag/v2.0.0
