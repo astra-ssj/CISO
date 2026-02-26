@@ -82,3 +82,17 @@ export type {
     IntelProviderStatus,
     IntelHealth,
 } from './unified-types';
+
+// Shodan types
+export type {
+    ShodanHostResult,
+    ShodanService,
+    ShodanHostMinimal,
+    ShodanSearchResult,
+    ShodanDomainResult,
+    ShodanCVEResult,
+    ShodanAccountInfo,
+    ShodanHealthCheck,
+    AttackSurfaceReport,
+    VendorScanResult,
+} from './shodan-types';

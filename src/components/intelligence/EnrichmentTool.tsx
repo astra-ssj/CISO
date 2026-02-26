@@ -20,6 +20,7 @@ interface EnrichmentResult {
     opencti: { found: boolean; results: unknown[]; count: number };
     misp: { found: boolean; results: unknown[]; count: number };
     abusech?: { found: boolean; results: unknown[]; count: number };
+    shodan?: { found: boolean; configured?: boolean; ip?: string; ports?: number[]; vulns?: string[]; org?: string; country?: string; city?: string | null; services?: { port: number; product: string | null; transport: string }[]; lastUpdate?: string; error?: string };
     combined: { totalHits: number; sources: string[]; verdict: string };
     timestamp: string;
 }
@@ -253,6 +254,70 @@ export function EnrichmentTool() {
                             </CardContent>
                         </Card>
                     </div>
+
+                    {/* Shodan Panel (full width under the grid) */}
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                                <span className="text-cyan-400">🌊</span> Shodan Intelligence
+                                {result.shodan?.found && <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400">FOUND</span>}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {!result.shodan?.configured && !result.shodan?.found ? (
+                                <p className="text-sm text-muted-foreground text-center py-4 opacity-50">
+                                    Shodan not configured — add API key in Settings → Integrations
+                                </p>
+                            ) : result.shodan?.found ? (
+                                <div className="space-y-2">
+                                    <div className="grid grid-cols-4 gap-2 text-xs">
+                                        {[{ l: 'IP', v: result.shodan.ip }, { l: 'Org', v: result.shodan.org }, { l: 'Country', v: `${result.shodan.country}${result.shodan.city ? ` / ${result.shodan.city}` : ''}` }, { l: 'Last Seen', v: result.shodan.lastUpdate?.slice(0, 10) }].map(d => (
+                                            <div key={d.l} className="p-2 rounded-md bg-muted/10">
+                                                <span className="text-[10px] text-muted-foreground">{d.l}</span>
+                                                <p className="font-mono text-sm">{d.v || '—'}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {(result.shodan.ports?.length ?? 0) > 0 && (
+                                        <div className="p-2 rounded-md bg-muted/10">
+                                            <span className="text-[10px] text-muted-foreground">Open Ports ({result.shodan.ports!.length})</span>
+                                            <div className="flex flex-wrap gap-1 mt-1">
+                                                {result.shodan.ports!.map(p => (
+                                                    <span key={p} className="text-[10px] px-1.5 py-0.5 rounded font-mono bg-cyan-500/10 text-cyan-300">{p}</span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {(result.shodan.vulns?.length ?? 0) > 0 && (
+                                        <div className="p-2 rounded-md bg-red-500/5 border border-red-500/10">
+                                            <span className="text-[10px] text-red-400">Vulnerabilities ({result.shodan.vulns!.length})</span>
+                                            <div className="flex flex-wrap gap-1 mt-1">
+                                                {result.shodan.vulns!.slice(0, 12).map(v => (
+                                                    <span key={v} className="text-[10px] px-1.5 py-0.5 rounded font-mono bg-red-500/10 text-red-300">{v}</span>
+                                                ))}
+                                                {result.shodan.vulns!.length > 12 && <span className="text-[10px] text-muted-foreground">+{result.shodan.vulns!.length - 12} more</span>}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {result.shodan.services && result.shodan.services.length > 0 && (
+                                        <div className="p-2 rounded-md bg-muted/10">
+                                            <span className="text-[10px] text-muted-foreground">Services</span>
+                                            <div className="space-y-0.5 mt-1">
+                                                {result.shodan.services.slice(0, 8).map((s, i) => (
+                                                    <div key={i} className="text-xs flex items-center gap-2">
+                                                        <span className="font-mono text-cyan-300 w-12">{s.port}/{s.transport}</span>
+                                                        <span className="text-muted-foreground">{s.product || 'unknown'}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <p className="text-sm text-muted-foreground text-center py-4">No Shodan results for this IOC</p>
+                            )}
+                        </CardContent>
+                    </Card>
 
                     {/* Quick Actions */}
                     <Card>

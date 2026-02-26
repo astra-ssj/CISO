@@ -9,6 +9,7 @@ import { auth } from '@/auth';
 import { OpenCTIClient } from '@/lib/intelligence/clients/opencti-client';
 import { MISPClient } from '@/lib/intelligence/clients/misp-client';
 import { AbuseCHClient } from '@/lib/intelligence/clients/abusech-client';
+import { shodanClient } from '@/lib/intelligence/clients/shodan-client';
 import { logAudit, getRequestIp, getRequestUserAgent } from '@/lib/audit/audit-service';
 
 type EnrichType = 'ip' | 'domain' | 'hash' | 'url';
@@ -40,6 +41,67 @@ export async function POST(req: Request) {
         const opencti = new OpenCTIClient();
         const misp = new MISPClient();
         const abusech = new AbuseCHClient();
+
+        // ── Shodan query for IP/domain types ──
+        const shodanQuery = (type === 'ip' || type === 'domain') && shodanClient.isConfigured()
+            ? (type === 'ip'
+                ? shodanClient.lookupIP(value).then(host => ({
+                    found: true,
+                    ip: host.ip,
+                    hostnames: host.hostnames,
+                    org: host.org,
+                    isp: host.isp,
+                    asn: host.asn,
+                    country: host.country,
+                    city: host.city,
+                    ports: host.ports,
+                    vulns: host.vulns,
+                    services: host.services.map(s => ({
+                        port: s.port,
+                        transport: s.transport,
+                        product: s.product,
+                        version: s.version,
+                        ssl: s.ssl ? {
+                            expired: s.ssl.cert.expired,
+                            expires: s.ssl.cert.expires,
+                            versions: s.ssl.versions,
+                        } : undefined,
+                        vulnCount: s.vulns ? Object.keys(s.vulns).length : 0,
+                    })),
+                    lastUpdate: host.lastUpdate,
+                }))
+                : shodanClient.resolveDomains([value]).then(async resolved => {
+                    const ip = resolved[value];
+                    if (!ip) return { found: false, configured: true };
+                    const host = await shodanClient.lookupIP(ip);
+                    return {
+                        found: true,
+                        ip: host.ip,
+                        hostnames: host.hostnames,
+                        org: host.org,
+                        isp: host.isp,
+                        asn: host.asn,
+                        country: host.country,
+                        city: host.city,
+                        ports: host.ports,
+                        vulns: host.vulns,
+                        services: host.services.map(s => ({
+                            port: s.port,
+                            transport: s.transport,
+                            product: s.product,
+                            version: s.version,
+                            ssl: s.ssl ? {
+                                expired: s.ssl.cert.expired,
+                                expires: s.ssl.cert.expires,
+                                versions: s.ssl.versions,
+                            } : undefined,
+                            vulnCount: s.vulns ? Object.keys(s.vulns).length : 0,
+                        })),
+                        lastUpdate: host.lastUpdate,
+                    };
+                }))
+                .catch(() => ({ found: false, configured: true, error: 'Shodan lookup failed' }))
+            : Promise.resolve({ found: false, configured: shodanClient.isConfigured() });
 
         // ── Build Abuse.ch queries based on IOC type ──
         const abusechQueries: Promise<unknown[]>[] = [];
@@ -113,14 +175,16 @@ export async function POST(req: Request) {
             );
         }
 
-        const [openctiResults, mispResults, ...abusechResults] = await Promise.allSettled([
+        const [openctiResults, mispResults, shodanResults, ...abusechResults] = await Promise.allSettled([
             opencti.search(value),
             misp.searchAttributes(value),
+            shodanQuery,
             ...abusechQueries,
         ]);
 
         const openctiData = openctiResults.status === 'fulfilled' ? openctiResults.value : [];
         const mispData = mispResults.status === 'fulfilled' ? mispResults.value : [];
+        const shodanData = shodanResults.status === 'fulfilled' ? shodanResults.value : { found: false, configured: false };
 
         // Flatten all abuse.ch results
         const abusechData: unknown[] = [];
@@ -130,11 +194,13 @@ export async function POST(req: Request) {
             }
         }
 
-        const totalHits = openctiData.length + mispData.length + abusechData.length;
+        const shodanFound = typeof shodanData === 'object' && shodanData !== null && 'found' in shodanData && (shodanData as Record<string, unknown>).found;
+        const totalHits = openctiData.length + mispData.length + abusechData.length + (shodanFound ? 1 : 0);
         const sources: string[] = [
             ...(openctiData.length > 0 ? ['OPENCTI'] : []),
             ...(mispData.length > 0 ? ['MISP'] : []),
             ...(abusechData.length > 0 ? ['ABUSE.CH'] : []),
+            ...(shodanFound ? ['SHODAN'] : []),
         ];
 
         let verdict = 'NOT_FOUND';
@@ -163,6 +229,7 @@ export async function POST(req: Request) {
                 results: abusechData,
                 count: abusechData.length,
             },
+            shodan: shodanData,
             combined: {
                 totalHits,
                 sources,

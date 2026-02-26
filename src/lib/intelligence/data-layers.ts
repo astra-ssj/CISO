@@ -260,6 +260,20 @@ export const DATA_LAYERS: DataLayer[] = [
         envKey: 'ALIENVAULT_OTX_KEY',
         color: '#a78bfa',
     },
+    {
+        id: 'attack_surface',
+        name: 'Your Attack Surface',
+        category: 'CYBER',
+        description: 'Your discovered internet-facing assets from Shodan scans',
+        icon: '🛡️',
+        enabled: false,
+        zoomThreshold: 4,
+        refreshInterval: 3600,
+        source: 'Shodan',
+        sourceType: 'api-key',
+        envKey: 'SHODAN_API_KEY',
+        color: '#06b6d4',
+    },
 ];
 
 /** Get layers filtered by category */

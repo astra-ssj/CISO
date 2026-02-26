@@ -20,7 +20,7 @@ import { ContextSwitcher } from "@/components/layout/ContextSwitcher";
 import {
     Building2, ShieldAlert, Search, Plus, AlertTriangle, CheckCircle,
     Clock, XCircle, TrendingUp, Users, FileWarning, ChevronDown, ChevronUp,
-    FileSpreadsheet, BookOpen, Zap, ClipboardCheck
+    FileSpreadsheet, BookOpen, Zap, ClipboardCheck, Scan, Loader2, X,
 } from "lucide-react";
 
 // ────────────────────────────────────────────
@@ -64,6 +64,9 @@ export default function VendorsPage() {
     const [filterTier, setFilterTier] = useState<string>('all');
     const [showAddForm, setShowAddForm] = useState(false);
     const [expandedVendor, setExpandedVendor] = useState<string | null>(null);
+    const [scanningVendor, setScanningVendor] = useState<string | null>(null);
+    const [scanResult, setScanResult] = useState<{ domain: string; riskScore: number; riskLevel: string; totalHosts: number; exposedServices: number; vulnerabilities: { cve: string; cvss: number; host: string }[]; summary: string } | null>(null);
+    const [scanError, setScanError] = useState<string | null>(null);
 
     // Determine initial tab from URL params (for "Configure CAIQ" navigation)
     const tabFromUrl = searchParams.get('tab') || 'quickanswer';
@@ -359,8 +362,44 @@ export default function VendorsPage() {
                                                 </td>
                                                 <td className="p-4 text-sm text-muted-foreground">{vendor.lastAssessment || '—'}</td>
                                                 <td className="p-4 text-right">
-                                                    <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                        onClick={() => removeVendor(vendor.id)}>Remove</Button>
+                                                    <div className="flex items-center gap-1 justify-end">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="text-cyan-400 hover:text-cyan-300 opacity-0 group-hover:opacity-100 transition-opacity gap-1"
+                                                            disabled={scanningVendor === vendor.id}
+                                                            title={!vendor.contactEmail?.includes('@') ? 'Domain required for scan' : 'Shodan attack surface scan'}
+                                                            onClick={async () => {
+                                                                // Extract domain from email or name
+                                                                const domain = vendor.contactEmail?.split('@')[1] || vendor.name.toLowerCase().replace(/\s+/g, '') + '.com';
+                                                                setScanningVendor(vendor.id);
+                                                                setScanResult(null);
+                                                                setScanError(null);
+                                                                try {
+                                                                    const res = await fetch('/api/intelligence/shodan/vendor-scan', {
+                                                                        method: 'POST',
+                                                                        headers: { 'Content-Type': 'application/json' },
+                                                                        body: JSON.stringify({ domain }),
+                                                                    });
+                                                                    const data = await res.json();
+                                                                    if (data.error) {
+                                                                        setScanError(data.error);
+                                                                    } else {
+                                                                        setScanResult(data.data);
+                                                                    }
+                                                                } catch {
+                                                                    setScanError('Scan failed');
+                                                                } finally {
+                                                                    setScanningVendor(null);
+                                                                }
+                                                            }}
+                                                        >
+                                                            {scanningVendor === vendor.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Scan className="h-3.5 w-3.5" />}
+                                                            Scan
+                                                        </Button>
+                                                        <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            onClick={() => removeVendor(vendor.id)}>Remove</Button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -430,6 +469,53 @@ export default function VendorsPage() {
                             )}
                         </CardContent>
                     </Card>
+
+                    {/* Shodan Scan Results Slide-out */}
+                    {(scanResult || scanError) && (
+                        <Card className="border-cyan-500/20 bg-card/40 animate-fade-in">
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <CardTitle className="text-base flex items-center gap-2">
+                                    <Scan className="h-4 w-4 text-cyan-400" />
+                                    Shodan Vendor Scan Results
+                                </CardTitle>
+                                <Button variant="ghost" size="sm" onClick={() => { setScanResult(null); setScanError(null); }}>
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </CardHeader>
+                            <CardContent>
+                                {scanError ? (
+                                    <div className="flex items-center gap-2 text-red-400 text-sm">
+                                        <AlertTriangle className="h-4 w-4" /> {scanError}
+                                    </div>
+                                ) : scanResult && (
+                                    <div className="space-y-3">
+                                        <div className="grid grid-cols-4 gap-3">
+                                            <div className="p-3 rounded-lg bg-cyan-500/5 border border-cyan-500/10 text-center">
+                                                <div className="text-2xl font-bold text-cyan-400 font-mono">{scanResult.riskScore}</div>
+                                                <div className="text-[10px] text-muted-foreground uppercase">Risk Score</div>
+                                            </div>
+                                            <div className="p-3 rounded-lg bg-white/[0.02] text-center">
+                                                <div className="text-xl font-bold text-white font-mono">{scanResult.totalHosts}</div>
+                                                <div className="text-[10px] text-muted-foreground uppercase">Hosts</div>
+                                            </div>
+                                            <div className="p-3 rounded-lg bg-white/[0.02] text-center">
+                                                <div className="text-xl font-bold text-amber-400 font-mono">{scanResult.exposedServices}</div>
+                                                <div className="text-[10px] text-muted-foreground uppercase">Exposed Svc</div>
+                                            </div>
+                                            <div className="p-3 rounded-lg bg-white/[0.02] text-center">
+                                                <div className="text-xl font-bold text-red-400 font-mono">{scanResult.vulnerabilities.length}</div>
+                                                <div className="text-[10px] text-muted-foreground uppercase">CVEs</div>
+                                            </div>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">{scanResult.summary}</p>
+                                        <Badge className={`${scanResult.riskLevel === 'CRITICAL' ? 'bg-red-500/20 text-red-400' : scanResult.riskLevel === 'HIGH' ? 'bg-orange-500/20 text-orange-400' : scanResult.riskLevel === 'MEDIUM' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                                            {scanResult.riskLevel}
+                                        </Badge>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
                 </TabsContent>
 
             </Tabs>

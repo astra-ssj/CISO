@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
     BrainCircuit, Globe, Crosshair, Activity,
-    Rss, Skull, Search, Shield,
+    Rss, Skull, Search, Shield, Radar,
 } from "lucide-react";
 import { DATA_LAYERS, type DataLayerCategory } from '@/lib/intelligence/data-layers';
 import { COUNTRY_COORDS } from '@/lib/intelligence/country-coords';
@@ -16,6 +16,7 @@ import { IOCExplorer } from '@/components/intelligence/IOCExplorer';
 import { AttackHeatmap } from '@/components/intelligence/AttackHeatmap';
 import { FeedManager } from '@/components/intelligence/FeedManager';
 import { EnrichmentTool } from '@/components/intelligence/EnrichmentTool';
+import { AttackSurface } from '@/components/intelligence/AttackSurface';
 import type { MapDataPoint, OfficePin } from '@/components/intelligence/world-monitor/WorldMonitorMap';
 import { getFreshnessSummary, type FreshnessSummary } from '@/lib/intelligence/data-freshness';
 
@@ -329,6 +330,10 @@ export default function IntelligencePage() {
                         <Skull className="h-4 w-4" />
                         Ransomware
                     </TabsTrigger>
+                    <TabsTrigger value="attack-surface" className="gap-1.5 text-xs sm:text-sm">
+                        <Radar className="h-4 w-4" />
+                        <span className="hidden sm:inline">Attack</span> Surface
+                    </TabsTrigger>
                 </TabsList>
 
                 {/* Tab: Threat Briefing */}
@@ -398,6 +403,11 @@ export default function IntelligencePage() {
                 {/* Tab: Ransomware */}
                 <TabsContent value="ransomware" className="mt-6">
                     <RansomwareDashboard />
+                </TabsContent>
+
+                {/* Tab: Attack Surface */}
+                <TabsContent value="attack-surface" className="mt-6">
+                    <AttackSurface />
                 </TabsContent>
             </Tabs>
         </div>

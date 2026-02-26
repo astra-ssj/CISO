@@ -499,3 +499,17 @@ model TeamInvite {
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
+
+// -----------------------------------------------------------------------------
+// 17. Attack Surface Scans (Shodan)
+// -----------------------------------------------------------------------------
+
+model AttackSurfaceScan {
+  id          String   @id @default(cuid())
+  scanDate    DateTime @default(now())
+  totalAssets Int
+  totalVulns  Int
+  riskScore   Int
+  results     String   // JSON — Full AttackSurfaceReport
+  createdBy   String
+}

@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import {
     Brain, Loader2, Sparkles, Key, Eye, EyeOff, RefreshCw, Bell,
     Settings as SettingsIcon, Coins, Flame, Activity, Users, ShieldAlert, Cpu, Building2,
-    CheckCircle2,
+    CheckCircle2, Plug,
 } from "lucide-react";
 import { CompaniesProductsTab } from '@/components/settings/CompaniesProductsTab';
 import {
@@ -440,6 +440,77 @@ function SecurityPoliciesTab() {
     );
 }
 
+// ─── Shodan / Integrations Config ───
+function IntegrationsTab() {
+    const [shodanKey, setShodanKey] = useState('');
+    const [showKey, setShowKey] = useState(false);
+    const [testing, setTesting] = useState(false);
+    const [status, setStatus] = useState<{ connected: boolean; plan?: string; credits?: number; error?: string } | null>(null);
+
+    const testShodan = async () => {
+        setTesting(true); setStatus(null);
+        try {
+            const res = await fetch('/api/intelligence/shodan/health');
+            const data = await res.json();
+            setStatus(data);
+        } catch { setStatus({ connected: false, error: 'Network error' }); }
+        finally { setTesting(false); }
+    };
+
+    return (
+        <div className="space-y-6">
+            <Card className="border-primary/10">
+                <CardHeader>
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 bg-cyan-500/10 rounded-lg"><Plug className="h-6 w-6 text-cyan-400" /></div>
+                        <div>
+                            <CardTitle>Shodan</CardTitle>
+                            <CardDescription className="mt-1">Attack surface intelligence and internet-facing asset discovery.</CardDescription>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-5">
+                    <div className="space-y-2">
+                        <Label>API Key</Label>
+                        <div className="relative">
+                            <Input
+                                type={showKey ? 'text' : 'password'}
+                                placeholder="Enter your Shodan API key..."
+                                value={shodanKey}
+                                onChange={e => setShodanKey(e.target.value)}
+                                className="pr-10"
+                            />
+                            <button className="absolute right-3 top-3 text-muted-foreground hover:text-foreground" onClick={() => setShowKey(!showKey)}>
+                                {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">Get your key at <a href="https://account.shodan.io" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">account.shodan.io</a>. Set <code className="text-cyan-300 bg-cyan-500/10 px-1 rounded">SHODAN_API_KEY</code> in your <code className="text-cyan-300 bg-cyan-500/10 px-1 rounded">.env</code> file.</p>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 border border-border">
+                        <div className="flex items-center gap-3">
+                            <div className={`h-3 w-3 rounded-full ${status?.connected ? 'bg-emerald-500 animate-pulse' : status?.error ? 'bg-red-500' : 'bg-amber-500'}`} />
+                            <div>
+                                <div className="font-medium text-sm">
+                                    {status?.connected ? `Connected — ${status.plan}` : status?.error ? 'Connection Failed' : 'Not Tested'}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                    {status?.connected
+                                        ? `${status.credits} query credits remaining`
+                                        : status?.error ?? 'Click Test Connection to verify'}
+                                </div>
+                            </div>
+                        </div>
+                        <Button variant="outline" size="sm" onClick={testShodan} disabled={testing}>
+                            {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <><RefreshCw className="h-4 w-4 mr-2" />Test Connection</>}
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
+}
+
 export default function SettingsPage() {
     return (
         <div className="space-y-6 max-w-5xl mx-auto">
@@ -453,6 +524,7 @@ export default function SettingsPage() {
                     <TabsTrigger value="preferences" className="gap-2"><SettingsIcon className="h-4 w-4" />Preferences</TabsTrigger>
                     <TabsTrigger value="economics" className="gap-2"><Coins className="h-4 w-4" />AI Economics</TabsTrigger>
                     <TabsTrigger value="companies" className="gap-2"><Building2 className="h-4 w-4" />Companies & Products</TabsTrigger>
+                    <TabsTrigger value="integrations" className="gap-2"><Plug className="h-4 w-4" />Integrations</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="ai"><AIProviderConfig /></TabsContent>
@@ -461,6 +533,7 @@ export default function SettingsPage() {
                 <TabsContent value="preferences"><div className="space-y-4"><NotificationSettings /></div></TabsContent>
                 <TabsContent value="economics"><AIEconomicsTab /></TabsContent>
                 <TabsContent value="companies"><CompaniesProductsTab /></TabsContent>
+                <TabsContent value="integrations"><IntegrationsTab /></TabsContent>
             </Tabs>
         </div>
     );
