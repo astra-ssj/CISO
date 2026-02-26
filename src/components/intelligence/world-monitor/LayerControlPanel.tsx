@@ -95,9 +95,12 @@ export function LayerControlPanel({
                         return (
                             <div key={cat.id} className="rounded-md overflow-hidden">
                                 {/* Category header */}
-                                <button
+                                <div
+                                    role="button"
+                                    tabIndex={0}
                                     onClick={() => toggleCategoryExpanded(cat.id)}
-                                    className="w-full flex items-center justify-between px-2.5 py-2 hover:bg-slate-800/50 transition-colors rounded-md group"
+                                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleCategoryExpanded(cat.id); }}
+                                    className="w-full flex items-center justify-between px-2.5 py-2 hover:bg-slate-800/50 transition-colors rounded-md group cursor-pointer"
                                 >
                                     <div className="flex items-center gap-2">
                                         {isExpanded ? (
@@ -120,14 +123,14 @@ export function LayerControlPanel({
                                                 onToggleCategory(cat.id, !allEnabled);
                                             }}
                                             className={`text-[9px] px-1.5 py-0.5 rounded font-medium transition-colors ${allEnabled
-                                                    ? 'bg-slate-700 text-slate-400 hover:bg-slate-600'
-                                                    : 'bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20'
+                                                ? 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+                                                : 'bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20'
                                                 }`}
                                         >
                                             {allEnabled ? 'OFF' : 'ALL'}
                                         </button>
                                     </div>
-                                </button>
+                                </div>
 
                                 {/* Layer items */}
                                 {isExpanded && (
@@ -138,8 +141,8 @@ export function LayerControlPanel({
                                                 <div
                                                     key={layer.id}
                                                     className={`flex items-center justify-between px-2.5 py-1.5 rounded-md transition-colors ${isEnabled
-                                                            ? 'bg-slate-800/40'
-                                                            : 'hover:bg-slate-800/20'
+                                                        ? 'bg-slate-800/40'
+                                                        : 'hover:bg-slate-800/20'
                                                         }`}
                                                 >
                                                     <div className="flex items-center gap-2 min-w-0">

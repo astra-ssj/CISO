@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -100,8 +100,11 @@ function ActionQueueTab() {
 // ─── Decision Feed Tab (original /decisions content) ───
 function DecisionFeedTab() {
     const { decisions, getPending, getStats } = useDecisionStore();
-    const stats = getStats();
-    const pending = getPending();
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => { setMounted(true); }, []);
+
+    const stats = mounted ? getStats() : { pending: 0, approved: 0, deferred: 0, avgConfidence: 0, total: 0 };
+    const pending = mounted ? getPending() : [];
     const [pillarFilter, setPillarFilter] = useState<DecisionPillar | 'ALL'>('ALL');
     const [showResolved, setShowResolved] = useState(false);
 
