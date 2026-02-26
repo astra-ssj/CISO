@@ -28,4 +28,8 @@ export interface RansomwareFeedData {
     groups: RansomwareGroup[];
     stats: RansomwareStats;
     last_updated: string;
+    /** Raw MalwareBazaar samples for table view (when fetched from live API) */
+    rawSamples?: unknown[];
+    /** Count of samples specifically identified as ransomware */
+    ransomwareCount?: number;
 }

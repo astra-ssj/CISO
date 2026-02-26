@@ -20,27 +20,86 @@ const MOCK_GROUPS: RansomwareGroup[] = [
     { name: "Akira", victim_count: 48, last_active: "2024-05-19" },
 ];
 
+interface MalwareSampleAPI {
+    sha256: string;
+    md5: string;
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+    signature: string;
+    reporter: string;
+    tags: string[];
+    firstSeen: string;
+    originCountry: string | null;
+    intelligence: { downloads?: string; uploads?: string } | null;
+}
+
 export async function getRansomwareFeed(): Promise<RansomwareFeedData> {
-    // Try to fetch from real API first
     try {
-        // Note: This is a public API attempt. If it fails or CORS blocks it, we fall back.
-        // In a real prod app, we'd proxy this via a Next.js API route to avoid CORS.
-        // For this implementation, we'll try the direct fetch but assume we might need mock data.
+        const res = await fetch('/api/intelligence/malware');
+        if (!res.ok) throw new Error('MalwareBazaar API error');
+        const json = await res.json();
+        const samples: MalwareSampleAPI[] = json.data || [];
 
-        // We will simulate a fetch failure for now to ensure the UI looks good immediately with the mock data.
-        // In the future, we can wire up the real `fetch('https://api.ransomware.live/v2/recent')`.
-        // Throwing error to force fallback for stability during demo.
-        throw new Error("Using Mock Data for Stability");
+        if (samples.length === 0) throw new Error('No samples returned');
 
-        /* 
-        const res = await fetch('https://api.ransomware.live/v2/recent');
-        if (!res.ok) throw new Error('API Failed');
-        const data = await res.json();
-        // Parse data here...
-        */
+        // Build victims from malware samples (treat signature as "group")
+        const victims: RansomwareVictim[] = samples
+            .filter(s => s.signature && s.signature !== 'null' && s.signature !== 'Unknown')
+            .slice(0, 20)
+            .map((s, i) => ({
+                id: String(i + 1),
+                post_title: s.fileName || `${s.fileType} sample (${s.sha256.substring(0, 8)}...)`,
+                group_name: s.signature || 'Unknown',
+                published: s.firstSeen || new Date().toISOString(),
+                country: s.originCountry || 'Unknown',
+            }));
 
+        // Build group stats from families
+        const familyMap = new Map<string, { count: number; lastSeen: string }>();
+        for (const s of samples) {
+            const name = s.signature || 'Unknown';
+            const existing = familyMap.get(name);
+            if (existing) {
+                existing.count++;
+                if (s.firstSeen > existing.lastSeen) existing.lastSeen = s.firstSeen;
+            } else {
+                familyMap.set(name, { count: 1, lastSeen: s.firstSeen || '' });
+            }
+        }
+
+        const groups: RansomwareGroup[] = [...familyMap.entries()]
+            .filter(([name]) => name !== 'Unknown')
+            .sort(([, a], [, b]) => b.count - a.count)
+            .slice(0, 10)
+            .map(([name, data]) => ({
+                name,
+                victim_count: data.count,
+                last_active: data.lastSeen.split('T')[0] || new Date().toISOString().split('T')[0],
+            }));
+
+        // Ransomware-specific count (samples tagged with ransom-related keywords)
+        const ransomwareSamples = samples.filter(s =>
+            (s.signature || '').toLowerCase().includes('ransom') ||
+            (s.tags || []).some(t => t.toLowerCase().includes('ransom'))
+        );
+
+        return {
+            victims: victims.length > 0 ? victims : MOCK_VICTIMS,
+            groups: groups.length > 0 ? groups : MOCK_GROUPS,
+            stats: {
+                total_victims_24h: Math.min(samples.length, 50),
+                total_victims_7d: samples.length,
+                active_groups: familyMap.size,
+                top_target_country: getMostCommonCountry(samples),
+            },
+            last_updated: json.fetchedAt || new Date().toISOString(),
+            // Extend with raw samples for the table view
+            rawSamples: samples,
+            ransomwareCount: ransomwareSamples.length,
+        };
     } catch (error) {
-        console.warn("Ransomware API unavailable, using fallback intelligence feed.", error);
+        console.warn("MalwareBazaar API unavailable, using fallback intelligence feed.", error);
 
         return {
             victims: MOCK_VICTIMS,
@@ -51,9 +110,22 @@ export async function getRansomwareFeed(): Promise<RansomwareFeedData> {
                 active_groups: 28,
                 top_target_country: "USA"
             },
-            last_updated: new Date().toISOString()
+            last_updated: new Date().toISOString(),
         };
     }
+}
+
+function getMostCommonCountry(samples: MalwareSampleAPI[]): string {
+    const counts = new Map<string, number>();
+    for (const s of samples) {
+        const c = s.originCountry || 'Unknown';
+        counts.set(c, (counts.get(c) || 0) + 1);
+    }
+    let maxC = 'Unknown', maxN = 0;
+    for (const [c, n] of counts) {
+        if (n > maxN && c !== 'Unknown') { maxC = c; maxN = n; }
+    }
+    return maxC;
 }
 
 export function getThreatLevel(): number {

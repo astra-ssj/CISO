@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { ArrowRight, MapPin } from 'lucide-react';
+import { ArrowRight, MapPin, Zap } from 'lucide-react';
 
 /* ── Design tokens ─────────────────────────────────── */
 const CARD_BG = 'rgba(8, 12, 24, 0.85)';
@@ -35,29 +35,48 @@ const SEVERITY_COLORS = {
     low: '#22d3ee',
 };
 
+const SOURCE_COLORS: Record<string, string> = {
+    ThreatFox: '#f59e0b',
+    URLhaus: '#f97316',
+    MalwareBazaar: '#ef4444',
+};
+
 export function ActiveThreats() {
     const [threats, setThreats] = useState<ThreatItem[]>(SAMPLE_THREATS);
     const [isLive, setIsLive] = useState(false);
+    const [feedError, setFeedError] = useState(false);
+
+    const fetchThreats = useCallback(async () => {
+        try {
+            const res = await fetch('/api/intelligence/threats');
+            if (!res.ok) throw new Error('API error');
+            const data = await res.json();
+
+            if (data?.data?.length > 0) {
+                const liveThreats: ThreatItem[] = data.data.slice(0, 8).map((t: Record<string, unknown>, i: number) => ({
+                    id: `live-${i}`,
+                    title: String(t.title || 'Unknown threat'),
+                    severity: (String(t.severity || 'MEDIUM').toLowerCase()) as ThreatItem['severity'],
+                    source: String(t.source || 'Unknown'),
+                    time: t.firstSeen ? formatTimeAgo(String(t.firstSeen)) : 'recent',
+                    region: t.country ? String(t.country) : 'Global',
+                }));
+                setThreats(liveThreats);
+                setIsLive(true);
+                setFeedError(false);
+            }
+        } catch {
+            // Keep existing data (sample or previously loaded live data)
+            if (!isLive) setFeedError(true);
+        }
+    }, [isLive]);
 
     useEffect(() => {
-        fetch('/api/intelligence/threatfox')
-            .then(r => r.ok ? r.json() : null)
-            .then(data => {
-                if (data?.data?.length > 0) {
-                    const liveThreats: ThreatItem[] = data.data.slice(0, 8).map((ioc: Record<string, unknown>, i: number) => ({
-                        id: `live-${i}`,
-                        title: `${ioc.malware || 'Unknown'}: ${ioc.threatType || 'IOC'} — ${String(ioc.value || '').substring(0, 40)}`,
-                        severity: Number(ioc.confidence || 0) >= 75 ? 'critical' : Number(ioc.confidence || 0) >= 50 ? 'high' : 'medium',
-                        source: 'ThreatFox',
-                        time: ioc.firstSeen ? formatTimeAgo(String(ioc.firstSeen)) : 'recent',
-                        region: 'Global',
-                    }));
-                    setThreats(liveThreats);
-                    setIsLive(true);
-                }
-            })
-            .catch(() => { /* keep sample data */ });
-    }, []);
+        fetchThreats();
+        // Auto-refresh every 5 minutes
+        const interval = setInterval(fetchThreats, 5 * 60 * 1000);
+        return () => clearInterval(interval);
+    }, [fetchThreats]);
 
     return (
         <div
@@ -73,14 +92,23 @@ export function ActiveThreats() {
                     >
                         Active Threats
                     </span>
-                    {!isLive && (
+                    {!isLive && !feedError && (
                         <span className="text-[9px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'rgba(30,41,59,0.6)', color: '#94a3b8' }}>Sample Data</span>
+                    )}
+                    {isLive && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981' }}>LIVE</span>
                     )}
                 </div>
                 <Link href="/intelligence" className="text-[10px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors">
                     View All <ArrowRight className="h-3 w-3" />
                 </Link>
             </div>
+            {feedError && !isLive && (
+                <div className="flex items-center gap-1.5 px-4 py-1.5 text-[9px] text-amber-400" style={{ background: 'rgba(251,191,36,0.05)' }}>
+                    <Zap className="h-3 w-3" />
+                    Threat feeds temporarily unavailable — showing cached data
+                </div>
+            )}
             <div className="flex-1 overflow-y-auto px-2 py-1" style={{ maxHeight: '300px' }}>
                 {threats.map((t, i) => (
                     <div
@@ -102,7 +130,15 @@ export function ActiveThreats() {
                                 >
                                     {t.severity.toUpperCase()}
                                 </span>
-                                <span className="text-[9px] text-slate-500">{t.source}</span>
+                                <span
+                                    className="text-[9px] font-medium px-1 py-0.5 rounded"
+                                    style={{
+                                        color: SOURCE_COLORS[t.source] || '#94a3b8',
+                                        background: `${SOURCE_COLORS[t.source] || '#94a3b8'}10`,
+                                    }}
+                                >
+                                    {t.source}
+                                </span>
                                 <span className="text-[9px] text-slate-600" style={{ fontFamily: 'var(--font-jetbrains), monospace' }}>{t.time}</span>
                                 {t.region && (
                                     <span className="text-[9px] text-slate-600 flex items-center gap-0.5">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -8,6 +8,7 @@ import {
     Rss, Skull, Search, Shield,
 } from "lucide-react";
 import { DATA_LAYERS, type DataLayerCategory } from '@/lib/intelligence/data-layers';
+import { COUNTRY_COORDS } from '@/lib/intelligence/country-coords';
 import { LayerControlPanel } from '@/components/intelligence/world-monitor/LayerControlPanel';
 import { ThreatBriefing } from '@/components/intelligence/ThreatBriefing';
 import { CampaignsView } from '@/components/intelligence/CampaignsView';
@@ -163,6 +164,80 @@ export default function IntelligencePage() {
 
     const dataPoints = useMemo(() => buildDataPoints(), []);
     const [freshnessSummary] = useState<FreshnessSummary>(() => getFreshnessSummary());
+    const [cyberPoints, setCyberPoints] = useState<MapDataPoint[]>([]);
+    const cyberFetchedRef = useRef(false);
+
+    // ── Fetch cyber threat data when any CYBER layer is enabled ──
+    const cyberLayerIds = useMemo(() => new Set(['apt_threats', 'ransomware', 'malicious_urls']), []);
+    const hasCyberLayerEnabled = useMemo(
+        () => [...cyberLayerIds].some((id) => enabledLayers.has(id)),
+        [enabledLayers, cyberLayerIds],
+    );
+
+    useEffect(() => {
+        if (!hasCyberLayerEnabled) return;
+        if (cyberFetchedRef.current) return;
+
+        let cancelled = false;
+        async function fetchCyberData() {
+            try {
+                const res = await fetch('/api/intelligence/threats');
+                if (!res.ok) return;
+                const json = await res.json();
+                if (cancelled) return;
+
+                const points: MapDataPoint[] = [];
+                const now = new Date().toISOString();
+
+                for (const threat of (json.data || [])) {
+                    const country = threat.country;
+                    const coords = country ? COUNTRY_COORDS[country.toUpperCase()] : null;
+                    if (!coords) continue; // skip items with no geo data — don't plot at 0,0
+
+                    // Random jitter so overlapping markers spread
+                    const jitter = () => (Math.random() - 0.5) * 4;
+
+                    const layerId = threat.category === 'ransomware' ? 'ransomware'
+                        : threat.source === 'URLhaus' ? 'malicious_urls'
+                            : 'apt_threats';
+
+                    const colorMap: Record<string, [number, number, number, number]> = {
+                        apt_threats: [244, 63, 94, 200],      // #f43f5e
+                        ransomware: [220, 38, 38, 200],       // #dc2626
+                        malicious_urls: [251, 146, 60, 200],  // #fb923c
+                    };
+
+                    points.push({
+                        id: threat.id,
+                        latitude: coords.lat + jitter(),
+                        longitude: coords.lng + jitter(),
+                        label: threat.title || 'Unknown Threat',
+                        category: 'CYBER',
+                        severity: (threat.severity || 'medium').toLowerCase() as MapDataPoint['severity'],
+                        details: `[${threat.source}] ${threat.malwareFamily || ''} — Confidence: ${threat.confidence}% | Tags: ${(threat.tags || []).join(', ')}`,
+                        layerId,
+                        color: colorMap[layerId] || [168, 85, 247, 200],
+                        timestamp: threat.firstSeen || now,
+                        source: threat.source,
+                    });
+                }
+
+                setCyberPoints(points);
+                cyberFetchedRef.current = true;
+            } catch (err) {
+                console.warn('[Intelligence] Failed to fetch cyber threats for map:', err);
+            }
+        }
+
+        fetchCyberData();
+        // Auto-refresh every 5 minutes
+        const interval = setInterval(() => {
+            cyberFetchedRef.current = false;
+            fetchCyberData();
+        }, 5 * 60 * 1000);
+
+        return () => { cancelled = true; clearInterval(interval); };
+    }, [hasCyberLayerEnabled]);
 
     const handleToggleLayer = useCallback((layerId: string) => {
         setEnabledLayers((prev) => {
@@ -203,7 +278,8 @@ export default function IntelligencePage() {
     }, []);
 
     const activeLayers = DATA_LAYERS.filter((l) => enabledLayers.has(l.id));
-    const visiblePoints = dataPoints.filter((p) => enabledLayers.has(p.layerId));
+    const allDataPoints = useMemo(() => [...dataPoints, ...cyberPoints], [dataPoints, cyberPoints]);
+    const visiblePoints = allDataPoints.filter((p) => enabledLayers.has(p.layerId));
 
     return (
         <div className="space-y-6 max-w-[1600px] mx-auto">

@@ -19,6 +19,7 @@ interface EnrichmentResult {
     query: { value: string; type: IOCType };
     opencti: { found: boolean; results: unknown[]; count: number };
     misp: { found: boolean; results: unknown[]; count: number };
+    abusech?: { found: boolean; results: unknown[]; count: number };
     combined: { totalHits: number; sources: string[]; verdict: string };
     timestamp: string;
 }
@@ -176,7 +177,7 @@ export function EnrichmentTool() {
                     </Card>
 
                     {/* Source Breakdowns */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {/* OpenCTI */}
                         <Card>
                             <CardHeader className="pb-2">
@@ -222,6 +223,32 @@ export function EnrichmentTool() {
                                     </div>
                                 ) : (
                                     <p className="text-sm text-muted-foreground text-center py-4">No matches in MISP</p>
+                                )}
+                            </CardContent>
+                        </Card>
+                        {/* Abuse.ch */}
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                                    <span className="text-orange-400">🟠</span> Abuse.ch Results
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-400">{result.abusech?.count ?? 0}</span>
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {result.abusech?.found ? (
+                                    <div className="space-y-1.5">
+                                        {(result.abusech.results as Array<{ source?: string; ioc?: string; malware?: string; confidence?: number; tags?: string[]; signature?: string; threat?: string; status?: string }>).slice(0, 5).map((r, i) => (
+                                            <div key={i} className="p-2 rounded-md bg-muted/10 text-xs">
+                                                <span className="font-medium">{r.source}: {r.malware || r.signature || r.ioc || 'Match'}</span>
+                                                {r.confidence != null && <span className="text-[10px] text-muted-foreground ml-1">(conf: {r.confidence}%)</span>}
+                                                {r.tags && r.tags.length > 0 && (
+                                                    <p className="text-[10px] text-muted-foreground mt-0.5">{r.tags.join(', ')}</p>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground text-center py-4">No matches in Abuse.ch</p>
                                 )}
                             </CardContent>
                         </Card>
