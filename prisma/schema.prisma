@@ -513,3 +513,98 @@ model AttackSurfaceScan {
   results     String   // JSON — Full AttackSurfaceReport
   createdBy   String
 }
+
+// -----------------------------------------------------------------------------
+// 18. Tabletop Exercises
+// -----------------------------------------------------------------------------
+
+model TabletopScenario {
+  id        String   @id @default(cuid())
+  slug      String   @unique               // "supply-chain", "insider", "ransomware"
+  title     String
+  subtitle  String?
+  severity  String                          // CRITICAL, HIGH, MEDIUM
+  briefing  String
+  icon      String?
+  color     String?                         // hex color for UI theming
+  stakes    String?                         // JSON: { revenue, customers, entities, auditIn }
+  steps     String                          // JSON: full step definitions including decisions
+  modes     String   @default("[\"decision\",\"discussion\"]") // JSON array
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  sessions  TabletopSession[]
+}
+
+model TabletopSession {
+  id             String   @id @default(cuid())
+  scenarioId     String
+  scenario       TabletopScenario @relation(fields: [scenarioId], references: [id])
+  mode           String                     // "decision" or "discussion"
+  facilitatorId  String?
+  status         String   @default("in_progress") // in_progress, completed, abandoned
+  startedAt      DateTime @default(now())
+  completedAt    DateTime?
+
+  // Scoring (decision mode only)
+  totalDollars     Int     @default(0)
+  finalRepInternal Int     @default(100)
+  finalRepExternal Int     @default(100)
+  grade            String?                  // A, B, C, D, F
+
+  // Metadata
+  participants   String?                    // JSON: [{ name, role, email }]
+  notes          String?
+
+  decisions      TabletopDecision[]
+  responses      TabletopResponse[]
+  commsDrafts    TabletopCommsDraft[]
+
+  @@index([scenarioId])
+}
+
+model TabletopDecision {
+  id              String   @id @default(cuid())
+  sessionId       String
+  session         TabletopSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  stepId          Int
+  stepTime        String                   // "T+0h"
+  stepTitle       String
+  choiceId        String                   // "a", "b", "c"
+  choiceLabel     String
+  role            String
+  dollarImpact    Int
+  repInternalDelta Int
+  repExternalDelta Int
+  consequence     String
+  cascadeFlag     String?                  // for future branching logic
+  decidedAt       DateTime @default(now())
+
+  @@index([sessionId])
+}
+
+model TabletopResponse {
+  id          String   @id @default(cuid())
+  sessionId   String
+  session     TabletopSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  stepId      Int
+  role        String
+  question    String
+  response    String
+  respondedAt DateTime @default(now())
+
+  @@index([sessionId])
+}
+
+model TabletopCommsDraft {
+  id        String   @id @default(cuid())
+  sessionId String
+  session   TabletopSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  stepId    Int
+  audience  String
+  template  String
+  draft     String
+  draftedAt DateTime @default(now())
+
+  @@index([sessionId])
+}

@@ -41,6 +41,7 @@ const navItems = [
     { name: 'Governance & Risk', href: '/governance', icon: Shield },
     { name: 'Vendor Risk', href: '/vendors', icon: Building2 },
     { name: 'Incidents', href: '/incidents', icon: AlertTriangle },
+    { name: 'Exercises', href: '/exercises', icon: Siren },
     { name: 'Threat Intel', href: '/intelligence', icon: Radar },
     { name: 'AppSec', href: '/appsec', icon: Code },
     { name: 'Integrations', href: '/integrations', icon: Plug },
