@@ -15,16 +15,16 @@ export async function GET(req: NextRequest) {
         });
 
         // Fetch overrides if context is specified
-        let companyOverrides: any[] = [];
-        let productOverrides: any[] = [];
+        let companyOverrides: Array<Record<string, unknown>> = [];
+        let productOverrides: Array<Record<string, unknown>> = [];
 
         if (companyId) {
-            companyOverrides = await (prisma as any).knowledgeOverride.findMany({
+            companyOverrides = await prisma.knowledgeOverride.findMany({
                 where: { scope: 'COMPANY', companyId },
             });
         }
         if (productId) {
-            productOverrides = await (prisma as any).knowledgeOverride.findMany({
+            productOverrides = await prisma.knowledgeOverride.findMany({
                 where: { scope: 'PRODUCT', productId },
             });
         }
@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
                     tags: e.tags,
                     approvedBy: e.approvedBy,
                 })),
-                companyOverrides: companyOverrides.map((o: any) => ({
+                companyOverrides: companyOverrides.map((o: Record<string, unknown>) => ({
                     id: o.id,
                     knowledgeEntryId: o.knowledgeEntryId,
                     scope: o.scope,
@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
                     answerText: o.answerText,
                     notes: o.notes,
                 })),
-                productOverrides: productOverrides.map((o: any) => ({
+                productOverrides: productOverrides.map((o: Record<string, unknown>) => ({
                     id: o.id,
                     knowledgeEntryId: o.knowledgeEntryId,
                     scope: o.scope,

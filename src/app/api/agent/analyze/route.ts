@@ -4,6 +4,8 @@ import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
 import { TokenTracker, AIModel } from '@/lib/telemetry/token-tracker';
 import { parseBodyWithZod, log } from '@/lib/api-validation';
 import { z } from 'zod';
+import type { ComplianceStandard } from '@/lib/store';
+import type { Policy } from '@/lib/policy-store';
 
 // Inline schema — extends the shared one to include the legacy 'policies' field
 const analyzeBodySchema = z.object({
@@ -61,7 +63,7 @@ Output Schema:
   "recommendedActions": string[]
 }`;
 
-            let analysis: any;
+            let analysis: Record<string, unknown>;
 
             try {
                 const response = await provider.generateStructuredContent(prompt);
@@ -70,7 +72,7 @@ Output Schema:
                 if (response.usage) {
                     await TokenTracker.trackUsage({
                         userId: 'authenticated-user',
-                        model: (provider as any).modelName as AIModel || 'gemini-1.5-pro',
+                        model: (provider as unknown as Record<string, unknown>).modelName as AIModel || 'gemini-1.5-pro',
                         actionType: 'RISK_ANALYSIS',
                         promptTokens: response.usage.promptTokens,
                         completionTokens: response.usage.completionTokens
@@ -83,9 +85,8 @@ Output Schema:
                     title,
                     description,
                     {
-                        activeStandards: (context?.activeStandards || []) as any,
-                        policies: (context?.policies || []) as any
-
+                        activeStandards: (context?.activeStandards || []) as ComplianceStandard[],
+                        policies: (context?.policies || []) as unknown as Policy[]
                     }
                 );
                 return NextResponse.json({
@@ -108,10 +109,8 @@ Output Schema:
             title,
             description,
             {
-                activeStandards: (context?.activeStandards || []) as any,
-                policies: (context?.policies || []) as any
-
-
+                activeStandards: (context?.activeStandards || []) as ComplianceStandard[],
+                policies: (context?.policies || []) as unknown as Policy[]
             }
         );
 

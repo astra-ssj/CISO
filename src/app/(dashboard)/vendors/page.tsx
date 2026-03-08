@@ -103,7 +103,7 @@ export default function VendorsPage() {
     const handleAddVendor = () => {
         addVendor({
             ...newVendor,
-            dataAccess: newVendor.dataAccess as any[],
+            dataAccess: newVendor.dataAccess as ("PII" | "FINANCIAL" | "INTELLECTUAL_PROPERTY" | "OPERATIONAL" | "NONE")[],
             complianceCertifications: newVendor.complianceCertifications
         });
         setShowAddForm(false);
@@ -385,9 +385,9 @@ export default function VendorsPage() {
                                                                     if (data.error) {
                                                                         setScanError(data.error);
                                                                     } else {
-                                                                        setScanResult(data.data);
+                                                                        setScanResult(data.data as { domain: string; riskScore: number; riskLevel: string; totalHosts: number; exposedServices: number; vulnerabilities: { cve: string; cvss: number; host: string }[]; summary: string });
                                                                     }
-                                                                } catch {
+                                                                } catch (err: unknown) {
                                                                     setScanError('Scan failed');
                                                                 } finally {
                                                                     setScanningVendor(null);

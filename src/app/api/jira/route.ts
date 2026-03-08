@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { jiraConnector } from '@/lib/jira/jira-connector';
+import type { JiraIssue } from '@/lib/jira/jira-connector';
 import { parseBodyWithZod, jiraIssueBodySchema, log } from '@/lib/api-validation';
 
 // Initialize connector from env vars if available
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
             }, { status: 503 });
         }
 
-        const result = await jiraConnector.createIssue(parsed.data as any);
+        const result = await jiraConnector.createIssue(parsed.data as unknown as JiraIssue);
 
         return NextResponse.json({
             success: true,

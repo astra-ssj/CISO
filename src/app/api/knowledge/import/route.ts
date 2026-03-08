@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 
 async function handleJsonImport(file: File) {
     const text = await file.text();
-    let data: any;
+    let data: Record<string, unknown> & { commonEntries?: Record<string, unknown>[], companyOverrides?: Record<string, unknown>[], productOverrides?: Record<string, unknown>[], scope?: Record<string, unknown> };
 
     try {
         data = JSON.parse(text);
@@ -55,7 +55,7 @@ async function handleJsonImport(file: File) {
     for (const entry of data.commonEntries) {
         if (!entry.questionText || !entry.answerText) continue;
 
-        const normalized = normalizeQuestion(entry.questionText);
+        const normalized = normalizeQuestion(entry.questionText as string);
 
         // Dedup check
         const existing = await prisma.knowledgeEntry.findFirst({
@@ -69,20 +69,20 @@ async function handleJsonImport(file: File) {
 
         await prisma.knowledgeEntry.create({
             data: {
-                questionText: entry.questionText,
+                questionText: entry.questionText as string,
                 questionNormalized: normalized,
-                keywords: entry.keywords || extractKeywords(entry.questionText),
-                domain: entry.domain || 'CUSTOM',
-                category: entry.category || 'Imported',
-                answerType: entry.answerType || 'CONDITIONAL',
-                answerText: entry.answerText,
-                evidence: entry.evidence || null,
-                source: entry.source || 'JSON Import',
-                frameworks: entry.frameworks || null,
-                jurisdiction: entry.jurisdiction || null,
-                tags: entry.tags || null,
-                confidence: entry.confidence ?? 1.0,
-                approvedBy: entry.approvedBy || 'SYSTEM',
+                keywords: (entry.keywords as string) || extractKeywords(entry.questionText as string),
+                domain: (entry.domain as string) || 'CUSTOM',
+                category: (entry.category as string) || 'Imported',
+                answerType: (entry.answerType as string) || 'CONDITIONAL',
+                answerText: entry.answerText as string,
+                evidence: (entry.evidence as string) || null,
+                source: (entry.source as string) || 'JSON Import',
+                frameworks: (entry.frameworks as string) || null,
+                jurisdiction: (entry.jurisdiction as string) || null,
+                tags: (entry.tags as string) || null,
+                confidence: (entry.confidence as number) ?? 1.0,
+                approvedBy: (entry.approvedBy as string) || 'SYSTEM',
                 approvedAt: new Date(),
             }
         });
@@ -94,15 +94,15 @@ async function handleJsonImport(file: File) {
         for (const override of data.companyOverrides) {
             if (!override.questionText || !override.answerText) continue;
             try {
-                await (prisma as any).knowledgeOverride.create({
+                await prisma.knowledgeOverride.create({
                     data: {
-                        knowledgeEntryId: override.knowledgeEntryId || null,
+                        knowledgeEntryId: (override.knowledgeEntryId as string) || null,
                         scope: 'COMPANY',
-                        companyId: override.companyId || data.scope?.companyId || null,
-                        questionText: override.questionText,
-                        answerType: override.answerType || 'CONDITIONAL',
-                        answerText: override.answerText,
-                        notes: override.notes || null,
+                        companyId: (override.companyId as string) || (data.scope?.companyId as string) || null,
+                        questionText: override.questionText as string,
+                        answerType: (override.answerType as string) || 'CONDITIONAL',
+                        answerText: override.answerText as string,
+                        notes: (override.notes as string) || null,
                     }
                 });
                 overrideCount++;
@@ -115,15 +115,15 @@ async function handleJsonImport(file: File) {
         for (const override of data.productOverrides) {
             if (!override.questionText || !override.answerText) continue;
             try {
-                await (prisma as any).knowledgeOverride.create({
+                await prisma.knowledgeOverride.create({
                     data: {
-                        knowledgeEntryId: override.knowledgeEntryId || null,
+                        knowledgeEntryId: (override.knowledgeEntryId as string) || null,
                         scope: 'PRODUCT',
-                        productId: override.productId || data.scope?.productId || null,
-                        questionText: override.questionText,
-                        answerType: override.answerType || 'CONDITIONAL',
-                        answerText: override.answerText,
-                        notes: override.notes || null,
+                        productId: (override.productId as string) || (data.scope?.productId as string) || null,
+                        questionText: override.questionText as string,
+                        answerType: (override.answerType as string) || 'CONDITIONAL',
+                        answerText: override.answerText as string,
+                        notes: (override.notes as string) || null,
                     }
                 });
                 overrideCount++;

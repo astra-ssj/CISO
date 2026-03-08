@@ -63,13 +63,14 @@ export interface CAIQProcessingResult {
  */
 export async function parseQuestionnaire(buffer: ArrayBuffer): Promise<QuestionnaireQuestion[]> {
     const workbook = new ExcelJS.Workbook();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await workbook.xlsx.load(new Uint8Array(buffer) as any);
 
     // Try each sheet until we find questions
     for (const worksheet of workbook.worksheets) {
-        const rows: any[][] = [];
+        const rows: Array<Array<unknown>> = [];
         worksheet.eachRow({ includeEmpty: true }, (row) => {
-            rows.push(row.values as any[]);
+            rows.push(row.values as Array<unknown>);
         });
         // ExcelJS row.values is 1-indexed (index 0 is undefined), normalize
         const normalizedRows = rows.map(r => {
@@ -96,12 +97,13 @@ export async function parseQuestionnaire(buffer: ArrayBuffer): Promise<Questionn
  */
 export async function parseSourceFile(buffer: ArrayBuffer): Promise<SourceEntry[]> {
     const workbook = new ExcelJS.Workbook();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await workbook.xlsx.load(new Uint8Array(buffer) as any);
 
     for (const worksheet of workbook.worksheets) {
-        const rows: any[][] = [];
+        const rows: Array<Array<unknown>> = [];
         worksheet.eachRow({ includeEmpty: true }, (row) => {
-            rows.push(row.values as any[]);
+            rows.push(row.values as Array<unknown>);
         });
         const normalizedRows = rows.map(r => {
             const arr = Array.isArray(r) ? r.slice(1) : [];
@@ -121,7 +123,7 @@ export async function parseSourceFile(buffer: ArrayBuffer): Promise<SourceEntry[
  * Extract Q&A pairs from the source file.
  * Detects question column AND answer column(s).
  */
-function extractSourceEntries(rows: any[][]): SourceEntry[] {
+function extractSourceEntries(rows: Array<Array<unknown>>): SourceEntry[] {
     const questionKeywords = [
         'question', 'control question', 'caiq', 'requirement',
         'description', 'query', 'control specification', 'security question',
@@ -148,7 +150,7 @@ function extractSourceEntries(rows: any[][]): SourceEntry[] {
         const row = rows[headerRow];
         if (!row || !Array.isArray(row)) continue;
 
-        const cells = row.map((c: any) => String(c ?? '').toLowerCase().trim());
+        const cells = row.map((c: unknown) => String(c ?? '').toLowerCase().trim());
         const nonEmpty = cells.filter(c => c.length > 0);
         if (nonEmpty.length < 2) continue;
 
@@ -223,7 +225,7 @@ function extractSourceEntries(rows: any[][]): SourceEntry[] {
  * Collect Q&A entries from the source starting at dataStartRow.
  */
 function collectSourceEntries(
-    rows: any[][],
+    rows: Array<Array<unknown>>,
     dataStartRow: number,
     questionCol: number,
     answerCol: number,
@@ -262,7 +264,7 @@ function collectSourceEntries(
 // Inner question extraction (for TARGET file)
 // ────────────────────────────────────────────
 
-function extractQuestionsFromRows(rows: any[][]): QuestionnaireQuestion[] {
+function extractQuestionsFromRows(rows: Array<Array<unknown>>): QuestionnaireQuestion[] {
     const questionKeywords = [
         'question', 'control question', 'caiq', 'requirement',
         'description', 'query', 'control specification', 'security question',
@@ -280,7 +282,7 @@ function extractQuestionsFromRows(rows: any[][]): QuestionnaireQuestion[] {
         const row = rows[headerRow];
         if (!row || !Array.isArray(row)) continue;
 
-        const cells = row.map((c: any) => String(c ?? '').toLowerCase().trim());
+        const cells = row.map((c: unknown) => String(c ?? '').toLowerCase().trim());
         const nonEmpty = cells.filter(c => c.length > 0);
         if (nonEmpty.length < 2) continue;
 
@@ -366,7 +368,7 @@ function extractQuestionsFromRows(rows: any[][]): QuestionnaireQuestion[] {
 }
 
 function collectQuestions(
-    rows: any[][],
+    rows: Array<Array<unknown>>,
     dataStartRow: number,
     questionCol: number,
     idCol: number,
@@ -478,7 +480,7 @@ export async function matchToKnowledgeBase(
 
         if (entries && entries.length > 0) {
             return questions.map((q: QuestionnaireQuestion) => {
-                let bestMatch: any = null;
+                let bestMatch: Record<string, unknown> | null = null;
                 let bestScore = 0;
                 let matchTier = 0; // 1: Exact, 2: Keyword/Domain, 3: Jaccard/Semantic
 
@@ -546,12 +548,12 @@ export async function matchToKnowledgeBase(
 
                     return {
                         ...q,
-                        answer: bestMatch.answerText,
+                        answer: bestMatch.answerText as string,
                         yesNo: bestMatch.answerType as 'Yes' | 'No' | 'N/A',
                         confidence,
-                        matchedEntryId: bestMatch.id,
+                        matchedEntryId: bestMatch.id as string,
                         source: 'a2a' as const,
-                        evidenceRef: bestMatch.evidence || '',
+                        evidenceRef: (bestMatch.evidence as string) || '',
                     };
                 }
 
@@ -748,7 +750,7 @@ export async function enhanceWithAI(
             take: 80 // enough for solid context without blowing up token limit
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        repoContext = entries.map((e: any) => `Q: ${e.questionText}\nA: ${e.answerText}`).join('\n\n');
+        repoContext = entries.map((e: { questionText?: string, answerText?: string }) => `Q: ${e.questionText}\nA: ${e.answerText}`).join('\n\n');
     } catch (e) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _e = e;
@@ -1175,7 +1177,7 @@ export class CAIQAnswerEngine {
         }));
 
         const minConf = Math.round((this.options.semanticMatchThreshold ?? 0.4) * 100);
-        let answered = matchToSource(qqList, kbEntries, minConf);
+        const answered = matchToSource(qqList, kbEntries, minConf);
 
         // Convert to CAIQAnswer[]
         const caiqAnswers: CAIQAnswer[] = answered.map((aq, i) => toCAIQAnswer(aq, i));

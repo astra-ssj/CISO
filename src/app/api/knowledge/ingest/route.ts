@@ -9,7 +9,7 @@ import prisma from '@/lib/prisma';
 import { KnowledgeRepository } from '@/lib/knowledge/repository';
 import { parseBodyWithZod, knowledgeIngestBodySchema, log } from '@/lib/api-validation';
 
-const repo = new KnowledgeRepository(prisma as any);
+const repo = new KnowledgeRepository(prisma as import('@prisma/client').PrismaClient);
 
 
 export async function POST(request: NextRequest) {
@@ -23,14 +23,14 @@ export async function POST(request: NextRequest) {
 
         // Transform AnsweredQuestion[] to IngestEntry[]
         const entries = questions
-            .filter((q: any) => q.answer && q.answer.length > 5 && q.source !== 'manual')
-            .map((q: any) => ({
-                questionText: q.questionText,
-                answerText: q.answer,
-                answerType: q.yesNo || 'YES',
-                evidence: q.evidenceRef || '',
-                domain: q.domain || 'CUSTOM',
-                category: q.category || 'General',
+            .filter((q: Record<string, unknown>) => q.answer && typeof q.answer === 'string' && q.answer.length > 5 && q.source !== 'manual')
+            .map((q: Record<string, unknown>) => ({
+                questionText: q.questionText as string,
+                answerText: q.answer as string,
+                answerType: (q.yesNo as string) || 'YES',
+                evidence: (q.evidenceRef as string) || '',
+                domain: (q.domain as string) || 'CUSTOM',
+                category: (q.category as string) || 'General',
                 confidence: q.confidence === 'high' ? 1.0
                     : q.confidence === 'medium' ? 0.7
                         : q.confidence === 'low' ? 0.4
@@ -46,7 +46,8 @@ export async function POST(request: NextRequest) {
             created: result.created,
             skipped: result.skipped,
         });
-    } catch (error: any) {
+    } catch (err: unknown) {
+        const error = err as Error;
         log('error', 'knowledge/ingest/POST', 'Failed to ingest knowledge entries', error);
         return NextResponse.json(
             { error: error.message || 'Failed to ingest knowledge entries' },

@@ -11,7 +11,7 @@ import { KnowledgeRepository } from '@/lib/knowledge/repository';
 import { parseBodyWithZod, knowledgeCreateBodySchema, log } from '@/lib/api-validation';
 import { logAudit } from '@/lib/audit/audit-service';
 
-const repo = new KnowledgeRepository(prisma as any);
+const repo = new KnowledgeRepository(prisma);
 
 
 // ─── GET — Search & List ────────────────────
@@ -50,10 +50,11 @@ export async function GET(request: NextRequest) {
 
         const result = await repo.searchEntries(filters);
         return NextResponse.json(result);
-    } catch (error: any) {
-        console.error('[Knowledge API] GET error:', error);
+    } catch (error: unknown) {
+        const err = error as Error;
+        console.error('[Knowledge API] GET error:', err);
         return NextResponse.json(
-            { error: error.message || 'Failed to fetch knowledge entries' },
+            { error: err.message || 'Failed to fetch knowledge entries' },
             { status: 500 }
         );
     }
@@ -66,7 +67,20 @@ export async function POST(request: NextRequest) {
         const raw = await request.json().catch(() => ({}));
         const parsed = parseBodyWithZod(raw, knowledgeCreateBodySchema);
         if ('error' in parsed) return parsed.error;
-        const body = parsed.data as any;
+        const body = parsed.data as Record<string, unknown> & {
+            entries?: import('@/lib/knowledge/repository').IngestEntry[];
+            source?: string;
+            questionText?: string;
+            answerText?: string;
+            answerType?: string;
+            domain?: string;
+            category?: string;
+            evidence?: string;
+            confidence?: number;
+            frameworks?: string;
+            jurisdiction?: string;
+            tags?: string;
+        };
 
         // Bulk import mode
         if (Array.isArray(body.entries)) {
@@ -88,8 +102,8 @@ export async function POST(request: NextRequest) {
 
         // Single entry creation
         const entry = await repo.createEntry({
-            questionText: body.questionText,
-            answerText: body.answerText,
+            questionText: body.questionText || '',
+            answerText: body.answerText || '',
             answerType: body.answerType || 'YES',
             domain: body.domain || 'CUSTOM',
             category: body.category || 'General',
@@ -110,10 +124,11 @@ export async function POST(request: NextRequest) {
         });
 
         return NextResponse.json({ success: true, entry }, { status: 201 });
-    } catch (error: any) {
-        log('error', 'knowledge/POST', 'Failed to create knowledge entry', error);
+    } catch (error: unknown) {
+        const err = error as Error;
+        log('error', 'knowledge/POST', 'Failed to create knowledge entry', err);
         return NextResponse.json(
-            { error: error.message || 'Failed to create knowledge entry' },
+            { error: err.message || 'Failed to create knowledge entry' },
             { status: 500 }
         );
     }

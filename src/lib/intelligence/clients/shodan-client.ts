@@ -257,7 +257,7 @@ export class ShodanClient {
             // 4. Build result
             const allVulns: { cve: string; cvss: number; host: string }[] = [];
             let totalExposed = 0;
-            let sslIssueCount = 0;
+            const sslIssueCount = 0;
 
             for (const host of hosts) {
                 totalExposed += host.ports.length;

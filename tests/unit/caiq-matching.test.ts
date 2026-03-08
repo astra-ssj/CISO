@@ -5,30 +5,31 @@
 
 import { describe, it, expect } from 'vitest';
 import { CAIQSemanticMatcher } from '@/lib/caiq/caiq-semantic-matcher';
+import type { CAIQKnowledgeEntry } from '@/lib/caiq/types';
 
 const entries = [
     {
-        id: 'AIS-01', domain: 'Application & Interface Security' as const,
+        domain: 'AIS' as const,
         question: 'Are application security controls validated through testing?',
         baseAnswer: 'Yes, we perform regular application security testing including SAST, DAST, and penetration testing.',
         keywords: ['application security', 'testing', 'SAST', 'DAST', 'penetration'],
-        questionId: 'AIS-01', evidenceRequired: 'No', frameworkMappings: [], expectedAnswerType: 'YES/NO',
+        questionId: 'AIS-01', evidenceRequired: ['No'], frameworkMappings: [], expectedAnswerType: 'YES',
     },
     {
-        id: 'DSP-01', domain: 'Data Security & Privacy' as const,
+        domain: 'DSP' as const,
         question: 'Is personal data classified and inventoried?',
         baseAnswer: 'Yes, we maintain a data classification inventory for personal data.',
         keywords: ['data classification', 'inventory', 'personal data'],
-        questionId: 'DSP-01', evidenceRequired: 'No', frameworkMappings: [], expectedAnswerType: 'YES/NO',
+        questionId: 'DSP-01', evidenceRequired: ['No'], frameworkMappings: [], expectedAnswerType: 'YES',
     },
     {
-        id: 'IAM-01', domain: 'Identity & Access Management' as const,
+        domain: 'IAM' as const,
         question: 'Are access controls implemented for identity management?',
         baseAnswer: 'Yes, role-based access control with least privilege principle.',
         keywords: ['access control', 'identity management', 'RBAC'],
-        questionId: 'IAM-01', evidenceRequired: 'No', frameworkMappings: [], expectedAnswerType: 'YES/NO',
+        questionId: 'IAM-01', evidenceRequired: ['No'], frameworkMappings: [], expectedAnswerType: 'YES',
     },
-] as any[];
+] as CAIQKnowledgeEntry[];
 
 describe('Unit: CAIQ semantic matcher — vocabulary', () => {
     it('builds vocabulary from KB entries', () => {
@@ -56,7 +57,7 @@ describe('Unit: CAIQ semantic matcher — findSimilar', () => {
     it('ranks best match first', () => {
         const matcher = new CAIQSemanticMatcher(entries);
         const results = matcher.findSimilar('penetration testing SAST DAST');
-        expect((results[0]?.entry as any).id).toBe('AIS-01');
+        expect((results[0]?.entry as { questionId: string }).questionId).toBe('AIS-01');
     });
 
     it('returns empty for gibberish (above threshold)', () => {

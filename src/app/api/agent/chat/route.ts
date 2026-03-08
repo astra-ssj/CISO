@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
 `;
 
         // Initialize Chat Session via Unified Factory
-        let chatHistory = history.map((msg: any) => ({
+        let chatHistory = history.map((msg: { role: string; content: string }) => ({
             role: msg.role === 'assistant' ? 'model' : 'user',
             parts: [{ text: msg.content }]
         }));
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
             // we will default as 'authenticated-user'
             await TokenTracker.trackUsage({
                 userId: authCookie?.value || 'authenticated-user',
-                model: (provider as any).modelName as AIModel || 'gemini-1.5-pro',
+                model: 'modelName' in provider ? String(provider.modelName) as AIModel : 'gemini-1.5-pro',
                 actionType: 'OMNI_CHAT',
                 promptTokens: usage.promptTokens,
                 completionTokens: usage.completionTokens
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
                     if (followUpResult.usage) {
                         await TokenTracker.trackUsage({
                             userId: authCookie?.value || 'authenticated-user',
-                            model: (provider as any).modelName as AIModel || 'gemini-1.5-pro',
+                            model: 'modelName' in provider ? String(provider.modelName) as AIModel : 'gemini-1.5-pro',
                             actionType: 'OMNI_CHAT',
                             promptTokens: followUpResult.usage.promptTokens,
                             completionTokens: followUpResult.usage.completionTokens
@@ -143,23 +143,24 @@ export async function POST(request: NextRequest) {
 
 
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Chat API Error:", error);
 
-        let status = error.status || 500;
+        const err = error as { status?: number; message?: string };
+        let status = err.status || 500;
         let message = 'Internal Server Error';
 
-        if (status === 429 || error.message?.includes('429')) {
+        if (status === 429 || err.message?.includes('429')) {
             status = 429; // Force 429 status if detected in message
             message = 'AI Rate Limit Exceeded. Please try again in a moment. (Retried 3 times)';
         }
 
-        return NextResponse.json({ error: message, details: error.message }, { status: status });
+        return NextResponse.json({ error: message, details: err.message }, { status: status });
     }
 }
 
 // Mock Tool Execution Logic
-function executeMockTool(tool: string, params: any): string {
+function executeMockTool(tool: string, params: Record<string, string>): string {
     switch (tool) {
         case 'scan_asset':
             return `Nmap Scan Report for ${params.target}:

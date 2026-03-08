@@ -101,6 +101,7 @@ function InnerMap({
         if (regionPreset === 'offices' && officePins.length > 0) {
             const lats = officePins.map(p => p.lat);
             const lngs = officePins.map(p => p.lng);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const L = (window as any).L;
             if (L) {
                 const bounds = L.latLngBounds(

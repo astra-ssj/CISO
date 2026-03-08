@@ -69,13 +69,13 @@ export async function POST(request: NextRequest) {
             // Log more detail to help debug
             const ExcelJS = await import('exceljs');
             const wb = new ExcelJS.default.Workbook();
-            await wb.xlsx.load(new Uint8Array(buffer) as any);
+            await wb.xlsx.load(new Uint8Array(buffer) as unknown as ArrayBuffer);
             const sheetInfo = wb.worksheets.map(ws => {
                 let rowCount = 0;
                 let maxCols = 0;
                 ws.eachRow({ includeEmpty: false }, (row) => {
                     rowCount++;
-                    const vals = row.values as any[];
+                    const vals = row.values as Array<unknown>;
                     if (vals.length > maxCols) maxCols = vals.length;
                 });
                 return `"${ws.name}" (${rowCount} rows, ~${maxCols} cols)`;
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
                 const provider = getAIProvider();
                 const authCookie = request.cookies.get('astra-auth');
                 const userId = authCookie?.value || 'authenticated-user';
-                const modelName = (provider as any).modelName || 'gemini-1.5-pro';
+                const modelName = (provider as unknown as Record<string, unknown>).modelName as string || 'gemini-1.5-pro';
 
                 answered = await enhanceWithAI(
                     answered,
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
         // Step 5: Feedback loop — ingest answered questions into Knowledge Repository
         try {
             const answeredForIngest = result.questions
-                .filter((q: any) => q.answer && q.answer.length > 10 && q.source !== 'manual');
+                .filter((q: { answer?: string, source?: string }) => q.answer && q.answer.length > 10 && q.source !== 'manual');
             if (answeredForIngest.length > 0) {
                 await fetch(new URL('/api/knowledge/ingest', request.url), {
                     method: 'POST',
@@ -155,7 +155,8 @@ export async function POST(request: NextRequest) {
             },
             exportBase64,
         });
-    } catch (error: any) {
+    } catch (err: unknown) {
+        const error = err as Error;
         console.error('[CAIQ API] Processing error:', error);
         return NextResponse.json(
             { error: error.message || 'Failed to process questionnaire' },

@@ -21,7 +21,7 @@ describe('Integration: Authentication — Route exports', () => {
 
     it('/api/auth/[...nextauth] route file exists', async () => {
         try {
-            const mod = await import('@/app/api/auth/[...nextauth]/route');
+            const mod = (await import('@/app/api/auth/[...nextauth]/route')) as { GET?: unknown, POST?: unknown, handlers?: unknown };
             const hasHandler = mod.GET || mod.POST || mod.handlers;
             expect(hasHandler).toBeTruthy();
         } catch {
@@ -37,7 +37,7 @@ describe('Integration: Authentication — Auth helpers', () => {
         const session = await getSession();
         expect(session).toBeDefined();
         expect(session).toHaveProperty('user');
-        expect(session?.user).toHaveProperty('email');
+        expect((session as { user?: { email: string } })?.user).toHaveProperty('email');
     });
 
     it('loginUser is deprecated and returns null', async () => {

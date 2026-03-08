@@ -74,7 +74,7 @@ function generateSOC2() {
     return combine(subjects, actions, "Change Control", "CCC", "SOC 2 Type II Report");
 }
 
-function combine(subjects: string[], actions: any[], category: string, domain: string, evidence: string) {
+function combine(subjects: string[], actions: Array<{ verb: string; ans: string; fw: string }>, category: string, domain: string, evidence: string) {
     const results = [];
     let counter = 0;
     for (const a of actions) {
@@ -136,6 +136,7 @@ async function main() {
         const keywords = extractKeywords(entry.q);
 
         // Dedup by normalized question
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const existing = await (prisma as any).knowledgeEntry.findFirst({
             where: { questionNormalized: normalized }
         });
@@ -145,6 +146,7 @@ async function main() {
             continue;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (prisma as any).knowledgeEntry.create({
             data: {
                 questionText: entry.q,
@@ -165,6 +167,7 @@ async function main() {
         created++;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     console.log(`✅ Seed complete! Created: ${created}, Skipped: ${skipped} (Total in DB: ${await (prisma as any).knowledgeEntry.count()})`);
 }
 

@@ -77,11 +77,17 @@ Generate 5-7 top threats, 3-5 threat actors, and 5-8 recommendations. Use real M
 
     try {
         const result = await provider.generateStructuredContent(prompt);
+        const data = result.data as unknown as Partial<ThreatBrief>;
         return {
             generatedAt: new Date().toISOString(),
             industry,
             region,
-            ...result.data,
+            overallRiskLevel: data.overallRiskLevel ?? 'high',
+            summary: data.summary ?? '',
+            topThreats: data.topThreats ?? [],
+            threatActors: data.threatActors ?? [],
+            recommendations: data.recommendations ?? [],
+            confidence: data.confidence ?? 70,
         };
     } catch (error) {
         console.error("[OSINT Engine] AI generation failed:", error);

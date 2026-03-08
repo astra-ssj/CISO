@@ -1,10 +1,11 @@
 /**
  * Quick test: verify export fills the original target file (Tier 1 only, no AI wait)
  */
-const fs = require('fs');
-const ExcelJS = require('exceljs');
+
 
 async function test() {
+    const { default: fs } = await import('fs');
+    const { default: ExcelJS } = await import('exceljs');
     const { FormData, File, fetch } = await import('undici');
 
     const sourceFile = fs.readFileSync('test-data/source_answered.xlsx');

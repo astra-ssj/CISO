@@ -15,7 +15,7 @@ export async function GET() {
         }
 
         let totalCostUSD = 0;
-        let totalCalls = logs.length;
+        const totalCalls = logs.length;
 
         const featureMap = new Map<string, { calls: number; cost: number }>();
         const userMap = new Map<string, { calls: number; cost: number; models: Set<string> }>();
@@ -59,7 +59,7 @@ export async function GET() {
             byUser
         });
 
-    } catch (e: any) {
+    } catch (e: unknown) {
         console.error("Failed to load metrics:", e);
         return NextResponse.json({ error: "Failed to load cost metrics" }, { status: 500 });
     }

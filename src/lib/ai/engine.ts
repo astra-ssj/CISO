@@ -18,10 +18,12 @@ export interface UnifiedChatSession {
     sendMessage(message: string): Promise<AIResponse<string>>;
 }
 
+export type UnifiedChatMessage = { role: string; parts?: Array<{ text: string }>; content?: string };
+
 export interface UnifiedAIProvider {
-    createChatSession(systemInstruction: string, history: any[]): UnifiedChatSession;
+    createChatSession(systemInstruction: string, history: Array<UnifiedChatMessage>): UnifiedChatSession;
     generateContent(prompt: string): Promise<AIResponse<string>>;
-    generateStructuredContent(prompt: string, schema?: any): Promise<AIResponse<any>>;
+    generateStructuredContent(prompt: string, schema?: Record<string, unknown>): Promise<AIResponse<Record<string, unknown>>>;
 }
 
 // ------------------------------------------------------------------
@@ -36,14 +38,14 @@ class GeminiProvider implements UnifiedAIProvider {
         this.modelName = modelName;
     }
 
-    createChatSession(systemInstruction: string, history: any[]): UnifiedChatSession {
+    createChatSession(systemInstruction: string, history: Array<UnifiedChatMessage>): UnifiedChatSession {
         const model = this.client.getGenerativeModel({
             model: this.modelName,
             systemInstruction
         });
 
         const chat = model.startChat({
-            history: history as any[]
+            history: history as unknown as import('@google/generative-ai').Content[]
         });
 
         return {
@@ -74,7 +76,7 @@ class GeminiProvider implements UnifiedAIProvider {
         };
     }
 
-    async generateStructuredContent(prompt: string, schema?: any): Promise<AIResponse<any>> {
+    async generateStructuredContent(prompt: string, schema?: Record<string, unknown>): Promise<AIResponse<Record<string, unknown>>> {
         const model = this.client.getGenerativeModel({
             model: this.modelName,
             generationConfig: { responseMimeType: "application/json" }
@@ -111,10 +113,10 @@ class AnthropicProvider implements UnifiedAIProvider {
         this.modelName = modelName;
     }
 
-    createChatSession(systemInstruction: string, history: any[]): UnifiedChatSession {
-        let internalHistory = history.map((msg: any) => ({
+    createChatSession(systemInstruction: string, history: Array<UnifiedChatMessage>): UnifiedChatSession {
+        const internalHistory = history.map((msg: UnifiedChatMessage) => ({
             role: (msg.role === 'model' ? 'assistant' : msg.role) as 'user' | 'assistant',
-            content: msg.parts?.[0]?.text || ''
+            content: (msg.parts as Array<{ text: string }>)?.[0]?.text || ''
         }));
 
         return {
@@ -164,7 +166,7 @@ class AnthropicProvider implements UnifiedAIProvider {
         };
     }
 
-    async generateStructuredContent(prompt: string, schema?: any): Promise<AIResponse<any>> {
+    async generateStructuredContent(prompt: string, schema?: Record<string, unknown>): Promise<AIResponse<Record<string, unknown>>> {
         // Claude doesn't have a strict JSON mode flag like Gemini/OpenAI yet in the SDK 
         // effectively, but we prompt-engineer it.
         const response = await this.client.messages.create({

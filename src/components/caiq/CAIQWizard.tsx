@@ -184,8 +184,9 @@ export default function CAIQWizard() {
                 // Actually they come from the server in the response's result
             }
             setStep(2);
-        } catch (err: any) {
-            setError(err.message || 'Failed to parse files');
+        } catch (err: unknown) {
+            const error = err as Error;
+            setError(error.message || 'Failed to parse files');
         } finally {
             setLoading(false);
         }
@@ -229,12 +230,12 @@ export default function CAIQWizard() {
                 if (srcRes.ok) {
                     const srcData = await srcRes.json();
                     // Convert the parsed questions to source entries
-                    srcEntries = srcData.result.questions.map((q: any) => ({
-                        rowIndex: q.rowIndex,
-                        questionId: q.questionId,
-                        questionText: q.questionText,
-                        answerText: q.answer || q.originalAnswer || '',
-                        yesNo: q.yesNo || '',
+                    srcEntries = srcData.result.questions.map((q: Record<string, unknown>) => ({
+                        rowIndex: q.rowIndex as number,
+                        questionId: q.questionId as string | undefined,
+                        questionText: q.questionText as string,
+                        answerText: (q.answer as string) || (q.originalAnswer as string) || '',
+                        yesNo: (q.yesNo as 'Yes' | 'No' | 'N/A' | '') || '',
                     }));
                 }
             }
@@ -313,8 +314,9 @@ export default function CAIQWizard() {
                     }
                 }
             }
-        } catch (err: any) {
-            setError(err.message || 'AI enhancement failed');
+        } catch (err: unknown) {
+            const error = err as Error;
+            setError(error.message || 'AI enhancement failed');
             setStep(2); // Go back
         } finally {
             setEnhancing(false);
@@ -356,8 +358,9 @@ export default function CAIQWizard() {
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            const error = err as Error;
+            setError(error.message);
         } finally {
             setExporting(false);
         }
@@ -394,8 +397,9 @@ export default function CAIQWizard() {
                     reqQ.rowIndex === q.rowIndex ? { ...reqQ, addedToRepo: true } : reqQ
                 )
             } : null);
-        } catch (err: any) {
-            setError(err.message || 'Failed to add to repository');
+        } catch (err: unknown) {
+            const error = err as Error;
+            setError(error.message || 'Failed to add to repository');
         } finally {
             setAddingToRepo(null);
         }
@@ -424,8 +428,9 @@ export default function CAIQWizard() {
                     (reqQ.source === 'manual' && reqQ.answer && reqQ.answer.length >= 5) ? { ...reqQ, addedToRepo: true } : reqQ
                 )
             } : null);
-        } catch (err: any) {
-            setError(err.message || 'Failed to bulk add to repository');
+        } catch (err: unknown) {
+            const error = err as Error;
+            setError(error.message || 'Failed to bulk add to repository');
         } finally {
             setAddingAll(false);
         }

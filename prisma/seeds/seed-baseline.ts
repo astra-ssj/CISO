@@ -211,6 +211,7 @@ async function main() {
         const keywords = extractKeywords(entry.q);
 
         // Dedup by normalized question
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const existing = await (prisma as any).knowledgeEntry.findFirst({
             where: { questionNormalized: normalized }
         });
@@ -220,6 +221,7 @@ async function main() {
             continue;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (prisma as any).knowledgeEntry.create({
             data: {
                 questionText: entry.q,
@@ -240,6 +242,7 @@ async function main() {
         created++;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     console.log(`✅ Seed complete! Created: ${created}, Skipped: ${skipped} (Total in DB: ${await (prisma as any).knowledgeEntry.count()})`);
 }
 

@@ -37,55 +37,55 @@ vi.mock('@/lib/store', () => ({
 vi.mock('@/lib/roadmap-data', () => ({ getRoadmapItems: vi.fn(() => []), getRoadmapPhases: vi.fn(() => []), roadmapItems: [] }));
 
 // Mock heavy sub-components
-vi.mock('@/components/command/KPIStatusBar', () => ({ KPIStatusBar: () => <div>KPI</div> }));
-vi.mock('@/components/command/ThreatMonitorWidget', () => ({ ThreatMonitorWidget: () => <div>Threats</div> }));
-vi.mock('@/components/command/ActiveThreats', () => ({ ActiveThreats: () => <div>Active</div> }));
-vi.mock('@/components/command/PendingActions', () => ({ PendingActions: () => <div>Pending</div> }));
-vi.mock('@/components/command/CompliancePosture', () => ({ CompliancePosture: () => <div>Compliance</div> }));
-vi.mock('@/components/command/RecentIncidents', () => ({ RecentIncidents: () => <div>Incidents</div> }));
-vi.mock('@/components/command/AIActivity', () => ({ AIActivity: () => <div>AI</div> }));
-vi.mock('@/components/executive/executive-brief-tab', () => ({ ExecutiveBriefTab: () => <div>Brief</div> }));
-vi.mock('@/components/reporting/reports-tab', () => ({ ReportsTab: () => <div>Reports</div> }));
-vi.mock('@/components/intelligence/threat-briefing', () => ({ ThreatBriefing: () => <div>TB</div> }));
-vi.mock('@/components/intelligence/world-monitor', () => ({ WorldMonitor: () => <div>WM</div> }));
-vi.mock('@/components/intelligence/feed-manager', () => ({ FeedManager: () => <div>FM</div>, default: () => <div>FM</div> }));
-vi.mock('@/components/intelligence/enrichment-tool', () => ({ EnrichmentTool: () => <div>ET</div>, default: () => <div>ET</div> }));
-vi.mock('@/components/intelligence/attack-surface-tab', () => ({ AttackSurfaceTab: () => <div>AS</div>, default: () => <div>AS</div> }));
-vi.mock('@/components/intelligence/ransomware-tab', () => ({ RansomwareTab: () => <div>RW</div>, default: () => <div>RW</div> }));
-vi.mock('@/components/strategy/matrix/safeguard-cell', () => ({ SafeguardCell: () => <div>SC</div>, default: () => <div>SC</div> }));
-vi.mock('@/components/caiq/CAIQWizard', () => ({ default: () => <div>CAIQWizard</div> }));
-vi.mock('@/components/knowledge/KnowledgeBase', () => ({ KnowledgeBase: () => <div>KB</div> }));
-vi.mock('@/components/caiq/QuickAnswerWidget', () => ({ default: () => <div>QA</div> }));
-vi.mock('@/components/caiq/CAIQReviewQueueTab', () => ({ default: () => <div>RQ</div> }));
-vi.mock('@/components/layout/ContextSwitcher', () => ({ ContextSwitcher: () => <div>CS</div> }));
+vi.mock('@/components/command/KPIStatusBar', () => ({ KPIStatusBar: function KPIStatusBar() { return <div>KPI</div>; } }));
+vi.mock('@/components/command/ThreatMonitorWidget', () => ({ ThreatMonitorWidget: function ThreatMonitorWidget() { return <div>Threats</div>; } }));
+vi.mock('@/components/command/ActiveThreats', () => ({ ActiveThreats: function ActiveThreats() { return <div>Active</div>; } }));
+vi.mock('@/components/command/PendingActions', () => ({ PendingActions: function PendingActions() { return <div>Pending</div>; } }));
+vi.mock('@/components/command/CompliancePosture', () => ({ CompliancePosture: function CompliancePosture() { return <div>Compliance</div>; } }));
+vi.mock('@/components/command/RecentIncidents', () => ({ RecentIncidents: function RecentIncidents() { return <div>Incidents</div>; } }));
+vi.mock('@/components/command/AIActivity', () => ({ AIActivity: function AIActivity() { return <div>AI</div>; } }));
+vi.mock('@/components/executive/executive-brief-tab', () => ({ ExecutiveBriefTab: function ExecutiveBriefTab() { return <div>Brief</div>; } }));
+vi.mock('@/components/reporting/reports-tab', () => ({ ReportsTab: function ReportsTab() { return <div>Reports</div>; } }));
+vi.mock('@/components/intelligence/threat-briefing', () => ({ ThreatBriefing: function ThreatBriefing() { return <div>TB</div>; } }));
+vi.mock('@/components/intelligence/world-monitor', () => ({ WorldMonitor: function WorldMonitor() { return <div>WM</div>; } }));
+vi.mock('@/components/intelligence/feed-manager', () => ({ FeedManager: function FeedManager() { return <div>FM</div>; }, default: function FeedManagerDefault() { return <div>FM</div>; } }));
+vi.mock('@/components/intelligence/enrichment-tool', () => ({ EnrichmentTool: function EnrichmentTool() { return <div>ET</div>; }, default: function EnrichmentToolDefault() { return <div>ET</div>; } }));
+vi.mock('@/components/intelligence/attack-surface-tab', () => ({ AttackSurfaceTab: function AttackSurfaceTab() { return <div>AS</div>; }, default: function AttackSurfaceTabDefault() { return <div>AS</div>; } }));
+vi.mock('@/components/intelligence/ransomware-tab', () => ({ RansomwareTab: function RansomwareTab() { return <div>RW</div>; }, default: function RansomwareTabDefault() { return <div>RW</div>; } }));
+vi.mock('@/components/strategy/matrix/safeguard-cell', () => ({ SafeguardCell: function SafeguardCell() { return <div>SC</div>; }, default: function SafeguardCellDefault() { return <div>SC</div>; } }));
+vi.mock('@/components/caiq/CAIQWizard', () => ({ default: function CAIQWizard() { return <div>CAIQWizard</div>; } }));
+vi.mock('@/components/knowledge/KnowledgeBase', () => ({ KnowledgeBase: function KnowledgeBase() { return <div>KB</div>; } }));
+vi.mock('@/components/caiq/QuickAnswerWidget', () => ({ default: function QuickAnswerWidget() { return <div>QA</div>; } }));
+vi.mock('@/components/caiq/CAIQReviewQueueTab', () => ({ default: function CAIQReviewQueueTab() { return <div>RQ</div>; } }));
+vi.mock('@/components/layout/ContextSwitcher', () => ({ ContextSwitcher: function ContextSwitcher() { return <div>CS</div>; } }));
 vi.mock('maplibre-gl', () => ({ default: { Map: vi.fn() } }));
 vi.mock('react-leaflet', () => ({
-    MapContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    TileLayer: () => <div />, useMap: () => ({}),
+    MapContainer: function MapContainer({ children }: { children: React.ReactNode }) { return <div>{children}</div>; },
+    TileLayer: function TileLayer() { return <div />; }, useMap: vi.fn(() => ({})),
 }));
 vi.mock('recharts', () => ({
-    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    BarChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    Bar: () => <div />, LineChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    Line: () => <div />, XAxis: () => <div />, YAxis: () => <div />, Tooltip: () => <div />,
-    CartesianGrid: () => <div />, Legend: () => <div />,
-    PieChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    Pie: () => <div />, Cell: () => <div />, Area: () => <div />,
-    AreaChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    RadarChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    Radar: () => <div />, PolarGrid: () => <div />, PolarAngleAxis: () => <div />, PolarRadiusAxis: () => <div />,
+    ResponsiveContainer: function ResponsiveContainer({ children }: { children: React.ReactNode }) { return <div>{children}</div>; },
+    BarChart: function BarChart({ children }: { children: React.ReactNode }) { return <div>{children}</div>; },
+    Bar: function Bar() { return <div />; }, LineChart: function LineChart({ children }: { children: React.ReactNode }) { return <div>{children}</div>; },
+    Line: function Line() { return <div />; }, XAxis: function XAxis() { return <div />; }, YAxis: function YAxis() { return <div />; }, Tooltip: function Tooltip() { return <div />; },
+    CartesianGrid: function CartesianGrid() { return <div />; }, Legend: function Legend() { return <div />; },
+    PieChart: function PieChart({ children }: { children: React.ReactNode }) { return <div>{children}</div>; },
+    Pie: function Pie() { return <div />; }, Cell: function Cell() { return <div />; }, Area: function Area() { return <div />; },
+    AreaChart: function AreaChart({ children }: { children: React.ReactNode }) { return <div>{children}</div>; },
+    RadarChart: function RadarChart({ children }: { children: React.ReactNode }) { return <div>{children}</div>; },
+    Radar: function Radar() { return <div />; }, PolarGrid: function PolarGrid() { return <div />; }, PolarAngleAxis: function PolarAngleAxis() { return <div />; }, PolarRadiusAxis: function PolarRadiusAxis() { return <div />; },
 }));
 vi.mock('framer-motion', () => ({
     motion: {
-        div: React.forwardRef((p: Record<string, unknown>, r: React.Ref<HTMLDivElement>) => <div ref={r} {...p} />),
-        span: React.forwardRef((p: Record<string, unknown>, r: React.Ref<HTMLSpanElement>) => <span ref={r} {...p} />),
-        section: React.forwardRef((p: Record<string, unknown>, r: React.Ref<HTMLElement>) => <section ref={r} {...p} />),
-        p: React.forwardRef((p: Record<string, unknown>, r: React.Ref<HTMLParagraphElement>) => <p ref={r} {...p} />),
-        button: React.forwardRef((p: Record<string, unknown>, r: React.Ref<HTMLButtonElement>) => <button ref={r} {...p} />),
+        div: Object.assign(React.forwardRef(function MotionDiv(p: Record<string, unknown>, r: React.Ref<HTMLDivElement>) { return <div ref={r} {...p} />; }), { displayName: 'motion.div' }),
+        span: Object.assign(React.forwardRef(function MotionSpan(p: Record<string, unknown>, r: React.Ref<HTMLSpanElement>) { return <span ref={r} {...p} />; }), { displayName: 'motion.span' }),
+        section: Object.assign(React.forwardRef(function MotionSection(p: Record<string, unknown>, r: React.Ref<HTMLElement>) { return <section ref={r} {...p} />; }), { displayName: 'motion.section' }),
+        p: Object.assign(React.forwardRef(function MotionP(p: Record<string, unknown>, r: React.Ref<HTMLParagraphElement>) { return <p ref={r} {...p} />; }), { displayName: 'motion.p' }),
+        button: Object.assign(React.forwardRef(function MotionButton(p: Record<string, unknown>, r: React.Ref<HTMLButtonElement>) { return <button ref={r} {...p} />; }), { displayName: 'motion.button' }),
     },
-    AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-    useAnimation: () => ({ start: vi.fn(), stop: vi.fn() }),
-    useInView: () => true,
+    AnimatePresence: function AnimatePresence({ children }: { children: React.ReactNode }) { return <>{children}</>; },
+    useAnimation: vi.fn(() => ({ start: vi.fn(), stop: vi.fn() })),
+    useInView: vi.fn(() => true),
 }));
 
 // ── Route pages ─────────────────────────────────────────────────

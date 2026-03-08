@@ -124,7 +124,7 @@ async function findBestOverride(
     if (scope === 'COMPANY' && companyId) where.companyId = companyId;
 
     const overrides = await prisma.knowledgeOverride.findMany({
-        where: where as any,
+        where: where as Record<string, unknown>,
         include: { knowledgeEntry: true, product: { include: { company: true } } },
     });
 
@@ -211,7 +211,12 @@ async function findBestCommon(
 }
 
 function overrideToResolved(
-    override: any,
+    override: {
+        id: string; questionText: string; answerType: string; answerText: string;
+        evidence: string | null; frameworks: string | null;
+        product: { name: string; company: { name: string } | null } | null;
+        knowledgeEntry: { domain: string; category: string; keywords: string } | null
+    },
     scope: 'COMPANY' | 'PRODUCT',
     confidence: number,
 ): ResolvedAnswer {
@@ -240,7 +245,11 @@ function overrideToResolved(
 }
 
 function commonToResolved(
-    entry: any,
+    entry: {
+        id: string; questionText: string; answerType: string; answerText: string;
+        evidence: string | null; frameworks: string | null; source: string;
+        domain: string; category: string; keywords: string;
+    },
     confidence: number,
 ): ResolvedAnswer {
     return {

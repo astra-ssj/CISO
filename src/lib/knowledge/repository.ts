@@ -121,7 +121,7 @@ export class KnowledgeRepository {
             pageSize = 50,
         } = filters;
 
-        const where: any = {};
+        const where: Record<string, unknown> = {};
 
         if (domain) where.domain = domain;
         if (category) where.category = category;
@@ -254,7 +254,7 @@ export class KnowledgeRepository {
 
     async updateEntry(id: string, data: Partial<KnowledgeEntry>) {
         // Re-normalize if question text changed
-        const update: any = { ...data };
+        const update: Partial<KnowledgeEntry> & { questionNormalized?: string; keywords?: string } = { ...data };
         if (data.questionText) {
             update.questionNormalized = normalizeQuestion(data.questionText);
             update.keywords = extractKeywords(data.questionText);
@@ -416,7 +416,7 @@ export class KnowledgeRepository {
             categoryBreakdown,
             avgConfidence: total > 0 ? Math.round((totalConfidence / total) * 100) / 100 : 0,
             totalUsage,
-            topUsed: topUsed as any,
+            topUsed,
             growthBreakdown,
         };
     }

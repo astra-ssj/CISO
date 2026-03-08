@@ -5,45 +5,61 @@
 
 import { describe, it, expect } from 'vitest';
 import { CAIQSemanticMatcher } from '@/lib/caiq/caiq-semantic-matcher';
+import type { CAIQKnowledgeEntry } from '@/lib/caiq/types';
 
 // ── Fixtures ────────────────────────────────────────────────────
 const sampleKBEntries = [
     {
-        id: 'AIS-01',
-        domain: 'Application & Interface Security' as const,
+        domain: 'AIS' as const,
         question: 'Are application security controls validated through testing?',
         baseAnswer: 'Yes, we perform regular application security testing including SAST, DAST, and penetration testing.',
         keywords: ['application security', 'testing', 'SAST', 'DAST', 'penetration'],
+        questionId: 'AIS-01',
+        evidenceRequired: [],
+        frameworkMappings: [],
+        expectedAnswerType: 'YES' as const,
     },
     {
-        id: 'DSP-01',
-        domain: 'Data Security & Privacy' as const,
+        domain: 'DSP' as const,
         question: 'Is personal data classified and inventoried?',
         baseAnswer: 'Yes, we maintain a data classification inventory and apply appropriate controls based on data sensitivity levels.',
         keywords: ['data classification', 'inventory', 'personal data', 'sensitivity'],
+        questionId: 'DSP-01',
+        evidenceRequired: [],
+        frameworkMappings: [],
+        expectedAnswerType: 'YES' as const,
     },
     {
-        id: 'IAM-01',
-        domain: 'Identity & Access Management' as const,
+        domain: 'IAM' as const,
         question: 'Are access controls implemented for identity management?',
         baseAnswer: 'Yes, we implement role-based access control with least privilege principle.',
         keywords: ['access control', 'identity management', 'RBAC', 'least privilege'],
+        questionId: 'IAM-01',
+        evidenceRequired: [],
+        frameworkMappings: [],
+        expectedAnswerType: 'YES' as const,
     },
     {
-        id: 'IVS-01',
-        domain: 'Infrastructure & Virtualization Security' as const,
+        domain: 'IVS' as const,
         question: 'Are infrastructure components secured and monitored?',
         baseAnswer: 'Yes, we deploy firewalls, IDS, and continuous monitoring across all infrastructure.',
         keywords: ['infrastructure', 'firewalls', 'IDS', 'monitoring'],
+        questionId: 'IVS-01',
+        evidenceRequired: [],
+        frameworkMappings: [],
+        expectedAnswerType: 'YES' as const,
     },
     {
-        id: 'BCR-01',
-        domain: 'Business Continuity Management & Operational Resilience' as const,
+        domain: 'BCR' as const,
         question: 'Is there a business continuity plan in place?',
         baseAnswer: 'Yes, we maintain and test business continuity and disaster recovery plans.',
         keywords: ['business continuity', 'disaster recovery', 'BCP', 'DRP'],
+        questionId: 'BCR-01',
+        evidenceRequired: [],
+        frameworkMappings: [],
+        expectedAnswerType: 'YES' as const,
     },
-] as any[];
+] as CAIQKnowledgeEntry[];
 
 describe('Integration: CAIQ Knowledge Transfer', () => {
     it('builds matcher from KB entries without error', () => {
@@ -57,7 +73,7 @@ describe('Integration: CAIQ Knowledge Transfer', () => {
         const results = matcher.findSimilar('How do you test application security?');
 
         expect(results.length).toBeGreaterThan(0);
-        expect((results[0]?.entry as any).id).toBe('AIS-01');
+        expect((results[0]?.entry as { questionId: string }).questionId).toBe('AIS-01');
         expect(results[0].score).toBeGreaterThan(0);
     });
 
@@ -66,7 +82,7 @@ describe('Integration: CAIQ Knowledge Transfer', () => {
         const results = matcher.findSimilar('How is personal data classified?');
 
         expect(results.length).toBeGreaterThan(0);
-        const topIds = results.slice(0, 2).map(r => (r.entry as any)?.id);
+        const topIds = results.slice(0, 2).map(r => (r.entry as { questionId: string })?.questionId);
         expect(topIds).toContain('DSP-01');
     });
 
@@ -75,7 +91,7 @@ describe('Integration: CAIQ Knowledge Transfer', () => {
         const results = matcher.findSimilar('RBAC least privilege identity');
 
         expect(results.length).toBeGreaterThan(0);
-        const topIds = results.slice(0, 3).map(r => (r.entry as any)?.id);
+        const topIds = results.slice(0, 3).map(r => (r.entry as { questionId: string })?.questionId);
         expect(topIds).toContain('IAM-01');
     });
 

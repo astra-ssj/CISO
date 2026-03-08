@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
         if (knowledgeEntryId) where.knowledgeEntryId = knowledgeEntryId;
 
         const overrides = await prisma.knowledgeOverride.findMany({
-            where: where as any,
+            where: where as Record<string, unknown>,
             include: {
                 knowledgeEntry: { select: { id: true, questionText: true, domain: true, category: true } },
                 product: { select: { id: true, name: true, company: { select: { id: true, name: true } } } },

@@ -49,7 +49,18 @@ const controls = [
     "business impact analysis (BIA)", "background screening"
 ];
 
-const entries: any[] = [];
+interface SeedEntry {
+    questionText: string;
+    answer: string;
+    yesNo: string;
+    confidence: number;
+    domain: string;
+    category: string;
+    evidenceRef: string;
+    source: string;
+}
+
+const entries: SeedEntry[] = [];
 let count = 0;
 
 for (const tech of technologies) {

@@ -202,7 +202,7 @@ export function KnowledgeBase() {
 
     // ─── Actions ─────────────────────────────
 
-    const handleApprove = async (id: string, customPayload?: any) => {
+    const handleApprove = async (id: string, customPayload?: Record<string, unknown>) => {
         try {
             await fetch(`/api/knowledge/${id}`, {
                 method: 'PATCH',

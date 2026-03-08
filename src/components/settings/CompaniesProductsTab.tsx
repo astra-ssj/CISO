@@ -447,7 +447,7 @@ export function CompaniesProductsTab() {
                                                             </tr>
                                                         </thead>
                                                         <tbody>
-                                                            {company.products.map((product: any) => (
+                                                            {company.products.map((product: Product) => (
                                                                 <tr key={product.id} className="border-b border-zinc-800/20 hover:bg-white/[0.02] group">
                                                                     <td className="p-2.5">
                                                                         <div className="font-medium text-white">{product.name}</div>

@@ -6,11 +6,15 @@
  *   2. target_empty.xlsx — 25 questions (mix of identical, similar, and novel)
  */
 
-const ExcelJS = require('exceljs');
-const path = require('path');
+import { fileURLToPath } from 'url';
+import { dirname, join, resolve } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 async function generate() {
-    const outDir = path.resolve(__dirname);
+    const { default: ExcelJS } = await import('exceljs');
+    const outDir = resolve(__dirname);
 
     // ═══════════════════════════════════════════
     // SOURCE FILE — Answered questionnaire
@@ -63,7 +67,7 @@ async function generate() {
     // Style header
     sourceWs.getRow(1).font = { bold: true };
 
-    await sourceWb.xlsx.writeFile(path.join(outDir, 'source_answered.xlsx'));
+    await sourceWb.xlsx.writeFile(join(outDir, 'source_answered.xlsx'));
     console.log('✅ Created source_answered.xlsx (30 Q&As)');
 
     // ═══════════════════════════════════════════
@@ -117,7 +121,7 @@ async function generate() {
 
     targetWs.getRow(1).font = { bold: true };
 
-    await targetWb.xlsx.writeFile(path.join(outDir, 'target_empty.xlsx'));
+    await targetWb.xlsx.writeFile(join(outDir, 'target_empty.xlsx'));
     console.log('✅ Created target_empty.xlsx (25 questions: 15 identical, 5 rephrased, 5 novel)');
     console.log('\nReady to test! Upload both files to Knowledge Transfer tab.');
 }

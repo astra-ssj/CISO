@@ -10,7 +10,7 @@ import prisma from '@/lib/prisma';
 import { KnowledgeRepository } from '@/lib/knowledge/repository';
 import { parseBodyWithZod, knowledgePatchBodySchema, log } from '@/lib/api-validation';
 
-const repo = new KnowledgeRepository(prisma as any);
+const repo = new KnowledgeRepository(prisma);
 
 
 // ─── PATCH — Update / Approve ───────────────
@@ -21,30 +21,32 @@ export async function PATCH(
 ) {
     try {
         const { id } = await params;
+        if (!id || Array.isArray(id)) throw new Error('Invalid ID');
         const raw = await request.json().catch(() => ({}));
         const parsed = parseBodyWithZod(raw, knowledgePatchBodySchema);
         if ('error' in parsed) return parsed.error;
-        const body = parsed.data as any;
+        const body = parsed.data as Record<string, unknown>;
 
         // Special mode: approve
         if (body.action === 'approve') {
-            const entry = await repo.approveEntry(id, body.approvedBy || 'admin');
+            const entry = await repo.approveEntry(id as string, String(body.approvedBy || 'admin'));
             return NextResponse.json({ success: true, entry });
         }
 
         // Special mode: record usage
         if (body.action === 'recordUsage') {
-            const entry = await repo.recordUsage(id);
+            const entry = await repo.recordUsage(id as string);
             return NextResponse.json({ success: true, entry });
         }
 
         // General update
-        const entry = await repo.updateEntry(id, body);
+        const entry = await repo.updateEntry(id as string, body);
         return NextResponse.json({ success: true, entry });
-    } catch (error: any) {
-        log('error', 'knowledge/[id]/PATCH', 'Failed to update entry', error);
+    } catch (error: unknown) {
+        const err = error as Error;
+        log('error', 'knowledge/[id]/PATCH', 'Failed to update entry', err);
         return NextResponse.json(
-            { error: error.message || 'Failed to update entry' },
+            { error: err.message || 'Failed to update entry' },
             { status: 500 }
         );
     }
@@ -59,12 +61,14 @@ export async function DELETE(
 ) {
     try {
         const { id } = await params;
-        await repo.deleteEntry(id);
+        if (!id || Array.isArray(id)) throw new Error('Invalid ID');
+        await repo.deleteEntry(id as string);
         return NextResponse.json({ success: true });
-    } catch (error: any) {
-        console.error('[Knowledge API] DELETE error:', error);
+    } catch (error: unknown) {
+        const err = error as Error;
+        console.error('[Knowledge API] DELETE error:', err);
         return NextResponse.json(
-            { error: error.message || 'Failed to delete entry' },
+            { error: err.message || 'Failed to delete entry' },
             { status: 500 }
         );
     }

@@ -21,6 +21,7 @@ async function main() {
         const normalized = normalizeQuestion(entry.question);
 
         // Dedup by normalized question
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const existing = await (prisma as any).knowledgeEntry.findFirst({
             where: { questionNormalized: normalized }
         });
@@ -30,6 +31,7 @@ async function main() {
             continue;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (prisma as any).knowledgeEntry.create({
             data: {
                 questionText: entry.question,

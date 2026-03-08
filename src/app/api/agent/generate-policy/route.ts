@@ -37,7 +37,7 @@ Format as a professional policy document.`;
             if (response.usage) {
                 await TokenTracker.trackUsage({
                     userId: 'authenticated-user',
-                    model: (provider as any).modelName as AIModel || 'gemini-1.5-pro',
+                    model: 'modelName' in provider ? String(provider.modelName) as AIModel : 'gemini-1.5-pro',
                     actionType: 'POLICY_GEN',
                     promptTokens: response.usage.promptTokens,
                     completionTokens: response.usage.completionTokens

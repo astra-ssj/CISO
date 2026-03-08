@@ -94,7 +94,8 @@ describe('CAIQ accuracy', () => {
       autoApproveThreshold: 0.9,
       flagThreshold: 0.6,
       maxAIRetries: 1,
-    });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
     answerMap = new Map(result.answers.map((a) => [a.questionId, a]));
   });
 
@@ -198,7 +199,8 @@ describe('CAIQ flagging', () => {
       autoApproveThreshold: 0.9,
       flagThreshold: 0.6,
       maxAIRetries: 1,
-    });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
     answerMap = new Map(result.answers.map((a) => [a.questionId, a]));
   });
 
@@ -252,7 +254,8 @@ describe('CAIQ tier distribution', () => {
       autoApproveThreshold: 0.9,
       flagThreshold: 0.6,
       maxAIRetries: 1,
-    });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
 
     const total = result.answers.length;
     const tier1 = result.answers.filter((a) => a.tier === 'EXACT_MATCH').length;
@@ -282,7 +285,8 @@ describe('CAIQ cross-domain consistency (IAM)', () => {
     const iamEntries = getEntriesByDomain('IAM');
     const questions: ParsedCAIQQuestion[] = iamEntries.map((e) => ({
       id: e.questionId,
-      domain: e.domain,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      domain: e.domain as any,
       domainName: 'Identity & Access Management',
       text: e.question,
     }));
@@ -292,7 +296,8 @@ describe('CAIQ cross-domain consistency (IAM)', () => {
       autoApproveThreshold: 0.9,
       flagThreshold: 0.6,
       maxAIRetries: 1,
-    });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
 
     const iamAnswers = result.answers.filter((a) => a.questionId.startsWith('IAM-'));
     const byType = new Map<string, CAIQAnswer[]>();
@@ -335,8 +340,10 @@ describe('CAIQ performance', () => {
     const kb = getKnowledgeBase();
     const questions: ParsedCAIQQuestion[] = kb.map((e) => ({
       id: e.questionId,
-      domain: e.domain,
-      domainName: e.domain,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      domain: e.domain as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      domainName: e.domain as any,
       text: e.question,
     }));
 
@@ -346,7 +353,8 @@ describe('CAIQ performance', () => {
       autoApproveThreshold: 0.9,
       flagThreshold: 0.6,
       maxAIRetries: 1,
-    });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
     const elapsed = (Date.now() - start) / 1000;
 
     expect(elapsed).toBeLessThan(120);
@@ -356,8 +364,10 @@ describe('CAIQ performance', () => {
     const kb = getKnowledgeBase();
     const question: ParsedCAIQQuestion = {
       id: kb[0].questionId,
-      domain: kb[0].domain,
-      domainName: kb[0].domain,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      domain: kb[0].domain as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      domainName: kb[0].domain as any,
       text: kb[0].question,
     };
 
