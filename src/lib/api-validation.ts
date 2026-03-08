@@ -167,15 +167,15 @@ export type JiraIssueBody = z.infer<typeof jiraIssueBodySchema>;
 const knowledgeEntrySchema = z.object({
     questionText: z.string().min(1).max(4096),
     answerText: z.string().min(1).max(16_384),
-    answerType: z.enum(['YES', 'NO', 'NA', 'PARTIAL']).optional(),
+    answerType: z.enum(['YES', 'NO', 'NA', 'PARTIAL', 'CONDITIONAL']).optional(),
     domain: z.string().max(128).optional(),
     category: z.string().max(128).optional(),
     evidence: z.string().max(4096).optional(),
     source: z.string().max(256).optional(),
     confidence: z.number().min(0).max(1).optional(),
-    frameworks: z.array(z.string().max(64)).max(20).optional(),
+    frameworks: z.union([z.string().max(4096), z.array(z.string().max(64)).max(20)]).optional(),
     jurisdiction: z.string().max(128).optional(),
-    tags: z.array(z.string().max(64)).max(30).optional(),
+    tags: z.union([z.string().max(4096), z.array(z.string().max(64)).max(30)]).optional(),
 });
 
 // Used by POST /api/knowledge (single or bulk)
