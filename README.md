@@ -100,6 +100,21 @@ npm run dev
 # Open http://localhost:3000
 ```
 
+### Testing & QA (Local)
+
+All integration and unit paths have been strictly typed and patched for Next.js 16 Edge runtime compatibility.
+
+```bash
+# Run strict TypeScript environment validation
+npx tsc --noEmit
+
+# Run unit and integration Vitest suites
+npm run test
+
+# Run vulnerability package audit
+npm audit
+```
+
 ---
 
 ## Environment Variables

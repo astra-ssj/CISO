@@ -14,7 +14,7 @@ describe('Integration: Governance — Policies', () => {
     });
 
     it('/api/policies/[id] exports handlers', async () => {
-        const mod = await import('@/app/api/policies/[id]/route');
+        const mod = (await import('@/app/api/policies/[id]/route')) as any;
         const hasHandler = mod.GET || mod.PUT || mod.PATCH || mod.DELETE;
         expect(hasHandler).toBeTruthy();
     });
@@ -28,7 +28,7 @@ describe('Integration: Governance — Risks', () => {
     });
 
     it('/api/risks/[id] exports handlers', async () => {
-        const mod = await import('@/app/api/risks/[id]/route');
+        const mod = (await import('@/app/api/risks/[id]/route')) as any;
         const hasHandler = mod.GET || mod.PUT || mod.PATCH || mod.DELETE;
         expect(hasHandler).toBeTruthy();
     });
@@ -42,7 +42,7 @@ describe('Integration: Governance — Playbooks', () => {
     });
 
     it('/api/playbooks/[id] exports handlers', async () => {
-        const mod = await import('@/app/api/playbooks/[id]/route');
+        const mod = (await import('@/app/api/playbooks/[id]/route')) as any;
         const hasHandler = mod.GET || mod.PUT || mod.PATCH || mod.DELETE;
         expect(hasHandler).toBeTruthy();
     });
@@ -55,7 +55,7 @@ describe('Integration: Governance — OKR', () => {
     });
 
     it('/api/okr/objectives/[id] exports handlers', async () => {
-        const mod = await import('@/app/api/okr/objectives/[id]/route');
+        const mod = (await import('@/app/api/okr/objectives/[id]/route')) as any;
         const hasHandler = mod.GET || mod.PUT || mod.PATCH || mod.DELETE;
         expect(hasHandler).toBeTruthy();
     });
@@ -102,7 +102,7 @@ describe('Integration: Governance — Audit Logs', () => {
     });
 
     it('/api/audit-logs/export exports handler', async () => {
-        const mod = await import('@/app/api/audit-logs/export/route');
+        const mod = (await import('@/app/api/audit-logs/export/route')) as any;
         const hasHandler = mod.GET || mod.POST;
         expect(hasHandler).toBeTruthy();
     });

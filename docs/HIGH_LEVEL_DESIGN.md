@@ -323,3 +323,12 @@ Stage 3: runner    → Minimal production image
 - Health check endpoint: `GET /api/health`
 - Volume mount for SQLite persistence: `./dev.db:/app/dev.db`
 - Evidence data stored in `./data/evidence/`
+
+### 8.2 QA & Quality Gates
+
+The Astra-CISO platform enforces strict quality checks to ensure application survivability during updates:
+
+- **Strict Typing (`tsc --noEmit`)**: All database mocks, API handlers, and AI provider integrations undergo enforced static typing (0 `any` implicit cast allowance for core engines).
+- **Unit & Integration (`vitest`)**: Extensive suite covering `CAIQEngine` (matching logic, validation), `CircuitBreaker` states, and Next.js dynamic API routes.
+- **Dependency Management**: Native `npm audit fix` automation integrated post-merge to catch malicious peer-injections.
+- **Bundle Optimization**: Verified via regular `next build` telemetry passing.

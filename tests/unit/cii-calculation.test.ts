@@ -20,7 +20,7 @@ function makeSignal(country: string, type: string, severity: string, extra?: Rec
         timestamp: recentTime,
         title: 'Test signal',
         source: 'test',
-        lat: 0, lng: 0,
+        latitude: 0, longitude: 0, region: 'test', description: 'test', metadata: {},
         ...extra,
     } as IntelligenceSignal;
 }

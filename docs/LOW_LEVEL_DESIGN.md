@@ -343,6 +343,14 @@
 | `rbac.ts` | Role-based access control |
 | `audit.ts` | Audit logging helpers |
 
+### 4.5 Testing Architecture (`tests/`)
+
+| File | Purpose |
+|------|---------|
+| `setup.ts` | Global vitest setup, `@testing-library/jest-dom/vitest` integrations, environment stubs |
+| `test-utils.tsx` | Mock `NextRequest`, `Response` parsing, and wrapper render providers for integration testing |
+| `vitest.*.config.ts` | Separated runner configs for `unit`, `smoke`, and `integration` execution targets |
+
 ---
 
 ## 5. Component Tree

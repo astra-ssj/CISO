@@ -43,7 +43,7 @@ const sampleKBEntries = [
         baseAnswer: 'Yes, we maintain and test business continuity and disaster recovery plans.',
         keywords: ['business continuity', 'disaster recovery', 'BCP', 'DRP'],
     },
-];
+] as any[];
 
 describe('Integration: CAIQ Knowledge Transfer', () => {
     it('builds matcher from KB entries without error', () => {
@@ -57,7 +57,7 @@ describe('Integration: CAIQ Knowledge Transfer', () => {
         const results = matcher.findSimilar('How do you test application security?');
 
         expect(results.length).toBeGreaterThan(0);
-        expect(results[0].entry.id).toBe('AIS-01');
+        expect((results[0]?.entry as any).id).toBe('AIS-01');
         expect(results[0].score).toBeGreaterThan(0);
     });
 
@@ -66,7 +66,7 @@ describe('Integration: CAIQ Knowledge Transfer', () => {
         const results = matcher.findSimilar('How is personal data classified?');
 
         expect(results.length).toBeGreaterThan(0);
-        const topIds = results.slice(0, 2).map(r => r.entry.id);
+        const topIds = results.slice(0, 2).map(r => (r.entry as any)?.id);
         expect(topIds).toContain('DSP-01');
     });
 
@@ -75,7 +75,7 @@ describe('Integration: CAIQ Knowledge Transfer', () => {
         const results = matcher.findSimilar('RBAC least privilege identity');
 
         expect(results.length).toBeGreaterThan(0);
-        const topIds = results.slice(0, 3).map(r => r.entry.id);
+        const topIds = results.slice(0, 3).map(r => (r.entry as any)?.id);
         expect(topIds).toContain('IAM-01');
     });
 

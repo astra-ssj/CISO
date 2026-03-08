@@ -6,10 +6,7 @@
 import { vi } from 'vitest';
 
 // ─── DOM matchers (toBeInTheDocument, etc.) ─────────────────────────
-// Only import in jsdom environment
-if (typeof document !== 'undefined') {
-    await import('@testing-library/jest-dom');
-}
+import '@testing-library/jest-dom/vitest';
 
 // ─── Mock next/navigation ───────────────────────────────────────────
 vi.mock('next/navigation', () => ({

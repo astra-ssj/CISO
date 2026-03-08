@@ -23,7 +23,7 @@ describe('Integration: Shodan API client', () => {
 
     it('isConfigured returns false when API key is missing', async () => {
         delete process.env.SHODAN_API_KEY;
-        const { ShodanClient } = await import('@/lib/intelligence/clients/shodan-client') as { ShodanClient: new () => { isConfigured(): boolean } };
+        const { ShodanClient } = (await import('@/lib/intelligence/clients/shodan-client')) as any;
         const client = new ShodanClient();
         expect(client.isConfigured()).toBe(false);
     });
@@ -53,9 +53,7 @@ describe('Integration: Shodan API client', () => {
     });
 
     it('computeRiskScore returns higher scores for more vulnerabilities', async () => {
-        const { ShodanClient } = await import('@/lib/intelligence/clients/shodan-client') as {
-            ShodanClient: new () => { computeRiskScore(v: number, e: number, s: number, a: number): number };
-        };
+        const { ShodanClient } = (await import('@/lib/intelligence/clients/shodan-client')) as any;
         const client = new ShodanClient();
 
         const lowRisk = client.computeRiskScore(0, 1, 0, 10);
@@ -72,9 +70,7 @@ describe('Integration: Shodan API client', () => {
             json: () => Promise.resolve({ scan_credits: 100, query_credits: 50 }),
         });
 
-        const { ShodanClient } = await import('@/lib/intelligence/clients/shodan-client') as {
-            ShodanClient: new () => { healthCheck(): Promise<Record<string, unknown>> };
-        };
+        const { ShodanClient } = (await import('@/lib/intelligence/clients/shodan-client')) as any;
         const client = new ShodanClient();
         try {
             const health = await client.healthCheck();

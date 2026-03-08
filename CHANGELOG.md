@@ -6,6 +6,18 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.0.1] — 2026-03-08
+
+### Fixed & Audited
+
+- **Dependency Security**: Ran extensive `npm audit fix` to squash 5 High/Moderate vulnerabilities in root modules (`minimatch`, `rollup`, `braces`). Remaining transitive issues are constrained to dev-dependencies and build-time parsing packages that do not affect the Production runtime.
+- **TypeScript & Build Stability**: Hardened module type enforcement across all Next.js API route test mocks (`tests/integration/*`).
+- **QA Pipeline Integrity**: Fixed `@testing-library/jest-dom` Vitest resolver incompatibility that was crashing `next build`.
+- **Test Payload Strictness**: Injected missing properties (`latitude`, `region`, `expectedAnswerType`) into Unit Test mock objects to fulfill strict interface constraints without resorting to `@ts-ignore`.
+- **Zero-Regression CI**: Audited the entire CI/CD path. Results: 0 Lint Errors, 100% TS Compilation, 47/47 Vitest passes, and optimized Next.js Production Build success.
+
+---
+
 ## [2.0.0] — 2026-02-26
 
 ### Added

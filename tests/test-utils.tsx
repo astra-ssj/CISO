@@ -39,7 +39,7 @@ export function mockNextRequest(
         init.body = JSON.stringify(body);
     }
 
-    return new NextRequest(fullUrl, init);
+    return new NextRequest(fullUrl, init as any);
 }
 
 /**
