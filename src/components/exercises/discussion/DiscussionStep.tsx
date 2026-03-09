@@ -5,6 +5,7 @@ import type { Step, RoleId } from "@/lib/exercises/types";
 import { RoleBadge } from "../shared/RoleBadge";
 import { DeadlineTracker } from "../shared/DeadlineTracker";
 import { cn } from "@/lib/utils";
+import { Info } from "lucide-react";
 
 interface DiscussionStepProps {
     step: Step;
@@ -17,6 +18,7 @@ interface DiscussionStepProps {
 
 export function DiscussionStep({ step, responses, commsDrafts, onSaveResponse, onSaveComms }: DiscussionStepProps) {
     const [expandedRole, setExpandedRole] = useState<string | null>(null);
+    const [showHint, setShowHint] = useState<Record<number, boolean>>({});
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -26,7 +28,7 @@ export function DiscussionStep({ step, responses, commsDrafts, onSaveResponse, o
                     <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-0.5 rounded">{step.time}</span>
                     <h2 className="text-xl font-bold text-foreground">{step.title}</h2>
                 </div>
-                {step.deadline && <DeadlineTracker deadline={step.deadline} />}
+                {step.deadline && step.deadline.length > 0 && <DeadlineTracker deadlines={step.deadline} />}
             </div>
 
             {/* Inject event */}
@@ -54,7 +56,7 @@ export function DiscussionStep({ step, responses, commsDrafts, onSaveResponse, o
             {step.questions && step.questions.length > 0 && (
                 <div className="space-y-3">
                     <h3 className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Discussion Points by Role</h3>
-                    {step.questions.map((rq) => {
+                    {step.questions.map((rq, questionIndex) => {
                         const key = `${step.id}-${rq.role}`;
                         const isExpanded = expandedRole === rq.role;
                         const savedResponse = responses[key] ?? "";
@@ -79,6 +81,24 @@ export function DiscussionStep({ step, responses, commsDrafts, onSaveResponse, o
                                             <span className="text-[9px] font-mono uppercase tracking-wider text-amber-500">⚡ Tension Point</span>
                                             <p className="text-xs text-amber-300/80 mt-1">{rq.tension}</p>
                                         </div>
+
+                                        {/* Facilitator Hint Toggle */}
+                                        {rq.hint && (
+                                            <button
+                                                onClick={() => setShowHint(prev => ({ ...prev, [questionIndex]: !prev[questionIndex] }))}
+                                                className="text-xs text-amber-400/60 hover:text-amber-400 mt-2 transition-colors"
+                                            >
+                                                {showHint[questionIndex] ? "Hide Hint" : "🎓 Show Facilitator Hint"}
+                                            </button>
+                                        )}
+
+                                        {/* Facilitator Hint Reveal */}
+                                        {showHint[questionIndex] && rq.hint && (
+                                            <div className="mt-2 p-3 rounded-lg bg-amber-400/5 border border-amber-400/10 animate-in slide-in-from-top-2 duration-200">
+                                                <div className="text-[10px] font-bold text-amber-400 font-mono mb-1 uppercase">FACILITATOR HINT</div>
+                                                <div className="text-xs text-amber-200/80 leading-relaxed">{rq.hint}</div>
+                                            </div>
+                                        )}
 
                                         {/* Response textarea */}
                                         <textarea

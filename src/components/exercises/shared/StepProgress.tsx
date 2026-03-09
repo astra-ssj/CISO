@@ -6,7 +6,7 @@ import type { Step } from "@/lib/exercises/types";
 interface StepProgressProps {
     steps: Step[];
     currentStep: number;
-    decisions: Record<number, string>;
+    decisions: Record<number, { choiceId: string; confidence: "low" | "medium" | "high" }>;
     onStepClick?: (index: number) => void;
 }
 
@@ -16,7 +16,7 @@ export function StepProgress({ steps, currentStep, decisions, onStepClick }: Ste
             <div className="flex items-center gap-1 min-w-max px-1">
                 {steps.map((step, i) => {
                     const isActive = i === currentStep;
-                    const isCompleted = decisions[step.id] !== undefined || i < currentStep;
+                    const isCompleted = decisions[step.id]?.choiceId !== undefined || i < currentStep;
                     const isClickable = onStepClick && (isCompleted || i <= currentStep);
 
                     return (

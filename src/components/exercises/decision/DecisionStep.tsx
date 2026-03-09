@@ -9,13 +9,15 @@ import { formatDollars } from "@/lib/exercises/scoring";
 
 interface DecisionStepProps {
     step: Step;
-    onDecision: (decision: Decision) => void;
+    onDecision: (decision: Decision, confidence: "low" | "medium" | "high") => void;
     hasDecided: boolean;
     selectedChoiceId?: string;
 }
 
 export function DecisionStep({ step, onDecision, hasDecided, selectedChoiceId }: DecisionStepProps) {
     const [hoveredId, setHoveredId] = useState<string | null>(null);
+    const [pendingDecision, setPendingDecision] = useState<Decision | null>(null);
+    const [confidence, setConfidence] = useState<"low" | "medium" | "high" | null>(null);
     const selectedDecision = step.decisions?.find((d) => d.id === selectedChoiceId);
 
     return (
@@ -26,7 +28,7 @@ export function DecisionStep({ step, onDecision, hasDecided, selectedChoiceId }:
                     <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-0.5 rounded">{step.time}</span>
                     <h2 className="text-xl font-bold text-foreground">{step.title}</h2>
                 </div>
-                {step.deadline && <DeadlineTracker deadline={step.deadline} />}
+                {step.deadline && step.deadline.length > 0 && <DeadlineTracker deadlines={step.deadline} />}
             </div>
 
             {/* Inject event */}
@@ -52,14 +54,14 @@ export function DecisionStep({ step, onDecision, hasDecided, selectedChoiceId }:
             </div>
 
             {/* Decision cards */}
-            {!hasDecided && step.decisions && (
+            {!hasDecided && !pendingDecision && step.decisions && (
                 <div className="space-y-3">
                     <h3 className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Choose Your Response</h3>
                     <div className="grid gap-3">
                         {step.decisions.map((decision) => (
                             <button
                                 key={decision.id}
-                                onClick={() => onDecision(decision)}
+                                onClick={() => setPendingDecision(decision)}
                                 onMouseEnter={() => setHoveredId(decision.id)}
                                 onMouseLeave={() => setHoveredId(null)}
                                 className={cn(
@@ -96,6 +98,73 @@ export function DecisionStep({ step, onDecision, hasDecided, selectedChoiceId }:
                                 </div>
                             </button>
                         ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Decision Confirmation */}
+            {!hasDecided && pendingDecision && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+                    <div className="p-6 rounded-xl border border-primary/30 bg-card/60 space-y-6 shadow-lg shadow-primary/5">
+                        <div className="space-y-2">
+                            <h3 className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">You Selected</h3>
+                            <div className="flex items-center gap-3">
+                                <span className="flex-shrink-0 h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold uppercase">
+                                    {pendingDecision.id}
+                                </span>
+                                <p className="text-base font-medium text-foreground">{pendingDecision.label}</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-3 pt-4 border-t border-border/50">
+                            <h3 className="text-sm font-semibold text-foreground">How confident are you?</h3>
+                            <div className="grid grid-cols-3 gap-3">
+                                {(["low", "medium", "high"] as const).map((level) => (
+                                    <button
+                                        key={level}
+                                        onClick={() => setConfidence(level)}
+                                        className={cn(
+                                            "py-2.5 px-3 rounded-lg border text-sm font-medium transition-all duration-200 capitalize",
+                                            confidence === level
+                                                ? "border-primary bg-primary text-primary-foreground shadow-md"
+                                                : "border-border bg-card/50 hover:bg-muted text-muted-foreground hover:text-foreground"
+                                        )}
+                                    >
+                                        {level}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 pt-4">
+                            <button
+                                onClick={() => {
+                                    if (pendingDecision && confidence) {
+                                        onDecision(pendingDecision, confidence);
+                                        setPendingDecision(null);
+                                        setConfidence(null);
+                                    }
+                                }}
+                                disabled={!confidence}
+                                className={cn(
+                                    "flex-1 py-3 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2",
+                                    confidence
+                                        ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+                                        : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                                )}
+                            >
+                                Confirm Decision →
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setPendingDecision(null);
+                                    setConfidence(null);
+                                }}
+                                className="flex-1 py-3 rounded-lg text-sm font-medium border border-border bg-card hover:bg-muted text-foreground transition-all duration-200"
+                            >
+                                Change My Mind
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

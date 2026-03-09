@@ -24,7 +24,7 @@ export function useExerciseSession(scenario: Scenario, sessionId: string, mode: 
     const isLastStep = state.currentStep === scenario.steps.length - 1;
     const hasDecidedCurrentStep = state.decisions[currentStepData?.id ?? -1] !== undefined;
 
-    const makeDecision = useCallback(async (decision: Decision) => {
+    const makeDecision = useCallback(async (decision: Decision, confidence: "low" | "medium" | "high") => {
         const step = scenario.steps[state.currentStep];
         if (!step) return;
 
@@ -43,6 +43,7 @@ export function useExerciseSession(scenario: Scenario, sessionId: string, mode: 
             repInt: decision.repInt,
             repExt: decision.repExt,
             consequence: decision.consequence,
+            confidence,
         };
 
         setState((prev) => ({
@@ -50,7 +51,7 @@ export function useExerciseSession(scenario: Scenario, sessionId: string, mode: 
             dollars: newDollars,
             repInternal: newRepInt,
             repExternal: newRepExt,
-            decisions: { ...prev.decisions, [step.id]: decision.id },
+            decisions: { ...prev.decisions, [step.id]: { choiceId: decision.id, confidence } },
             history: [...prev.history, record],
         }));
 
@@ -68,6 +69,7 @@ export function useExerciseSession(scenario: Scenario, sessionId: string, mode: 
                 repInternalDelta: decision.repInt,
                 repExternalDelta: decision.repExt,
                 consequence: decision.consequence,
+                confidence,
                 cascadeFlag: decision.cascadeFlag,
             });
         } catch (e) {

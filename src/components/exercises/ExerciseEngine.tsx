@@ -11,6 +11,7 @@ import { DiscussionStep } from "./discussion/DiscussionStep";
 import { FinalAssessment } from "./decision/FinalAssessment";
 import { ChevronLeft, ChevronRight, Flag } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getDeadlineStyle } from "./shared/DeadlineTracker";
 
 interface ExerciseEngineProps {
     scenario: Scenario;
@@ -33,6 +34,7 @@ export function ExerciseEngine({ scenario, sessionId, mode }: ExerciseEngineProp
     } = useExerciseSession(scenario, sessionId, mode);
 
     const [isComplete, setIsComplete] = useState(false);
+    const [showTransition, setShowTransition] = useState(false);
 
     const handleFinish = useCallback(async () => {
         await finishExercise();
@@ -40,6 +42,15 @@ export function ExerciseEngine({ scenario, sessionId, mode }: ExerciseEngineProp
     }, [finishExercise]);
 
     if (!currentStepData && !isComplete) return null;
+
+    const handleNextStep = () => {
+        setShowTransition(true);
+        // Auto-advance after 3 seconds or on click
+        setTimeout(() => {
+            setShowTransition(false);
+            nextStep();
+        }, 5000);
+    };
 
     // Final assessment screen
     if (isComplete && mode === "decision") {
@@ -72,6 +83,134 @@ export function ExerciseEngine({ scenario, sessionId, mode }: ExerciseEngineProp
         );
     }
 
+    if (showTransition) {
+        // Find the record of the decision just made
+        const lastDecision = state.history.find(h => h.stepId === currentStepData?.id);
+        const nextStepData = scenario.steps[state.currentStep + 1];
+
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[70vh] animate-in fade-in zoom-in-95 duration-500 max-w-2xl mx-auto px-4 w-full">
+                <div className="w-full bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+                    {/* Header */}
+                    <div className="bg-primary/10 border-b border-border/50 p-6 text-center">
+                        <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-primary/20 mb-3 animate-pulse">
+                            <Flag className="h-6 w-6 text-primary" />
+                        </div>
+                        <h2 className="text-xl font-bold uppercase tracking-wider text-foreground">Step {state.currentStep + 1} Complete</h2>
+                        <p className="text-muted-foreground text-sm mt-1">{currentStepData?.title}</p>
+                    </div>
+
+                    <div className="p-6 space-y-6">
+                        {/* Decision Impact (if a decision was made) */}
+                        {lastDecision && mode === "decision" && (
+                            <div className="space-y-3">
+                                <h3 className="text-xs font-mono uppercase text-muted-foreground">Action Taken</h3>
+                                <div className="bg-muted/30 border border-border/50 rounded-lg p-4">
+                                    <p className="font-medium text-sm mb-2 text-foreground/90">{lastDecision.choiceLabel}</p>
+                                    <div className="flex items-center gap-4 text-sm font-mono text-muted-foreground">
+                                        <span className={lastDecision.dollars < 0 ? "text-red-400" : "text-emerald-400"}>
+                                            Impact: {lastDecision.dollars < 0 ? "-" : "+"}€{Math.abs(lastDecision.dollars / 1000)}K
+                                        </span>
+                                        <span className="opacity-50">•</span>
+                                        <span className={lastDecision.repInt < 0 ? "text-red-400" : lastDecision.repInt > 0 ? "text-emerald-400" : ""}>
+                                            Internal: {lastDecision.repInt > 0 ? "+" : ""}{lastDecision.repInt}
+                                        </span>
+                                        <span className="opacity-50">•</span>
+                                        <span className={lastDecision.repExt < 0 ? "text-red-400" : lastDecision.repExt > 0 ? "text-emerald-400" : ""}>
+                                            External: {lastDecision.repExt > 0 ? "+" : ""}{lastDecision.repExt}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Running Totals */}
+                        <div className="space-y-3">
+                            <h3 className="text-xs font-mono uppercase text-muted-foreground">Running Totals</h3>
+                            <div className="grid grid-cols-3 gap-3">
+                                <div className="bg-muted/30 border border-border/50 rounded-lg p-3 text-center">
+                                    <span className="block text-xl mb-1">💰</span>
+                                    <div className="text-xs text-muted-foreground mb-1">Net Cost</div>
+                                    <div className="font-mono text-sm font-medium text-red-400">
+                                        -€{Math.abs(state.dollars / 1000)}K
+                                    </div>
+                                </div>
+                                <div className="bg-muted/30 border border-border/50 rounded-lg p-3 text-center">
+                                    <span className="block text-xl mb-1">👥</span>
+                                    <div className="text-xs text-muted-foreground mb-1">Internal Rep</div>
+                                    <div className={cn("font-mono text-sm font-medium", state.repInternal < 50 ? "text-red-400" : "text-emerald-400")}>
+                                        {state.repInternal}%
+                                    </div>
+                                </div>
+                                <div className="bg-muted/30 border border-border/50 rounded-lg p-3 text-center">
+                                    <span className="block text-xl mb-1">🌍</span>
+                                    <div className="text-xs text-muted-foreground mb-1">External Rep</div>
+                                    <div className={cn("font-mono text-sm font-medium", state.repExternal < 50 ? "text-red-400" : "text-emerald-400")}>
+                                        {state.repExternal}%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Watch out / Consequence */}
+                        {lastDecision?.consequence && mode === "decision" && (
+                            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 flex gap-3">
+                                <span className="text-amber-500 text-lg shrink-0">⚠️</span>
+                                <div>
+                                    <h4 className="text-xs font-bold text-amber-500 uppercase tracking-wider mb-1">Consequence</h4>
+                                    <p className="text-sm text-amber-400/90 leading-relaxed">{lastDecision.consequence}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Next Step Preview */}
+                        {nextStepData && (
+                            <div className="pt-4 border-t border-border/50 space-y-2">
+                                <h3 className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Up Next</h3>
+                                <div className="flex items-center gap-3">
+                                    <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-xs font-mono">
+                                        {nextStepData.time}
+                                    </span>
+                                    <span className="text-sm font-medium text-foreground">
+                                        Step {nextStepData.id}: {nextStepData.title}
+                                    </span>
+                                </div>
+                                {nextStepData.deadline && nextStepData.deadline.length > 0 && (
+                                    <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground font-mono">
+                                        <span>⏱</span>
+                                        {nextStepData.deadline.map((d, i) => {
+                                            const style = getDeadlineStyle(d.hoursRemaining, d.isOverdue);
+                                            return (
+                                                <span key={i} className="flex items-center gap-1">
+                                                    <span>{d.label}:</span>
+                                                    <span className={d.isOverdue ? "text-rose-500 font-bold" : style.color}>{style.label}</span>
+                                                    {i < nextStepData.deadline!.length - 1 && <span className="text-muted-foreground opacity-50 ml-2">·</span>}
+                                                </span>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Footer / Continue */}
+                    <div className="bg-muted/10 border-t border-border/50 p-4 flex justify-center">
+                        <button
+                            onClick={() => {
+                                setShowTransition(false);
+                                nextStep();
+                            }}
+                            className="w-full sm:w-auto px-8 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium text-sm hover:bg-primary/90 transition-colors shadow-sm"
+                        >
+                            Continue to Next Step →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="flex gap-6 max-w-7xl mx-auto py-6 px-4">
             {/* Main content */}
@@ -89,7 +228,7 @@ export function ExerciseEngine({ scenario, sessionId, mode }: ExerciseEngineProp
                         step={currentStepData}
                         onDecision={makeDecision}
                         hasDecided={hasDecidedCurrentStep}
-                        selectedChoiceId={state.decisions[currentStepData.id]}
+                        selectedChoiceId={state.decisions[currentStepData.id]?.choiceId}
                     />
                 )}
 
@@ -140,7 +279,7 @@ export function ExerciseEngine({ scenario, sessionId, mode }: ExerciseEngineProp
                         </button>
                     ) : (
                         <button
-                            onClick={nextStep}
+                            onClick={handleNextStep}
                             disabled={mode === "decision" && !hasDecidedCurrentStep}
                             className={cn(
                                 "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",

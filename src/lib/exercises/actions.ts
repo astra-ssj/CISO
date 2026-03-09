@@ -81,6 +81,7 @@ export async function saveDecision(data: {
     repInternalDelta: number;
     repExternalDelta: number;
     consequence: string;
+    confidence: "low" | "medium" | "high";
     cascadeFlag?: string;
 }) {
     return prisma.tabletopDecision.create({ data });
@@ -204,4 +205,81 @@ export async function ensureScenariosSeeded(
             });
         }
     }
+}
+
+// =============================================================================
+// Last Run Data for Scenario Library
+// =============================================================================
+
+export async function getLastRunPerScenario() {
+    const lastRuns = await prisma.tabletopSession.findMany({
+        where: { status: "completed" },
+        orderBy: { completedAt: "desc" },
+        distinct: ["scenarioId"],
+        include: { scenario: true },
+    });
+
+    // We want to map by the predefined static slugs:
+    return Object.fromEntries(lastRuns.map(r => [r.scenario.slug, {
+        mode: r.mode,
+        grade: r.grade,
+        totalDollars: r.totalDollars,
+        completedAt: r.completedAt,
+    }]));
+}
+
+// =============================================================================
+// Insights and Patterns
+// =============================================================================
+
+export async function getExercisePatterns() {
+    const sessions = await prisma.tabletopSession.findMany({
+        where: { status: "completed", mode: "decision" }, // only decision mode has grades/rep
+        include: { scenario: true },
+        orderBy: { completedAt: "desc" },
+        take: 20,
+    });
+
+    if (sessions.length < 2) return null;
+
+    const patterns: string[] = [];
+
+    // Average internal reputation
+    const avgInternal = sessions.reduce((s, sess) => s + (sess.finalRepInternal || 0), 0) / sessions.length;
+    if (avgInternal < 60) {
+        patterns.push("Internal communication consistently underperforms — consider running Discussion mode focused on employee communication.");
+    }
+
+    // Average external reputation
+    const avgExternal = sessions.reduce((s, sess) => s + (sess.finalRepExternal || 0), 0) / sessions.length;
+    if (avgExternal < 60) {
+        patterns.push("External communication needs attention — media and customer notification decisions trend negative.");
+    }
+
+    // Grade trend
+    const gradeMap: Record<string, number> = { A: 5, B: 4, C: 3, D: 2, F: 1 };
+    const grades = sessions.filter(s => s.grade).map(s => gradeMap[s.grade![0]] || 0);
+    if (grades.length >= 3) {
+        const recent = grades.slice(0, 3).reduce((a, b) => a + b, 0) / 3;
+        const older = grades.slice(-3).reduce((a, b) => a + b, 0) / 3;
+        if (recent > older) patterns.push("Improving trend — grades increasing across recent sessions.");
+        if (recent < older) patterns.push("Performance declining — review fundamentals before advanced scenarios.");
+    }
+
+    // Scenario coverage
+    const uniqueScenarios = new Set(sessions.map(s => s.scenario.slug));
+    const allScenarios = ["supply-chain", "insider", "ransomware"];
+    const unrun = allScenarios.filter(s => !uniqueScenarios.has(s));
+    if (unrun.length > 0) {
+        patterns.push(`Scenarios not yet attempted: ${unrun.map(s => s.replace("-", " ")).join(", ")}`);
+    }
+
+    return {
+        totalSessions: sessions.length,
+        avgGrade: sessions[0]?.grade || "—",
+        avgDollars: Math.round(sessions.reduce((s, sess) => s + (sess.totalDollars || 0), 0) / sessions.length),
+        avgInternal: Math.round(avgInternal),
+        avgExternal: Math.round(avgExternal),
+        patterns,
+    };
 }

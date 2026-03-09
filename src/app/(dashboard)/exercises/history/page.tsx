@@ -1,4 +1,4 @@
-import { getSessionHistory } from "@/lib/exercises/actions";
+import { getSessionHistory, getExercisePatterns } from "@/lib/exercises/actions";
 import { formatDollars } from "@/lib/exercises/scoring";
 import { Shield, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,7 @@ const gradeColors: Record<string, string> = {
 
 export default async function ExerciseHistoryPage() {
     const sessions = await getSessionHistory();
+    const insights = await getExercisePatterns();
 
     return (
         <div className="space-y-6 p-6 max-w-4xl mx-auto">
@@ -22,6 +23,40 @@ export default async function ExerciseHistoryPage() {
                 <Clock className="h-6 w-6 text-primary" />
                 <h1 className="text-2xl font-bold text-foreground">Exercise History</h1>
             </div>
+
+            {insights && (
+                <div className="bg-card/50 border border-border rounded-xl p-6 shadow-sm">
+                    <div className="flex items-center gap-2 mb-4">
+                        <span className="text-xl">📊</span>
+                        <h2 className="text-[13px] font-bold text-foreground font-mono uppercase tracking-wider">Performance Insights</h2>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="text-sm text-muted-foreground leading-relaxed">
+                            <p>
+                                <span className="text-foreground font-medium">{insights.totalSessions} exercises</span> completed ·
+                                Avg grade: <span className="font-mono font-medium text-foreground">{insights.avgGrade}</span> ·
+                                Avg impact: <span className="font-mono font-medium text-red-400">-{formatDollars(Math.abs(insights.avgDollars))}</span>
+                            </p>
+                            <p>
+                                Internal rep avg: <span className="font-mono text-foreground">{insights.avgInternal}%</span> ·
+                                External rep avg: <span className="font-mono text-foreground">{insights.avgExternal}%</span>
+                            </p>
+                        </div>
+
+                        {insights.patterns.length > 0 && (
+                            <div className="space-y-3 pt-4 border-t border-border/50">
+                                {insights.patterns.map((pattern, i) => (
+                                    <div key={i} className="flex gap-3 text-sm text-muted-foreground">
+                                        <span className="shrink-0 text-amber-500">💡</span>
+                                        <span className="leading-relaxed">{pattern}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {sessions.length === 0 ? (
                 <div className="text-center py-16 space-y-4">

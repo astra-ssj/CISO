@@ -577,6 +577,7 @@ model TabletopDecision {
   repInternalDelta Int
   repExternalDelta Int
   consequence     String
+  confidence      String?                  // "low", "medium", "high"
   cascadeFlag     String?                  // for future branching logic
   decidedAt       DateTime @default(now())
 

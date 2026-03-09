@@ -9,6 +9,20 @@ export const ransomwareScenario: Scenario = {
     stakes: { revenue: 42, customers: 1200, entities: 6, auditIn: "8 weeks" },
     startDollars: 0, startRepInternal: 100, startRepExternal: 100,
     modes: ["decision", "discussion"],
+    meta: {
+        estimatedDuration: "~90 min",
+        difficulty: "Expert",
+        commsExerciseCount: 2,
+        injectEventCount: 6,
+        themes: [
+            { icon: "💰", label: "Ransom payment decision" },
+            { icon: "⏱", label: "72-hour GDPR deadline" },
+            { icon: "🌍", label: "6-jurisdiction notification" },
+            { icon: "📰", label: "Customer breach notification" },
+            { icon: "🔒", label: "Backup integrity" },
+            { icon: "📋", label: "Post-incident audit" },
+        ],
+    },
     steps: [
         {
             id: 1, time: "T+0h", title: "Initial Detection & Containment",
@@ -25,7 +39,7 @@ export const ransomwareScenario: Scenario = {
                 { role: "auditor", q: "What evidence do we need to preserve for forensics?", tension: "Preservation competes with containment. Wiping and restoring is faster but destroys evidence." },
                 { role: "impl", q: "Who do we wake up? What's the escalation protocol at 3 AM?", tension: "Full team response is needed but burnout starts at hour 1 if everyone is called in." }
             ],
-            inject: null, deadline: "Ransom deadline: 72 hours", comms: null
+            inject: null, deadline: [{ label: "Ransom deadline", hoursRemaining: 72, isOverdue: false }], comms: null
         },
         {
             id: 2, time: "T+2h", title: "The Ransom Demand & Law Enforcement",
@@ -36,12 +50,22 @@ export const ransomwareScenario: Scenario = {
                 { id: "c", label: "Attempt to pay the ransom quickly and quietly before news breaks", role: "cfo", dollars: -4200000, repInt: -20, repExt: -30, consequence: "CATASTROPHIC financially. €4.2M paid. Decryptor works... partially. 30% of data unrecoverable. Attackers demand additional payment. Insurance voided due to no law enforcement notification. Regulatory fines for undisclosed payment.", isBlunder: true }
             ],
             questions: [
-                { role: "cfo", q: "Should we pay the ransom? What's the calculus?", tension: "Payment funds criminal enterprises. But the data leak could be more damaging. There's no clean answer." },
-                { role: "legal", q: "Are there sanctions implications in paying this group?", tension: "If the group is sanctioned, payment is a criminal offense. Attribution may not be clear enough to confirm." },
+                {
+                    role: "cfo",
+                    q: "The CEO wants to know: what's our maximum financial exposure?",
+                    tension: "GDPR fines up to 4% of global revenue (~€7.2M). Ransom demand €2.1M. Business interruption unknown. Cyber insurance has €5M cap with 24hr notification clause.",
+                    hint: "Have you considered the insurance notification timeline? Most cyber policies require notification within 24 hours of awareness. Missing this deadline could void the policy — that changes your maximum exposure calculation significantly."
+                },
+                {
+                    role: "legal",
+                    q: "GDPR 72-hour clock is running. NIS2 requires early warning within 24 hours. Notify now or wait?",
+                    tension: "Early notification shows good faith but may include inaccuracies. Waiting risks missing the deadline.",
+                    hint: "The GDPR 72-hour clock started when you 'became aware' of the breach — was that the SOC alert at 02:47, or the confirmed exfiltration at T+2h? Your answer changes how much time you actually have. Also consider: NIS2 early warning is separate from GDPR notification. You can file a short NIS2 alert now and a detailed GDPR notification later."
+                },
                 { role: "auditor", q: "How does ransom payment affect our regulatory standing?", tension: "Some regulators view payment as a pragmatic decision. Others view it as enabling criminal activity." }
             ],
             inject: { time: "T+1h", event: "Attackers send proof: 500 customer contracts from exfiltrated data. 'This is 0.01% of what we have.'", severity: "CRITICAL" },
-            deadline: "72 hours to ransom deadline | Insurance notification: immediate",
+            deadline: [{ label: "Ransom deadline", hoursRemaining: 70, isOverdue: false }, { label: "Insurance notification", hoursRemaining: 0, isOverdue: true }],
             comms: null
         },
         {
@@ -58,7 +82,7 @@ export const ransomwareScenario: Scenario = {
                 { role: "impl", q: "Do we have the team capacity for a multi-day recovery operation?", tension: "The team has been up since 3 AM. Sustained operations require shift rotations you may not have planned for." }
             ],
             inject: { time: "T+5h", event: "SOC discovers ransomware dormant payload in one backup set. Others appear clean.", severity: "HIGH" },
-            deadline: "Customer SLAs: various (24h to 72h)", comms: null
+            deadline: [{ label: "Customer SLAs", hoursRemaining: 24, isOverdue: false }], comms: null
         },
         {
             id: 4, time: "T+12h", title: "Customer & Regulatory Notification",
@@ -74,7 +98,7 @@ export const ransomwareScenario: Scenario = {
                 { role: "impl", q: "Do we have the bandwidth for multi-jurisdiction regulatory filings right now?", tension: "The team managing recovery is the same team needed for regulatory filings. Both are urgent." }
             ],
             inject: { time: "T+10h", event: "Customer tweets: 'All our data hosted with [Company] is inaccessible. No communication from them.' 500 retweets.", severity: "CRITICAL" },
-            deadline: "GDPR: 60 hours remaining",
+            deadline: [{ label: "GDPR", hoursRemaining: 60, isOverdue: false }, { label: "NIS2", hoursRemaining: 0, isOverdue: true }],
             comms: { audience: "Regulators (BfDI, ICO, PDPC, OAIC)", template: "BREACH NOTIFICATION — Article 33 GDPR\n\n[NATURE OF BREACH]\n[CATEGORIES OF DATA]\n[APPROXIMATE NUMBER OF RECORDS]\n[LIKELY CONSEQUENCES]\n[MEASURES TAKEN]\n[DPO CONTACT DETAILS]" }
         },
         {
@@ -91,7 +115,7 @@ export const ransomwareScenario: Scenario = {
                 { role: "vptech", q: "Can we accelerate recovery to undercut the attacker's leverage?", tension: "Faster recovery reduces ransom leverage but increases risk of errors in restoration." }
             ],
             inject: { time: "T+22h", event: "Attackers publish 100 customer records on leak site. Media coverage begins.", severity: "CRITICAL" },
-            deadline: "48 hours to data dump",
+            deadline: [{ label: "Data dump", hoursRemaining: 48, isOverdue: false }],
             comms: { audience: "All Stakeholders", template: "INCIDENT UPDATE\n\n[CURRENT STATUS]\n[WHAT WE KNOW]\n[ACTIONS BEING TAKEN]\n[TIMELINE FOR RESOLUTION]\n[SUPPORT RESOURCES]" }
         },
         {
@@ -123,7 +147,7 @@ export const ransomwareScenario: Scenario = {
                 { role: "legal", q: "How do we handle the post-incident review while litigation is pending?", tension: "Privilege applies to legal advice, not business analysis. Keep them separate or privilege is waived." }
             ],
             inject: { time: "T+6d", event: "Insurance assessor arrives. Requests complete incident timeline and decision log.", severity: "HIGH" },
-            deadline: "Insurance claim: 30-day filing window", comms: null
+            deadline: [{ label: "Insurance claim", hoursRemaining: 720, isOverdue: false }], comms: null
         },
         {
             id: 8, time: "T+14d", title: "Regulatory Response & Legal Exposure",
@@ -139,7 +163,7 @@ export const ransomwareScenario: Scenario = {
                 { role: "auditor", q: "How do we use regulatory responses as input for ISMS improvement?", tension: "Regulatory feedback is free consulting. But implementing every suggestion can paralyze operations." }
             ],
             inject: { time: "T+12d", event: "Class action preliminary filing in German court. 340 affected customers join.", severity: "HIGH" },
-            deadline: "BfDI response: 7 days remaining", comms: null
+            deadline: [{ label: "BfDI response", hoursRemaining: 168, isOverdue: false }], comms: null
         },
         {
             id: 9, time: "T+30d", title: "Security Hardening & Prevention",

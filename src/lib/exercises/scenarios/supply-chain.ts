@@ -9,6 +9,20 @@ export const supplyChainScenario: Scenario = {
     stakes: { revenue: 42, customers: 1200, entities: 6, auditIn: "4 weeks" },
     startDollars: 0, startRepInternal: 100, startRepExternal: 100,
     modes: ["decision", "discussion"],
+    meta: {
+        estimatedDuration: "~90 min",
+        difficulty: "Advanced",
+        commsExerciseCount: 4,
+        injectEventCount: 7,
+        themes: [
+            { icon: "🔗", label: "Supply chain risk" },
+            { icon: "⚖️", label: "Multi-jurisdiction GDPR" },
+            { icon: "📰", label: "Media crisis management" },
+            { icon: "👥", label: "Internal trust erosion" },
+            { icon: "🏛", label: "Board communication" },
+            { icon: "📋", label: "ISO audit preparation" },
+        ],
+    },
     steps: [
         {
             id: 1, time: "T+0h", title: "Discovery & Initial Response",
@@ -25,7 +39,7 @@ export const supplyChainScenario: Scenario = {
                 { role: "auditor", q: "How does this impact our ISO 27001 certification?", tension: "ISMS is measured by response. But 4-month undetected compromise raises questions." },
                 { role: "impl", q: "Do we have a backup authentication system ready?", tension: "Backup may exist in theory but hasn't been tested at scale." }
             ],
-            inject: null, deadline: "72 hours (GDPR Article 33 notification)", comms: null
+            inject: null, deadline: [{ label: "GDPR Art. 33", hoursRemaining: 72, isOverdue: false }], comms: null
         },
         {
             id: 2, time: "T+4h", title: "Scope Assessment & Board Communication",
@@ -41,7 +55,7 @@ export const supplyChainScenario: Scenario = {
                 { role: "auditor", q: "How should we document board communication for audit evidence?", tension: "Everything documented becomes discoverable. Not documenting is worse." }
             ],
             inject: { time: "T+3h", event: "SecureFlow releases technical advisory with IOCs. Security Twitter buzzing.", severity: "HIGH" },
-            deadline: "Board notification policy: 6 hours",
+            deadline: [{ label: "Board notification", hoursRemaining: 6, isOverdue: false }],
             comms: { audience: "Board of Directors", template: "Subject: [CONFIDENTIAL] Material Cybersecurity Event\n\nDear Board Members,\n\n[SITUATION SUMMARY]\n[IMMEDIATE ACTIONS TAKEN]\n[CURRENT STATUS]\n[NEXT STEPS]\n[FINANCIAL EXPOSURE ESTIMATE]" }
         },
         {
@@ -58,7 +72,7 @@ export const supplyChainScenario: Scenario = {
                 { role: "impl", q: "Do we have support capacity for 1,200 simultaneous inquiries?", tension: "If you promise transparency but can't answer questions, you look worse." }
             ],
             inject: { time: "T+10h", event: "Security researcher publishes blog mapping affected customers. You are named.", severity: "CRITICAL" },
-            deadline: "Thai gov contract: 48-hour clause",
+            deadline: [{ label: "Thai gov contract", hoursRemaining: 48, isOverdue: false }],
             comms: { audience: "All Customers", template: "Subject: Important Security Notice — Action Required\n\n[WHAT HAPPENED]\n[WHAT DATA MAY BE AFFECTED]\n[WHAT WE'RE DOING]\n[WHAT YOU SHOULD DO]\n[HOW TO REACH US]" }
         },
         {
@@ -75,7 +89,7 @@ export const supplyChainScenario: Scenario = {
                 { role: "vptech", q: "Given compromised architecture diagram, what emergency changes needed?", tension: "Changing everything is expensive. But every documented vector is now known." }
             ],
             inject: { time: "T+22h", event: "Dark web monitoring detects exfiltrated records on ransomware forum.", severity: "CRITICAL" },
-            deadline: "GDPR: 72 hours from discovery", comms: null
+            deadline: [{ label: "GDPR", hoursRemaining: 72, isOverdue: false }], comms: null
         },
         {
             id: 5, time: "T+48h", title: "The Media Amplification",
@@ -88,6 +102,12 @@ export const supplyChainScenario: Scenario = {
             questions: [
                 { role: "cfo", q: "How do we prepare the CEO for live media?", tension: "Overly scripted feels hollow. Off-script creates catastrophic risk." },
                 { role: "legal", q: "What can we legally say without prejudicing investigations?", tension: "Too little looks evasive. Too much may waive privilege." },
+                {
+                    role: "vptech",
+                    q: "How do we verify if we are impacted without tipping off the adversary?",
+                    tension: "Active investigation vs. alerting the attacker",
+                    hint: "Suggest using out-of-band communication and checking passive logs before running active scans.",
+                },
                 { role: "impl", q: "How do we handle internal impact of media coverage?", tension: "External and internal messaging must be consistent." }
             ],
             inject: { time: "T+46h", event: "Reuters picks up the story. Board member calls CEO directly.", severity: "CRITICAL" },
@@ -140,7 +160,7 @@ export const supplyChainScenario: Scenario = {
                 { role: "vptech", q: "What technical improvements can we demonstrate in 14 days?", tension: "Quick wins look superficial. Deep changes take time." }
             ],
             inject: { time: "T+12d", event: "BfDI formal inquiry received. Response deadline: 14 days.", severity: "HIGH" },
-            deadline: "BfDI: 14 days | ISO audit: 4 weeks", comms: null
+            deadline: [{ label: "BfDI", hoursRemaining: 336, isOverdue: false }, { label: "ISO audit", hoursRemaining: 672, isOverdue: false }], comms: null
         },
         {
             id: 9, time: "T+30d", title: "Customer Retention & Revenue Recovery",

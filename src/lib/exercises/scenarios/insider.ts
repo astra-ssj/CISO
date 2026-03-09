@@ -9,6 +9,20 @@ export const insiderScenario: Scenario = {
     stakes: { revenue: 28, customers: 800, entities: 6, auditIn: "6 weeks" },
     startDollars: 0, startRepInternal: 100, startRepExternal: 100,
     modes: ["decision", "discussion"],
+    meta: {
+        estimatedDuration: "~75 min",
+        difficulty: "Advanced",
+        commsExerciseCount: 0,
+        injectEventCount: 4,
+        themes: [
+            { icon: "👤", label: "Insider threat detection" },
+            { icon: "🔒", label: "DLP & data protection" },
+            { icon: "⚖️", label: "Employment law" },
+            { icon: "📊", label: "HR data GDPR" },
+            { icon: "💬", label: "Employer brand risk" },
+            { icon: "🔧", label: "Access control reform" },
+        ],
+    },
     steps: [
         {
             id: 1, time: "T+0h", title: "Detection & Legal Assessment",
@@ -25,7 +39,7 @@ export const insiderScenario: Scenario = {
                 { role: "auditor", q: "Does this trigger any regulatory notification requirements?", tension: "HR salary data is personal data under GDPR. You may already be in a breach notification scenario." },
                 { role: "impl", q: "Who else had access to these files? Is this an isolated event?", tension: "Investigating broadly could alert the engineer through colleague conversations." }
             ],
-            inject: null, deadline: "13 days until engineer's last day", comms: null
+            inject: null, deadline: [{ label: "Engineer's last day", hoursRemaining: 312, isOverdue: false }], comms: null
         },
         {
             id: 2, time: "T+24h", title: "The HR Salary Data Problem",
@@ -41,7 +55,7 @@ export const insiderScenario: Scenario = {
                 { role: "impl", q: "How do we communicate without naming the engineer to an audience that will figure it out?", tension: "The resignation is known. People will connect the dots regardless of how carefully you communicate." }
             ],
             inject: { time: "T+20h", event: "The engineer's direct reports notice restricted access and ask questions on team Slack.", severity: "HIGH" },
-            deadline: "GDPR 72-hour notification to DPA", comms: null
+            deadline: [{ label: "GDPR DPA notification", hoursRemaining: 72, isOverdue: false }], comms: null
         },
         {
             id: 3, time: "T+3d", title: "The Competitor Connection",
@@ -88,7 +102,7 @@ export const insiderScenario: Scenario = {
                 { role: "cfo", q: "What's the cost of the farewell approach vs. security escort in terms of retention?", tension: "The 'security escort' saves face legally but costs you in talent retention. The farewell risks looking weak." }
             ],
             inject: { time: "T+9d", event: "Engineer's lawyer sends defamation threat letter. 'Any public statements about my client will result in litigation.'", severity: "HIGH" },
-            deadline: "3 days until last day", comms: null
+            deadline: [{ label: "Last day", hoursRemaining: 72, isOverdue: false }], comms: null
         },
         {
             id: 6, time: "T+14d", title: "The Glassdoor Bomb",
