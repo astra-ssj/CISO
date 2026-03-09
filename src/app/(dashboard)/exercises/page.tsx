@@ -4,6 +4,7 @@ import { ransomwareScenario } from "@/lib/exercises/scenarios/ransomware";
 import { getLastRunPerScenario } from "@/lib/exercises/actions";
 import type { Scenario } from "@/lib/exercises/types";
 import { Shield } from "lucide-react";
+import Link from "next/link";
 import { ScenarioLibraryClient } from "./scenario-library-client";
 
 const scenarios: Scenario[] = [supplyChainScenario, insiderScenario, ransomwareScenario];
@@ -23,6 +24,14 @@ export default async function ExercisesPage() {
                     Test your incident response capabilities with realistic cyber crisis scenarios.
                     Choose a scenario to begin.
                 </p>
+                <div className="pt-2">
+                    <Link
+                        href="/exercises/guide"
+                        className="inline-flex items-center gap-2 text-xs font-mono text-sky-400/70 hover:text-sky-400 transition-colors"
+                    >
+                        📖 Exercise Guide — How it works, scenario walkthroughs, scoring explained
+                    </Link>
+                </div>
             </div>
 
             <ScenarioLibraryClient scenarios={scenarios} lastRuns={lastRuns} />

@@ -1,750 +1,821 @@
 // ─────────────────────────────────────────────────────────────
 // Help Center – Content Data
-// All help articles live here so the page component stays lean.
+// Comprehensive documentation for the entire Astra-CISO platform.
+// Articles use Markdown formatting.
 // ─────────────────────────────────────────────────────────────
-
-export interface HelpArticle {
-    id: string;
-    title: string;
-    description: string;
-    route?: string;
-    content: string;
-}
 
 export interface HelpSection {
     id: string;
     title: string;
     icon: string;
-    color: string;
+    description: string;
     articles: HelpArticle[];
 }
 
-// ── Section accent colors ──────────────────────────────────
-const BLUE = '#3b82f6';
-const CYAN = '#06b6d4';
-const YELLOW = '#eab308';
-const PURPLE = '#a855f7';
-const ORANGE = '#f97316';
-const PINK = '#ec4899';
+export interface HelpArticle {
+    id: string;
+    title: string;
+    content: string;
+    tags: string[];
+    relatedArticles?: string[];
+}
 
-// ── Sections ───────────────────────────────────────────────
 export const HELP_SECTIONS: HelpSection[] = [
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 1. GETTING STARTED
+    // 1. GETTING STARTED & PLATFORM BASICS
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     {
         id: 'getting-started',
         title: 'Getting Started',
         icon: '🚀',
-        color: BLUE,
+        description: 'Platform overview, first-time setup, and navigation guide',
         articles: [
             {
-                id: 'gs-welcome',
-                title: 'Welcome to Astra-CISO',
-                description: 'Platform overview and core value proposition',
-                content: `Astra-CISO is a unified security command platform designed for CISOs and security teams.
+                id: 'platform-overview',
+                title: 'What is Astra-CISO?',
+                tags: ['overview', 'introduction', 'what is'],
+                content: `
+# What is Astra-CISO?
 
-• Single pane of glass for posture, risk, compliance, and strategy
-• AI-assisted decision making with configurable autonomy levels
-• Real-time threat intelligence and incident response
-• Board-ready reporting with one-click export
-• Vendor risk automation with knowledge transfer
+Astra-CISO is an AI-powered cybersecurity compliance and risk management
+platform designed for organizations operating across multiple jurisdictions.
 
-The platform follows Zero Trust Architecture and Identity Posture (ZTAIP) principles, ensuring every signal is normalized, scored, and surfaced to the right stakeholder.`,
+## Core Capabilities
+
+**Command Center** — Your CISO dashboard. Real-time KPIs, threat feeds,
+compliance posture, and pending actions across all modules in one view.
+
+**Decision Center** — AI-assisted decision queue. Pending approvals,
+risk-scored priorities, and three autonomy modes (Auto, Supervised, Manual)
+that control how much the AI acts independently.
+
+**Strategy & OKRs** — Security program strategy management. Set objectives,
+track key results, map controls to strategic initiatives, and measure
+program effectiveness.
+
+**Governance & Risk** — Multi-framework compliance tracking (ISO 27001,
+SOC 2, NIS2, GDPR, Cyber Essentials, EU AI Act), risk register with
+FAIR quantification, and policy lifecycle management.
+
+**Vendor Risk** — CAIQ-powered vendor assessment with a 1000+ entry
+Knowledge Base, 4-tier confidence matching (Exact, High, Partial, Low),
+and Shodan-integrated attack surface scanning.
+
+**Incidents** — Incident lifecycle management from detection through
+resolution, War Room collaboration, and tabletop exercise integration.
+
+**Exercises** — Tabletop exercise engine with 3 crisis scenarios,
+decision tree and discussion modes, quantified consequences, and
+audit-ready session reports.
+
+**Threat Intelligence** — World Monitor geopolitical dashboard, Abuse.ch
+threat feeds (ThreatFox, URLhaus, MalwareBazaar), Shodan attack surface
+monitoring, and Country Instability Index.
+
+**AppSec** — Vulnerability tracking, SAST scanner integration,
+remediation workflow, and risk register feed.
+
+**Integrations** — Data connectors for Google Workspace, Microsoft 365,
+and other platforms that feed real audit data into the compliance engine.
+
+## Multi-Entity Architecture
+Astra-CISO supports multiple legal entities under one account. Switch
+between entities using the entity selector — all data isolates per entity.
+
+## AI Layer
+The platform uses multiple AI providers (Claude, Gemini, Ollama) with
+a circuit breaker for resilience. The Dynamic Autonomy Router controls
+AI decision-making authority. AI Economics tracks token usage and cost.
+      `
             },
             {
-                id: 'gs-first-login',
-                title: 'First Login & Setup',
-                description: '5-step guide to configuring your environment',
-                content: `Follow these steps after your first login:
+                id: 'first-time-setup',
+                title: 'First-Time Setup Checklist',
+                tags: ['setup', 'configuration', 'first time', 'onboarding'],
+                content: `
+# First-Time Setup
 
-1. Navigate to Settings and configure your AI provider (Claude, Gemini, or Ollama)
-2. Set up your organization profile with company name, industry, and size
-3. Import your compliance frameworks from the Governance module
-4. Invite team members and assign roles (CISO, SEC_ENG, AUDITOR, VIEWER)
-5. Run the initial posture assessment from the Command Center
+## 1. Configure Your Entities
+Go to Settings → Entities. Add each legal entity your organization
+operates (e.g., AstraLabs GmbH, AstraLabs UK Ltd, AstraLabs Pty Ltd).
+Each entity can have different compliance frameworks and jurisdictions.
 
-Each step includes guided wizards that walk you through the configuration. The platform will auto-detect available integrations and suggest connections during setup.`,
+## 2. Set Up Compliance Frameworks
+Go to Governance & Risk → Compliance. Enable the frameworks relevant
+to each entity: ISO 27001, SOC 2, NIS2, GDPR, Cyber Essentials, EU AI Act.
+Mark controls as Implemented, Partial, or Not Implemented.
+
+## 3. Configure Threat Intelligence
+Go to Settings → API Keys. Add:
+- **Shodan API Key** — for attack surface monitoring (free tier available)
+- API keys for AI providers (Claude/Gemini) if not pre-configured
+
+Abuse.ch feeds (ThreatFox, URLhaus, MalwareBazaar) require no API key.
+
+## 4. Connect Data Sources
+Go to Integrations. Connect Google Workspace and/or Microsoft 365 to
+feed real audit events into the platform. This is what makes the
+Command Center show real data instead of empty states.
+
+## 5. Run Your First Exercise
+Go to Exercises and run Operation Trojan Vendor in Decision Tree mode.
+This takes ~90 minutes and gives you hands-on experience with the
+platform while testing your incident response instincts.
+
+## 6. Add Your Team
+Go to Settings → Users. Invite team members with appropriate roles:
+- **CISO** — full access to all modules
+- **Engineer** — access to AppSec, Intelligence, and assigned tasks
+- **Auditor** — read-only access to Governance, Risk, and Exercise history
+- **Viewer** — read-only dashboard access
+      `
             },
             {
-                id: 'gs-navigation',
-                title: 'Navigation Overview',
-                description: 'Understanding the sidebar, tabs, and keyboard shortcuts',
-                content: `The platform uses a persistent left sidebar for primary navigation:
+                id: 'navigation-guide',
+                title: 'Navigating the Platform',
+                tags: ['navigation', 'sidebar', 'layout', 'UI'],
+                content: `
+# Navigation Guide
 
-• Command Center — Your daily starting point with posture overview
-• Decision Center — AI-assisted security decisions and action queue
-• Strategy & OKRs — Objectives, defense matrix, KPIs, and project tracker
-• Governance & Risk — Compliance, risk register, policies, audit logs, and evidence
-• Vendor Risk — Quick answer, knowledge transfer, knowledge base, review, and registry
-• Incidents — Response management and tabletop exercises
-• Intelligence — Threat briefing, world monitor, signals, infrastructure, feeds, and ransomware
-• AppSec — Vulnerability feed, SAST results, and remediation tracking
-• Integration Hub — 24 integrations across 9 categories
+## Sidebar
+The left sidebar contains all 11 module links. Click "Collapse" at the
+bottom to minimize it to icons only.
 
-Each module uses tabs for sub-sections. The header provides global search, notifications, and AI assistant access.`,
-            },
-            {
-                id: 'gs-roles',
-                title: 'Role-Based Access',
-                description: 'Permissions for CISO, SEC_ENG, AUDITOR, and VIEWER roles',
-                content: `Four built-in roles control access across the platform:
+## Top Bar
+- **Astra Network** — status of connected systems
+- **Immunity Leaderboard** — industry benchmark comparison
+- **Data Status** — indicator showing whether real data is flowing
+- **Notifications** — alerts requiring attention
+- **Security Status** — overall security posture indicator
 
-CISO
-Full access to all modules including strategy, decisions, reporting, and settings. Can approve policies, manage team, and configure AI providers.
+## Module Tabs
+Most modules have internal tabs for sub-sections. For example:
+- Governance has: Compliance, Risk Register, Policies
+- Intelligence has: World Monitor, Threat Feeds, IOC Enrichment, Attack Surface
+- Vendor Risk has: Quick Answer, Full Review, Knowledge Base, Vendor Registry
 
-SEC_ENG (Security Engineer)
-Operational access to incidents, AppSec, vendors, and intelligence. Can create and manage incidents, run scans, and process vendor questionnaires. No access to strategy or executive reporting.
-
-AUDITOR
-Read-only access to governance, compliance evidence, policies, and audit logs. Can view but not modify risk register entries. Cannot access operational modules.
-
-VIEWER
-Dashboard and reports only. Can view the Command Center overview and generated reports. No edit capabilities anywhere. Ideal for executive stakeholders who need visibility without operational access.`,
-            },
-        ],
+## Entity Switcher
+If you have multiple entities configured, use the entity selector to
+switch context. All data (compliance, risks, incidents, intelligence)
+filters to the selected entity.
+      `
+            }
+        ]
     },
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 2. PLATFORM MODULES
+    // 2. COMMAND CENTER & STRATEGY
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     {
-        id: 'platform-modules',
-        title: 'Platform Modules',
-        icon: '📦',
-        color: CYAN,
+        id: "command-center",
+        title: "Command Center",
+        icon: "📊",
+        description: "CISO dashboard, KPIs, and real-time monitoring",
         articles: [
             {
-                id: 'pm-command',
-                title: 'Command Center',
-                description: 'Posture overview, executive brief, and board reporting',
-                route: '/',
-                content: `The Command Center is your daily starting point. It provides three views:
+                id: "dashboard-kpis",
+                title: "Understanding Dashboard KPIs",
+                tags: ["KPI", "dashboard", "metrics", "command center"],
+                content: `
+# Dashboard KPIs
 
-• Overview — live posture gauge, threat pulse, security metrics, and mini world map
-• Executive Brief — board-ready narrative summary generated by AI
-• Reports & Board Deck — export DOCX/PDF reports with customizable sections
+The Command Center displays 6 key performance indicators:
 
-The posture score is computed from risk register, compliance status, open incidents, and vulnerability counts. It updates in real-time as data changes across the platform.`,
+## Security Alerts (24h)
+Count of CRITICAL and HIGH severity events from threat intelligence
+feeds and connected integrations in the last 24 hours. Click to view
+details in the Threat Intelligence module.
+
+## Failed Logins (24h)
+Count of failed authentication attempts across connected platforms
+(Google Workspace, Microsoft 365). High numbers may indicate brute
+force attacks or credential stuffing. Requires active integration.
+
+## Compliance Posture
+Percentage of controls marked as Implemented across all active
+frameworks. This is a weighted average — frameworks with more controls
+contribute proportionally.
+
+## Open Incidents
+Active incidents in the Incidents module that haven't reached "Closed"
+status. Click to jump to the incident list.
+
+## Pending Actions
+Count of items requiring attention across all modules: vendor assessments
+due, policy reviews pending, evidence expiring, and decisions awaiting
+approval in the Decision Center.
+
+## External Shares (7d)
+Count of file sharing events to external recipients in connected
+platforms over the last 7 days. High numbers may indicate data
+exfiltration risk or policy violation. Requires active integration.
+
+## When KPIs Show Zero or "—"
+If KPIs display zero or dashes, it means either:
+- No integration is connected (go to Integrations to connect Google
+  Workspace or Microsoft 365)
+- The connected integration hasn't synced yet (check last sync time)
+- There genuinely were no events in the measured period
+      `
             },
             {
-                id: 'pm-decisions',
-                title: 'Decision Center',
-                description: 'AI recommendations, confidence scores, and action queue',
-                route: '/decisions',
-                content: `Two core tabs power the Decision Center:
+                id: "threat-monitor-widget",
+                title: "Global Threat Monitor Widget",
+                tags: ["threat", "map", "monitor", "geopolitical"],
+                content: `
+# Global Threat Monitor
 
-• Decisions — AI-generated security recommendations with confidence scores and pillar filters. Review, approve, or defer each decision.
-• Action Queue — security tickets and tasks consolidated from all modules. Priority-sorted with assignee tracking.
+The mini-map on the Command Center shows a summary view of the World
+Monitor. It displays:
 
-Decisions are generated based on signals from threat intelligence, risk register changes, compliance gaps, and incident patterns. Each recommendation includes rationale and suggested actions.`,
-            },
-            {
-                id: 'pm-strategy',
-                title: 'Strategy & OKRs',
-                description: 'OKRs, defense matrix, KPIs, and program tracker',
-                route: '/strategy',
-                content: `The Strategy module provides four tabs:
+- **Office locations** — teal pulsing dots at each configured entity location
+- **Active threats** — recent IOCs from Abuse.ch feeds plotted geographically
+- **Geopolitical events** — significant events from GDELT feed
 
-• OKRs — define security objectives and key results with progress tracking
-• Defense Matrix — visual control coverage map across your security program
-• KPI Dashboard — 20+ auto-computed KPIs with board-friendly translations
-• Program Tracker — project Gantt chart and status for security initiatives
-
-Each KPI includes trend data and can be exported to executive presentations. The defense matrix highlights coverage gaps and recommends priorities.`,
-            },
-            {
-                id: 'pm-governance',
-                title: 'Governance & Risk',
-                description: 'Compliance, risk register, policies, audit logs, and evidence vault',
-                route: '/governance',
-                content: `Five tabs organize governance capabilities:
-
-• Compliance — framework heatmap with evidence vault integration
-• Risk Register — FAIR methodology with Annual Loss Expectancy (ALE) calculations
-• Policy Engine — full lifecycle: draft → review → approve → publish
-• Audit Logs — searchable audit trail of all platform actions
-• Evidence Vault — file storage for compliance artifacts and attestations
-
-Upload evidence, track compliance across frameworks (ISO 27001, NIST, GDPR). Create risk scenarios with quantitative scoring. Manage policies through templates and lifecycle stages.`,
-            },
-            {
-                id: 'pm-vendors',
-                title: 'Vendor Risk',
-                description: 'Quick answer, knowledge transfer, KB, review queue, and registry',
-                route: '/vendors',
-                content: `The Vendor Risk module includes five key features:
-
-• Quick Answer — upload a questionnaire, process through KB matching and AI, export populated results
-• Knowledge Transfer — 4-tier matching pipeline for auto-filling vendor questionnaires
-• Knowledge Base — centralized answer library with 3-layer overrides (Common, Company, Product)
-• Review Queue — track questionnaire review status and approvals
-• Vendor Registry — manage vendor profiles, risk ratings, and contract details
-
-The Knowledge Transfer engine uses direct matching, AI semantic analysis, and context-aware generation to maximize questionnaire coverage.`,
-            },
-            {
-                id: 'pm-incidents',
-                title: 'Incidents',
-                description: 'Incident response playbooks and tabletop exercises',
-                route: '/incidents',
-                content: `Two operational modes:
-
-• Incident Response — create and manage incidents with playbooks, war room, and timeline. The War Room provides real-time collaboration for active incidents.
-• Tabletop Exercises — plan and run scenario-based exercises for team preparedness. Create exercises, assign participants, and track completion status.
-
-Each incident follows a structured lifecycle: Detection → Triage → Containment → Eradication → Recovery → Lessons Learned.`,
-            },
-            {
-                id: 'pm-intelligence',
-                title: 'Threat Intelligence',
-                description: 'Briefing, world monitor, signals, infrastructure, feeds, and ransomware',
-                route: '/intelligence',
-                content: `Comprehensive threat intelligence across six views:
-
-• Threat Briefing — AI-curated daily briefing of relevant threats
-• World Monitor — interactive map with geopolitical risk overlay
-• Signal Intelligence — anomaly detection and alert correlation
-• Infrastructure — asset discovery and exposure monitoring
-• Threat Feeds — aggregated feeds from multiple sources
-• Ransomware Dashboard — active group tracking and trend analysis
-
-The intelligence engine normalizes events from multiple sources into actionable signals that drive risk score updates.`,
-            },
-            {
-                id: 'pm-appsec',
-                title: 'AppSec',
-                description: 'Vulnerability feed, SAST results, and remediation tracking',
-                route: '/appsec',
-                content: `Application security posture management:
-
-• Vulnerability Feed — aggregated vulnerabilities from scanners and feeds
-• SAST Results — static analysis findings with severity and remediation guidance
-• Remediation Tracking — track fix progress with assignee and deadline management
-
-Integrates with Trivy for container and dependency scanning. Results are correlated with MITRE ATT&CK techniques for prioritized remediation.`,
-            },
-            {
-                id: 'pm-integrations',
-                title: 'Integration Hub',
-                description: '24 integrations across 9 categories',
-                route: '/integrations',
-                content: `Connect your security stack with 24 supported integrations:
-
-• SIEM — Splunk, Elastic SIEM, Microsoft Sentinel
-• Cloud — AWS Security Hub, Azure Defender, GCP Security Command Center
-• Identity — Okta, Azure AD, Auth0
-• Vulnerability — Qualys, Tenable, Rapid7
-• Endpoint — CrowdStrike, SentinelOne, Carbon Black
-• Ticketing — Jira, ServiceNow, PagerDuty
-• Communication — Slack, Microsoft Teams, Email
-• GRC — OneTrust, Drata, Vanta
-• DevSecOps — GitHub, GitLab, Snyk
-
-Each integration includes a guided setup wizard, connection testing, and configurable sync intervals.`,
-            },
-        ],
+Click the map to open the full World Monitor in the Threat Intelligence module.
+      `
+            }
+        ]
     },
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 3. CAIQ & KNOWLEDGE TRANSFER
+    // 3. DECISION CENTER & AI
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     {
-        id: 'caiq-knowledge',
-        title: 'CAIQ & Knowledge Transfer',
-        icon: '⚡',
-        color: YELLOW,
+        id: 'decisions-ai',
+        title: 'Decision Center & AI',
+        icon: '🧠',
+        description: 'AI-assisted security decisions, action queues, and engine capabilities.',
         articles: [
             {
-                id: 'kt-how',
-                title: 'How Knowledge Transfer Works',
-                description: '4-tier matching pipeline for auto-filling questionnaires',
-                content: `The Knowledge Transfer engine uses a 4-tier matching pipeline:
+                id: 'decisions-queue',
+                title: 'Managing the Decision Queue',
+                tags: ['decisions', 'ai recommendations', 'action queue', 'triage'],
+                content: `
+# The Decision Center
 
-Tier 1 — Direct Match
-Exact or near-exact question matching against the Knowledge Base. Threshold-based with configurable similarity score.
+Astra-CISO's AI engine acts as a tireless security analyst, continuously scanning cross-module telemetry to surface high-impact recommendations into the **Decision Center**.
 
-Tier 2 — AI Semantic Match
-AI analyzes question semantics to find conceptually similar answers. Adapts existing answers to fit the target question context.
+## AI Decision Cards
 
-Tier 3 — AI Context Generation
-For unmatched questions, AI generates answers using organizational context, policies, and compliance data as source material.
+When the platform correlates multiple low-level signals into a strategic finding, it generates a Decision Card. Each card includes:
+*   **The Proposition:** A clear statement of what needs to be decided (e.g., "Enforce MFA on legacy VPN gateway?").
+*   **Confidence Score:** How certain the AI is, based on historical data and policy alignment.
+*   **Impact Analysis:** Projected changes to the posture score or financial risk if the decision is approved.
+*   **Actions:** Direct links to approve, defer, or reject the recommendation.
 
-Tier 4 — Manual Review
-Questions that cannot be confidently answered are flagged for human review with suggested starting points.
+## The Action Queue
 
-Each tier outputs a confidence score. Higher tiers provide higher confidence but lower coverage.`,
-            },
-            {
-                id: 'kt-multi-company',
-                title: 'Multi-Company Configuration',
-                description: '3-layer override system for knowledge entries',
-                content: `Knowledge entries support three layers of overrides:
-
-Common Layer
-Base answers that apply across all companies and products. These are your universal security practices and policies.
-
-Company Layer
-Company-specific overrides that modify Common answers for a particular organization. Useful for multi-tenant deployments or consulting firms.
-
-Product Layer
-Product-specific overrides that further specialize Company answers. Each product can have unique security controls, architectures, and compliance requirements.
-
-When answering a question, the system checks Product → Company → Common in order, using the most specific available answer.`,
-            },
-            {
-                id: 'kt-quick-answer',
-                title: 'Quick Answer Flow',
-                description: '3-step visual workflow for processing questionnaires',
-                content: `Quick Answer processes questionnaires in three steps:
-
-1. Upload — drag and drop your questionnaire file (CSV, XLSX, or JSON format). The parser auto-detects question columns and structure.
-
-2. Process — the engine runs the 4-tier matching pipeline. A progress bar shows real-time status. You can configure which tiers to enable and set confidence thresholds.
-
-3. Export — download the populated questionnaire with answers filled in. Choose format (original format or standardized JSON). Review flagged items before export.
-
-Each processed question shows its match tier, confidence score, and source reference for traceability.`,
-            },
-            {
-                id: 'kt-import-export',
-                title: 'JSON Import & Export',
-                description: 'Bulk operations for knowledge base management',
-                content: `The Knowledge Base supports bulk operations via JSON:
-
-• Import — upload a JSON file with question-answer pairs. The system validates format, deduplicates entries, and shows a preview before committing.
-• Export — download your entire Knowledge Base as structured JSON. Includes metadata, layer information, and timestamps.
-
-JSON schema includes:
-• question — the original question text
-• answer — the answer content
-• category — optional categorization
-• source — where the answer originated
-• layer — Common, Company, or Product
-• confidence — quality score from 0-100`,
-            },
-            {
-                id: 'kt-wizard',
-                title: 'Knowledge Base Wizard',
-                description: 'Guided setup for building your answer library',
-                content: `The Knowledge Base Wizard helps you build your initial answer library:
-
-• Step 1 — Select your compliance frameworks (ISO 27001, SOC 2, GDPR, etc.)
-• Step 2 — Import existing completed questionnaires as seed data
-• Step 3 — Review and categorize imported answers
-• Step 4 — Set layer assignments (Common vs Company vs Product)
-• Step 5 — Validate and commit to the Knowledge Base
-
-The wizard can process multiple questionnaire files simultaneously. It uses AI to deduplicate similar answers and suggest the best version to keep.`,
-            },
-        ],
-    },
-
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 4. ARCHITECTURE & AI
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    {
-        id: 'architecture-ai',
-        title: 'Architecture & AI',
-        icon: '🏗️',
-        color: PURPLE,
-        articles: [
-            {
-                id: 'arch-ztaip',
-                title: 'ZTAIP Architecture',
-                description: 'Zero Trust Architecture and Identity Posture foundation',
-                content: `Astra-CISO is built on Zero Trust Architecture and Identity Posture (ZTAIP) principles:
-
-• Never trust, always verify — every API request is authenticated and authorized
-• Least privilege — role-based access ensures users only see what they need
-• Continuous validation — session tokens are short-lived and refreshed automatically
-• Signal-driven — security events drive automatic posture updates
-
-The Signal Bus connects all modules:
-• Inputs — SIEM feeds, Trivy scans, threat intel streams, user actions
-• Processing — Intelligence Engine normalizes events into typed Signals
-• Outputs — Signals update Risk Register, Strategy Pyramid, and posture score
-
-This reactive architecture ensures that a single event (e.g., a new CVE) automatically ripples through risk scores, compliance status, and executive dashboards.`,
-            },
-            {
-                id: 'arch-circuit-breaker',
-                title: 'Circuit Breaker Pattern',
-                description: 'Graceful degradation for AI and external services',
-                content: `All external service calls use a circuit breaker pattern with three states:
-
-CLOSED (Normal)
-Requests flow normally. Failures are counted. If failures exceed the threshold within the time window, the circuit opens.
-
-OPEN (Failing)
-All requests are immediately rejected with a fallback response. The UI shows degraded-mode indicators. After a timeout period, the circuit transitions to half-open.
-
-HALF_OPEN (Testing)
-A limited number of test requests are allowed through. If they succeed, the circuit closes. If they fail, the circuit reopens.
-
-This pattern prevents cascade failures when AI providers, threat feeds, or integration endpoints are unavailable. The platform continues to function with cached data and manual workflows.`,
+Separate from strategic decisions, the Action Queue consolidates tactical tasks from across the platform (e.g., approving a policy draft, reviewing a vendor questionnaire, acknowledging an incident alert) into a single, prioritized inbox for the SEC_ENG and CISO roles.
+`,
+                relatedArticles: ['arch-multi-ai']
             },
             {
                 id: 'arch-multi-ai',
-                title: 'Multi-Provider AI',
-                description: 'Support for Claude, Gemini, and Ollama providers',
-                content: `The platform supports three AI providers:
+                title: 'Multi-Provider AI Engine',
+                tags: ['ai', 'claude', 'gemini', 'ollama', 'privacy'],
+                content: `
+# Multi-Provider AI Architecture
 
-• Claude (Anthropic) — cloud-based, excellent reasoning capabilities. Best for complex policy analysis and decision recommendations.
-• Gemini (Google) — cloud-based, strong at structured output and data analysis. Good for compliance mapping and report generation.
-• Ollama (Local) — self-hosted, runs on your infrastructure. Zero data exfiltration risk. Supports Llama, Mistral, and other open models.
+Astra-CISO uses a flexible AI abstraction layer, allowing you to route workloads to different Large Language Models (LLMs) based on task complexity and data sensitivity requirements.
 
-Configuration is done in Settings → AI Provider:
-• Select your preferred provider
-• Enter API keys (for cloud providers)
-• Test connection
-• Set autonomy level (suggest-only, auto-fill with review, fully autonomous)
+### Supported Providers
 
-The system falls back to the next available provider if the primary is unavailable, following the circuit breaker pattern.`,
-            },
-            {
-                id: 'arch-fair',
-                title: 'FAIR Risk Quantification',
-                description: 'Factor Analysis of Information Risk methodology',
-                content: `The Risk Register uses FAIR (Factor Analysis of Information Risk) for quantitative risk assessment:
+1.  **Anthropic (Claude):** Default engine for complex logic, policy drafting, and tabletop exercise simulation. Exceptional reasoning capabilities.
+2.  **Google (Gemini):** Highly efficient for massive context windows, document processing (CAIQ ingestion), and rapid report generation.
+3.  **Ollama (Local):** For organizations with strict data residency rules (e.g., defense contractors), Ollama allows you to run models like Llama 3 or Mistral entirely on your own infrastructure with zero data exfiltration.
 
-• Loss Event Frequency (LEF) — how often a threat event occurs
-• Threat Event Frequency (TEF) — how often a threat agent acts
-• Vulnerability (V) — probability that a threat event becomes a loss event
-• Loss Magnitude (LM) — the impact in financial terms
-
-The system calculates:
-• Single Loss Expectancy (SLE) = average loss per event
-• Annual Loss Expectancy (ALE) = SLE × LEF
-• Risk Score = normalized 0-100 value for comparison
-
-Each risk scenario includes Monte Carlo simulation support for confidence intervals. Results feed into the posture score and strategy recommendations.`,
-            },
-        ],
+### Autonomy Levels
+In the Settings, you can configure the AI's autonomy:
+*   **Level 1 (Suggest):** AI highlights patterns but requires human action to draft responses.
+*   **Level 2 (Draft):** AI pre-populates forms, reports, and vendor questionnaires, waiting for human approval.
+*   **Level 3 (Autonomous):** (Coming Soon) AI can execute predefined remediation playbooks automatically for low-risk scenarios.
+`
+            }
+        ]
     },
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 5. THREAT INTELLIGENCE
+    // 4. GOVERNANCE & RISK
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     {
-        id: 'threat-intelligence',
-        title: 'Threat Intelligence',
-        icon: '🌐',
-        color: ORANGE,
+        id: "governance",
+        title: "Governance & Risk",
+        icon: "🏛",
+        description: "Compliance frameworks, risk register, and policy management",
         articles: [
             {
-                id: 'ti-world-monitor',
-                title: 'World Monitor',
-                description: 'Interactive map with geopolitical risk layers',
-                route: '/intelligence',
-                content: `The World Monitor provides a global threat visualization with multiple layers:
+                id: "compliance-frameworks",
+                title: "Managing Compliance Frameworks",
+                tags: ["compliance", "ISO 27001", "SOC 2", "NIS2", "GDPR", "framework"],
+                content: `
+# Compliance Frameworks
 
-• Office Locations — your organization's offices with pulse indicators
-• Conflict Zones — active conflict areas with severity coloring
-• Submarine Cables — undersea cable infrastructure relevant to your operations
-• Threat Actors — known APT group activity mapped to regions
-• Sanctions — sanctioned countries and entities highlighted
+## Supported Frameworks
+- **ISO 27001:2022** — Information security management (114 controls in Annex A)
+- **SOC 2 Type II** — Trust services criteria (Security, Availability, Confidentiality, Processing Integrity, Privacy)
+- **NIS2** — EU directive for network and information security (Article 21 measures)
+- **GDPR** — EU General Data Protection Regulation (Articles 5, 25, 32, 33, 34, 35)
+- **Cyber Essentials** — UK government-backed scheme (5 technical controls)
+- **EU AI Act** — AI system risk classification and requirements
 
-Layers can be toggled individually. Presets provide quick views:
-• Executive Overview — offices and high-severity conflicts only
-• Infrastructure — cables, data centers, and network paths
-• Geopolitical — conflicts, sanctions, and instability indices
+## Control Status
+Each control in a framework can be marked:
+- **Implemented** (green) — Control is fully operational with evidence
+- **Partial** (amber) — Control exists but has gaps or missing evidence
+- **Not Implemented** (red) — Control is not yet in place
 
-Click any marker for detailed intelligence briefing with source citations.`,
+## Compliance Percentage
+Calculated as: (Implemented controls + 0.5 × Partial controls) / Total controls
+
+When integrations are connected, compliance evidence is auto-generated
+from audit events. A control with fresh evidence (< 30 days old) from
+an integration counts as having live evidence, strengthening your audit
+position.
+
+## Multi-Entity Compliance
+Each entity can have different frameworks enabled. Switch entities to
+see compliance posture per legal entity. This is essential for
+organizations operating under different regulatory regimes
+(e.g., NIS2 for EU entities, Cyber Essentials for UK).
+      `
             },
             {
-                id: 'ti-instability',
-                title: 'Country Instability Index',
-                description: 'Scoring methodology for geopolitical risk assessment',
-                content: `Each country receives an instability index (0-100) based on multiple factors:
+                id: "risk-register",
+                title: "Risk Register & FAIR Scoring",
+                tags: ["risk", "FAIR", "quantification", "register"],
+                content: `
+# Risk Register
 
-• Political Stability — governance effectiveness, corruption index, rule of law
-• Cyber Capability — offensive cyber capacity, state-sponsored APT activity
-• Conflict Status — active conflicts, border disputes, internal unrest
-• Economic Risk — sanctions exposure, financial system stability
-• Infrastructure — internet freedom, surveillance capability, data sovereignty laws
+## Creating a Risk
+Each risk entry captures:
+- **Title** and description
+- **Category** — technical, operational, compliance, strategic, financial
+- **Likelihood** — probability of occurrence (1-5 scale)
+- **Impact** — consequence if realized (1-5 scale or FAIR $ quantification)
+- **Owner** — person accountable for mitigation
+- **Treatment** — avoid, mitigate, transfer, accept
 
-Scores are updated daily from multiple intelligence sources. Countries are categorized as:
-• Low Risk (0-25) — stable, strong rule of law, minimal cyber threat
-• Moderate (26-50) — some concerns, monitor for changes
-• Elevated (51-75) — active risks, recommend enhanced due diligence
-• Critical (76-100) — active conflict or severe cyber threat, restrict operations`,
+## FAIR Quantification
+The platform supports Factor Analysis of Information Risk (FAIR) for
+dollar-value risk quantification. Instead of "High/Medium/Low," FAIR
+calculates expected annual loss:
+
+- **Loss Event Frequency** — how often the event occurs per year
+- **Loss Magnitude** — dollar impact per occurrence
+- **Expected Annual Loss** = Frequency × Magnitude
+
+This gives the CFO a number they can work with: "This risk has an
+expected annual cost of €240K. The mitigation costs €80K. ROI is 3:1."
+
+## Risk Heatmap
+The visual matrix plots all risks by Likelihood (y-axis) and Impact
+(x-axis). Red zone = critical risks requiring immediate attention.
+      `
             },
             {
-                id: 'ti-signals',
-                title: 'Signal Intelligence',
-                description: 'Anomaly detection and alert correlation engine',
-                content: `The Signal Intelligence module provides automated anomaly detection:
+                id: "policy-management",
+                title: "Policy Lifecycle Management",
+                tags: ["policy", "lifecycle", "approval", "review"],
+                content: `
+# Policy Management
 
-• Baseline Learning — the system learns normal patterns for your environment over a configurable window (7-30 days)
-• Anomaly Detection — deviations from baseline trigger alerts with severity scoring
-• Alert Correlation — related alerts are grouped into incidents automatically
-• Threat Mapping — alerts are mapped to MITRE ATT&CK techniques
+## Policy Lifecycle
+Draft → Review → Approved → Published → Retired
 
-Signal types include:
-• Authentication anomalies — unusual login patterns, geo-impossible travel
-• Network anomalies — traffic spikes, unusual destinations, data exfiltration indicators
-• Configuration changes — unauthorized modifications to security controls
-• Vulnerability exposure — new CVEs affecting your asset inventory
+- **Draft** — author creates or edits the policy
+- **Review** — assigned reviewers assess the policy
+- **Approved** — management signs off
+- **Published** — policy is active and distributed
+- **Retired** — superseded by a new version
 
-Each signal includes confidence score, affected assets, and recommended response actions.`,
-            },
-        ],
+## Policy Review Cadence
+Set review dates for each policy. The platform alerts when a policy
+is approaching its review date. Overdue reviews appear in the Command
+Center's Pending Actions.
+      `
+            }
+        ]
     },
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 6. ADMINISTRATION
+    // 5. VENDOR RISK & KNOWLEDGE BASE
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     {
-        id: 'administration',
-        title: 'Administration',
-        icon: '⚙️',
-        color: PINK,
+        id: "vendor-risk",
+        title: "Vendor Risk",
+        icon: "🔗",
+        description: "CAIQ assessments, Knowledge Base, and vendor scanning",
         articles: [
             {
-                id: 'admin-team',
-                title: 'Team Management',
-                description: 'Invite members, assign roles, and manage permissions',
-                route: '/settings',
-                content: `Manage your security team from Settings → Team Management:
+                id: "caiq-overview",
+                title: "CAIQ Knowledge Transfer Engine",
+                tags: ["CAIQ", "vendor", "assessment", "questionnaire", "knowledge base"],
+                content: `
+# CAIQ Knowledge Transfer Engine
 
-• Invite Members — send email invitations with pre-assigned roles
-• Role Assignment — assign CISO, SEC_ENG, AUDITOR, or VIEWER roles
-• Access Review — periodic review of user access and permissions
-• Activity Monitoring — track user actions and last login times
+## What is CAIQ?
+The Consensus Assessment Initiative Questionnaire (CAIQ) is a Cloud
+Security Alliance (CSA) standard with 260+ questions covering 17 control
+domains. It's the industry standard for cloud vendor security assessment.
 
-Best practices:
-• Follow least privilege — start with VIEWER and escalate as needed
-• Review access quarterly — remove inactive users promptly
-• Use SSO — centralize authentication for better control
-• Enable MFA — require multi-factor for all accounts`,
-            },
-            {
-                id: 'admin-sso',
-                title: 'SSO Configuration',
-                description: 'SAML and OIDC single sign-on setup',
-                content: `Configure single sign-on for enterprise authentication:
+## How Knowledge Transfer Works
+Instead of answering the same 260 questions from scratch for every
+vendor assessment, the Knowledge Base stores your organization's
+standard responses. When a new assessment arrives:
 
-SAML 2.0 Setup:
-• Enter your IdP metadata URL or upload the XML file
-• Configure SP entity ID and ACS URL (provided in the setup screen)
-• Map IdP attributes to platform roles
-• Test the connection before enabling
+1. **Quick Answer** — paste a question, get the best matching response
+   from your Knowledge Base with a confidence score
+2. **Full Review** — run the entire CAIQ questionnaire against your
+   Knowledge Base, auto-matching all 260+ questions
+3. **Learning Loop** — correct any matches, and the system improves
 
-OIDC Setup:
-• Enter client ID and client secret from your IdP
-• Configure discovery URL or manual endpoints
-• Map claims to platform roles
-• Test the connection before enabling
+## Confidence Tiers
+- **EXACT** (100%) — identical question already answered
+- **HIGH** (>80%) — strong semantic match, answer likely correct
+- **PARTIAL** (50-80%) — related question, answer needs review
+- **LOW** (<50%) — weak match, manual answer recommended
 
-Supported identity providers include Okta, Azure AD, Google Workspace, OneLogin, and any SAML 2.0 / OIDC compliant provider.`,
-            },
-            {
-                id: 'admin-security',
-                title: 'Security Policies',
-                description: 'Platform security settings and hardening options',
-                route: '/settings',
-                content: `Configure platform security policies:
+## Knowledge Base
+The Knowledge Base contains 1000+ Q&A entries organized by control
+domain (AIS, BCR, CCC, DSP, GRC, etc.). Import/export as JSON.
 
-• Session Management — set session timeout (default: 8 hours), idle timeout (default: 30 minutes)
-• Password Policy — minimum length, complexity requirements, rotation period
-• MFA Enforcement — require multi-factor for all users or specific roles
-• IP Allowlisting — restrict access to specific IP ranges
-• API Key Management — create and rotate API keys for integrations
-• Audit Retention — configure how long audit logs are retained (default: 1 year)
-
-All security policy changes are logged in the audit trail with the admin who made the change.`,
-            },
-            {
-                id: 'admin-docker',
-                title: 'Docker Deployment',
-                description: 'Container deployment and configuration guide',
-                content: `Deploy Astra-CISO using Docker Compose:
-
-docker-compose.yml includes:
-• app — Next.js application container
-• db — PostgreSQL database with persistent volume
-• redis — session cache and rate limiting (optional)
-
-Environment variables:
-• NEXTAUTH_SECRET — session encryption key (required)
-• DATABASE_URL — PostgreSQL connection string
-• AI_PROVIDER — claude, gemini, or ollama
-• AI_API_KEY — API key for cloud AI providers
-• OLLAMA_URL — URL for local Ollama instance
-
-Volumes:
-• db-data — persistent database storage
-• evidence-data — uploaded compliance evidence files
-
-Run with: docker compose up -d
-Health check: curl http://localhost:3000/api/health`,
-            },
-        ],
+## Shodan Vendor Scanning
+Scan a vendor's domain to discover their external attack surface:
+exposed services, open ports, CVEs, SSL/TLS configuration. Results
+appear in the vendor profile alongside CAIQ assessment results.
+      `
+            }
+        ]
     },
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 7. COMPLIANCE FRAMEWORKS
+    // 6. INCIDENTS & EXERCISES
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     {
-        id: 'compliance-frameworks',
-        title: 'Compliance Frameworks',
-        icon: '📋',
-        color: CYAN,
+        id: "exercises",
+        title: "Tabletop Exercises",
+        icon: "🎯",
+        description: "Crisis simulation exercises, scoring, and audit evidence",
         articles: [
             {
-                id: 'cf-iso27001',
-                title: 'ISO 27001:2022',
-                description: '93 controls across 4 themes for information security management',
-                route: '/governance',
-                content: `ISO 27001:2022 implementation with 93 controls across 4 themes:
+                id: "exercises-overview",
+                title: "Tabletop Exercises Overview",
+                tags: ["tabletop", "exercise", "simulation", "crisis"],
+                content: `
+# Tabletop Exercises
 
-Organizational Controls (37 controls)
-Policies, roles, asset management, access control, supplier relationships, and business continuity.
+For the complete guide including scenario walkthroughs, scoring
+methodology, facilitator instructions, and auditor evidence guide,
+visit the [Exercise Guide](/exercises/guide).
 
-People Controls (8 controls)
-Screening, terms of employment, awareness training, disciplinary process, and responsibilities after termination.
+## Quick Summary
+- 3 scenarios: Supply Chain Compromise, Insider Threat, Ransomware
+- 2 modes: Decision Tree (scored, solo) and Discussion (team, facilitated)
+- 5 roles: CFO, Legal Counsel, VP Technology, ISO Auditor, Implementer
+- Scoring: Financial impact + Internal reputation + External reputation → Grade A–F
+- Audit value: ISO 27001 A.17, SOC 2 CC7.4, NIS2 Art.21(2)(c)
+      `
+            }
+        ]
+    },
 
-Physical Controls (14 controls)
-Physical security perimeters, entry controls, securing offices, equipment protection, and clear desk policy.
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 7. INTELLIGENCE & APPSEC
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    {
+        id: "threat-intelligence",
+        title: "Threat Intelligence",
+        icon: "🌍",
+        description: "World Monitor, threat feeds, IOC enrichment, and attack surface",
+        articles: [
+            {
+                id: "world-monitor",
+                title: "World Monitor & Geopolitical Intelligence",
+                tags: ["world monitor", "map", "geopolitical", "intelligence"],
+                content: `
+# World Monitor
 
-Technological Controls (34 controls)
-User endpoint devices, privileged access, information access restriction, secure authentication, capacity management, malware protection, and vulnerability management.
+## What It Shows
+The World Monitor is an interactive map displaying 7 static data layers
+and multiple live API feeds:
 
-The compliance heatmap shows coverage percentage per theme with drill-down to individual controls.`,
+### Static Layers
+- Armed conflicts and instability zones
+- Military bases and installations
+- Submarine cable landing points
+- Nuclear facilities
+- Major data center locations
+- Energy pipeline routes
+- Your office locations
+
+### Live Feeds
+- **Abuse.ch ThreatFox** — Indicators of Compromise (IOCs)
+- **Abuse.ch URLhaus** — Malicious URLs
+- **Abuse.ch MalwareBazaar** — Malware samples
+- **USGS** — Earthquake data (operational risk to data centers)
+- **GDELT** — Geopolitical news events
+
+## Country Instability Index (CII)
+Each country where you operate receives an instability score based on:
+conflict proximity, geopolitical events, cyber threat activity, and
+natural disaster risk. Higher CII = higher operational risk.
+
+## Why This Matters for Compliance
+NIS2 Article 21 requires organizations to consider supply chain risks
+including geopolitical factors. The World Monitor provides evidence
+that you're monitoring the geopolitical risk landscape for every
+jurisdiction where you operate.
+      `
             },
             {
-                id: 'cf-soc2',
-                title: 'SOC 2 Type II',
-                description: '5 trust service categories for service organization controls',
-                route: '/governance',
-                content: `SOC 2 Type II tracks 5 trust service categories:
+                id: "threat-feeds",
+                title: "Abuse.ch Threat Feeds",
+                tags: ["abuse.ch", "threatfox", "urlhaus", "malwarebazaar", "IOC"],
+                content: `
+# Threat Feeds
 
-Security (Common Criteria)
-Protection of information and systems against unauthorized access. Includes logical and physical access controls, system operations, and change management.
+## ThreatFox
+Indicators of Compromise (IOCs) including IP addresses, domains, and
+URLs associated with malware command and control infrastructure.
+Confidence levels indicate reliability of the intelligence.
 
-Availability
-Systems are available for operation as committed. Covers performance monitoring, disaster recovery, and business continuity.
+## URLhaus
+Database of malicious URLs used for malware distribution. Shows
+online/offline status, associated malware families, and hosting details.
 
-Processing Integrity
-System processing is complete, valid, accurate, timely, and authorized. Includes data processing controls and quality assurance.
+## MalwareBazaar
+Malware sample repository with SHA-256 hashes, file types, detection
+signatures, and CTI (Cyber Threat Intelligence) scores.
 
-Confidentiality
-Information designated as confidential is protected. Covers encryption, access restrictions, and data classification.
+## Severity Mapping
+All feeds are normalized to a consistent severity scale:
+- **CRITICAL** — confidence/CTI ≥ 80
+- **HIGH** — confidence/CTI 50–79
+- **MEDIUM** — confidence/CTI 25–49
+- **LOW** — confidence/CTI < 25
 
-Privacy
-Personal information is collected, used, retained, and disclosed in conformity with commitments. Aligns with GDPR requirements for data subject rights.`,
+## Data Freshness
+- Active (green) — last update < 15 minutes
+- Stale (amber) — last update > 1 hour
+- Error (red) — API connection failed
+- Unconfigured (gray) — API key not set (Shodan only)
+
+All Abuse.ch feeds are free and require no API key.
+      `
             },
             {
-                id: 'cf-gdpr',
-                title: 'GDPR',
-                description: 'Key areas for General Data Protection Regulation compliance',
-                route: '/governance',
-                content: `GDPR compliance tracking covers key areas:
+                id: "shodan-scanning",
+                title: "Shodan Attack Surface Monitoring",
+                tags: ["shodan", "attack surface", "scanning", "reconnaissance"],
+                content: `
+# Shodan Attack Surface Monitoring
 
-• Data Processing — lawful basis for processing, purpose limitation, data minimization
-• Data Subject Rights — right to access, rectification, erasure, portability, and objection
-• Consent Management — obtaining, recording, and managing consent
-• Data Protection Impact Assessments — DPIA for high-risk processing
-• Data Breach Notification — 72-hour notification requirement to supervisory authority
-• International Transfers — adequacy decisions, SCCs, and BCRs
-• Data Protection Officer — DPO appointment and responsibilities
-• Records of Processing — Article 30 ROPA maintenance
+## What Shodan Provides
+Shodan scans the internet for exposed services. The platform uses it for:
 
-The platform maps GDPR articles to technical and organizational controls with evidence attachment support.`,
-            },
+- **IP Lookup** — discover what services are running on a specific IP
+- **Domain Lookup** — find subdomains and associated services
+- **Search** — find exposed services by port, country, or technology
+- **Vendor Scanning** — assess a vendor's external security posture
+- **Attack Surface** — monitor your own organization's exposed services
+
+## Rate Limits
+Shodan free tier: 1 request per second. The platform enforces this
+automatically. Paid plans allow higher throughput.
+
+## API Key
+A Shodan API key is required. Get one at shodan.io (free tier available).
+Configure in Settings → API Keys.
+      `
+            }
+        ]
+    },
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 8. ADMIN & INTEGRATIONS
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    {
+        id: "incidents",
+        title: "Incidents",
+        icon: "⚠️",
+        description: "Incident lifecycle, War Room, and tabletop integration",
+        articles: [
             {
-                id: 'cf-nis2',
-                title: 'NIS2 Directive',
-                description: 'Articles 21 and 23 for network and information security',
-                route: '/governance',
-                content: `NIS2 Directive compliance focuses on two key articles:
+                id: "incident-lifecycle",
+                title: "Incident Lifecycle Management",
+                tags: ["incident", "lifecycle", "response", "war room"],
+                content: `
+# Incident Lifecycle
 
-Article 21 — Cybersecurity Risk Management Measures
-Essential and important entities must implement appropriate measures:
-• Risk analysis and information system security policies
-• Incident handling procedures
-• Business continuity and crisis management
-• Supply chain security
-• Security in network and information systems acquisition
-• Cybersecurity risk management assessments
-• Basic cyber hygiene practices and training
-• Cryptography and encryption policies
-• Human resources security and access control
-• Multi-factor authentication and secure communications
+## Status Flow
+Open → Investigating → Contained → Resolved → Closed
 
-Article 23 — Reporting Obligations
-• Early warning within 24 hours of becoming aware of a significant incident
-• Incident notification within 72 hours with initial assessment
-• Final report within one month with detailed description, root cause, and remediation`,
-            },
-            {
-                id: 'cf-nist',
-                title: 'NIST CSF 2.0',
-                description: '6 core functions for cybersecurity framework implementation',
-                route: '/governance',
-                content: `NIST Cybersecurity Framework 2.0 covers 6 core functions:
+- **Open** — incident detected and logged
+- **Investigating** — root cause analysis underway
+- **Contained** — threat neutralized, spread stopped
+- **Resolved** — systems restored, evidence preserved
+- **Closed** — post-mortem complete, corrective actions assigned
 
-Govern (New in 2.0)
-Establish and monitor cybersecurity risk management strategy, expectations, and policy. Integrates cybersecurity with enterprise risk management.
+## War Room
+Real-time collaboration space for active incidents. Includes:
+- Timeline of events
+- Notes and observations
+- Evidence attachments
+- Assigned actions
 
-Identify
-Understand organizational context, assets, risks, and supply chain. Develop asset inventory and risk assessment processes.
+## Auto-Created Incidents
+When integrations detect anomalies (impossible travel, brute force,
+mass data exfiltration), the platform auto-creates incident proposals.
+Review and accept or dismiss from the Decision Center.
 
-Protect
-Implement safeguards for critical services. Covers identity management, access control, data security, platform security, and resilience.
-
-Detect
-Develop capabilities to identify cybersecurity events. Continuous monitoring, anomaly detection, and adverse event analysis.
-
-Respond
-Take action regarding detected cybersecurity incidents. Incident management, analysis, mitigation, and communication.
-
-Recover
-Restore capabilities impaired by cybersecurity incidents. Recovery planning, improvements, and communications.`,
-            },
-            {
-                id: 'cf-ce',
-                title: 'Cyber Essentials',
-                description: '5 technical controls for baseline cybersecurity',
-                route: '/governance',
-                content: `Cyber Essentials provides 5 foundational technical controls:
-
-Firewalls
-Ensure boundary firewalls and internet gateways are configured to protect your network. Default deny for inbound connections. Regular rule review.
-
-Secure Configuration
-Remove or disable unnecessary software, accounts, and functionality. Change default passwords. Enable only required services.
-
-User Access Control
-Implement user accounts with appropriate privileges. Use unique credentials per user. Limit administrative access to authorized personnel only.
-
-Malware Protection
-Deploy anti-malware solutions on all endpoints. Keep signatures updated. Configure real-time scanning and scheduled full scans.
-
-Patch Management
-Keep all software up to date. Apply critical patches within 14 days. Remove unsupported software. Use automated patch management where possible.
-
-Cyber Essentials Plus adds independent testing and verification of these controls.`,
+## Linking Exercises to Incidents
+After a real incident, run a tabletop exercise based on a similar
+scenario within 30 days. This tests whether your lessons learned
+actually improved your response capability.
+      `
             },
         ],
     },
+    {
+        id: "decision-center",
+        title: "Decision Center",
+        icon: "⚡",
+        description: "AI-assisted decisions and autonomy modes",
+        articles: [
+            {
+                id: "autonomy-modes",
+                title: "AI Autonomy Modes",
+                tags: ["AI", "autonomy", "auto", "supervised", "manual", "decision"],
+                content: `
+# AI Autonomy Modes
+
+## Auto Mode
+The AI acts on low-risk decisions automatically (e.g., updating threat
+feed classifications, marking expired evidence for review). All actions
+are logged in the audit trail.
+
+## Supervised Mode
+The AI provides recommendations with confidence scores. A human must
+approve before any action is taken. Recommended for most organizations.
+
+## Manual Mode
+The AI provides information and analysis only. All decisions require
+explicit human initiation. Required for organizations with strict
+governance requirements or during the initial trust-building period.
+
+## Switching Modes
+Change modes in Decision Center → Settings. Mode changes are logged
+in the audit trail. Some organizations use Auto for routine tasks and
+Manual for anything touching customer data or regulatory filings.
+      `
+            },
+        ],
+    },
+    {
+        id: "appsec",
+        title: "AppSec",
+        icon: "🔐",
+        description: "Vulnerability management and code security",
+        articles: [
+            {
+                id: "vulnerability-tracking",
+                title: "Vulnerability Tracking",
+                tags: ["vulnerability", "CVE", "CVSS", "AppSec", "remediation"],
+                content: `
+# Vulnerability Tracking
+
+## Vulnerability Feed
+Lists discovered vulnerabilities with CVE identifiers and CVSS scores.
+Sorted by severity (Critical → High → Medium → Low).
+
+## Remediation Workflow
+Open → In Progress → Resolved
+
+Track who is fixing what, set due dates, and measure remediation velocity.
+Critical vulnerabilities that exceed their SLA auto-escalate to the
+Decision Center.
+
+## Risk Register Integration
+Critical vulnerabilities auto-create risk proposals in the Governance
+module. This connects application security findings to your enterprise
+risk posture.
+      `
+            },
+        ],
+    },
+    {
+        id: "integrations",
+        title: "Integrations",
+        icon: "🔌",
+        description: "Connecting Google Workspace, Microsoft 365, and other data sources",
+        articles: [
+            {
+                id: "integration-overview",
+                title: "Why Integrations Matter",
+                tags: ["integration", "Google", "Microsoft", "data", "connector"],
+                content: `
+# Why Integrations Matter
+
+Without integrations, the platform displays empty states. With
+integrations, it displays real data:
+
+| Without | With |
+|---------|------|
+| KPIs show "—" | KPIs show real counts |
+| Compliance has no evidence | Auto-generated evidence from events |
+| Risk register is manual | Auto-proposals from anomalies |
+| Incidents are manually created | Auto-detection of suspicious activity |
+
+## Available Connectors
+- **Google Workspace** — login events, admin actions, Drive sharing,
+  OAuth grants, device compliance
+- **Microsoft 365** — sign-in logs, directory audit, SharePoint sharing,
+  Intune compliance, security alerts
+- **AWS CloudTrail** — IAM changes, S3 access, security group modifications
+- **GitHub** — code access, secret scanning, PR approvals
+- **Slack** — message retention, DLP events, app installations
+
+## Setup
+Go to Settings → Integrations. Each connector has specific setup
+instructions and required permissions. Credentials are encrypted
+and stored securely.
+      `
+            },
+        ],
+    },
+    {
+        id: "settings",
+        title: "Settings & FAQ",
+        icon: "⚙️",
+        description: "Configuration, API keys, troubleshooting, and FAQ",
+        articles: [
+            {
+                id: "api-keys",
+                title: "API Key Configuration",
+                tags: ["API", "keys", "Shodan", "configuration", "settings"],
+                content: `
+# API Key Configuration
+
+## Required Keys
+- **AI Provider** — Claude (Anthropic), Gemini (Google), or Ollama (local).
+  At least one must be configured for AI features to work.
+
+## Optional Keys
+- **Shodan** — enables attack surface monitoring and vendor scanning.
+  Free tier available at shodan.io.
+
+## Where to Configure
+Settings → API Keys. Keys are encrypted at rest and never displayed
+in full after saving.
+      `
+            },
+            {
+                id: "faq",
+                title: "Frequently Asked Questions",
+                tags: ["FAQ", "questions", "help", "troubleshooting"],
+                content: `
+# FAQ
+
+## Why are my KPIs showing zero?
+Connect at least one integration (Google Workspace or Microsoft 365)
+to populate KPIs with real data.
+
+## Why is the World Monitor empty?
+Check that Abuse.ch feeds are connecting (they require no API key).
+If the map doesn't load, ensure MapLibre CSS is loading correctly
+(check browser console for errors).
+
+## Can multiple people use the platform simultaneously?
+Yes. Each user has their own session. Exercise sessions are per-user
+unless running in Discussion mode with assigned participants.
+
+## How often should we run tabletop exercises?
+Quarterly for full Discussion mode exercises, monthly for quick
+Decision mode assessments. After any real incident, run a similar
+scenario within 30 days.
+
+## What data leaves my environment?
+- AI queries: sent to your configured AI provider (Claude, Gemini, or
+  Ollama). Use Ollama for fully local processing.
+- Shodan: target IPs/domains are sent to Shodan's API
+- Abuse.ch: no data is sent — read-only feeds
+- Integration data: stored in your database only
+      `
+            },
+        ],
+    }
 ];
 
-// ── Flat list for global search ────────────────────────────
-export interface SearchableArticle extends HelpArticle {
-    sectionId: string;
-    sectionTitle: string;
-    sectionIcon: string;
-    sectionColor: string;
-}
+// Helper to flatten articles for search
+export const ALL_ARTICLES: (HelpArticle & { sectionId: string; sectionTitle: string; sectionIcon: string })[] =
+    HELP_SECTIONS.flatMap((section) =>
+        section.articles.map((article) => ({
+            ...article,
+            sectionId: section.id,
+            sectionTitle: section.title,
+            sectionIcon: section.icon,
+        }))
+    );
 
-export const ALL_ARTICLES: SearchableArticle[] = HELP_SECTIONS.flatMap((s) =>
-    s.articles.map((a) => ({
-        ...a,
-        sectionId: s.id,
-        sectionTitle: s.title,
-        sectionIcon: s.icon,
-        sectionColor: s.color,
-    }))
-);
+export type SearchableArticle = typeof ALL_ARTICLES[0];

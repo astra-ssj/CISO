@@ -4,25 +4,42 @@ import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import {
     HELP_SECTIONS,
     ALL_ARTICLES,
-    type HelpSection,
     type SearchableArticle,
 } from "@/lib/help/help-content";
 
-// ─── Light theme tokens (scoped to Help page only) ─────────
-const bgMain = '#ffffff';
-const bgSidebar = '#f8fafc';
-const bgSurface = '#f1f5f9';
-const bgHover = '#e2e8f0';
-const bgActive = '#dbeafe';
+// ─── Dark theme tokens (as requested by USER) ─────────────
+const bgMain = '#050508';
+const bgSidebar = '#080c18';
+const bgSurface = 'rgba(8,12,24,0.85)';
+const bgHover = 'rgba(56,189,248,0.1)';
+const bgActive = 'rgba(56,189,248,0.15)';
 
-const borderDefault = '#e2e8f0';
-const borderHover = '#cbd5e1';
+const borderDefault = 'rgba(56,189,248,0.12)';
+const borderHover = 'rgba(56,189,248,0.25)';
 
-const textPrimary = '#0f172a';
-const textSecondary = '#475569';
-const textMuted = '#94a3b8';
+const textPrimary = '#f8fafc';
+const textSecondary = '#94a3b8';
+const textMuted = '#64748b';
 
-const accentBlue = '#2563eb';
+const accentBlue = '#38bdf8';
+
+// ─── Section Colors ────────────────────────────────────────
+const SECTION_COLORS = [
+    '#38bdf8', // Blue/Cyan
+    '#818cf8', // Indigo
+    '#c084fc', // Purple
+    '#fb7185', // Rose
+    '#fbbf24', // Amber
+    '#34d399', // Emerald
+    '#f472b6', // Pink
+    '#60a5fa', // Blue
+];
+
+function getSectionColor(sectionId: string): string {
+    const index = HELP_SECTIONS.findIndex(s => s.id === sectionId);
+    if (index === -1) return accentBlue;
+    return SECTION_COLORS[index % SECTION_COLORS.length];
+}
 
 // ─── Types ─────────────────────────────────────────────────
 interface ExpandedMap { [articleId: string]: boolean }
@@ -43,165 +60,193 @@ function pad(n: number): string {
 function matchesSearch(article: SearchableArticle, q: string): boolean {
     return (
         article.title.toLowerCase().includes(q) ||
-        article.description.toLowerCase().includes(q) ||
-        article.content.toLowerCase().includes(q)
+        article.content.toLowerCase().includes(q) ||
+        (article.tags && article.tags.some(tag => tag.toLowerCase().includes(q)))
     );
 }
 
 // ─── Content renderer ──────────────────────────────────────
 function ArticleContent({
-    content,
+    article,
     color,
+    onNavigateToRelated,
 }: {
-    content: string;
+    article: SearchableArticle;
     color: string;
+    onNavigateToRelated: (id: string, sectionId: string) => void;
 }) {
-    const lines = content.split('\n');
+    const lines = article.content.split('\n');
+    const elements: React.ReactNode[] = [];
+    let tableBuffer: string[] = [];
+    let isCodeBlock = false;
+    let codeBuffer: string[] = [];
+
+    const parseInline = (text: string) => {
+        const parts = text.split(/(\*\*.*?\*\*|`.*?`)/g);
+        return parts.map((part, i) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+                return <strong key={i} style={{ color: textPrimary, fontWeight: 700 }}>{part.slice(2, -2)}</strong>;
+            }
+            if (part.startsWith('`') && part.endsWith('`')) {
+                return <code key={i} style={{ background: bgActive, color: accentBlue, padding: '2px 6px', borderRadius: 4, fontFamily: 'monospace', fontSize: '0.9em' }}>{part.slice(1, -1)}</code>;
+            }
+            return <span key={i}>{part}</span>;
+        });
+    };
+
+    const flushTable = (key: number) => {
+        if (tableBuffer.length === 0) return null;
+        const rows = tableBuffer
+            .filter(l => l.includes('|'))
+            .map(l => l.split('|').filter((_, i, arr) => i > 0 && i < arr.length - 1).map(c => c.trim()));
+
+        // Skip separator row
+        const dataRows = rows.filter(r => !r.every(c => c.match(/^-+$/)));
+        if (dataRows.length === 0) return null;
+
+        const header = dataRows[0];
+        const body = dataRows.slice(1);
+        tableBuffer = [];
+
+        return (
+            <div key={`table-${key}`} style={{ overflowX: 'auto', marginBottom: 20, marginTop: 12, borderRadius: 8, border: `1px solid ${borderDefault}`, background: 'rgba(56,189,248,0.02)' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                    <thead>
+                        <tr style={{ borderBottom: `1px solid ${borderDefault}`, background: 'rgba(56,189,248,0.05)' }}>
+                            {header.map((h, i) => <th key={i} style={{ textAlign: 'left', padding: '12px', color: textPrimary, fontWeight: 600 }}>{h}</th>)}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {body.map((row, i) => (
+                            <tr key={i} style={{ borderBottom: `1px solid ${borderDefault}40` }}>
+                                {row.map((c, j) => <td key={j} style={{ padding: '12px', color: textSecondary }}>{parseInline(c)}</td>)}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        );
+    };
+
+    lines.forEach((line, i) => {
+        const trimmed = line.trim();
+
+        // Code blocks
+        if (trimmed.startsWith('```')) {
+            if (isCodeBlock) {
+                const code = codeBuffer.join('\n');
+                elements.push(
+                    <pre key={`code-${i}`} style={{ background: '#0d1117', padding: 16, borderRadius: 8, overflowX: 'auto', marginBottom: 16, border: `1px solid ${borderDefault}` }}>
+                        <code style={{ color: '#e6edf3', fontSize: 12, fontFamily: 'monospace' }}>{code}</code>
+                    </pre>
+                );
+                codeBuffer = [];
+                isCodeBlock = false;
+            } else {
+                isCodeBlock = true;
+            }
+            return;
+        }
+        if (isCodeBlock) {
+            codeBuffer.push(line);
+            return;
+        }
+
+        // Tables
+        if (trimmed.startsWith('|')) {
+            tableBuffer.push(line);
+            return;
+        } else if (tableBuffer.length > 0) {
+            elements.push(flushTable(i));
+        }
+
+        // Headings
+        if (trimmed.startsWith('# ')) {
+            elements.push(<h1 key={i} style={{ color: textPrimary, fontSize: 24, fontWeight: 800, marginBottom: 16, marginTop: 24 }}>{trimmed.slice(2)}</h1>);
+        } else if (trimmed.startsWith('## ')) {
+            elements.push(<h2 key={i} style={{ color: textPrimary, fontSize: 20, fontWeight: 700, marginBottom: 12, marginTop: 32, borderBottom: `1px solid ${borderDefault}`, paddingBottom: 8 }}>{trimmed.slice(3)}</h2>);
+        } else if (trimmed.startsWith('### ')) {
+            elements.push(<h3 key={i} style={{ color: textPrimary, fontSize: 17, fontWeight: 600, marginBottom: 10, marginTop: 24 }}>{trimmed.slice(4)}</h3>);
+        }
+        // Lists
+        else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+            elements.push(
+                <div key={i} style={{ display: 'flex', gap: 12, marginBottom: 8, alignItems: 'flex-start' }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, flexShrink: 0, marginTop: 8 }} />
+                    <span style={{ color: textSecondary, fontSize: 14, lineHeight: 1.6 }}>{parseInline(trimmed.slice(2))}</span>
+                </div>
+            );
+        } else if (trimmed === '') {
+            elements.push(<div key={i} style={{ height: 16 }} />);
+        } else {
+            elements.push(<p key={i} style={{ color: textSecondary, fontSize: 14, lineHeight: 1.6, marginBottom: 16 }}>{parseInline(trimmed)}</p>);
+        }
+    });
+
+    // Final flush
+    if (tableBuffer.length > 0) elements.push(flushTable(9999));
 
     return (
         <div
             style={{
-                background: bgSurface,
-                borderRadius: 8,
-                padding: '20px 24px',
-                animation: 'helpFadeIn 200ms ease',
+                background: bgSidebar,
+                borderRadius: 12,
+                padding: '24px 32px',
+                border: `1px solid ${borderDefault}`,
+                animation: 'helpFadeIn 300ms ease-out',
             }}
         >
-            {lines.map((line, i) => {
-                const trimmed = line.trim();
-                if (trimmed === '') return <div key={i} style={{ height: 10 }} />;
+            {elements}
 
-                // Numbered step:  "1. text" or "2. text"
-                const stepMatch = trimmed.match(/^(\d+)\.\s+(.+)/);
-                if (stepMatch) {
-                    return (
-                        <div
-                            key={i}
-                            style={{
-                                display: 'flex',
-                                gap: 10,
-                                marginBottom: 6,
-                                alignItems: 'baseline',
-                            }}
-                        >
-                            <span
-                                style={{
-                                    color,
-                                    fontFamily: "'JetBrains Mono', monospace",
-                                    fontWeight: 600,
-                                    fontSize: 13,
-                                    minWidth: 18,
-                                }}
-                            >
-                                {stepMatch[1]}.
-                            </span>
-                            <span style={{ color: textSecondary, fontSize: 13, lineHeight: 1.6 }}>
-                                {stepMatch[2]}
-                            </span>
-                        </div>
-                    );
-                }
-
-                // Bullet point: "• text" or "- text"
-                if (trimmed.startsWith('•') || trimmed.startsWith('-')) {
-                    const text = trimmed.replace(/^[•\-]\s*/, '');
-                    return (
-                        <div
-                            key={i}
-                            style={{
-                                display: 'flex',
-                                gap: 10,
-                                marginBottom: 4,
-                                alignItems: 'baseline',
-                            }}
-                        >
-                            <span
-                                style={{
-                                    width: 5,
-                                    height: 5,
-                                    borderRadius: '50%',
-                                    background: color,
-                                    flexShrink: 0,
-                                    marginTop: 7,
-                                }}
-                            />
-                            <span style={{ color: textSecondary, fontSize: 13, lineHeight: 1.6 }}>
-                                {text}
-                            </span>
-                        </div>
-                    );
-                }
-
-                // Special block headings
-                const isHeading =
-                    trimmed.length < 60 &&
-                    !trimmed.endsWith('.') &&
-                    !trimmed.endsWith(':') &&
-                    /^[A-Z]/.test(trimmed) &&
-                    (trimmed === trimmed.toUpperCase() ||
-                        /^[A-Z][a-z]+(\s+[A-Za-z(&)]+)*$/.test(trimmed) ||
-                        /^[A-Z][a-z]+\s+\(/.test(trimmed));
-
-                if (isHeading) {
-                    const isStateBlock = /\(.+\)/.test(trimmed) || trimmed === trimmed.toUpperCase();
-                    if (isStateBlock) {
-                        return (
-                            <div
-                                key={i}
-                                style={{
-                                    background: `${color}12`,
-                                    border: `1px solid ${color}30`,
-                                    borderRadius: 6,
-                                    padding: '8px 14px',
-                                    marginTop: 10,
-                                    marginBottom: 4,
-                                }}
-                            >
-                                <span
+            {/* Related Articles UI */}
+            {article.relatedArticles && article.relatedArticles.length > 0 && (
+                <div style={{ marginTop: 24, paddingTop: 16, borderTop: `1px solid ${borderDefault}` }}>
+                    <h4 style={{ color: textPrimary, fontSize: 13, fontWeight: 600, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                        Related Articles
+                    </h4>
+                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                        {article.relatedArticles.map((relId) => {
+                            const relArticle = ALL_ARTICLES.find(a => a.id === relId);
+                            if (!relArticle) return null;
+                            const relColor = getSectionColor(relArticle.sectionId);
+                            return (
+                                <button
+                                    key={relId}
+                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); onNavigateToRelated(relArticle.id, relArticle.sectionId); }}
                                     style={{
-                                        color,
-                                        fontWeight: 600,
-                                        fontSize: 13,
-                                        fontFamily: "'JetBrains Mono', monospace",
+                                        padding: '6px 12px',
+                                        background: bgMain,
+                                        border: `1px solid ${borderDefault}`,
+                                        borderRadius: 6,
+                                        fontSize: 12,
+                                        color: textSecondary,
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 6,
+                                        transition: 'all 0.2s',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        const el = e.currentTarget;
+                                        el.style.borderColor = relColor + '60';
+                                        el.style.color = textPrimary;
+                                        el.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        const el = e.currentTarget;
+                                        el.style.borderColor = borderDefault;
+                                        el.style.color = textSecondary;
+                                        el.style.boxShadow = 'none';
                                     }}
                                 >
-                                    {trimmed}
-                                </span>
-                            </div>
-                        );
-                    }
-
-                    return (
-                        <div
-                            key={i}
-                            style={{
-                                color: textPrimary,
-                                fontWeight: 600,
-                                fontSize: 14,
-                                marginTop: 14,
-                                marginBottom: 4,
-                            }}
-                        >
-                            {trimmed}
-                        </div>
-                    );
-                }
-
-                // Regular paragraph
-                return (
-                    <p
-                        key={i}
-                        style={{
-                            color: textSecondary,
-                            fontSize: 13,
-                            lineHeight: 1.7,
-                            marginBottom: 2,
-                        }}
-                    >
-                        {trimmed}
-                    </p>
-                );
-            })}
+                                    {relArticle.sectionIcon} {relArticle.title}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -213,12 +258,14 @@ function ArticleCard({
     color,
     isExpanded,
     onToggle,
+    onNavigateToRelated,
 }: {
     article: SearchableArticle;
     index: number;
     color: string;
     isExpanded: boolean;
     onToggle: () => void;
+    onNavigateToRelated: (id: string, sectionId: string) => void;
 }) {
     const contentRef = useRef<HTMLDivElement>(null);
 
@@ -276,42 +323,38 @@ function ArticleCard({
                     {pad(index + 1)}
                 </span>
 
-                {/* Title + description */}
+                {/* Title + Tags */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ color: textPrimary, fontWeight: 600, fontSize: 14 }}>
                         {article.title}
                     </div>
-                    <div
-                        style={{
-                            color: textMuted,
-                            fontSize: 12,
-                            marginTop: 2,
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                        }}
-                    >
-                        {article.description}
-                    </div>
+                    {article.tags && article.tags.length > 0 && (
+                        <div
+                            style={{
+                                display: 'flex',
+                                gap: 6,
+                                marginTop: 6,
+                                flexWrap: 'wrap',
+                            }}
+                        >
+                            {article.tags.slice(0, 3).map(tag => (
+                                <span
+                                    key={tag}
+                                    style={{
+                                        color: textMuted,
+                                        fontSize: 10,
+                                        background: bgSurface,
+                                        padding: '2px 6px',
+                                        borderRadius: 4,
+                                        border: `1px solid ${borderDefault}`,
+                                    }}
+                                >
+                                    {tag}
+                                </span>
+                            ))}
+                        </div>
+                    )}
                 </div>
-
-                {/* Route tag */}
-                {article.route && (
-                    <span
-                        style={{
-                            fontFamily: "'JetBrains Mono', monospace",
-                            fontSize: 11,
-                            color: textMuted,
-                            background: bgSurface,
-                            padding: '3px 8px',
-                            borderRadius: 4,
-                            border: `1px solid ${borderDefault}`,
-                            flexShrink: 0,
-                        }}
-                    >
-                        {article.route}
-                    </span>
-                )}
 
                 {/* Expand arrow */}
                 <svg
@@ -339,7 +382,7 @@ function ArticleCard({
             <div
                 ref={contentRef}
                 style={{
-                    maxHeight: isExpanded ? 2000 : 0,
+                    maxHeight: isExpanded ? 5000 : 0,
                     opacity: isExpanded ? 1 : 0,
                     overflow: 'hidden',
                     transition: 'max-height 0.3s ease, opacity 0.2s ease',
@@ -347,7 +390,7 @@ function ArticleCard({
                 }}
             >
                 {isExpanded && (
-                    <ArticleContent content={article.content} color={color} />
+                    <ArticleContent article={article} color={color} onNavigateToRelated={onNavigateToRelated} />
                 )}
             </div>
         </div>
@@ -362,6 +405,8 @@ function SearchResult({
     article: SearchableArticle;
     onClick: () => void;
 }) {
+    const sectionColor = getSectionColor(article.sectionId);
+
     return (
         <button
             onClick={onClick}
@@ -380,7 +425,7 @@ function SearchResult({
             }}
             onMouseEnter={(e) => {
                 const el = e.currentTarget as HTMLButtonElement;
-                el.style.borderColor = article.sectionColor + '60';
+                el.style.borderColor = sectionColor + '60';
                 el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)';
             }}
             onMouseLeave={(e) => {
@@ -397,17 +442,13 @@ function SearchResult({
                 <div style={{ color: textPrimary, fontSize: 13, fontWeight: 600 }}>
                     {article.title}
                 </div>
-                <div
-                    style={{
-                        color: textMuted,
-                        fontSize: 12,
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                    }}
-                >
-                    {article.description}
-                </div>
+                {article.tags && article.tags.length > 0 && (
+                    <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
+                        {article.tags.slice(0, 3).map(tag => (
+                            <span key={tag} style={{ color: textMuted, fontSize: 10 }}>#{tag}</span>
+                        ))}
+                    </div>
+                )}
             </div>
             <svg
                 width="14"
@@ -467,93 +508,67 @@ export default function HelpPage() {
         }, 100);
     }, []);
 
+    // Navigate to related article directly
+    const navigateToRelated = useCallback((articleId: string, sectionId: string) => {
+        setActiveSection(sectionId);
+        setExpanded((prev) => ({ ...prev, [articleId]: true }));
+        setSearch('');
+        setTimeout(() => {
+            document
+                .getElementById(`article-${articleId}`)
+                ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }, []);
+
     const currentSection = HELP_SECTIONS.find((s) => s.id === activeSection)!;
+    const currentSectionColor = getSectionColor(currentSection.id);
 
     return (
         <>
-            {/* Inject keyframe for fade-in + light scrollbar */}
+            {/* Inject keyframe for fade-in + custom scrollbar */}
             <style>{`
-        @keyframes helpFadeIn {
-          from { opacity: 0; transform: translateY(4px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .help-scrollbar::-webkit-scrollbar { width: 6px; }
-        .help-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .help-scrollbar::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
-          border-radius: 3px;
-        }
-        .help-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #94a3b8;
-        }
-      `}</style>
+                @keyframes helpFadeIn {
+                    from { opacity: 0; transform: translateY(8px); }
+                    to   { opacity: 1; transform: translateY(0); }
+                }
+                .help-scrollbar::-webkit-scrollbar { width: 5px; }
+                .help-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .help-scrollbar::-webkit-scrollbar-thumb {
+                    background: rgba(56,189,248,0.15);
+                    border-radius: 10px;
+                }
+                .help-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: rgba(56,189,248,0.3);
+                }
+            `}</style>
 
             <div
                 style={{
                     display: 'flex',
+                    flexDirection: 'column',
                     height: '100%',
                     overflow: 'hidden',
-                    fontFamily:
-                        "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                    fontFamily: "'Inter', system-ui, sans-serif",
                     background: bgMain,
                     color: textPrimary,
-                    borderRadius: 12,
                 }}
             >
-                {/* ─── LEFT SIDEBAR ───────────────────────────────── */}
-                <aside
+                {/* ─── TOP HEADER (Search) ────────────────────────── */}
+                <header
                     style={{
-                        width: 280,
-                        minWidth: 280,
+                        padding: '16px 36px',
+                        borderBottom: `1px solid ${borderDefault}`,
                         display: 'flex',
-                        flexDirection: 'column',
-                        background: bgSidebar,
-                        borderRight: `1px solid ${borderDefault}`,
-                        overflow: 'hidden',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        background: bgMain,
                     }}
                 >
-                    {/* Header */}
-                    <div style={{ padding: '20px 18px 14px' }}>
-                        <div
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 10,
-                                marginBottom: 14,
-                            }}
-                        >
-                            <span style={{ fontSize: 22 }}>📖</span>
-                            <span
-                                style={{
-                                    color: textPrimary,
-                                    fontSize: 17,
-                                    fontWeight: 700,
-                                    letterSpacing: '-0.01em',
-                                }}
-                            >
-                                Help Center
-                            </span>
-                            <span
-                                style={{
-                                    fontFamily: "'JetBrains Mono', monospace",
-                                    fontSize: 10,
-                                    color: textMuted,
-                                    background: bgSurface,
-                                    padding: '2px 8px',
-                                    borderRadius: 4,
-                                    border: `1px solid ${borderDefault}`,
-                                    marginLeft: 'auto',
-                                }}
-                            >
-                                v2.1.0
-                            </span>
-                        </div>
-
-                        {/* Search */}
-                        <div style={{ position: 'relative' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: 1 }}>
+                        <div style={{ position: 'relative', width: '100%', maxWidth: 600 }}>
                             <svg
-                                width="14"
-                                height="14"
+                                width="18"
+                                height="18"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke={textMuted}
@@ -562,7 +577,7 @@ export default function HelpPage() {
                                 strokeLinejoin="round"
                                 style={{
                                     position: 'absolute',
-                                    left: 10,
+                                    left: 12,
                                     top: '50%',
                                     transform: 'translateY(-50%)',
                                     pointerEvents: 'none',
@@ -573,24 +588,24 @@ export default function HelpPage() {
                             </svg>
                             <input
                                 type="text"
-                                placeholder="Search articles..."
+                                placeholder="🔍 Search help articles by title, content, or #tags..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 style={{
                                     width: '100%',
-                                    padding: '8px 12px 8px 32px',
-                                    background: bgMain,
+                                    padding: '10px 16px 10px 42px',
+                                    background: bgSurface,
                                     border: `1px solid ${borderDefault}`,
-                                    borderRadius: 6,
+                                    borderRadius: 10,
                                     color: textPrimary,
-                                    fontSize: 13,
+                                    fontSize: 14,
                                     outline: 'none',
-                                    transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+                                    transition: 'all 0.2s ease',
                                 }}
                                 onFocus={(e) => {
                                     const el = e.target as HTMLInputElement;
                                     el.style.borderColor = accentBlue;
-                                    el.style.boxShadow = `0 0 0 3px ${accentBlue}20`;
+                                    el.style.boxShadow = `0 0 0 3px ${accentBlue}15`;
                                 }}
                                 onBlur={(e) => {
                                     const el = e.target as HTMLInputElement;
@@ -601,306 +616,153 @@ export default function HelpPage() {
                         </div>
                     </div>
 
-                    {/* Documentation label */}
-                    <div
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <span style={{ fontSize: 12, color: textMuted, fontWeight: 500 }}>System Help v3.0</span>
+                    </div>
+                </header>
+
+                <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+                    {/* ─── SIDEBAR ───────────────────────────────────── */}
+                    <aside
                         style={{
-                            padding: '4px 18px 8px',
-                            color: textMuted,
-                            fontSize: 10,
-                            fontWeight: 600,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.08em',
+                            width: 260,
+                            minWidth: 260,
+                            background: bgSidebar,
+                            borderRight: `1px solid ${borderDefault}`,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            overflow: 'hidden',
                         }}
                     >
-                        Documentation
-                    </div>
+                        <div
+                            className="help-scrollbar"
+                            style={{
+                                flex: 1,
+                                overflowY: 'auto',
+                                padding: '20px 12px',
+                            }}
+                        >
+                            <label style={{ fontSize: 10, fontWeight: 700, color: textMuted, textTransform: 'uppercase', letterSpacing: '0.1em', padding: '0 12px 12px' }}>
+                                Knowledge Domains
+                            </label>
+                            {HELP_SECTIONS.map((section) => {
+                                const isActive = activeSection === section.id && !isSearching;
+                                return (
+                                    <button
+                                        key={section.id}
+                                        onClick={() => {
+                                            setActiveSection(section.id);
+                                            setSearch('');
+                                        }}
+                                        style={{
+                                            width: '100%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 12,
+                                            padding: '10px 14px',
+                                            marginBottom: 4,
+                                            background: isActive ? bgHover : 'transparent',
+                                            border: 'none',
+                                            borderRadius: 8,
+                                            cursor: 'pointer',
+                                            textAlign: 'left',
+                                            transition: 'all 0.2s ease',
+                                        }}
+                                    >
+                                        <span style={{ fontSize: 18, filter: isActive ? 'none' : 'grayscale(1)' }}>{section.icon}</span>
+                                        <span style={{ flex: 1, fontSize: 13, color: isActive ? textPrimary : textSecondary, fontWeight: isActive ? 600 : 500 }}>
+                                            {section.title}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
 
-                    {/* Section buttons */}
-                    <div
+                        {/* Shortcuts footer */}
+                        <div style={{ padding: '20px 16px', borderTop: `1px solid ${borderDefault}`, background: 'rgba(56,189,248,0.02)' }}>
+                            <div style={{ fontSize: 10, fontWeight: 600, color: textMuted, marginBottom: 12 }}>QUICK COMMANDS</div>
+                            <div className="space-y-2">
+                                {SHORTCUTS.map(s => (
+                                    <div key={s.keys} className="flex justify-between items-center text-[11px]">
+                                        <span className="text-slate-500">{s.label}</span>
+                                        <kbd className="px-1.5 py-0.5 rounded border border-slate-800 bg-slate-900 text-slate-400 font-mono">{s.keys}</kbd>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </aside>
+
+                    {/* ─── MAIN AREA ─────────────────────────────────── */}
+                    <main
+                        ref={mainRef}
                         className="help-scrollbar"
                         style={{
                             flex: 1,
                             overflowY: 'auto',
-                            padding: '0 10px',
+                            padding: '36px 48px',
+                            background: bgMain,
                         }}
                     >
-                        {HELP_SECTIONS.map((section) => {
-                            const isActive = activeSection === section.id && !isSearching;
-                            return (
-                                <button
-                                    key={section.id}
-                                    onClick={() => {
-                                        setActiveSection(section.id);
-                                        setSearch('');
-                                    }}
-                                    style={{
-                                        width: '100%',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 10,
-                                        padding: '10px 12px',
-                                        marginBottom: 2,
-                                        background: isActive ? bgMain : 'transparent',
-                                        border: 'none',
-                                        borderLeft: isActive
-                                            ? `3px solid ${section.color}`
-                                            : '3px solid transparent',
-                                        borderRadius: '0 6px 6px 0',
-                                        cursor: 'pointer',
-                                        textAlign: 'left',
-                                        transition: 'all 0.2s ease',
-                                        boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.06)' : 'none',
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        if (!isActive) {
-                                            (e.currentTarget as HTMLButtonElement).style.background =
-                                                bgHover;
-                                        }
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        if (!isActive) {
-                                            (e.currentTarget as HTMLButtonElement).style.background =
-                                                'transparent';
-                                        }
-                                    }}
-                                >
-                                    <span style={{ fontSize: 16, flexShrink: 0 }}>
-                                        {section.icon}
-                                    </span>
-                                    <span
-                                        style={{
-                                            flex: 1,
-                                            color: isActive ? textPrimary : textSecondary,
-                                            fontSize: 13,
-                                            fontWeight: isActive ? 600 : 400,
-                                        }}
-                                    >
-                                        {section.title}
-                                    </span>
-                                    <span
-                                        style={{
-                                            fontFamily: "'JetBrains Mono', monospace",
-                                            fontSize: 11,
-                                            color: isActive ? section.color : textMuted,
-                                            background: isActive
-                                                ? `${section.color}15`
-                                                : bgSurface,
-                                            padding: '1px 6px',
-                                            borderRadius: 4,
-                                            flexShrink: 0,
-                                        }}
-                                    >
-                                        {section.articles.length}
-                                    </span>
-                                </button>
-                            );
-                        })}
-                    </div>
+                        {/* BREADCRUMBS */}
+                        <nav style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24, fontSize: 12, color: textMuted }}>
+                            <span>Help Center</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
+                            <span style={{ color: isSearching ? textPrimary : textMuted }}>{isSearching ? 'Search Results' : currentSection.title}</span>
+                            {!isSearching && Object.values(expanded).some(v => v) && (
+                                <>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
+                                    <span style={{ color: textPrimary }}>Article View</span>
+                                </>
+                            )}
+                        </nav>
 
-                    {/* Keyboard shortcuts */}
-                    <div
-                        style={{
-                            padding: '14px 18px',
-                            borderTop: `1px solid ${borderDefault}`,
-                        }}
-                    >
-                        <div
-                            style={{
-                                color: textMuted,
-                                fontSize: 10,
-                                fontWeight: 600,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.08em',
-                                marginBottom: 8,
-                            }}
-                        >
-                            Keyboard Shortcuts
-                        </div>
-                        {SHORTCUTS.map((s) => (
-                            <div
-                                key={s.keys}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    padding: '4px 0',
-                                }}
-                            >
-                                <kbd
-                                    style={{
-                                        fontFamily: "'JetBrains Mono', monospace",
-                                        fontSize: 11,
-                                        color: textPrimary,
-                                        background: bgMain,
-                                        padding: '2px 6px',
-                                        borderRadius: 4,
-                                        border: `1px solid ${borderDefault}`,
-                                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                                    }}
-                                >
-                                    {s.keys}
-                                </kbd>
-                                <span style={{ color: textMuted, fontSize: 11 }}>
-                                    {s.label}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </aside>
-
-                {/* ─── MAIN CONTENT ───────────────────────────────── */}
-                <main
-                    ref={mainRef}
-                    className="help-scrollbar"
-                    style={{
-                        flex: 1,
-                        overflowY: 'auto',
-                        padding: '28px 36px',
-                        background: bgMain,
-                    }}
-                >
-                    {isSearching ? (
-                        /* Search results */
-                        <div>
-                            <div
-                                style={{
-                                    color: textMuted,
-                                    fontSize: 13,
-                                    marginBottom: 16,
-                                }}
-                            >
-                                {searchResults.length > 0
-                                    ? `${searchResults.length} result${searchResults.length !== 1 ? 's' : ''} for "${search}"`
-                                    : null}
-                            </div>
-
-                            {searchResults.length > 0 ? (
-                                <div
-                                    style={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: 8,
-                                    }}
-                                >
-                                    {searchResults.map((article) => (
+                        {isSearching ? (
+                            <div>
+                                <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 24 }}>Results for &quot;{search}&quot;</h1>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                    {searchResults.map(article => (
                                         <SearchResult
                                             key={article.id}
                                             article={article}
                                             onClick={() => goToArticle(article)}
                                         />
                                     ))}
-                                </div>
-                            ) : (
-                                <div
-                                    style={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        padding: '60px 20px',
-                                        textAlign: 'center',
-                                    }}
-                                >
-                                    <div
-                                        style={{
-                                            fontSize: 40,
-                                            marginBottom: 16,
-                                            opacity: 0.4,
-                                        }}
-                                    >
-                                        🔍
-                                    </div>
-                                    <div
-                                        style={{
-                                            color: textPrimary,
-                                            fontSize: 16,
-                                            fontWeight: 600,
-                                            marginBottom: 6,
-                                        }}
-                                    >
-                                        No results found
-                                    </div>
-                                    <div style={{ color: textMuted, fontSize: 13 }}>
-                                        Try different keywords or browse the sections in the sidebar
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        /* Section content */
-                        <div>
-                            {/* Section header */}
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 14,
-                                    marginBottom: 28,
-                                }}
-                            >
-                                <span style={{ fontSize: 36 }}>{currentSection.icon}</span>
-                                <div>
-                                    <h1
-                                        style={{
-                                            color: textPrimary,
-                                            fontSize: 24,
-                                            fontWeight: 700,
-                                            letterSpacing: '-0.02em',
-                                            margin: 0,
-                                        }}
-                                    >
-                                        {currentSection.title}
-                                    </h1>
-                                    <span
-                                        style={{
-                                            fontFamily: "'JetBrains Mono', monospace",
-                                            fontSize: 12,
-                                            color: currentSection.color,
-                                            background: `${currentSection.color}12`,
-                                            padding: '2px 10px',
-                                            borderRadius: 10,
-                                            marginTop: 4,
-                                            display: 'inline-block',
-                                        }}
-                                    >
-                                        {currentSection.articles.length} article
-                                        {currentSection.articles.length !== 1 ? 's' : ''}
-                                    </span>
+                                    {searchResults.length === 0 && (
+                                        <div style={{ textAlign: 'center', padding: '100px 0', opacity: 0.5 }}>
+                                            <div style={{ fontSize: 48, marginBottom: 20 }}>🛸</div>
+                                            <p>No knowledge entries found for this query.</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
+                        ) : (
+                            <div>
+                                <div style={{ marginBottom: 40 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
+                                        <span style={{ fontSize: 42 }}>{currentSection.icon}</span>
+                                        <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-0.02em' }}>{currentSection.title}</h1>
+                                    </div>
+                                    <p style={{ color: textSecondary, fontSize: 16 }}>{currentSection.description}</p>
+                                </div>
 
-                            {/* Article cards */}
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 8,
-                                }}
-                            >
-                                {currentSection.articles.map((article, i) => {
-                                    const searchable: SearchableArticle = {
-                                        ...article,
-                                        sectionId: currentSection.id,
-                                        sectionTitle: currentSection.title,
-                                        sectionIcon: currentSection.icon,
-                                        sectionColor: currentSection.color,
-                                    };
-                                    return (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                    {currentSection.articles.map((article, i) => (
                                         <div key={article.id} id={`article-${article.id}`}>
                                             <ArticleCard
-                                                article={searchable}
+                                                article={{ ...article, sectionId: currentSection.id, sectionTitle: currentSection.title, sectionIcon: currentSection.icon }}
                                                 index={i}
-                                                color={currentSection.color}
+                                                color={currentSectionColor}
                                                 isExpanded={!!expanded[article.id]}
                                                 onToggle={() => toggleArticle(article.id)}
+                                                onNavigateToRelated={navigateToRelated}
                                             />
                                         </div>
-                                    );
-                                })}
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    )}
-                </main>
+                        )}
+                    </main>
+                </div>
             </div>
         </>
     );

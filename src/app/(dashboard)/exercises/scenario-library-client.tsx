@@ -2,10 +2,11 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { createSession, ensureScenariosSeeded, getScenarios } from "@/lib/exercises/actions";
 import type { Scenario } from "@/lib/exercises/types";
-import { Shield, Siren, Ghost, Lock, Play, MessageSquare, TreeDeciduous, Zap, Mail, Clock } from "lucide-react";
+import { Shield, Siren, Ghost, Lock, Play, MessageSquare, TreeDeciduous, Zap, Mail, Info, Target, Calculator, ChevronDown, ChevronUp, BookOpen, ShieldAlert, Clock3, PlayCircle, PlusCircle, Search, Filter } from "lucide-react";
 import { formatDollars } from "@/lib/exercises/scoring";
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -44,6 +45,9 @@ export function ScenarioLibraryClient({ scenarios, lastRuns }: ScenarioLibraryCl
     const router = useRouter();
     const [selected, setSelected] = useState<Scenario | null>(null);
     const [launchingMode, setLaunchingMode] = useState<"decision" | "discussion" | null>(null);
+    const [showOnboarding, setShowOnboarding] = useState(true);
+
+    const completedSessionCount = Object.values(lastRuns).filter(run => run.completedAt !== null).length;
 
     const handleLaunch = useCallback(async (mode: "decision" | "discussion") => {
         if (!selected) return;
@@ -73,6 +77,111 @@ export function ScenarioLibraryClient({ scenarios, lastRuns }: ScenarioLibraryCl
 
     return (
         <div className="space-y-8">
+            {/* Onboarding / How It Works Guide */}
+            <div className="bg-card/30 border border-border rounded-xl overflow-hidden shadow-sm transition-all duration-300">
+                <div className="flex flex-col md:flex-row gap-4 p-5 bg-card/50 hover:bg-card/80 transition-colors">
+                    <button
+                        onClick={() => setShowOnboarding(!showOnboarding)}
+                        className="flex-1 flex items-center justify-between text-left"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                                <Info className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <h2 className="text-base font-semibold text-foreground">How Tabletop Exercises Work</h2>
+                                <p className="text-xs text-muted-foreground mt-1">Understanding the objectives, modes, and scoring</p>
+                            </div>
+                        </div>
+                        {showOnboarding ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
+                    </button>
+
+                    <Link href="/exercises/guide" className="shrink-0 flex items-center justify-center gap-2 px-4 py-2 bg-primary/10 text-primary hover:bg-primary/20 transition-colors rounded-xl font-medium text-sm">
+                        <BookOpen className="h-4 w-4" />
+                        Read Full Guide
+                    </Link>
+                </div>
+
+                {showOnboarding && (
+                    <div className="p-6 pt-2 border-t border-border bg-card/10 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="grid md:grid-cols-3 gap-6">
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2 text-primary">
+                                    <Target className="h-4 w-4" />
+                                    <h3 className="font-semibold text-sm">WHY: The Objective</h3>
+                                </div>
+                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                    Tabletop exercises exist to test your organization&apos;s Incident Response (IR) playbooks in a safe environment.
+                                    They are pedagogical tools designed to expose hidden gaps in processes, communication flows, and technical preparedness before a real crisis hits.
+                                </p>
+                            </div>
+
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2 text-primary">
+                                    <Zap className="h-4 w-4" />
+                                    <h3 className="font-semibold text-sm">WHAT: The Modes</h3>
+                                </div>
+                                <div className="space-y-2">
+                                    <div className="p-3 rounded-lg bg-card border border-border/50">
+                                        <h4 className="text-xs font-bold font-mono uppercase text-foreground mb-1 flex items-center gap-2">
+                                            <TreeDeciduous className="h-3 w-3" /> Decision Tree
+                                        </h4>
+                                        <p className="text-xs text-muted-foreground">Solo or small team. Rapid-fire multiple choice measuring financial and reputational impact over time.</p>
+                                    </div>
+                                    <div className="p-3 rounded-lg bg-card border border-border/50">
+                                        <h4 className="text-xs font-bold font-mono uppercase text-foreground mb-1 flex items-center gap-2">
+                                            <MessageSquare className="h-3 w-3" /> Discussion
+                                        </h4>
+                                        <p className="text-xs text-muted-foreground">Best for 3-5 participants. Role-based, open-ended responses testing team alignment and communication under pressure.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2 text-primary">
+                                    <Calculator className="h-4 w-4" />
+                                    <h3 className="font-semibold text-sm">HOW: The Scoring</h3>
+                                </div>
+                                <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                                    In Decision mode, every choice has consequences. The simulation tracks:
+                                </p>
+                                <ul className="space-y-2 text-xs text-muted-foreground">
+                                    <li className="flex items-start gap-2">
+                                        <span className="text-destructive font-mono text-[10px] mt-0.5">💰</span>
+                                        <span><strong>Financial Loss:</strong> Regulatory fines, downtime, ransom payouts.</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <span className="text-emerald-500 font-mono text-[10px] mt-0.5">👥</span>
+                                        <span><strong>Reputation:</strong> Internal (employees) vs External (customers/media) trust.</span>
+                                    </li>
+                                </ul>
+                                <div className="mt-3 pt-3 border-t border-border/50 flex gap-2">
+                                    {['A', 'B', 'C', 'D', 'F'].map((grade) => (
+                                        <span key={grade} className={cn("px-2 py-0.5 rounded text-[10px] font-bold", gradeColors[grade])}>{grade}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {completedSessionCount === 0 && (
+                <div className="rounded-xl border border-sky-400/10 bg-sky-400/5 p-4 mb-4">
+                    <div className="text-sm font-semibold text-sky-400 mb-1">First time?</div>
+                    <div className="text-xs text-slate-400 mb-2">
+                        Start with Operation Trojan Vendor in Decision Tree mode — it takes
+                        about 90 minutes and teaches the fundamentals of crisis decision-making.
+                    </div>
+                    <Link
+                        href="/exercises/guide"
+                        className="text-xs font-mono text-sky-400 hover:text-sky-300"
+                    >
+                        Read the full guide →
+                    </Link>
+                </div>
+            )}
+
             {/* Scenario cards */}
             <div className="grid md:grid-cols-3 gap-4">
                 {scenarios.map((scenario) => {
