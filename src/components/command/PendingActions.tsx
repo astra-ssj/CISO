@@ -4,8 +4,9 @@ import Link from 'next/link';
 import { ArrowRight, ClipboardCheck, FileWarning, AlertCircle, Clock, ShieldAlert } from 'lucide-react';
 import { useVendorRiskStore } from '@/lib/vendor-risk-store';
 import { usePolicyStore } from '@/lib/policy-store';
-import { useRiskRegisterStore } from '@/lib/risk-register-store';
 import { useAstraStore } from '@/lib/store';
+import { getRisks } from '@/lib/risk/actions';
+import { useEffect, useState } from 'react';
 
 /* ── Design tokens ─────────────────────────────────── */
 const CARD_BG = 'rgba(8, 12, 24, 0.85)';
@@ -23,13 +24,19 @@ interface ActionItem {
 export function PendingActions() {
     const vendors = useVendorRiskStore((s) => s.vendors);
     const policies = usePolicyStore((s) => s.policies);
-    const risks = useRiskRegisterStore((s) => s.entries);
     const decisions = useAstraStore((s) => s.decisionQueue);
+    const [overdueRisks, setOverdueRisks] = useState(0);
+
+    useEffect(() => {
+        getRisks({ status: 'Open' }).then(res => {
+            // Count High and Critical risks (Score >= 12)
+            setOverdueRisks(res.filter((r: any) => r.inherentScore >= 12).length);
+        }).catch(console.error);
+    }, []);
 
     const pendingVendors = vendors.filter((v) => v.riskTier === 'CRITICAL' || v.riskTier === 'HIGH').length;
     const reviewPolicies = policies.filter((p) => p.status === 'DRAFT' || p.status === 'IN_REVIEW').length;
     const openDecisions = decisions.filter((d) => d.status === 'PENDING').length;
-    const overdueRisks = risks.filter((r) => r.status === 'OPEN' && r.analysis.riskScore >= 70).length;
 
     const actions: ActionItem[] = [
         pendingVendors > 0 ? { id: 'vendors', icon: ClipboardCheck, label: `${pendingVendors} vendor assessment${pendingVendors > 1 ? 's' : ''} due`, count: pendingVendors, urgency: 'due-soon', href: '/vendors' } : null,

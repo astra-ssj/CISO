@@ -7,8 +7,8 @@ import {
     TrendingUp, TrendingDown, ArrowRight,
 } from 'lucide-react';
 import { useAstraStore } from '@/lib/store';
-import { useRiskRegisterStore } from '@/lib/risk-register-store';
 import { useVendorRiskStore } from '@/lib/vendor-risk-store';
+import { getRisks } from '@/lib/risk/actions';
 
 /* ── Design tokens ─────────────────────────────────── */
 const CARD_BG = 'rgba(8, 12, 24, 0.85)';
@@ -80,16 +80,18 @@ interface KPIItem {
 /* ── Component ─────────────────────────────────────── */
 export function KPIStatusBar() {
     const { complianceScore, activeThreats } = useAstraStore();
-    const risks = useRiskRegisterStore((s) => s.entries);
     const vendors = useVendorRiskStore((s) => s.vendors);
     const [visible, setVisible] = useState(false);
+    const [openRisks, setOpenRisks] = useState(0);
 
     useEffect(() => {
         const timer = setTimeout(() => setVisible(true), 100);
+
+        // Fetch real open risks from database
+        getRisks({ status: 'Open' }).then(res => setOpenRisks(res.length)).catch(console.error);
+
         return () => clearTimeout(timer);
     }, []);
-
-    const openRisks = risks.filter((r) => r.status !== 'ACCEPTED' && r.status !== 'CLOSED').length;
     const pendingVendors = vendors.filter((v) => v.riskTier === 'CRITICAL' || v.riskTier === 'HIGH').length;
     const postureScore = Math.min(100, Math.round(complianceScore * 0.4 + (100 - activeThreats * 5) * 0.3 + (100 - openRisks * 2) * 0.3));
 

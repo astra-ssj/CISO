@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
 }
 
@@ -22,35 +22,35 @@ model User {
   image         String?
   password      String?
   role          String    @default("VIEWER")
-  ssoProvider   String?   // "azure-ad", "okta", "google", null
+  ssoProvider   String? // "azure-ad", "okta", "google", null
   mfaEnabled    Boolean   @default(false)
   lastActiveAt  DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  
+
   accounts      Account[]
   sessions      Session[]
   Authenticator Authenticator[]
-  
+
   // Relations
   authoredPolicies Policy[]
-  managedRisks     RiskScenario[]
+  managedScenarios RiskScenario[] @relation("ScenarioOwner")
   incidents        Incident[]
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -93,38 +93,71 @@ model Authenticator {
 // -----------------------------------------------------------------------------
 
 model RiskScenario {
-  id          String   @id @default(cuid())
-  title       String   
+  id          String  @id @default(cuid())
+  title       String
   description String?
   ownerId     String
-  owner       User     @relation(fields: [ownerId], references: [id])
-  status      String   @default("OPEN")
-  
+  owner       User    @relation("ScenarioOwner", fields: [ownerId], references: [id])
+  status      String  @default("OPEN")
+
   // FAIR Analysis
-  threatActor         String
-  threatEventFreq     Float    
-  vulnerability       Float    
-  primaryLoss         Float    
-  secondaryLoss       Float    
-  controlsEffective   Float    
-  
+  threatActor       String
+  threatEventFreq   Float
+  vulnerability     Float
+  primaryLoss       Float
+  secondaryLoss     Float
+  controlsEffective Float
+
   // Computed
-  ale                 Float    
-  riskScore           Int      
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  history     RiskHistory[]
+  ale       Float
+  riskScore Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  history RiskScenarioHistory[]
+}
+
+model RiskScenarioHistory {
+  id             String       @id @default(cuid())
+  riskScenarioId String
+  riskScenario   RiskScenario @relation(fields: [riskScenarioId], references: [id])
+  date           DateTime     @default(now())
+  score          Int
+  ale            Float
+}
+
+// -----------------------------------------------------------------------------
+// 2b. Risk Register (Simple 5x5 Matrix)
+// -----------------------------------------------------------------------------
+
+model Risk {
+  id            String   @id @default(cuid())
+  title         String
+  description   String
+  category      String // Operational, Technical, Compliance, Strategic, ThirdParty
+  likelihood    Int // 1-5
+  impact        Int // 1-5
+  inherentScore Int // likelihood * impact (1-25)
+  residualScore Int? // nullable
+  owner         String
+  status        String // Open, Mitigating, Accepted, Closed
+  treatmentPlan String?
+  reviewDate    DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  history RiskHistory[]
 }
 
 model RiskHistory {
-  id              String       @id @default(cuid())
-  riskScenarioId  String
-  riskScenario    RiskScenario @relation(fields: [riskScenarioId], references: [id])
-  date            DateTime     @default(now())
-  score           Int
-  ale             Float
+  id        String   @id @default(cuid())
+  riskId    String
+  risk      Risk     @relation(fields: [riskId], references: [id], onDelete: Cascade)
+  field     String
+  oldValue  String?
+  newValue  String?
+  changedAt DateTime @default(now())
 }
 
 // -----------------------------------------------------------------------------
@@ -132,24 +165,24 @@ model RiskHistory {
 // -----------------------------------------------------------------------------
 
 model Policy {
-  id            String   @id @default(cuid())
-  title         String
-  content       String   @default("")
-  version       String   @default("1.0.0")
-  status        String   @default("DRAFT")
-  type          String?  // ISMS | PRIVACY | AI_GOV | ACCESS | INCIDENT
-  owner         String?  // display owner name (optional; authorId is canonical)
-  authorId      String?
-  author        User?    @relation(fields: [authorId], references: [id])
-  frameworks    String   @default("[]") // JSON
-  controls      String   @default("[]") // JSON
-  sections      String?  // JSON array of PolicySection
-  mappings      String?  // JSON array of FrameworkMapping
-  dependencies  String?  // JSON array of policy ids
+  id             String   @id @default(cuid())
+  title          String
+  content        String   @default("")
+  version        String   @default("1.0.0")
+  status         String   @default("DRAFT")
+  type           String? // ISMS | PRIVACY | AI_GOV | ACCESS | INCIDENT
+  owner          String? // display owner name (optional; authorId is canonical)
+  authorId       String?
+  author         User?    @relation(fields: [authorId], references: [id])
+  frameworks     String   @default("[]") // JSON
+  controls       String   @default("[]") // JSON
+  sections       String? // JSON array of PolicySection
+  mappings       String? // JSON array of FrameworkMapping
+  dependencies   String? // JSON array of policy ids
   acknowledgment String? // JSON object
-  changelog     String?  // JSON array
-  lastUpdated   String?  // ISO string for display
-  updatedAt     DateTime @updatedAt
+  changelog      String? // JSON array
+  lastUpdated    String? // ISO string for display
+  updatedAt      DateTime @updatedAt
 }
 
 // -----------------------------------------------------------------------------
@@ -157,26 +190,26 @@ model Policy {
 // -----------------------------------------------------------------------------
 
 model Incident {
-  id          String   @id @default(cuid())
+  id          String @id @default(cuid())
   title       String
   severity    String
   status      String
   commanderId String
-  commander   User     @relation(fields: [commanderId], references: [id])
-  
-  startedAt   DateTime @default(now())
-  resolvedAt  DateTime?
-  
-  events      IncidentEvent[]
+  commander   User   @relation(fields: [commanderId], references: [id])
+
+  startedAt  DateTime  @default(now())
+  resolvedAt DateTime?
+
+  events IncidentEvent[]
 }
 
 model IncidentEvent {
-  id          String   @id @default(cuid())
-  incidentId  String
-  incident    Incident @relation(fields: [incidentId], references: [id])
-  type        String   
-  payload     String   // JSON string
-  timestamp   DateTime @default(now())
+  id         String   @id @default(cuid())
+  incidentId String
+  incident   Incident @relation(fields: [incidentId], references: [id])
+  type       String
+  payload    String // JSON string
+  timestamp  DateTime @default(now())
 }
 
 // -----------------------------------------------------------------------------
@@ -184,16 +217,16 @@ model IncidentEvent {
 // -----------------------------------------------------------------------------
 
 model Vendor {
-  id                  String   @id @default(cuid())
-  name                String
-  serviceDescription  String
-  tier                String   // TIER_1_CRITICAL | TIER_2_HIGH | TIER_3_MEDIUM | TIER_4_LOW
-  status              String   // ACTIVE | PENDING_ASSESSMENT | REJECTED | DEPRECATED
-  lastAssessmentDate  String
-  inherentRiskScore   Int
-  contactEmail        String
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  name               String
+  serviceDescription String
+  tier               String // TIER_1_CRITICAL | TIER_2_HIGH | TIER_3_MEDIUM | TIER_4_LOW
+  status             String // ACTIVE | PENDING_ASSESSMENT | REJECTED | DEPRECATED
+  lastAssessmentDate String
+  inherentRiskScore  Int
+  contactEmail       String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
 // -----------------------------------------------------------------------------
@@ -201,34 +234,34 @@ model Vendor {
 // -----------------------------------------------------------------------------
 
 model VendorRisk {
-  id                     String   @id @default(cuid())
-  name                   String
-  category               String
-  description            String
-  status                 String
-  riskTier               String
-  riskScore              Int
-  dataAccess             String   // JSON array
+  id                       String             @id @default(cuid())
+  name                     String
+  category                 String
+  description              String
+  status                   String
+  riskTier                 String
+  riskScore                Int
+  dataAccess               String // JSON array
   complianceCertifications String // JSON array
-  contractExpiry         String
-  lastAssessment         String
-  contactName            String
-  contactEmail           String
-  notes                  String
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
-  assessmentHistory      VendorAssessment[]
+  contractExpiry           String
+  lastAssessment           String
+  contactName              String
+  contactEmail             String
+  notes                    String
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
+  assessmentHistory        VendorAssessment[]
 }
 
 model VendorAssessment {
-  id          String     @id @default(cuid())
+  id           String     @id @default(cuid())
   vendorRiskId String
-  vendorRisk  VendorRisk @relation(fields: [vendorRiskId], references: [id], onDelete: Cascade)
-  date        String
-  score       Int
-  findings    String     // JSON array
-  assessor    String
-  createdAt   DateTime   @default(now())
+  vendorRisk   VendorRisk @relation(fields: [vendorRiskId], references: [id], onDelete: Cascade)
+  date         String
+  score        Int
+  findings     String // JSON array
+  assessor     String
+  createdAt    DateTime   @default(now())
 }
 
 // -----------------------------------------------------------------------------
@@ -237,23 +270,23 @@ model VendorAssessment {
 
 model Evidence {
   id             String         @id @default(cuid())
-  title          String         // "ISO 27001 Cert 2025"
+  title          String // "ISO 27001 Cert 2025"
   description    String?
-  fileName       String         // "iso27001-cert-2025.pdf"
-  fileSize       Int            // bytes
-  mimeType       String         // "application/pdf"
-  filePath       String         // local storage path
-  category       String         // POLICY, CERTIFICATE, REPORT, SCREENSHOT, CONFIG, ASSESSMENT, TRAINING, CONTRACT, AUDIT_REPORT, PENETRATION_TEST, OTHER
+  fileName       String // "iso27001-cert-2025.pdf"
+  fileSize       Int // bytes
+  mimeType       String // "application/pdf"
+  filePath       String // local storage path
+  category       String // POLICY, CERTIFICATE, REPORT, SCREENSHOT, CONFIG, ASSESSMENT, TRAINING, CONTRACT, AUDIT_REPORT, PENETRATION_TEST, OTHER
   status         String         @default("ACTIVE") // ACTIVE, EXPIRED, ARCHIVED, PENDING_REVIEW
-  expiresAt      DateTime?      // cert expiry, policy review date
+  expiresAt      DateTime? // cert expiry, policy review date
   uploadedBy     String
   uploadedByName String?
   approvedBy     String?
   approvedAt     DateTime?
-  tags           String?        // JSON array: ["encryption", "SOC2"]
-  frameworks     String?        // JSON: ["ISO 27001:A.8.24", "SOC 2:CC6.1"]
-  companyId      String?        // scope to specific company
-  metadata       String?        // JSON: additional context
+  tags           String? // JSON array: ["encryption", "SOC2"]
+  frameworks     String? // JSON: ["ISO 27001:A.8.24", "SOC 2:CC6.1"]
+  companyId      String? // scope to specific company
+  metadata       String? // JSON: additional context
   links          EvidenceLink[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
@@ -263,9 +296,9 @@ model EvidenceLink {
   id         String   @id @default(cuid())
   evidenceId String
   evidence   Evidence @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
-  linkType   String   // COMPLIANCE_CONTROL, RISK, POLICY, INCIDENT, VENDOR, KNOWLEDGE_ENTRY
-  linkId     String   // ID of the linked resource
-  linkName   String   // Human readable: "ISO 27001:A.8.24"
+  linkType   String // COMPLIANCE_CONTROL, RISK, POLICY, INCIDENT, VENDOR, KNOWLEDGE_ENTRY
+  linkId     String // ID of the linked resource
+  linkName   String // Human readable: "ISO 27001:A.8.24"
   createdAt  DateTime @default(now())
 }
 
@@ -274,17 +307,17 @@ model EvidenceLink {
 // -----------------------------------------------------------------------------
 
 model Objective {
-  id           String   @id @default(cuid())
-  title        String
-  description  String
-  quarter      String
-  year         Int
-  owner        String
-  status       String
-  keyResults   String   // JSON array of KeyResult
-  linkedRisks  String?  // JSON array of risk ids
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  quarter     String
+  year        Int
+  owner       String
+  status      String
+  keyResults  String // JSON array of KeyResult
+  linkedRisks String? // JSON array of risk ids
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Project {
@@ -296,12 +329,12 @@ model Project {
   priority         String
   budgetAllocated  Int
   budgetSpent      Int
-  linkedObjectives String   // JSON array
-  linkedRisks      String   // JSON array
+  linkedObjectives String // JSON array
+  linkedRisks      String // JSON array
   startDate        String
   targetEndDate    String
-  tags             String   // JSON array
-  phases           String   // JSON array of ProjectPhase
+  tags             String // JSON array
+  phases           String // JSON array of ProjectPhase
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }
@@ -311,26 +344,26 @@ model Project {
 // -----------------------------------------------------------------------------
 
 model Notification {
-  id         String   @id @default(cuid())
-  type       String
-  title      String
-  message    String
-  severity   String
-  read       Boolean  @default(false)
-  timestamp  Int      // Unix ms
-  actionUrl  String?
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  type      String
+  title     String
+  message   String
+  severity  String
+  read      Boolean  @default(false)
+  timestamp Int // Unix ms
+  actionUrl String?
+  createdAt DateTime @default(now())
 }
 
 model AlertRule {
-  id                String   @id @default(cuid())
-  name              String
-  condition         String
-  threshold         Float
-  enabled           Boolean  @default(true)
-  notificationType  String
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id               String   @id @default(cuid())
+  name             String
+  condition        String
+  threshold        Float
+  enabled          Boolean  @default(true)
+  notificationType String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 // -----------------------------------------------------------------------------
@@ -343,10 +376,10 @@ model Playbook {
   description String
   severity    String
   status      String   @default("READY")
-  phases      String   // JSON array of PlaybookPhase
-  startTime   Int?     // Unix ms
+  phases      String // JSON array of PlaybookPhase
+  startTime   Int? // Unix ms
   endTime     Int?
-  evidenceLog String   // JSON array of { timestamp, message }
+  evidenceLog String // JSON array of { timestamp, message }
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -361,12 +394,12 @@ model AuditLog {
   userId      String?
   userName    String?
   userRole    String?
-  action      String   // CREATE, READ, UPDATE, DELETE, LOGIN, LOGOUT, EXPORT, IMPORT, TEST, APPROVE, REJECT, ESCALATE, CONFIGURE
-  category    String   // AUTH, COMPLIANCE, RISK, INCIDENT, VENDOR, INTELLIGENCE, APPSEC, SETTINGS, INTEGRATION, CAIQ, EVIDENCE, POLICY
-  resource    String   // "KnowledgeEntry", "Integration", "User"
-  resourceId  String?  // ID of the affected resource
-  description String   // Human-readable: "User connected Slack integration"
-  metadata    String?  // JSON: additional context, old/new values
+  action      String // CREATE, READ, UPDATE, DELETE, LOGIN, LOGOUT, EXPORT, IMPORT, TEST, APPROVE, REJECT, ESCALATE, CONFIGURE
+  category    String // AUTH, COMPLIANCE, RISK, INCIDENT, VENDOR, INTELLIGENCE, APPSEC, SETTINGS, INTEGRATION, CAIQ, EVIDENCE, POLICY
+  resource    String // "KnowledgeEntry", "Integration", "User"
+  resourceId  String? // ID of the affected resource
+  description String // Human-readable: "User connected Slack integration"
+  metadata    String? // JSON: additional context, old/new values
   ipAddress   String?
   userAgent   String?
   severity    String   @default("INFO") // INFO, WARNING, CRITICAL
@@ -384,22 +417,22 @@ model AuditLog {
 model KnowledgeEntry {
   id                 String    @id @default(cuid())
   questionText       String
-  questionNormalized String    // lowercase, cleaned for matching
-  keywords           String    // comma-separated for search
-  domain             String    // AIS, IAM, DSP, CUSTOM, etc.
-  category           String    // Access Control, Encryption, Incident Response, etc.
-  answerType         String    // YES, NO, NA, CONDITIONAL
-  answerText         String    // The approved answer
-  evidence           String?   // Evidence references
-  frameworks         String?   // JSON: [{framework, controlId}]
-  source             String    // Which assessment this came from
-  approvedBy         String?   // Who approved this answer
+  questionNormalized String // lowercase, cleaned for matching
+  keywords           String // comma-separated for search
+  domain             String // AIS, IAM, DSP, CUSTOM, etc.
+  category           String // Access Control, Encryption, Incident Response, etc.
+  answerType         String // YES, NO, NA, CONDITIONAL
+  answerText         String // The approved answer
+  evidence           String? // Evidence references
+  frameworks         String? // JSON: [{framework, controlId}]
+  source             String // Which assessment this came from
+  approvedBy         String? // Who approved this answer
   approvedAt         DateTime?
   confidence         Float     @default(1.0)
   usageCount         Int       @default(0) // How many times reused
   lastUsed           DateTime?
-  jurisdiction       String?   // EU, US, UK, etc.
-  tags               String?   // comma-separated custom tags
+  jurisdiction       String? // EU, US, UK, etc.
+  tags               String? // comma-separated custom tags
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
@@ -412,14 +445,14 @@ model KnowledgeEntry {
 
 model Company {
   id                String    @id @default(cuid())
-  name              String    // "AstraLabs DE"
-  legalEntity       String    // "AstraLabs GmbH"
-  jurisdiction      String    // EU
-  country           String    // DE
-  industry          String    // Technology
-  size              String    // Enterprise
-  certifications    String    // JSON: ["ISO 27001", "SOC 2 Type II"]
-  primaryCloud      String    // AWS
+  name              String // "AstraLabs DE"
+  legalEntity       String // "AstraLabs GmbH"
+  jurisdiction      String // EU
+  country           String // DE
+  industry          String // Technology
+  size              String // Enterprise
+  certifications    String // JSON: ["ISO 27001", "SOC 2 Type II"]
+  primaryCloud      String // AWS
   additionalContext String?
   products          Product[]
   createdAt         DateTime  @default(now())
@@ -427,19 +460,19 @@ model Company {
 }
 
 model Product {
-  id                 String    @id @default(cuid())
-  name               String    // "CORTEX"
-  description        String?   // "Zero Trust AI Platform for compliance"
-  type               String    // SaaS, PaaS, On-Premise, Hybrid
-  dataTypes          String    // JSON: ["PII", "Financial", "Health"]
-  hostingRegions     String    // JSON: ["eu-west-1", "eu-central-1"]
-  complianceScope    String    // JSON: ["GDPR", "NIS2", "SOC 2"]
-  techStack          String?   // JSON: ["Next.js", "PostgreSQL", "Docker"]
+  id                 String              @id @default(cuid())
+  name               String // "CORTEX"
+  description        String? // "Zero Trust AI Platform for compliance"
+  type               String // SaaS, PaaS, On-Premise, Hybrid
+  dataTypes          String // JSON: ["PII", "Financial", "Health"]
+  hostingRegions     String // JSON: ["eu-west-1", "eu-central-1"]
+  complianceScope    String // JSON: ["GDPR", "NIS2", "SOC 2"]
+  techStack          String? // JSON: ["Next.js", "PostgreSQL", "Docker"]
   companyId          String
-  company            Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company            Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
   knowledgeOverrides KnowledgeOverride[]
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
 }
 
 // -----------------------------------------------------------------------------
@@ -448,18 +481,18 @@ model Product {
 
 model KnowledgeOverride {
   id               String          @id @default(cuid())
-  knowledgeEntryId String?         // links to common KB entry (null if net-new)
+  knowledgeEntryId String? // links to common KB entry (null if net-new)
   knowledgeEntry   KnowledgeEntry? @relation(fields: [knowledgeEntryId], references: [id], onDelete: SetNull)
-  scope            String          // "COMPANY" or "PRODUCT"
+  scope            String // "COMPANY" or "PRODUCT"
   companyId        String?
   productId        String?
   product          Product?        @relation(fields: [productId], references: [id], onDelete: Cascade)
-  questionText     String          // may be same or different from common
-  answerType       String          // YES, NO, NA, CONDITIONAL
-  answerText       String          // the override answer
+  questionText     String // may be same or different from common
+  answerType       String // YES, NO, NA, CONDITIONAL
+  answerText       String // the override answer
   evidence         String?
   frameworks       String?
-  notes            String?         // why this differs from common
+  notes            String? // why this differs from common
   approvedBy       String?
   approvedAt       DateTime?
   createdAt        DateTime        @default(now())
@@ -471,18 +504,18 @@ model KnowledgeOverride {
 // -----------------------------------------------------------------------------
 
 model Integration {
-  id              String    @id @default(cuid())
-  integrationId   String    @unique // "azure-ad", "slack", "jira"
-  category        String    // "identity", "collaboration", etc.
-  status          String    @default("available") // available, connected, error
-  config          String    @default("") // AES-256-GCM encrypted JSON blob
-  lastTestedAt    DateTime?
-  lastTestResult  String?   // "success", "failed", "timeout"
-  connectedBy     String?   // userId who connected it
-  connectedAt     DateTime?
-  metadata        String?   // JSON: channel names, project keys, etc.
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id             String    @id @default(cuid())
+  integrationId  String    @unique // "azure-ad", "slack", "jira"
+  category       String // "identity", "collaboration", etc.
+  status         String    @default("available") // available, connected, error
+  config         String    @default("") // AES-256-GCM encrypted JSON blob
+  lastTestedAt   DateTime?
+  lastTestResult String? // "success", "failed", "timeout"
+  connectedBy    String? // userId who connected it
+  connectedAt    DateTime?
+  metadata       String? // JSON: channel names, project keys, etc.
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
 // -----------------------------------------------------------------------------
@@ -492,7 +525,7 @@ model Integration {
 model TeamInvite {
   id        String   @id @default(cuid())
   email     String
-  role      String   // CISO, SEC_ENGINEER, AUDITOR, VIEWER
+  role      String // CISO, SEC_ENGINEER, AUDITOR, VIEWER
   token     String   @unique // random invite token
   status    String   @default("pending") // pending, accepted, expired
   invitedBy String
@@ -510,7 +543,7 @@ model AttackSurfaceScan {
   totalAssets Int
   totalVulns  Int
   riskScore   Int
-  results     String   // JSON — Full AttackSurfaceReport
+  results     String // JSON — Full AttackSurfaceReport
   createdBy   String
 }
 
@@ -520,92 +553,92 @@ model AttackSurfaceScan {
 
 model TabletopScenario {
   id        String   @id @default(cuid())
-  slug      String   @unique               // "supply-chain", "insider", "ransomware"
+  slug      String   @unique // "supply-chain", "insider", "ransomware"
   title     String
   subtitle  String?
-  severity  String                          // CRITICAL, HIGH, MEDIUM
+  severity  String // CRITICAL, HIGH, MEDIUM
   briefing  String
   icon      String?
-  color     String?                         // hex color for UI theming
-  stakes    String?                         // JSON: { revenue, customers, entities, auditIn }
-  steps     String                          // JSON: full step definitions including decisions
+  color     String? // hex color for UI theming
+  stakes    String? // JSON: { revenue, customers, entities, auditIn }
+  steps     String // JSON: full step definitions including decisions
   modes     String   @default("[\"decision\",\"discussion\"]") // JSON array
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
 
-  sessions  TabletopSession[]
+  sessions TabletopSession[]
 }
 
 model TabletopSession {
-  id             String   @id @default(cuid())
-  scenarioId     String
-  scenario       TabletopScenario @relation(fields: [scenarioId], references: [id])
-  mode           String                     // "decision" or "discussion"
-  facilitatorId  String?
-  status         String   @default("in_progress") // in_progress, completed, abandoned
-  startedAt      DateTime @default(now())
-  completedAt    DateTime?
+  id            String           @id @default(cuid())
+  scenarioId    String
+  scenario      TabletopScenario @relation(fields: [scenarioId], references: [id])
+  mode          String // "decision" or "discussion"
+  facilitatorId String?
+  status        String           @default("in_progress") // in_progress, completed, abandoned
+  startedAt     DateTime         @default(now())
+  completedAt   DateTime?
 
   // Scoring (decision mode only)
   totalDollars     Int     @default(0)
   finalRepInternal Int     @default(100)
   finalRepExternal Int     @default(100)
-  grade            String?                  // A, B, C, D, F
+  grade            String? // A, B, C, D, F
 
   // Metadata
-  participants   String?                    // JSON: [{ name, role, email }]
-  notes          String?
+  participants String? // JSON: [{ name, role, email }]
+  notes        String?
 
-  decisions      TabletopDecision[]
-  responses      TabletopResponse[]
-  commsDrafts    TabletopCommsDraft[]
+  decisions   TabletopDecision[]
+  responses   TabletopResponse[]
+  commsDrafts TabletopCommsDraft[]
 
   @@index([scenarioId])
 }
 
 model TabletopDecision {
-  id              String   @id @default(cuid())
-  sessionId       String
-  session         TabletopSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  stepId          Int
-  stepTime        String                   // "T+0h"
-  stepTitle       String
-  choiceId        String                   // "a", "b", "c"
-  choiceLabel     String
-  role            String
-  dollarImpact    Int
+  id               String          @id @default(cuid())
+  sessionId        String
+  session          TabletopSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  stepId           Int
+  stepTime         String // "T+0h"
+  stepTitle        String
+  choiceId         String // "a", "b", "c"
+  choiceLabel      String
+  role             String
+  dollarImpact     Int
   repInternalDelta Int
   repExternalDelta Int
-  consequence     String
-  confidence      String?                  // "low", "medium", "high"
-  cascadeFlag     String?                  // for future branching logic
-  decidedAt       DateTime @default(now())
+  consequence      String
+  confidence       String? // "low", "medium", "high"
+  cascadeFlag      String? // for future branching logic
+  decidedAt        DateTime        @default(now())
 
   @@index([sessionId])
 }
 
 model TabletopResponse {
-  id          String   @id @default(cuid())
+  id          String          @id @default(cuid())
   sessionId   String
   session     TabletopSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   stepId      Int
   role        String
   question    String
   response    String
-  respondedAt DateTime @default(now())
+  respondedAt DateTime        @default(now())
 
   @@index([sessionId])
 }
 
 model TabletopCommsDraft {
-  id        String   @id @default(cuid())
+  id        String          @id @default(cuid())
   sessionId String
   session   TabletopSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   stepId    Int
   audience  String
   template  String
   draft     String
-  draftedAt DateTime @default(now())
+  draftedAt DateTime        @default(now())
 
   @@index([sessionId])
 }

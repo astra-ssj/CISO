@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { calculatePostureScore, type PostureInputs, type PostureGrade } from '@/lib/posture-score';
 import { calculateComplianceScore, getDynamicControls } from '@/lib/governance';
-import { useRiskRegisterStore } from '@/lib/risk-register-store';
 import { useVendorRiskStore } from '@/lib/vendor-risk-store';
 import { usePolicyStore } from '@/lib/policy-store';
 import { usePlaybookStore } from '@/lib/playbook-store';
+import { getRisks } from '@/lib/risk/actions';
+import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Minus, Shield, Target } from 'lucide-react';
 
 const GRADE_COLORS: Record<PostureGrade, string> = {
@@ -28,8 +29,16 @@ const TREND_ICONS = {
 export function PostureGauge() {
     const { policies } = usePolicyStore();
     const { playbooks } = usePlaybookStore();
-    const riskStore = useRiskRegisterStore();
     const vendorStore = useVendorRiskStore();
+    const [averageRiskScore, setAverageRiskScore] = useState(50);
+
+    useEffect(() => {
+        getRisks().then(res => {
+            if (res.length === 0) return setAverageRiskScore(50);
+            const avg = res.reduce((acc: number, r: any) => acc + (r.inherentScore * 4), 0) / res.length;
+            setAverageRiskScore(Math.round(avg));
+        }).catch(console.error);
+    }, []);
 
     const result = useMemo(() => {
         const controls = getDynamicControls(policies, playbooks);
@@ -39,7 +48,7 @@ export function PostureGauge() {
 
         const inputs: PostureInputs = {
             complianceScore,
-            riskScore: riskStore.getAverageScore(),
+            riskScore: averageRiskScore,
             incidentMTTR: 8,
             openIncidents: openIncidents.length,
             resolvedIncidents: resolvedIncidents.length,
@@ -50,7 +59,7 @@ export function PostureGauge() {
         };
 
         return calculatePostureScore(inputs);
-    }, [policies, playbooks, riskStore, vendorStore]);
+    }, [policies, playbooks, averageRiskScore, vendorStore]);
 
     const strokeDasharray = `${(result.overallScore / 100) * 251.2}, 251.2`;
 

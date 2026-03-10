@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   LayoutDashboard, Presentation, FileBarChart
 } from 'lucide-react';
-import { useRiskRegisterStore } from '@/lib/risk-register-store';
 import { useVendorRiskStore } from '@/lib/vendor-risk-store';
 import { usePolicyStore } from '@/lib/policy-store';
 import { usePlaybookStore } from '@/lib/playbook-store';
@@ -23,15 +22,14 @@ import { RecentIncidents } from '@/components/command/RecentIncidents';
 import { AIActivity } from '@/components/command/AIActivity';
 
 function CommandCenterOverview() {
-  const riskFetch = useRiskRegisterStore(s => s.fetchEntries);
   const vendorRiskFetch = useVendorRiskStore(s => s.fetchVendors);
   const policyFetch = usePolicyStore(s => s.fetchPolicies);
   const playbookFetch = usePlaybookStore(s => s.fetchPlaybooks);
   const evidenceFetch = useEvidenceStore(s => s.fetchEvidence);
 
   useEffect(() => {
-    riskFetch(); vendorRiskFetch(); policyFetch(); playbookFetch(); evidenceFetch();
-  }, [riskFetch, vendorRiskFetch, policyFetch, playbookFetch, evidenceFetch]);
+    vendorRiskFetch(); policyFetch(); playbookFetch(); evidenceFetch();
+  }, [vendorRiskFetch, policyFetch, playbookFetch, evidenceFetch]);
 
   return (
     <div

@@ -39,6 +39,22 @@ export default function RansomwareIntelligencePage() {
         );
     }
 
+    if ((data as any).error) {
+        return (
+            <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6">
+                <Alert className="bg-red-950/20 border-red-900/50 text-red-200 max-w-lg mb-4">
+                    <AlertOctagon className="h-6 w-6 text-red-500" />
+                    <AlertTitle>Feed Connection Error</AlertTitle>
+                    <AlertDescription>
+                        Threat intelligence feed currently unavailable — check API connection in Settings.
+                        <br /><br />
+                        <span className="text-xs text-slate-500">Last attempt: {(data as any).lastAttempt}</span>
+                    </AlertDescription>
+                </Alert>
+            </div>
+        );
+    }
+
     const threatLevel = getThreatLevel();
     const recentVictimsTicker = data.victims.slice(0, 5).map(v => `LATEST VICTIM: ${v.post_title} [${v.group_name.toUpperCase()}]`);
 

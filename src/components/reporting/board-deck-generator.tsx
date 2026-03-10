@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FileBarChart, Download, Loader2, CheckCircle } from 'lucide-react';
-import { useRiskRegisterStore } from '@/lib/risk-register-store';
 import { useVendorRiskStore } from '@/lib/vendor-risk-store';
 import { useEvidenceStore } from '@/lib/evidence-store';
 import { usePolicyStore } from '@/lib/policy-store';
+import { getRisks } from '@/lib/risk/actions';
 import { usePlaybookStore } from '@/lib/playbook-store';
 import { calculateComplianceScore, getDynamicControls } from '@/lib/governance';
 
@@ -18,7 +18,6 @@ export function BoardDeckGenerator() {
 
     const { policies } = usePolicyStore();
     const { playbooks } = usePlaybookStore();
-    const riskStore = useRiskRegisterStore();
     const vendorStore = useVendorRiskStore();
     const evidenceStore = useEvidenceStore();
 
@@ -29,7 +28,9 @@ export function BoardDeckGenerator() {
         // Gather all data
         const controls = getDynamicControls(policies, playbooks);
         const complianceScore = calculateComplianceScore(controls);
-        const topRisks = riskStore.getTopRisks(5);
+        const risks = await getRisks();
+        const topRisks = risks.slice(0, 5);
+        const avgRiskScore = risks.length > 0 ? (risks.reduce((acc: number, r: any) => acc + (r.inherentScore * 4), 0) / risks.length).toFixed(1) : '0';
         const vendors = vendorStore.vendors;
         const evidenceStats = evidenceStore.getCoverageStats();
         const resolvedIncidents = playbooks.filter(p => p.status === 'RESOLVED').length;
@@ -65,7 +66,7 @@ export function BoardDeckGenerator() {
         doc.setFontSize(12);
         const metrics = [
             [`Compliance Score: ${complianceScore}%`, `Active Controls: ${controls.length}`],
-            [`Open Risks: ${riskStore.entries.filter(e => e.status !== 'CLOSED').length}`, `Average Risk Score: ${riskStore.getAverageScore()}`],
+            [`Open Risks: ${risks.filter((e: any) => e.status !== 'Closed' && e.status !== 'Accepted').length}`, `Average Risk Score: ${avgRiskScore}`],
             [`Total Vendors: ${vendors.length}`, `High/Critical Risk Vendors: ${vendorStore.getCriticalVendorCount()}`],
             [`Active Incidents: ${playbooks.length - resolvedIncidents}`, `Resolved This Period: ${resolvedIncidents}`],
             [`Evidence Items: ${evidenceStats.total}`, `Verified: ${evidenceStats.verified}`],
@@ -97,13 +98,13 @@ export function BoardDeckGenerator() {
 
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(10);
-        topRisks.forEach((risk, i) => {
+        topRisks.forEach((risk: any, i: number) => {
             const y = 52 + (i * 18);
             doc.setFillColor(i % 2 === 0 ? 30 : 24, i % 2 === 0 ? 41 : 33, i % 2 === 0 ? 59 : 48);
             doc.roundedRect(20, y, 257, 15, 2, 2, 'F');
-            doc.text(risk.scenario.assetName.substring(0, 35), 24, y + 10);
-            doc.text(`${risk.analysis.riskScore}`, 145, y + 10);
-            doc.text(`$${(risk.analysis.annualizedLossExpectancy / 1000).toFixed(0)}K`, 170, y + 10);
+            doc.text(risk.title.substring(0, 35), 24, y + 10);
+            doc.text(`${risk.inherentScore}`, 145, y + 10);
+            doc.text(`N/A`, 170, y + 10); // ALE no longer stored on DB model directly
             doc.text(risk.status, 210, y + 10);
             doc.text(risk.owner, 245, y + 10);
         });
