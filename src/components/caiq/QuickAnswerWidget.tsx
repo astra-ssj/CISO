@@ -20,6 +20,7 @@ import {
     Pencil, Save, X, ChevronRight,
 } from "lucide-react";
 import type { AnsweredQuestion } from "@/lib/caiq/caiq-knowledge-base";
+import { useVendorRiskStore } from "@/lib/vendor-risk-store";
 
 // ────────────────────────────────────────────
 // Types
@@ -99,7 +100,7 @@ function StepBar({ current }: { current: Step }) {
 // Main Widget
 // ────────────────────────────────────────────
 
-export default function QuickAnswerWidget() {
+export default function QuickAnswerWidget({ vendorId }: { vendorId?: string } = {}) {
     const [step, setStep] = useState<Step>(1);
     const [sourceMode, setSourceMode] = useState<SourceMode>("kb");
 
@@ -250,12 +251,26 @@ export default function QuickAnswerWidget() {
             a.download = targetFile?.name?.replace(/\.[^.]+$/, "-answered.xlsx") ?? "questionnaire-answers.xlsx";
             a.click();
             URL.revokeObjectURL(url);
+
+            if (vendorId) {
+                const assessRes = await fetch(`/api/vendors/${vendorId}/finalize-assessment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ questions, assessor: 'Current User' })
+                });
+                if (!assessRes.ok) {
+                    console.error("Failed to submit vendor assessment");
+                } else {
+                    useVendorRiskStore.getState().fetchVendors(); 
+                }
+            }
+
         } catch (e) {
             console.error(e);
         } finally {
             setExporting(false);
         }
-    }, [questions, targetFile]);
+    }, [questions, targetFile, vendorId]);
 
     // ── Reset ────────────────────────────────
 

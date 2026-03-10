@@ -4,9 +4,9 @@ import { create } from 'zustand';
 // Types
 // ────────────────────────────────────────────
 
-export type VendorRiskTier = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
-export type VendorStatus = 'APPROVED' | 'UNDER_REVIEW' | 'REJECTED' | 'PENDING';
-export type VendorCategory = 'CLOUD_INFRASTRUCTURE' | 'SAAS' | 'SECURITY' | 'DATA_PROCESSING' | 'CONSULTING' | 'OTHER';
+export type VendorRiskTier = 'Critical' | 'High' | 'Medium' | 'Low';
+export type VendorStatus = 'Pending Assessment' | 'Under Review' | 'Approved' | 'Conditionally Approved' | 'Rejected' | 'Requires Reassessment';
+export type VendorCategory = 'SaaS' | 'Infrastructure' | 'Professional Services' | 'Data Processor' | 'Cloud Provider' | 'Other';
 
 export interface VendorAssessment {
     id: string;
@@ -20,14 +20,14 @@ export interface Vendor {
     id: string;
     name: string;
     category: VendorCategory;
-    description: string;
+    website?: string;
     status: VendorStatus;
     riskTier: VendorRiskTier;
-    riskScore: number; // 0-100
-    dataAccess: ('PII' | 'FINANCIAL' | 'INTELLECTUAL_PROPERTY' | 'OPERATIONAL' | 'NONE')[];
+    riskScore: number | null; // 0-100
+    dataAccess: 'None' | 'Low' | 'Medium' | 'High' | 'Critical';
     complianceCertifications: string[];
-    contractExpiry: string;
-    lastAssessment: string;
+    lastAssessedAt?: string;
+    nextReviewDate?: string;
     assessmentHistory: VendorAssessment[];
     contactName: string;
     contactEmail: string;
@@ -78,7 +78,7 @@ export const useVendorRiskStore = create<VendorRiskStore>()((set, get) => ({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...vendor,
-                    dataAccess: vendor.dataAccess ?? [],
+                    dataAccess: vendor.dataAccess ?? 'None',
                     complianceCertifications: vendor.complianceCertifications ?? [],
                 }),
             });
@@ -139,11 +139,11 @@ export const useVendorRiskStore = create<VendorRiskStore>()((set, get) => ({
     },
 
     getVendorsByRiskTier: (tier) => get().vendors.filter((v) => v.riskTier === tier),
-    getCriticalVendorCount: () => get().vendors.filter((v) => v.riskTier === 'CRITICAL' || v.riskTier === 'HIGH').length,
+    getCriticalVendorCount: () => get().vendors.filter((v) => v.riskTier === 'Critical' || v.riskTier === 'High').length,
     getAverageRiskScore: () => {
         const vendors = get().vendors;
         if (vendors.length === 0) return 0;
-        return Math.round(vendors.reduce((sum, v) => sum + v.riskScore, 0) / vendors.length);
+        return Math.round(vendors.reduce((sum, v) => sum + (v.riskScore ?? 0), 0) / vendors.length);
     },
-    getPendingReviewCount: () => get().vendors.filter((v) => v.status === 'PENDING' || v.status === 'UNDER_REVIEW').length,
+    getPendingReviewCount: () => get().vendors.filter((v) => v.status === 'Pending Assessment' || v.status === 'Under Review').length,
 }));

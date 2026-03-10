@@ -92,7 +92,7 @@ export function KPIStatusBar() {
 
         return () => clearTimeout(timer);
     }, []);
-    const pendingVendors = vendors.filter((v) => v.riskTier === 'CRITICAL' || v.riskTier === 'HIGH').length;
+    const pendingVendors = vendors.filter((v) => v.riskTier === 'Critical' || v.riskTier === 'High').length;
     const postureScore = Math.min(100, Math.round(complianceScore * 0.4 + (100 - activeThreats * 5) * 0.3 + (100 - openRisks * 2) * 0.3));
 
     const kpis: KPIItem[] = [

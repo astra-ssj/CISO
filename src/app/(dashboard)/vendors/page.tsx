@@ -28,26 +28,28 @@ import {
 // ────────────────────────────────────────────
 
 const RISK_TIER_COLORS: Record<VendorRiskTier, string> = {
-    CRITICAL: 'bg-red-500/20 text-red-400 border-red-500/30',
-    HIGH: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-    MEDIUM: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    LOW: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+    Critical: 'bg-red-500/20 text-red-400 border-red-500/30',
+    High: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+    Medium: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+    Low: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
 };
 
 const STATUS_ICONS: Record<VendorStatus, React.ReactNode> = {
-    APPROVED: <CheckCircle className="h-4 w-4 text-emerald-400" />,
-    UNDER_REVIEW: <Clock className="h-4 w-4 text-yellow-400" />,
-    REJECTED: <XCircle className="h-4 w-4 text-red-400" />,
-    PENDING: <AlertTriangle className="h-4 w-4 text-orange-400" />,
+    'Approved': <CheckCircle className="h-4 w-4 text-emerald-400" />,
+    'Conditionally Approved': <CheckCircle className="h-4 w-4 text-emerald-400 opacity-80" />,
+    'Under Review': <Clock className="h-4 w-4 text-yellow-400" />,
+    'Rejected': <XCircle className="h-4 w-4 text-red-400" />,
+    'Pending Assessment': <AlertTriangle className="h-4 w-4 text-orange-400" />,
+    'Requires Reassessment': <AlertTriangle className="h-4 w-4 text-red-400" />,
 };
 
 const CATEGORY_LABELS: Record<VendorCategory, string> = {
-    CLOUD_INFRASTRUCTURE: 'Cloud Infrastructure',
-    SAAS: 'SaaS',
-    SECURITY: 'Security',
-    DATA_PROCESSING: 'Data Processing',
-    CONSULTING: 'Consulting',
-    OTHER: 'Other',
+    'Cloud Provider': 'Cloud Provider',
+    'SaaS': 'SaaS',
+    'Data Processor': 'Data Processor',
+    'Infrastructure': 'Infrastructure',
+    'Professional Services': 'Professional Services',
+    'Other': 'Other',
 };
 
 
@@ -73,6 +75,7 @@ export default function VendorsPage() {
 
     // Determine initial tab from URL params (for "Configure CAIQ" navigation)
     const tabFromUrl = searchParams.get('tab') || 'quickanswer';
+    const vendorIdFromUrl = searchParams.get('vendor') || undefined;
 
     useEffect(() => {
         fetchCompanies();
@@ -89,32 +92,30 @@ export default function VendorsPage() {
 
     // New vendor form state
     const [newVendor, setNewVendor] = useState({
-        name: '', category: 'SAAS' as VendorCategory, description: '',
-        status: 'PENDING' as VendorStatus, riskScore: 50,
-        dataAccess: [] as string[], complianceCertifications: [] as string[],
-        contractExpiry: '', lastAssessment: '', contactName: '', contactEmail: '', notes: ''
+        name: '', category: 'SaaS' as VendorCategory, website: '',
+        status: 'Pending Assessment' as VendorStatus, riskScore: 50,
+        dataAccess: 'None' as 'None'|'Low'|'Medium'|'High'|'Critical', 
+        complianceCertifications: [] as string[],
+        lastAssessedAt: '', nextReviewDate: '', contactName: '', contactEmail: '', notes: ''
     });
 
-
     const filteredVendors = vendors.filter(v => {
-        const matchesSearch = v.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            v.description.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesTier = filterTier === 'all' || v.riskTier === filterTier;
+        const matchesSearch = (v.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+            (v.notes?.toLowerCase() || "").includes(searchQuery.toLowerCase());
+        const matchesTier = filterTier === 'all' || v.riskTier === filterTier || (filterTier === filterTier.toUpperCase() && v.riskTier.toUpperCase() === filterTier);
         return matchesSearch && matchesTier;
     });
 
     const handleAddVendor = () => {
         addVendor({
             ...newVendor,
-            dataAccess: newVendor.dataAccess as ("PII" | "FINANCIAL" | "INTELLECTUAL_PROPERTY" | "OPERATIONAL" | "NONE")[],
-            complianceCertifications: newVendor.complianceCertifications
         });
         setShowAddForm(false);
         setNewVendor({
-            name: '', category: 'SAAS', description: '',
-            status: 'PENDING', riskScore: 50,
-            dataAccess: [], complianceCertifications: [],
-            contractExpiry: '', lastAssessment: '', contactName: '', contactEmail: '', notes: ''
+            name: '', category: 'SaaS', website: '',
+            status: 'Pending Assessment', riskScore: 50,
+            dataAccess: 'None', complianceCertifications: [],
+            lastAssessedAt: '', nextReviewDate: '', contactName: '', contactEmail: '', notes: ''
         });
     };
 
@@ -161,7 +162,7 @@ export default function VendorsPage() {
                 {/* TAB 1: Quick Answer (3-step flow)      */}
                 {/* ═══════════════════════════════════════ */}
                 <TabsContent value="quickanswer" className="mt-6">
-                    <QuickAnswerWidget />
+                    <QuickAnswerWidget vendorId={vendorIdFromUrl} />
                 </TabsContent>
 
                 {/* ═══════════════════════════════════════ */}
@@ -257,9 +258,9 @@ export default function VendorsPage() {
                                         </Select>
                                     </div>
                                     <div className="space-y-2 md:col-span-2">
-                                        <Label>Description</Label>
-                                        <Textarea placeholder="What does this vendor provide?" value={newVendor.description}
-                                            onChange={e => setNewVendor({ ...newVendor, description: e.target.value })} />
+                                        <Label>Website</Label>
+                                        <Input placeholder="https://vendor.com" value={newVendor.website}
+                                            onChange={e => setNewVendor({ ...newVendor, website: e.target.value })} />
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Initial Risk Score (0-100)</Label>
@@ -267,9 +268,15 @@ export default function VendorsPage() {
                                             onChange={e => setNewVendor({ ...newVendor, riskScore: parseInt(e.target.value) || 0 })} />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Contract Expiry</Label>
-                                        <Input type="date" value={newVendor.contractExpiry}
-                                            onChange={e => setNewVendor({ ...newVendor, contractExpiry: e.target.value })} />
+                                        <Label>Data Access</Label>
+                                        <Select value={newVendor.dataAccess} onValueChange={v => setNewVendor({ ...newVendor, dataAccess: v as any })}>
+                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                {['None', 'Low', 'Medium', 'High', 'Critical'].map(lvl => (
+                                                    <SelectItem key={lvl} value={lvl}>{lvl}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Contact Name</Label>
@@ -334,7 +341,7 @@ export default function VendorsPage() {
                                                         {expandedVendor === vendor.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4 opacity-40" />}
                                                         <div>
                                                             <div className="font-medium text-white">{vendor.name}</div>
-                                                            <div className="text-xs text-muted-foreground truncate max-w-[200px]">{vendor.description}</div>
+                                                            <div className="text-xs text-muted-foreground truncate max-w-[200px]">{vendor.notes}</div>
                                                         </div>
                                                     </button>
                                                 </td>
@@ -356,14 +363,12 @@ export default function VendorsPage() {
                                                 </td>
                                                 <td className="p-4">
                                                     <div className="flex gap-1 flex-wrap">
-                                                        {vendor.dataAccess.map(d => (
-                                                            <span key={d} className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20">
-                                                                {d}
-                                                            </span>
-                                                        ))}
+                                                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                                                            {vendor.dataAccess}
+                                                        </span>
                                                     </div>
                                                 </td>
-                                                <td className="p-4 text-sm text-muted-foreground">{vendor.lastAssessment || '—'}</td>
+                                                <td className="p-4 text-sm text-muted-foreground">{vendor.lastAssessedAt || '—'}</td>
                                                 <td className="p-4 text-right">
                                                     <div className="flex items-center gap-1 justify-end">
                                                         <Button
@@ -422,7 +427,12 @@ export default function VendorsPage() {
                                                 <h4 className="text-sm font-medium text-muted-foreground mb-2">Contact</h4>
                                                 <p className="text-white">{vendor.contactName}</p>
                                                 <p className="text-primary text-sm">{vendor.contactEmail}</p>
-                                                <p className="text-xs text-muted-foreground mt-2">Contract expires: {vendor.contractExpiry}</p>
+                                                <p className="text-xs text-muted-foreground mt-2">Next Review: {vendor.nextReviewDate || '—'}</p>
+                                                {vendor.website && (
+                                                    <p className="text-xs text-muted-foreground mt-1">
+                                                        <a href={vendor.website} target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline">{vendor.website}</a>
+                                                    </p>
+                                                )}
                                             </div>
                                             <div>
                                                 <h4 className="text-sm font-medium text-muted-foreground mb-2">Certifications</h4>
@@ -440,7 +450,7 @@ export default function VendorsPage() {
                                                             <div key={a.id} className="text-xs p-2 rounded bg-background/40 border border-border/20">
                                                                 <div className="flex justify-between">
                                                                     <span className="text-muted-foreground">{a.date}</span>
-                                                                    <Badge className={RISK_TIER_COLORS[a.score >= 75 ? 'CRITICAL' : a.score >= 50 ? 'HIGH' : a.score >= 25 ? 'MEDIUM' : 'LOW']}>
+                                                                    <Badge className={RISK_TIER_COLORS[a.score >= 75 ? 'Critical' : a.score >= 50 ? 'High' : a.score >= 25 ? 'Medium' : 'Low']}>
                                                                         Score: {a.score}
                                                                     </Badge>
                                                                 </div>

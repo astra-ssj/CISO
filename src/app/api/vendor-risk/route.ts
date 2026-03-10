@@ -1,40 +1,29 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-function mapVendorRisk(v: { id: string; name: string; category: string; description: string; status: string; riskTier: string; riskScore: number; dataAccess: string; complianceCertifications: string; contractExpiry: string; lastAssessment: string; contactName: string; contactEmail: string; notes: string; createdAt: Date; assessmentHistory: { id: string; date: string; score: number; findings: string; assessor: string }[] }) {
-    return {
-        id: v.id,
-        name: v.name,
-        category: v.category,
-        description: v.description,
-        status: v.status,
-        riskTier: v.riskTier,
-        riskScore: v.riskScore,
-        dataAccess: JSON.parse(v.dataAccess || '[]') as string[],
-        complianceCertifications: JSON.parse(v.complianceCertifications || '[]') as string[],
-        contractExpiry: v.contractExpiry,
-        lastAssessment: v.lastAssessment,
-        assessmentHistory: v.assessmentHistory.map((a) => ({
-            id: a.id,
-            date: a.date,
-            score: a.score,
-            findings: (typeof a.findings === 'string' ? JSON.parse(a.findings || '[]') : a.findings) as string[],
-            assessor: a.assessor,
-        })),
-        contactName: v.contactName,
-        contactEmail: v.contactEmail,
-        notes: v.notes,
-        createdAt: v.createdAt.toISOString().split('T')[0],
-    };
-}
-
 export async function GET() {
     try {
-        const list = await prisma.vendorRisk.findMany({
+        const list = await prisma.vendor.findMany({
             include: { assessmentHistory: true },
             orderBy: { createdAt: 'desc' },
         });
-        return NextResponse.json(list.map(mapVendorRisk));
+        
+        const mapped = list.map(v => ({
+            ...v,
+            dataAccess: v.dataAccess,
+            complianceCertifications: JSON.parse(v.complianceCertifications || '[]') as string[],
+            createdAt: v.createdAt.toISOString().split('T')[0],
+            // map assessmentHistory
+            assessmentHistory: v.assessmentHistory.map(a => ({
+                id: a.id,
+                date: a.assessmentDate.toISOString().split('T')[0],
+                score: a.overallScore,
+                findings: [], // we will deprecate findings later
+                assessor: a.assessedBy
+            }))
+        }));
+        
+        return NextResponse.json(mapped);
     } catch (error: unknown) {
         console.error('Vendor risk GET:', error);
         return NextResponse.json(
@@ -49,25 +38,32 @@ export async function POST(req: Request) {
         const body = await req.json();
         const riskScore = body.riskScore ?? 0;
         const riskTier = riskScore >= 75 ? 'CRITICAL' : riskScore >= 50 ? 'HIGH' : riskScore >= 25 ? 'MEDIUM' : 'LOW';
-        const v = await prisma.vendorRisk.create({
+        const v = await prisma.vendor.create({
             data: {
                 name: body.name,
                 category: body.category ?? 'OTHER',
-                description: body.description ?? '',
+                website: body.website ?? '',
                 status: body.status ?? 'PENDING',
                 riskTier,
                 riskScore,
-                dataAccess: JSON.stringify(body.dataAccess ?? []),
+                dataAccess: body.dataAccess ?? 'None',
                 complianceCertifications: JSON.stringify(body.complianceCertifications ?? []),
-                contractExpiry: body.contractExpiry ?? '',
-                lastAssessment: body.lastAssessment ?? '',
                 contactName: body.contactName ?? '',
                 contactEmail: body.contactEmail ?? '',
                 notes: body.notes ?? '',
             },
             include: { assessmentHistory: true },
         });
-        return NextResponse.json(mapVendorRisk(v), { status: 201 });
+        
+        const mapped = {
+            ...v,
+            dataAccess: v.dataAccess,
+            complianceCertifications: JSON.parse(v.complianceCertifications || '[]') as string[],
+            createdAt: v.createdAt.toISOString().split('T')[0],
+            assessmentHistory: []
+        };
+        
+        return NextResponse.json(mapped, { status: 201 });
     } catch (error: unknown) {
         console.error('Vendor risk POST:', error);
         return NextResponse.json(

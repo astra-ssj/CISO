@@ -144,6 +144,8 @@ model Risk {
   status        String // Open, Mitigating, Accepted, Closed
   treatmentPlan String?
   reviewDate    DateTime
+  vendorId      String?  // Optional link to Vendor
+  vendor        Vendor?  @relation(fields: [vendorId], references: [id], onDelete: SetNull)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -213,55 +215,42 @@ model IncidentEvent {
 }
 
 // -----------------------------------------------------------------------------
-// 5. Vendors (simple list — risk page)
+// 5. Vendor Risk Management
 // -----------------------------------------------------------------------------
 
 model Vendor {
-  id                 String   @id @default(cuid())
-  name               String
-  serviceDescription String
-  tier               String // TIER_1_CRITICAL | TIER_2_HIGH | TIER_3_MEDIUM | TIER_4_LOW
-  status             String // ACTIVE | PENDING_ASSESSMENT | REJECTED | DEPRECATED
-  lastAssessmentDate String
-  inherentRiskScore  Int
-  contactEmail       String
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-}
-
-// -----------------------------------------------------------------------------
-// 6. Vendor Risk (rich assessments — vendors page)
-// -----------------------------------------------------------------------------
-
-model VendorRisk {
   id                       String             @id @default(cuid())
   name                     String
   category                 String
-  description              String
-  status                   String
-  riskTier                 String
-  riskScore                Int
-  dataAccess               String // JSON array
-  complianceCertifications String // JSON array
-  contractExpiry           String
-  lastAssessment           String
-  contactName              String
-  contactEmail             String
-  notes                    String
+  website                  String?
+  contactName              String?
+  contactEmail             String?
+  dataAccess               String // "None", "Low", "Medium", "High", "Critical"
+  riskTier                 String // "Critical", "High", "Medium", "Low"
+  riskScore                Int?
+  status                   String // "Pending Assessment", "Under Review", "Approved", "Conditionally Approved", "Rejected", "Requires Reassessment"
+  complianceCertifications String // JSON string array
+  lastAssessedAt           DateTime?
+  nextReviewDate           DateTime?
+  notes                    String?
   createdAt                DateTime           @default(now())
   updatedAt                DateTime           @updatedAt
+  
   assessmentHistory        VendorAssessment[]
+  risks                    Risk[]
 }
 
 model VendorAssessment {
-  id           String     @id @default(cuid())
-  vendorRiskId String
-  vendorRisk   VendorRisk @relation(fields: [vendorRiskId], references: [id], onDelete: Cascade)
-  date         String
-  score        Int
-  findings     String // JSON array
-  assessor     String
-  createdAt    DateTime   @default(now())
+  id             String   @id @default(cuid())
+  vendorId       String
+  vendor         Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  assessmentDate DateTime @default(now())
+  overallScore   Int
+  domainScores   String   // JSON string
+  criticalGaps   Int
+  status         String   // "Complete", "In Progress"
+  assessedBy     String
+  createdAt      DateTime @default(now())
 }
 
 // -----------------------------------------------------------------------------

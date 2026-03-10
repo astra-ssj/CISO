@@ -19,7 +19,7 @@ export function AddVendorDialog({ open, onOpenChange }: AddVendorDialogProps) {
     const [name, setName] = useState("");
     const [desc, setDesc] = useState("");
     const [email, setEmail] = useState("");
-    const [category, setCategory] = useState<VendorCategory>("OTHER");
+    const [category, setCategory] = useState<VendorCategory>("SaaS");
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -27,16 +27,14 @@ export function AddVendorDialog({ open, onOpenChange }: AddVendorDialogProps) {
         addVendor({
             name,
             category,
-            description: desc,
-            status: 'PENDING',
-            riskScore: 50,
-            dataAccess: ['NONE'],
+            status: 'Pending Assessment',
+            riskScore: null,
+            dataAccess: 'None',
             complianceCertifications: [],
-            contractExpiry: 'TBD',
-            lastAssessment: 'Pending',
             contactName: name,
             contactEmail: email,
-            notes: '',
+            website: '',
+            notes: desc,
         });
 
         setName(""); setDesc(""); setEmail("");
@@ -70,12 +68,12 @@ export function AddVendorDialog({ open, onOpenChange }: AddVendorDialogProps) {
                         <Select value={category} onValueChange={(v) => setCategory(v as VendorCategory)}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="CLOUD_INFRASTRUCTURE">Cloud Infrastructure</SelectItem>
-                                <SelectItem value="SAAS">SaaS</SelectItem>
-                                <SelectItem value="SECURITY">Security</SelectItem>
-                                <SelectItem value="DATA_PROCESSING">Data Processing</SelectItem>
-                                <SelectItem value="CONSULTING">Consulting</SelectItem>
-                                <SelectItem value="OTHER">Other</SelectItem>
+                                <SelectItem value="Cloud Provider">Cloud Provider</SelectItem>
+                                <SelectItem value="SaaS">SaaS</SelectItem>
+                                <SelectItem value="Security">Security</SelectItem>
+                                <SelectItem value="Data Processor">Data Processor</SelectItem>
+                                <SelectItem value="Professional Services">Professional Services</SelectItem>
+                                <SelectItem value="Infrastructure">Infrastructure</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

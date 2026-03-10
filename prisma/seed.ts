@@ -84,34 +84,49 @@ async function main() {
         },
     })
 
-    // 4. Vendors (simple list)
-    await prisma.vendor.createMany({
-        data: [
-            { name: 'AWS (Amazon Web Services)', serviceDescription: 'Core Cloud Infrastructure Provider', tier: 'TIER_1_CRITICAL', status: 'ACTIVE', lastAssessmentDate: '2025-11-15', inherentRiskScore: 92, contactEmail: 'aws-support@amazon.com' },
-            { name: 'Slack', serviceDescription: 'Internal Communication Platform', tier: 'TIER_2_HIGH', status: 'ACTIVE', lastAssessmentDate: '2026-01-10', inherentRiskScore: 65, contactEmail: 'security@slack.com' },
-        ],
+    // 4. Vendors
+    const awsVendor = await prisma.vendor.create({
+        data: {
+            name: 'AWS (Amazon Web Services)', 
+            category: 'Cloud Provider', 
+            status: 'Approved', 
+            riskTier: 'Critical',
+            riskScore: 92,
+            dataAccess: 'Critical',
+            contactEmail: 'aws-support@amazon.com',
+            complianceCertifications: JSON.stringify(['SOC 2 Type II', 'ISO 27001']),
+            notes: 'Core Cloud Infrastructure Provider',
+            lastAssessedAt: new Date('2025-11-15T00:00:00Z'),
+            nextReviewDate: new Date('2026-11-15T00:00:00Z'),
+        }
     })
 
-    // 5. Vendor Risk (rich)
-    const vRisk = await prisma.vendorRisk.create({
+    const slackVendor = await prisma.vendor.create({
         data: {
-            name: 'CloudScale AWS',
-            category: 'CLOUD_INFRASTRUCTURE',
-            description: 'Primary cloud infrastructure provider.',
-            status: 'APPROVED',
-            riskTier: 'MEDIUM',
-            riskScore: 42,
-            dataAccess: JSON.stringify(['PII', 'FINANCIAL', 'OPERATIONAL']),
-            complianceCertifications: JSON.stringify(['SOC 2 Type II', 'ISO 27001']),
-            contractExpiry: '2027-03-15',
-            lastAssessment: '2026-01-10',
-            contactName: 'Sarah Chen',
-            contactEmail: 'sarah@cloudscale.example',
-            notes: 'Tier 1 critical vendor.',
-        },
-    })
+            name: 'Slack', 
+            category: 'SaaS', 
+            status: 'Approved', 
+            riskTier: 'Medium',
+            riskScore: 65,
+            dataAccess: 'Medium',
+            contactEmail: 'security@slack.com',
+            complianceCertifications: JSON.stringify(['SOC 2 Type II']),
+            notes: 'Internal Communication Platform',
+            lastAssessedAt: new Date('2026-01-10T00:00:00Z'),
+            nextReviewDate: new Date('2027-01-10T00:00:00Z'),
+        }
+    });
+
     await prisma.vendorAssessment.create({
-        data: { vendorRiskId: vRisk.id, date: '2026-01-10', score: 42, findings: JSON.stringify(['Shared responsibility gaps']), assessor: 'Internal Audit' },
+        data: {
+            vendorId: awsVendor.id,
+            assessmentDate: new Date('2025-11-15T00:00:00Z'),
+            overallScore: 92,
+            domainScores: JSON.stringify({}),
+            criticalGaps: 0,
+            status: 'Complete',
+            assessedBy: 'Astra AI'
+        },
     })
 
     // 6. Evidence

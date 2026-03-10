@@ -35,7 +35,7 @@ export function PendingActions() {
         }).catch(console.error);
     }, []);
 
-    const pendingVendors = vendors.filter((v) => v.riskTier === 'CRITICAL' || v.riskTier === 'HIGH').length;
+    const pendingVendors = vendors.filter((v) => v.riskTier === 'Critical' || v.riskTier === 'High').length;
     const reviewPolicies = policies.filter((p) => p.status === 'DRAFT' || p.status === 'IN_REVIEW').length;
     const openDecisions = decisions.filter((d) => d.status === 'PENDING').length;
 
