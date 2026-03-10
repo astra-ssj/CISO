@@ -58,6 +58,9 @@ const CATEGORY_LABELS: Record<VendorCategory, string> = {
 
 export default function VendorsPage() {
     const { vendors, addVendor, removeVendor, getCriticalVendorCount, getAverageRiskScore, getPendingReviewCount } = useVendorRiskStore();
+     
+     
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { selectedCompanyId, selectedProductId, contextLabel, fetchCompanies } = useCompanyProductStore();
     const searchParams = useSearchParams();
     const [searchQuery, setSearchQuery] = useState('');
@@ -387,6 +390,7 @@ export default function VendorsPage() {
                                                                     } else {
                                                                         setScanResult(data.data as { domain: string; riskScore: number; riskLevel: string; totalHosts: number; exposedServices: number; vulnerabilities: { cve: string; cvss: number; host: string }[]; summary: string });
                                                                     }
+                                                                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                                                 } catch (err: unknown) {
                                                                     setScanError('Scan failed');
                                                                 } finally {

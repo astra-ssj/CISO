@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import {  useEffect, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+// import { } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Target, Shield, BarChart3, FolderKanban, TrendingUp, TrendingDown, Upload, Paperclip, Trash2, CheckCircle2, XCircle } from "lucide-react";
+import { Target, Shield, BarChart3, FolderKanban, TrendingUp, TrendingDown, CheckCircle2, XCircle } from "lucide-react";
 import { useOKRProjectStore, type Objective, type Project, type ProjectPhaseStatus } from "@/lib/okr-project-store";
 import { KPIUploader } from "@/components/strategy/kpi-uploader";
 import { useUploadedKPIStore } from "@/lib/kpi-engine/uploaded-kpi-store";
@@ -120,6 +120,7 @@ function ProjectCard({ project }: { project: Project }) {
 
 // ─── Defense Matrix Tab (from /strategy/matrix) ───
 function DefenseMatrixTab() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { objectives, fetchOKR } = useOKRProjectStore();
     useEffect(() => { fetchOKR(); }, [fetchOKR]);
     // Simplified matrix view

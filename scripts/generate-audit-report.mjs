@@ -5,7 +5,9 @@
 import {
     Document, Packer, Paragraph, Table, TableRow, TableCell,
     TextRun, HeadingLevel, AlignmentType, BorderStyle,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     WidthType, ShadingType, TableLayoutType, Header, Footer,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     PageNumber, NumberFormat
 } from "docx";
 import { resolve } from "path";

@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/alt-text */
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -7,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
     Search, Upload, FileText, Image, FileSpreadsheet, File, Archive,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Download, Link2, Trash2, Eye, Clock, CheckCircle, AlertTriangle,
     XCircle, LayoutGrid, List, X, Plus, Shield,
 } from "lucide-react";

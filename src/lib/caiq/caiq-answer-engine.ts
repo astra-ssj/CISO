@@ -10,7 +10,9 @@
 
 import ExcelJS from 'exceljs';
 import {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     CAIQ_KNOWLEDGE_BASE,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     type CAIQEntry,
     type QuestionnaireQuestion,
     type AnsweredQuestion,
@@ -749,7 +751,7 @@ export async function enhanceWithAI(
             orderBy: { usageCount: 'desc' },
             take: 80 // enough for solid context without blowing up token limit
         });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         repoContext = entries.map((e: { questionText?: string, answerText?: string }) => `Q: ${e.questionText}\nA: ${e.answerText}`).join('\n\n');
     } catch (e) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars

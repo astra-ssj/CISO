@@ -18,7 +18,7 @@ import {
 import type { AnsweredQuestion } from '@/lib/caiq/caiq-knowledge-base';
 import type { SourceEntry } from '@/lib/caiq/caiq-answer-engine';
 import { getAIProvider } from '@/lib/ai/engine';
-import { parseBodyWithZod, caiqEnhanceBodySchema, log } from '@/lib/api-validation';
+import { parseBodyWithZod, caiqEnhanceBodySchema } from '@/lib/api-validation';
 
 export async function POST(request: NextRequest) {
     try {

@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import ExcelJS from 'exceljs';
 import type { AnsweredQuestion } from '@/lib/caiq/caiq-knowledge-base';
-import { parseBodyWithZod, caiqExportBodySchema, log } from '@/lib/api-validation';
+import { parseBodyWithZod, caiqExportBodySchema } from '@/lib/api-validation';
 
 const CONFIDENCE_LABEL: Record<string, string> = {
     a2a: 'Direct Match (KB)',

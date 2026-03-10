@@ -7,6 +7,7 @@ import { usePolicyStore } from '@/lib/policy-store';
 import { useAstraStore } from '@/lib/store';
 import { getRisks } from '@/lib/risk/actions';
 import { useEffect, useState } from 'react';
+import type { Risk } from '@prisma/client';
 
 /* ── Design tokens ─────────────────────────────────── */
 const CARD_BG = 'rgba(8, 12, 24, 0.85)';
@@ -30,7 +31,7 @@ export function PendingActions() {
     useEffect(() => {
         getRisks({ status: 'Open' }).then(res => {
             // Count High and Critical risks (Score >= 12)
-            setOverdueRisks(res.filter((r: any) => r.inherentScore >= 12).length);
+            setOverdueRisks(res.filter((r: Risk) => r.inherentScore >= 12).length);
         }).catch(console.error);
     }, []);
 

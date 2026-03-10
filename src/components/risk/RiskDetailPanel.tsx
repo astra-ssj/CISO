@@ -9,16 +9,19 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { updateRisk, deleteRisk } from "@/lib/risk/actions";
 import { Badge } from "@/components/ui/badge";
+import type { Risk, RiskHistory } from "@prisma/client";
+
+type RiskWithHistory = Risk & { history: RiskHistory[] };
 
 interface RiskDetailPanelProps {
     riskId: string | null;
     onClose: () => void;
     onSuccess: () => void;
-    getRiskDetails: (id: string) => Promise<any>;
+    getRiskDetails: (id: string) => Promise<RiskWithHistory | null>;
 }
 
 export function RiskDetailPanel({ riskId, onClose, onSuccess, getRiskDetails }: RiskDetailPanelProps) {
-    const [risk, setRisk] = useState<any>(null);
+    const [risk, setRisk] = useState<RiskWithHistory | null>(null);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
 
@@ -34,8 +37,8 @@ export function RiskDetailPanel({ riskId, onClose, onSuccess, getRiskDetails }: 
         }
     }, [riskId, getRiskDetails]);
 
-    const handleChange = (field: string, value: any) => {
-        setRisk((prev: any) => ({ ...prev, [field]: value }));
+    const handleChange = (field: string, value: unknown) => {
+        setRisk((prev) => prev ? ({ ...prev, [field]: value } as RiskWithHistory) : null);
     };
 
     const handleSave = async () => {
@@ -177,7 +180,7 @@ export function RiskDetailPanel({ riskId, onClose, onSuccess, getRiskDetails }: 
                             <ScrollArea className="h-[200px] w-full rounded-md border p-4">
                                 {risk.history && risk.history.length > 0 ? (
                                     <div className="space-y-4">
-                                        {risk.history.map((h: any) => (
+                                        {risk.history.map((h: RiskHistory) => (
                                             <div key={h.id} className="text-sm border-l-2 border-primary/50 pl-4 py-1">
                                                 <p className="text-xs text-muted-foreground">{new Date(h.changedAt).toLocaleString()}</p>
                                                 <p>

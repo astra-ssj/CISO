@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
     X, MapPin, AlertTriangle, Building2, Anchor,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Plane, Cable, Atom, Server, Shield, ArrowRight,
 } from 'lucide-react';
 import type { ProximityReport, ProximityItem } from '@/lib/intelligence/proximity-analyzer';

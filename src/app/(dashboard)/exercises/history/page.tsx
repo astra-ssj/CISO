@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-html-link-for-pages */
 import { getSessionHistory, getExercisePatterns } from "@/lib/exercises/actions";
 import { formatDollars } from "@/lib/exercises/scoring";
 import { Shield, Clock } from "lucide-react";

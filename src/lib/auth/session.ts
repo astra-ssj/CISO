@@ -27,6 +27,7 @@ export async function getSession(): Promise<UserProfile | null> {
  * Session creation is handled by NextAuth signIn (e.g. credentials provider).
  * No-op for backward compatibility; clients should use signIn() and signOut() from next-auth/react.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function createSession(_user: UserProfile): Promise<void> {
     // No-op: use NextAuth signIn('credentials', { email, password }) to establish session.
 }

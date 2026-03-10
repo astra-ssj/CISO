@@ -58,6 +58,7 @@ export async function generateCounterDraftAction(
         let data;
         try {
             data = JSON.parse(cleanResponse);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (parseError) {
             console.warn("JSON Parse Failed. Returning raw text.", cleanResponse);
             // Fallback: Use the whole text as reasoning if parse fails

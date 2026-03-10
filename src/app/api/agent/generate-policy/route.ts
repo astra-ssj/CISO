@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { generatePolicyAsync } from '@/lib/intelligence-engine';
 import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
 import { TokenTracker, AIModel } from '@/lib/telemetry/token-tracker';
-import { parseBodyWithZod, agentGeneratePolicyBodySchema, log } from '@/lib/api-validation';
+import { parseBodyWithZod, agentGeneratePolicyBodySchema } from '@/lib/api-validation';
 
 export async function POST(request: Request) {
     try {

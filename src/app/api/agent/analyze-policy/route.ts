@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAIProvider, isAIConfigured } from '@/lib/ai/engine';
 import { analyzePolicy } from '@/lib/policy-engine';
 import type { FrameworkID } from '@/lib/compliance-frameworks';
-import { parseBodyWithZod, agentAnalyzePolicyBodySchema, log } from '@/lib/api-validation';
+import { parseBodyWithZod, agentAnalyzePolicyBodySchema } from '@/lib/api-validation';
 
 export async function POST(request: Request) {
     try {

@@ -192,6 +192,7 @@ export class MISPClient {
 
     // ── Events ──────────────────────────────────────────────────
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async getEvents(_filters?: MISPEventFilters): Promise<MISPEvent[]> {
         try {
             const data = await this.request<{ response: MISPEvent[] }>('/events/index');
@@ -220,6 +221,7 @@ export class MISPClient {
 
     // ── Attributes (IOCs) ──────────────────────────────────────
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async getAttributes(_filters?: MISPAttributeFilters): Promise<MISPAttribute[]> {
         try {
             const data = await this.request<{ response: { Attribute: MISPAttribute[] } }>(

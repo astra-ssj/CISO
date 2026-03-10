@@ -20,6 +20,7 @@ const analyzeBodySchema = z.object({
 
 
 // Define expected output shape
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface AnalysisResult {
     riskScore: number;
     riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';

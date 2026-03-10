@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import type { Step, RoleId } from "@/lib/exercises/types";
 import { RoleBadge } from "../shared/RoleBadge";
 import { DeadlineTracker } from "../shared/DeadlineTracker";
 import { cn } from "@/lib/utils";
-import { Info } from "lucide-react";
+// import { } from "lucide-react";
 
 interface DiscussionStepProps {
     step: Step;

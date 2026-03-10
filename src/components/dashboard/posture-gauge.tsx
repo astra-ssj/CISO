@@ -11,6 +11,7 @@ import { usePlaybookStore } from '@/lib/playbook-store';
 import { getRisks } from '@/lib/risk/actions';
 import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Minus, Shield, Target } from 'lucide-react';
+import type { Risk } from '@prisma/client';
 
 const GRADE_COLORS: Record<PostureGrade, string> = {
     A: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10',
@@ -35,7 +36,7 @@ export function PostureGauge() {
     useEffect(() => {
         getRisks().then(res => {
             if (res.length === 0) return setAverageRiskScore(50);
-            const avg = res.reduce((acc: number, r: any) => acc + (r.inherentScore * 4), 0) / res.length;
+            const avg = res.reduce((acc: number, r: Risk) => acc + (r.inherentScore * 4), 0) / res.length;
             setAverageRiskScore(Math.round(avg));
         }).catch(console.error);
     }, []);

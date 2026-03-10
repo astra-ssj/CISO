@@ -52,6 +52,7 @@ async function main() {
     })
 
     // 2. Create Initial Risks (FAIR Model)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const ransomwareRisk = await prisma.riskScenario.create({
         data: {
             title: 'Ransomware Attack on Production DB',
@@ -70,6 +71,7 @@ async function main() {
     })
 
     // 3. Create a Policy
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const passwordPolicy = await prisma.policy.create({
         data: {
             title: 'Global Password Standard',

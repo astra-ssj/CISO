@@ -1,7 +1,8 @@
+/* eslint-disable @next/next/no-html-link-for-pages */
 "use client";
 
 import { useState, useCallback } from "react";
-import type { Scenario, Decision, RoleId } from "@/lib/exercises/types";
+import type { Scenario } from "@/lib/exercises/types";
 import { useExerciseSession } from "@/hooks/exercises/useExerciseSession";
 import { generateAssessment } from "@/lib/exercises/scoring";
 import { StepProgress } from "./shared/StepProgress";

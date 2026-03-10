@@ -23,9 +23,11 @@ import { RiskHeatmap } from "@/components/risk/RiskHeatmap";
 import { NewRiskModal } from "@/components/risk/NewRiskModal";
 import { RiskDetailPanel } from "@/components/risk/RiskDetailPanel";
 
+import type { Risk } from "@prisma/client";
+
 // ─── Risk Register Tab ───
 function RiskRegisterTab() {
-    const [risks, setRisks] = useState<any[]>([]);
+    const [risks, setRisks] = useState<Risk[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [isNewRiskModalOpen, setIsNewRiskModalOpen] = useState(false);

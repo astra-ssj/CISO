@@ -9,7 +9,7 @@
  * - "Configure CAIQ" button per product → navigates to product-specific KB
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,7 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
     Building2, Package, Plus, Pencil, Trash2, ChevronDown, ChevronRight,
-    Globe, Shield, Server, Loader2, Settings2
+    Loader2, Settings2
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -95,18 +95,19 @@ export function CompaniesProductsTab() {
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [productForm, setProductForm] = useState(EMPTY_PRODUCT);
 
-    const fetchCompanies = useCallback(async () => {
-        try {
-            const res = await fetch('/api/companies');
-            if (res.ok) {
-                const data = await res.json();
-                setCompanies(data);
-            }
-        } catch { /* */ }
-        setIsLoading(false);
+    useEffect(() => {
+        let mounted = true;
+        fetch('/api/companies').then(res => {
+            if (res.ok && mounted) return res.json();
+            return null;
+        }).then(data => {
+            if (data && mounted) setCompanies(data);
+            if (mounted) setIsLoading(false);
+        }).catch(() => {
+            if (mounted) setIsLoading(false);
+        });
+        return () => { mounted = false; };
     }, []);
-
-    useEffect(() => { fetchCompanies(); }, [fetchCompanies]);
 
     // ─── Company CRUD ─────────────────────────
 
@@ -119,7 +120,8 @@ export function CompaniesProductsTab() {
                 body: JSON.stringify(companyForm),
             });
             if (res.ok) {
-                await fetchCompanies();
+                const data = await fetch('/api/companies').then(r => r.json());
+                setCompanies(data);
                 setShowCompanyForm(false);
                 setEditingCompany(null);
                 setCompanyForm(EMPTY_COMPANY);
@@ -131,7 +133,8 @@ export function CompaniesProductsTab() {
         if (!confirm('Delete this company and all its products?')) return;
         try {
             await fetch(`/api/companies/${id}`, { method: 'DELETE' });
-            await fetchCompanies();
+            const data = await fetch('/api/companies').then(r => r.json());
+            setCompanies(data);
         } catch { /* */ }
     };
 
@@ -158,7 +161,8 @@ export function CompaniesProductsTab() {
                 body: JSON.stringify({ ...productForm, companyId }),
             });
             if (res.ok) {
-                await fetchCompanies();
+                const data = await fetch('/api/companies').then(r => r.json());
+                setCompanies(data);
                 setShowProductForm(null);
                 setEditingProduct(null);
                 setProductForm(EMPTY_PRODUCT);
@@ -170,7 +174,8 @@ export function CompaniesProductsTab() {
         if (!confirm('Delete this product and its overrides?')) return;
         try {
             await fetch(`/api/products/${id}`, { method: 'DELETE' });
-            await fetchCompanies();
+            const data = await fetch('/api/companies').then(r => r.json());
+            setCompanies(data);
         } catch { /* */ }
     };
 

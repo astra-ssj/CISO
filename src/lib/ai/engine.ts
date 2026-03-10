@@ -76,7 +76,8 @@ class GeminiProvider implements UnifiedAIProvider {
         };
     }
 
-    async generateStructuredContent(prompt: string, schema?: Record<string, unknown>): Promise<AIResponse<Record<string, unknown>>> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async generateStructuredContent(prompt: string, _schema?: Record<string, unknown>): Promise<AIResponse<Record<string, unknown>>> {
         const model = this.client.getGenerativeModel({
             model: this.modelName,
             generationConfig: { responseMimeType: "application/json" }
@@ -166,7 +167,8 @@ class AnthropicProvider implements UnifiedAIProvider {
         };
     }
 
-    async generateStructuredContent(prompt: string, schema?: Record<string, unknown>): Promise<AIResponse<Record<string, unknown>>> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async generateStructuredContent(prompt: string, _schema?: Record<string, unknown>): Promise<AIResponse<Record<string, unknown>>> {
         // Claude doesn't have a strict JSON mode flag like Gemini/OpenAI yet in the SDK 
         // effectively, but we prompt-engineer it.
         const response = await this.client.messages.create({
@@ -188,7 +190,8 @@ class AnthropicProvider implements UnifiedAIProvider {
 
         try {
             return { data: JSON.parse(text), usage };
-        } catch (e) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (_e) {
             const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
             return { data: JSON.parse(cleaned), usage };
         }

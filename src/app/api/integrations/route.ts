@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
 import { INTEGRATIONS_REGISTRY } from '@/lib/integrations/registry';
-import { decrypt, maskSecret } from '@/lib/crypto';
+// import { } from '@/lib/crypto';
 
 export async function GET() {
     const session = await auth();

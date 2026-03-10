@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { TokenTracker, TokenLog } from '@/lib/telemetry/token-tracker';
+import { TokenTracker } from '@/lib/telemetry/token-tracker';
 
 export async function GET() {
     try {

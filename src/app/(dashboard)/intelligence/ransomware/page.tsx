@@ -39,7 +39,8 @@ export default function RansomwareIntelligencePage() {
         );
     }
 
-    if ((data as any).error) {
+    const dataResult = data as { error?: boolean; message?: string; lastAttempt?: string };
+    if (dataResult.error) {
         return (
             <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6">
                 <Alert className="bg-red-950/20 border-red-900/50 text-red-200 max-w-lg mb-4">
@@ -48,7 +49,7 @@ export default function RansomwareIntelligencePage() {
                     <AlertDescription>
                         Threat intelligence feed currently unavailable — check API connection in Settings.
                         <br /><br />
-                        <span className="text-xs text-slate-500">Last attempt: {(data as any).lastAttempt}</span>
+                        <span className="text-xs text-slate-500">Last attempt: {dataResult.lastAttempt}</span>
                     </AlertDescription>
                 </Alert>
             </div>

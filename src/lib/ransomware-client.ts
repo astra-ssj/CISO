@@ -89,7 +89,7 @@ export async function getRansomwareFeed(): Promise<RansomwareFeedData> {
             victims: [],
             groups: [],
             lastAttempt: new Date().toISOString()
-        } as any;
+        } as unknown as RansomwareFeedData;
     }
 }
 

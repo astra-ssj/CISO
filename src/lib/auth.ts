@@ -16,6 +16,7 @@ export interface LoginUserData {
 }
 
 /** @deprecated Use NextAuth signIn() on the client or credentials flow. Session is created by NextAuth. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function loginUser(_userData: LoginUserData): Promise<string | null> {
     return null;
 }

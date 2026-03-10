@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -24,6 +24,7 @@ import {
     Code,
     Plug,
     Siren,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Zap,
 } from 'lucide-react';
 import { useAstraStore } from '@/lib/store';

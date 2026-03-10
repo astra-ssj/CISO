@@ -1,4 +1,4 @@
-import { AppSecFinding, Severity, FindingType } from './types';
+import { AppSecFinding, Severity } from './types';
 
 // ============================================================================
 // Shared Utilities
@@ -26,12 +26,23 @@ function generateId(prefix: string, ...parts: string[]): string {
   ]
 }
 */
+interface SemgrepResult {
+  path?: string;
+  check_id?: string;
+  start?: { line?: number };
+  extra?: {
+    message?: string;
+    severity?: string;
+    lines?: string;
+  };
+}
+
 export function parseSemgrep(jsonStr: string): AppSecFinding[] {
   try {
     const data = JSON.parse(jsonStr);
     if (!data || !Array.isArray(data.results)) return [];
 
-    return data.results.map((res: any) => {
+    return data.results.map((res: SemgrepResult) => {
       let severity: Severity = 'LOW';
       if (res.extra?.severity === 'ERROR') severity = 'CRITICAL';
       if (res.extra?.severity === 'WARNING') severity = 'MEDIUM';
@@ -127,12 +138,20 @@ export function parseTrivy(jsonStr: string): AppSecFinding[] {
   }
 ]
 */
+interface GitleaksResult {
+  Description?: string;
+  Match?: string;
+  Secret?: string;
+  File?: string;
+  StartLine?: number;
+}
+
 export function parseGitleaks(jsonStr: string): AppSecFinding[] {
   try {
     const data = JSON.parse(jsonStr);
     if (!Array.isArray(data)) return [];
 
-    return data.map((leak: any) => ({
+    return data.map((leak: GitleaksResult) => ({
       id: generateId('gitleaks', leak.File || '', String(leak.StartLine || ''), leak.Secret || ''),
       type: 'SECRET' as const,
       severity: 'CRITICAL', // Hardcoded critical for exposed secrets

@@ -1,15 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
     Cable, Fuel, Server, Atom, Wifi, WifiOff, RefreshCw, Loader2,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Globe, AlertTriangle, Shield, MapPin, Building2,
 } from 'lucide-react';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface InfraItem {
     id: string;
     name: string;

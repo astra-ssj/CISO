@@ -31,7 +31,8 @@ export function calculateGrade(
  */
 export function generateAssessment(
     state: SessionState,
-    scenario: Scenario
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _scenario: Scenario
 ): FinalAssessment {
     const strengths: string[] = [];
     const failures: string[] = [];

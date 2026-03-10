@@ -16,6 +16,22 @@ function getHeaders() {
     };
 }
 
+interface DependabotAlert {
+    number: number;
+    created_at: string;
+    security_advisory?: {
+        summary?: string;
+        description?: string;
+        severity?: string;
+        cwe_ids?: string[];
+        patched_versions?: string;
+    };
+    dependency?: {
+        package?: { name?: string };
+        manifest_path?: string;
+    };
+}
+
 export async function fetchDependabotAlerts(owner: string, repo: string): Promise<AppSecFinding[]> {
     try {
         const url = `${GITHUB_API_URL}/repos/${owner}/${repo}/dependabot/alerts?state=open&per_page=100`;
@@ -28,7 +44,7 @@ export async function fetchDependabotAlerts(owner: string, repo: string): Promis
 
         const alerts = await res.json();
 
-        return alerts.map((alert: any) => {
+        return alerts.map((alert: DependabotAlert) => {
             let severity: Severity = 'LOW';
             const ghSeverity = alert.security_advisory?.severity || 'low';
             if (ghSeverity === 'critical') severity = 'CRITICAL';
@@ -55,6 +71,12 @@ export async function fetchDependabotAlerts(owner: string, repo: string): Promis
     }
 }
 
+interface SecretAlert {
+    number: number;
+    secret_type?: string;
+    created_at: string;
+}
+
 export async function fetchSecretScanningAlerts(owner: string, repo: string): Promise<AppSecFinding[]> {
     try {
         const url = `${GITHUB_API_URL}/repos/${owner}/${repo}/secret-scanning/alerts?state=open&per_page=100`;
@@ -67,7 +89,7 @@ export async function fetchSecretScanningAlerts(owner: string, repo: string): Pr
 
         const alerts = await res.json();
 
-        return alerts.map((alert: any) => ({
+        return alerts.map((alert: SecretAlert) => ({
             id: `github-secret-${alert.number}`,
             type: 'SECRET' as const,
             severity: 'CRITICAL', // GitHub secrets are universally critical

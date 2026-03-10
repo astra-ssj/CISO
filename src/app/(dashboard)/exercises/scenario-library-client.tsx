@@ -6,7 +6,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { createSession, ensureScenariosSeeded, getScenarios } from "@/lib/exercises/actions";
 import type { Scenario } from "@/lib/exercises/types";
-import { Shield, Siren, Ghost, Lock, Play, MessageSquare, TreeDeciduous, Zap, Mail, Info, Target, Calculator, ChevronDown, ChevronUp, BookOpen, ShieldAlert, Clock3, PlayCircle, PlusCircle, Search, Filter } from "lucide-react";
+import { Shield, Siren, Ghost, Lock, Play, MessageSquare, TreeDeciduous, Zap, Mail, Info, Target, Calculator, ChevronDown, ChevronUp, BookOpen } from "lucide-react";
 import { formatDollars } from "@/lib/exercises/scoring";
 
 const iconMap: Record<string, React.ReactNode> = {

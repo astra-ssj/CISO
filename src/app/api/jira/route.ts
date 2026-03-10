@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { jiraConnector } from '@/lib/jira/jira-connector';
 import type { JiraIssue } from '@/lib/jira/jira-connector';
-import { parseBodyWithZod, jiraIssueBodySchema, log } from '@/lib/api-validation';
+import { parseBodyWithZod, jiraIssueBodySchema } from '@/lib/api-validation';
 
 // Initialize connector from env vars if available
 function initConnector() {

@@ -264,6 +264,7 @@ export class OpenCTIClient {
 
     // ── Campaigns ───────────────────────────────────────────────
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async getCampaigns(_filters?: OpenCTIFilters): Promise<Campaign[]> {
         try {
             const data = await this.graphql<{ campaigns: { edges: Array<{ node: Campaign }> } }>(
@@ -289,6 +290,7 @@ export class OpenCTIClient {
 
     // ── Threat Actors ───────────────────────────────────────────
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async getThreatActors(_filters?: OpenCTIFilters): Promise<ThreatActor[]> {
         try {
             const data = await this.graphql<{ threatActorsIndividuals: { edges: Array<{ node: ThreatActor }> } }>(
@@ -308,6 +310,7 @@ export class OpenCTIClient {
 
     // ── Indicators (IOCs) ───────────────────────────────────────
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async getIndicators(_filters?: OpenCTIFilters): Promise<Indicator[]> {
         try {
             const data = await this.graphql<{ indicators: { edges: Array<{ node: Indicator }> } }>(
@@ -348,6 +351,7 @@ export class OpenCTIClient {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async getTTPsByCampaign(_campaignId: string): Promise<AttackPattern[]> {
         // In a real implementation this would query the relationship graph.
         // For now, return all patterns as the campaign→TTP mapping requires
@@ -387,6 +391,7 @@ export class OpenCTIClient {
 
     // ── Reports ─────────────────────────────────────────────────
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async getReports(_filters?: OpenCTIFilters): Promise<Report[]> {
         try {
             const data = await this.graphql<{ reports: { edges: Array<{ node: Report }> } }>(
@@ -465,6 +470,7 @@ export class OpenCTIClient {
 
     // ── Enrichment ──────────────────────────────────────────────
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async enrichIndicator(value: string, type: string): Promise<{
         found: boolean;
         indicator: Indicator | null;

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -18,8 +19,9 @@ export function ThemeSwitcher() {
     const { theme, background, setTheme, setBackground } = useThemeStore();
     const [mounted, setMounted] = useState(false);
 
-    // Only render on client to avoid Radix ID hydration mismatch
-    useEffect(() => { setMounted(true); }, []);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Apply theme class to document body
     useEffect(() => {

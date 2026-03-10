@@ -11,6 +11,7 @@ import { usePolicyStore } from '@/lib/policy-store';
 import { getRisks } from '@/lib/risk/actions';
 import { usePlaybookStore } from '@/lib/playbook-store';
 import { calculateComplianceScore, getDynamicControls } from '@/lib/governance';
+import type { Risk } from '@prisma/client';
 
 export function BoardDeckGenerator() {
     const [generating, setGenerating] = useState(false);
@@ -30,7 +31,7 @@ export function BoardDeckGenerator() {
         const complianceScore = calculateComplianceScore(controls);
         const risks = await getRisks();
         const topRisks = risks.slice(0, 5);
-        const avgRiskScore = risks.length > 0 ? (risks.reduce((acc: number, r: any) => acc + (r.inherentScore * 4), 0) / risks.length).toFixed(1) : '0';
+        const avgRiskScore = risks.length > 0 ? (risks.reduce((acc: number, r: Risk) => acc + (r.inherentScore * 4), 0) / risks.length).toFixed(1) : '0';
         const vendors = vendorStore.vendors;
         const evidenceStats = evidenceStore.getCoverageStats();
         const resolvedIncidents = playbooks.filter(p => p.status === 'RESOLVED').length;
@@ -66,7 +67,7 @@ export function BoardDeckGenerator() {
         doc.setFontSize(12);
         const metrics = [
             [`Compliance Score: ${complianceScore}%`, `Active Controls: ${controls.length}`],
-            [`Open Risks: ${risks.filter((e: any) => e.status !== 'Closed' && e.status !== 'Accepted').length}`, `Average Risk Score: ${avgRiskScore}`],
+            [`Open Risks: ${risks.filter((e: Risk) => e.status !== 'Closed' && e.status !== 'Accepted').length}`, `Average Risk Score: ${avgRiskScore}`],
             [`Total Vendors: ${vendors.length}`, `High/Critical Risk Vendors: ${vendorStore.getCriticalVendorCount()}`],
             [`Active Incidents: ${playbooks.length - resolvedIncidents}`, `Resolved This Period: ${resolvedIncidents}`],
             [`Evidence Items: ${evidenceStats.total}`, `Verified: ${evidenceStats.verified}`],
@@ -98,7 +99,7 @@ export function BoardDeckGenerator() {
 
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(10);
-        topRisks.forEach((risk: any, i: number) => {
+        topRisks.forEach((risk: Risk, i: number) => {
             const y = 52 + (i * 18);
             doc.setFillColor(i % 2 === 0 ? 30 : 24, i % 2 === 0 ? 41 : 33, i % 2 === 0 ? 59 : 48);
             doc.roundedRect(20, y, 257, 15, 2, 2, 'F');

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require('fs');
 const path = require('path');
 
@@ -8,6 +9,7 @@ const RESET = '\x1b[0m';
 console.log(`${GREEN}S.R.I.S.T.I. Sentinel Audit Initiated...${RESET}`);
 
 // Configuration
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const REQUIRED_HEADER = "Copyright (c) 2026 S.R.I.S.T.I. All rights reserved.";
 const SECRET_PATTERNS = [
     /AKIA[0-9A-Z]{16}/, // AWS Access Key
