@@ -80,8 +80,8 @@ Astra-CISO is a CISO command center built on **ZTAIP (Zero Trust AI Platform)** 
 ### With Docker
 
 ```bash
-git clone https://github.com/SristiNative/astra-ciso.git
-cd astra-ciso
+git clone https://github.com/SristiNative/CISO.git
+cd CISO
 cp .env.example .env.local
 # Edit .env.local — add AI provider key (minimum)
 docker compose build
@@ -99,6 +99,9 @@ npx prisma db push
 npm run dev
 # Open http://localhost:3000
 ```
+
+> [!WARNING]
+> By default, the database seed (`npx prisma db push` via `prisma/seed.ts`) will create a demo user with the credentials **`ciso@astra.ai` / `admin123`**. Ensure you change this or drop the mock users before deploying to production. Never commit `.env.local` or `.db` files.
 
 ### Testing & QA (Local)
 

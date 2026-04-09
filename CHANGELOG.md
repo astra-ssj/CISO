@@ -6,6 +6,16 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.0.2] — 2026-04-09
+
+### Open-Source Preparation
+
+- **Documentation Overhaul**: Updated clone targets and Git references across `README.md` and `CONTRIBUTING.md` to map onto `https://github.com/SristiNative/CISO.git`.
+- **Metadata Tagging**: Inserted required explicit licensing (`MIT`), description headers, and remote registry tracking parameters within `package.json`.
+- **Security Checkpoints**: Extracted the default local database (`dev.db`) from tracked Git history. Inserted explicit `[WARNING]` documentation concerning the rotation of Mock Credentials (`ciso@astra.ai` / `admin123`) prior to localized environment deployments.
+
+---
+
 ## [2.0.1] — 2026-03-08
 
 ### Fixed & Audited

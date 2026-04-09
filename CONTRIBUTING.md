@@ -15,8 +15,8 @@ Thank you for your interest in contributing! This guide covers the development s
 ### Getting Started
 
 ```bash
-git clone https://github.com/SristiNative/astra-ciso.git
-cd astra-ciso
+git clone https://github.com/SristiNative/CISO.git
+cd CISO
 npm install
 cp .env.example .env.local
 # Edit .env.local — add at least one AI provider key

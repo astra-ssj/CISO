@@ -54,4 +54,9 @@ Astra-CISO implements multiple security layers:
 - **Audit Trail:** Immutable append-only audit log
 - **AI Safety:** Circuit breaker pattern, Dynamic Autonomy Router
 
+## Default / Mock Credentials
+
+> [!WARNING]
+> By default, the database seeding (`npx prisma db push` via `prisma/seed.ts`) generates a demonstration user utilizing the credentials **`ciso@astra.ai`** and **`admin123`** (or `password123` depending on setup context). **You must change these default credentials or drop the active mock identities before deploying to a production environment to prevent unauthorized access.**
+
 For architecture details, see [docs/HIGH_LEVEL_DESIGN.md](docs/HIGH_LEVEL_DESIGN.md).

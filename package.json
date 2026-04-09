@@ -1,7 +1,12 @@
 {
   "name": "astra",
-  "version": "0.1.0",
-  "private": true,
+  "version": "2.0.0",
+  "description": "Autonomous Security Operations Platform",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SristiNative/CISO.git"
+  },
+  "license": "MIT",
   "scripts": {
     "dev": "next dev --port 3000",
     "dev:webpack": "next dev --webpack",
