@@ -190,6 +190,20 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
 
 ---
 
+## Acknowledgments
+
+Astra-CISO is built on the shoulders of giants. We express our profound gratitude to the open-source communities powering this platform:
+
+- **[Next.js](https://nextjs.org/) & [React](https://react.dev/)** — Core application frameworks
+- **[Radix UI](https://www.radix-ui.com/) & [Tailwind CSS](https://tailwindcss.com/)** — Accessible interface primitives and styling
+- **[Zustand](https://zustand-demo.pmnd.rs/)** — Lightweight UI state management
+- **[Prisma](https://www.prisma.io/)** — Next-generation ORM
+- **[MapLibre GL](https://maplibre.org/)** — Open-source 3D mapping engine powering the World Monitor
+- **[Abuse.ch](https://abuse.ch/)** — Incredible community threat intelligence feeds (ThreatFox, URLhaus, MalwareBazaar)
+- **[USGS](https://www.usgs.gov/) & [GDELT Project](https://www.gdeltproject.org/)** — Free APIs for earth science and global news event data
+
+---
+
 ## Security
 
 See [SECURITY.md](SECURITY.md) for vulnerability reporting.
