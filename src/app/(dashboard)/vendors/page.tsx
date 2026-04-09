@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVendorRiskStore, VendorCategory, VendorRiskTier, VendorStatus } from "@/lib/vendor-risk-store";
@@ -62,8 +61,7 @@ export default function VendorsPage() {
     const { vendors, addVendor, removeVendor, getCriticalVendorCount, getAverageRiskScore, getPendingReviewCount } = useVendorRiskStore();
      
      
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { selectedCompanyId, selectedProductId, contextLabel, fetchCompanies } = useCompanyProductStore();
+    const { fetchCompanies } = useCompanyProductStore();
     const searchParams = useSearchParams();
     const [searchQuery, setSearchQuery] = useState('');
     const [filterTier, setFilterTier] = useState<string>('all');
@@ -269,7 +267,7 @@ export default function VendorsPage() {
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Data Access</Label>
-                                        <Select value={newVendor.dataAccess} onValueChange={v => setNewVendor({ ...newVendor, dataAccess: v as any })}>
+                                        <Select value={newVendor.dataAccess} onValueChange={v => setNewVendor({ ...newVendor, dataAccess: v as 'None'|'Low'|'Medium'|'High'|'Critical' })}>
                                             <SelectTrigger><SelectValue /></SelectTrigger>
                                             <SelectContent>
                                                 {['None', 'Low', 'Medium', 'High', 'Critical'].map(lvl => (

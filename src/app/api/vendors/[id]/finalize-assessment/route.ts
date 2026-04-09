@@ -19,7 +19,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         let totalPassed = 0;
         let criticalGaps = 0;
 
-        questions.forEach((q: any) => {
+        questions.forEach((q: { domain?: string; answer?: unknown }) => {
             const domain = q.domain || 'General';
             if (!domainScores[domain]) {
                 domainScores[domain] = { total: 0, passed: 0, score: 0 };

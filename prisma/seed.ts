@@ -101,7 +101,7 @@ async function main() {
         }
     })
 
-    const slackVendor = await prisma.vendor.create({
+    await prisma.vendor.create({
         data: {
             name: 'Slack', 
             category: 'SaaS', 
