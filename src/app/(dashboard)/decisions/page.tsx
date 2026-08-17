@@ -37,17 +37,19 @@ function NeedsYouTab() {
     const [empty, setEmpty] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+    const [openNekoUrl, setOpenNekoUrl] = useState<string | null>(null);
 
     useEffect(() => {
         fetch('/api/decision-queue')
             .then(async (res) => {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                return res.json() as Promise<{ items: DecisionQueueItem[]; empty: boolean; counts: typeof counts }>;
+                return res.json() as Promise<{ items: DecisionQueueItem[]; empty: boolean; counts: typeof counts; openNekoUrl: string | null }>;
             })
             .then((data) => {
                 setItems(data.items);
                 setCounts(data.counts);
                 setEmpty(data.empty);
+                setOpenNekoUrl(data.openNekoUrl);
             })
             .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to load queue'))
             .finally(() => setLoading(false));
@@ -68,6 +70,11 @@ function NeedsYouTab() {
             <p className="text-muted-foreground">
                 Computed from evidence expiry (evidence.expiry) and open 5×5 risks (risk.fiveByFive). Empty means nothing needs you — not that the feed is demo.
             </p>
+            {openNekoUrl && (
+                <a href={openNekoUrl} className="inline-flex items-center text-sm text-cyan-400 hover:underline">
+                    Open OpenNeko briefing
+                </a>
+            )}
             {counts && (
                 <div className="grid gap-3 md:grid-cols-4">
                     <Card className="bg-card/30 border-border/30"><CardContent className="p-3"><p className="text-xl font-bold font-mono">{counts.evidenceExpired}</p><p className="text-[10px] text-muted-foreground">Evidence expired</p></CardContent></Card>
@@ -81,7 +88,7 @@ function NeedsYouTab() {
                 <div className="text-center py-12 text-muted-foreground">
                     <ShieldAlert className="h-12 w-12 mx-auto mb-3 opacity-20" />
                     <p>No expired evidence or open risks.</p>
-                    <p className="text-xs mt-2">Add evidence with an expiry date or a risk on Governance. OpenNeko approvals are not wired yet.</p>
+                    <p className="text-xs mt-2">Add evidence with an expiry date or a risk on Governance. Approvals live in OpenNeko when <code>OPENNEKO_URL</code> is set.</p>
                 </div>
             )}
 

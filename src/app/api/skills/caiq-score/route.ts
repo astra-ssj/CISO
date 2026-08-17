@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { requireSession } from '@/lib/api/require-session';
+import { requireSessionOrInternal } from '@/lib/api/require-session';
 import { runCaiqScore } from '@/lib/skills/caiq-score';
 import { persistSkillRun } from '@/lib/skills/persist';
 
@@ -14,7 +14,7 @@ const bodySchema = z.object({
 
 /** POST /api/skills/caiq-score — coverage from caiq.match hits. No LLM. */
 export async function POST(req: Request) {
-    const { error } = await requireSession();
+    const { error } = await requireSessionOrInternal(req);
     if (error) return error;
 
     const parsed = bodySchema.safeParse(await req.json().catch(() => null));

@@ -1,10 +1,20 @@
 import { PrismaClient } from '@prisma/client';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 
+/**
+ * v3 decision-loop uses Postgres (GraphJin / OpenNeko cannot read SQLite).
+ * DATABASE_URL must be postgresql://...
+ */
 function makePrisma() {
-    const dbUrl = process.env.DATABASE_URL || 'file:dev.db';
-    const adapter = new PrismaBetterSqlite3({ url: dbUrl });
-    // Adapter type from @prisma/adapter-better-sqlite3 is compatible but Prisma client expects a stricter Options type
+    const dbUrl = process.env.DATABASE_URL || '';
+    if (!dbUrl.startsWith('postgres://') && !dbUrl.startsWith('postgresql://')) {
+        throw new Error(
+            'Astra v3 requires Postgres. Set DATABASE_URL=postgresql://astra:astra@localhost:5432/astra and run: docker compose up -d postgres',
+        );
+    }
+    const pool = new Pool({ connectionString: dbUrl });
+    const adapter = new PrismaPg(pool);
     return new PrismaClient({ adapter } as never);
 }
 

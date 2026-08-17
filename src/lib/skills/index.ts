@@ -1,4 +1,4 @@
-export { SKILL_IDS, type SkillId, type SkillRunResult, type SkillConfidence } from './types';
+export { SKILL_IDS, SKILL_HTTP_PATHS, type SkillId, type SkillRunResult, type SkillConfidence } from './types';
 export { hashCanonical } from './hash';
 export {
     CAIQ_MATCH_VERSION,
@@ -31,3 +31,35 @@ export {
     type EvidenceExpiryOutput,
     type EvidenceExpiryItem,
 } from './evidence-expiry';
+export {
+    VENDOR_GO_NO_GO_VERSION,
+    decideGoNoGo,
+    runGoNoGo,
+    type VendorGoNoGoInput,
+    type VendorGoNoGoOutput,
+} from './vendor-gonogo';
+export {
+    INTEL_CORRELATE_VERSION,
+    correlateIntel,
+    runIntelCorrelate,
+    type IntelCorrelateInput,
+    type IntelCorrelateOutput,
+} from './intel-correlate';
+export {
+    PLAYBOOK_NEXT_STEP_VERSION,
+    nextPlaybookStep,
+    runPlaybookNextStep,
+    type PlaybookNextStepInput,
+    type PlaybookNextStepOutput,
+} from './playbook-next-step';
+export {
+    TABLETOP_SCORE_VERSION,
+    scoreTabletop,
+    runTabletopScore,
+} from './tabletop-score';
+export {
+    CAIQ_DRAFT_VERSION,
+    labelCaiqDraft,
+    runCaiqDraft,
+} from './caiq-draft';
+

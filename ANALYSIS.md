@@ -1,22 +1,24 @@
 # Astra-CISO Codebase Analysis
 
-**Date:** 17 August 2026 (inventory) · **v3 progress:** 17 August 2026 (`3.0.0-decision.1` on `release/v3-decision-loop`)  
+**Date:** 17 August 2026 (inventory) · **v3 progress:** 17 August 2026 (`3.0.0-decision.2` on `release/v3-decision-loop`)  
 **Repo root:** `CISO/CISO`  
-**Stack:** Next.js 16 (App Router), React 19, TypeScript 5, Prisma 7, SQLite, Zustand, NextAuth 5  
+**Stack:** Next.js 16 (App Router), React 19, TypeScript 5, Prisma 7, Postgres 16, Zustand, NextAuth 5  
 
 > **v3 note:** Sections below are the original read-only inventory. They are **historical**. For what is true on this branch now, read [HONESTY.md](HONESTY.md), [RELEASE.md](RELEASE.md), and [CHANGELOG.md](CHANGELOG.md). In particular: `/api` is no longer public; `caiq.match` is a skill; OpenCTI/MISP/OTX no longer return `MOCK_*`; Decision Center no longer seeds `DEMO_TICKETS`.
 
 ### v3 progress vs this inventory
 
-| Inventory claim (Aug 17 snapshot) | Status on 3.0.0-decision.1 |
+| Inventory claim (Aug 17 snapshot) | Status on 3.0.0-decision.2 |
 |---|---|
 | All `/api/*` public | Fixed in 3.0.0-decision.0 |
 | `DEMO_DECISIONS` / `DEMO_TICKETS` | Removed; Needs-you queue is real |
 | Intel `MOCK_*` fallbacks | Removed (Abuse.ch, OpenCTI, MISP, OTX) |
 | Command Center `SAMPLE_*` | Removed for incidents + threats |
 | Defense Matrix `Math.random()` | Unscored cells |
-| No Observation / SkillRun | Added; CAIQ and 5×5 persist runs |
-| War Room / board KPIs / compliance heatmap | Still mocked — see HONESTY.md |
+| No Observation / SkillRun | Added; CAIQ, 5×5, go/no-go persist runs |
+| SQLite only | Postgres 16 + GraphJin allowlist |
+| OpenNeko | Sidecar APIs + runbook; not merged into Next.js |
+| War Room / board KPIs / compliance heatmap | War Room exercise-or-bound; board KPIs still mixed — see HONESTY.md |
 
 This is a read-only inventory. No application code was changed as part of **this report**. Application changes live on the v3 branch and are listed in CHANGELOG.
 

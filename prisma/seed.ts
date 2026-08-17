@@ -1,13 +1,8 @@
-import { PrismaClient } from '@prisma/client'
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 import bcrypt from 'bcryptjs'
 import 'dotenv/config'
 import { config } from 'dotenv'
 config({ path: '.env.local' })
-
-const dbUrl = process.env.DATABASE_URL || 'file:dev.db'
-const adapter = new PrismaBetterSqlite3({ url: dbUrl })
-const prisma = new PrismaClient({ adapter } as never)
+import prisma from '../src/lib/prisma'
 
 async function main() {
     console.log('🌱 Starting seed...')
@@ -53,7 +48,11 @@ async function main() {
 
     // 2. Create Initial Risks (FAIR Model)
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const ransomwareRisk = await prisma.riskScenario.create({
+    const existingScenario = await prisma.riskScenario.findFirst({
+        where: { title: 'Ransomware Attack on Production DB' },
+    })
+    if (!existingScenario) {
+        await prisma.riskScenario.create({
         data: {
             title: 'Ransomware Attack on Production DB',
             description: 'Scenario: LockBit 3.0 encrypts main customer database.',
@@ -68,7 +67,8 @@ async function main() {
             ale: 2100000, // Calculated manually for seed
             riskScore: 85,
         },
-    })
+        })
+    }
 
     // 3. Create a Policy
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -176,8 +176,7 @@ async function main() {
     // 8. Notifications & Alert Rules
     await prisma.notification.createMany({
         data: [
-            { type: 'THREAT', title: 'Critical CVE Detected', message: 'CVE-2026-1234 found in express@4.18.2 — RCE. CVSS 9.8.', severity: 'CRITICAL', read: false, timestamp: Date.now() - 300000, actionUrl: '/appsec' },
-            { type: 'COMPLIANCE', title: 'NIST CSF Compliance', message: 'Overall compliance score above 70%.', severity: 'INFO', read: true, timestamp: Date.now() - 86400000 },
+            { type: 'SYSTEM', title: 'Astra seed complete', message: 'Local database seeded. Empty queues are honest — nothing here is a live CVE.', severity: 'INFO', read: false, timestamp: BigInt(Date.now()), actionUrl: '/decisions' },
         ],
     })
     await prisma.alertRule.createMany({

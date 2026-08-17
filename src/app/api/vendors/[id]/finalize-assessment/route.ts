@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { runCaiqScore } from '@/lib/skills/caiq-score';
+import { runGoNoGo } from '@/lib/skills/vendor-gonogo';
+import { runFiveByFive } from '@/lib/skills/risk-five-by-five';
+import { persistSkillRun } from '@/lib/skills/persist';
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
@@ -71,13 +75,48 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         });
 
         // 4. Update the Vendor
+        const hits = (questions as Array<{ answer?: unknown; matchedEntryId?: string }>).map((q) => ({
+            entryId: q.matchedEntryId ? String(q.matchedEntryId) : (String(q.answer || '').length > 0 ? 'answered' : null),
+            confidence: 'medium' as const,
+            matchTier: (q.matchedEntryId ? 1 : 0) as 0 | 1 | 2 | 3,
+        }));
+        const scoreRun = runCaiqScore({ hits }, new Date().toISOString());
+        await persistSkillRun(scoreRun);
+
+        const lastScan = await prisma.observation.findFirst({
+            where: { integrationId: 'shodan', operation: { in: ['vendorScan', 'attackSurface'] }, status: 'ok' },
+            orderBy: { fetchedAt: 'desc' },
+        });
+        let shodanRiskScore: number | null = null;
+        if (lastScan?.payload) {
+            try {
+                const parsed = JSON.parse(lastScan.payload) as { riskScore?: number };
+                if (typeof parsed.riskScore === 'number') shodanRiskScore = parsed.riskScore;
+            } catch { /* ignore */ }
+        }
+
+        const goNoGo = runGoNoGo({
+            vendorName: vendor.name,
+            coveragePct: scoreRun.output.coveragePct,
+            riskTier,
+            shodanRiskScore,
+            criticalGaps,
+        }, scoreRun.asOf);
+        await persistSkillRun(goNoGo, lastScan ? [lastScan.id] : []);
+
+        const vendorStatus = goNoGo.output.decision === 'go'
+            ? 'Approved'
+            : goNoGo.output.decision === 'conditional'
+                ? 'Conditionally Approved'
+                : 'Requires Reassessment';
+
         const updatedVendor = await prisma.vendor.update({
             where: { id: vendorId },
             data: {
                 riskScore: overallScore,
                 riskTier,
                 lastAssessedAt: new Date(),
-                status: 'Approved', // or Conditionally Approved based on score? We'll just set Approved for simplicity
+                status: vendorStatus,
             }
         });
 
@@ -94,17 +133,20 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             // Risk tier to likelihood 1-5
             const likelihood = riskTier === 'Critical' ? 5 : 4;
 
+            const scored = runFiveByFive({ likelihood, impact }, goNoGo.asOf);
+            await persistSkillRun(scored);
+
             await prisma.risk.create({
                 data: {
                     title: `Third-Party Risk: ${vendor.name}`,
-                    description: `Automatically created from ${riskTier} vendor assessment result. Overall score: ${overallScore}. Critical Gaps: ${criticalGaps}.`,
+                    description: `Created from ${riskTier} vendor assessment. Overall score: ${overallScore}. Critical Gaps: ${criticalGaps}. goNoGo=${goNoGo.output.decision}.`,
                     category: 'ThirdParty',
                     likelihood,
                     impact,
-                    inherentScore: likelihood * impact,
+                    inherentScore: scored.output.inherentScore,
                     owner: assessor || 'System',
                     status: 'Open',
-                    reviewDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days
+                    reviewDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
                     vendorId: vendor.id,
                 }
             });
@@ -125,7 +167,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             }
         }
 
-        return NextResponse.json({ success: true, updatedVendor, newScore: overallScore, riskTier });
+        return NextResponse.json({
+            success: true,
+            updatedVendor,
+            newScore: overallScore,
+            riskTier,
+            goNoGo: goNoGo.output,
+            coverage: scoreRun.output,
+        });
 
     } catch (error: unknown) {
         console.error('Vendor finalize-assessment POST:', error);

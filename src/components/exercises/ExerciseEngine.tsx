@@ -39,8 +39,20 @@ export function ExerciseEngine({ scenario, sessionId, mode }: ExerciseEngineProp
 
     const handleFinish = useCallback(async () => {
         await finishExercise();
+        try {
+            await fetch('/api/skills/tabletop-score', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    scenario: { id: scenario.id, slug: scenario.slug, title: scenario.title },
+                    state,
+                }),
+            });
+        } catch {
+            // Skill persist is best-effort; the local grade still renders.
+        }
         setIsComplete(true);
-    }, [finishExercise]);
+    }, [finishExercise, scenario, state]);
 
     if (!currentStepData && !isComplete) return null;
 

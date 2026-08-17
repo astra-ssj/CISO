@@ -17,7 +17,7 @@ export const authConfig = {
 
             // Public: login page, NextAuth handlers, health probes only.
             // All other /api/* require a session (v3 decision-loop).
-            const publicPaths = ['/login', '/api/auth', '/api/health'];
+            const publicPaths = ['/login', '/api/auth', '/api/health', '/api/internal'];
             const isPublicRoute = publicPaths.some(path => nextUrl.pathname.startsWith(path));
 
             if (isPublicRoute) {

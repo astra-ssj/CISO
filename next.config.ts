@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
   },
-  serverExternalPackages: ['@prisma/client', 'better-sqlite3', '@prisma/adapter-better-sqlite3'],
+  serverExternalPackages: ['@prisma/client', 'pg', '@prisma/adapter-pg'],
   async headers() {
     return [
       {

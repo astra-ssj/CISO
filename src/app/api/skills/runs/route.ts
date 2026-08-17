@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { requireSession } from '@/lib/api/require-session';
+import { requireSessionOrInternal } from '@/lib/api/require-session';
 import prisma from '@/lib/prisma';
 
 /** GET /api/skills/runs — recent SkillRun rows. Append-only audit of skill compute. */
 export async function GET(req: Request) {
-    const { error } = await requireSession();
+    const { error } = await requireSessionOrInternal(req);
     if (error) return error;
 
     const { searchParams } = new URL(req.url);

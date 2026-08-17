@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 // -----------------------------------------------------------------------------
@@ -339,7 +339,7 @@ model Notification {
   message   String
   severity  String
   read      Boolean  @default(false)
-  timestamp Int // Unix ms
+  timestamp BigInt // Unix ms (Postgres Int cannot hold Date.now())
   actionUrl String?
   createdAt DateTime @default(now())
 }
@@ -665,5 +665,22 @@ model SkillRun {
   createdAt     DateTime @default(now())
 
   @@index([skillId, inputHash])
+  @@index([createdAt])
+}
+
+// Approvals remembered in Astra (OpenNeko memory is dual-written when configured).
+model Approval {
+  id              String   @id @default(cuid())
+  skillRunId      String
+  observationIds  String   @default("[]") // JSON
+  decision        String // APPROVE | REJECT
+  actorId         String?
+  actorName       String?
+  plugin          String? // jira, slack, astra.risk, astra.vendor
+  payload         String? // JSON plugin body — must include skillRunId
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  @@index([skillRunId])
   @@index([createdAt])
 }

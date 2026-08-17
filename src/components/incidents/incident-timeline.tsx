@@ -117,20 +117,4 @@ function SLACard({ label, hours, target }: { label: string; hours?: number; targ
     );
 }
 
-// Demo data for the incidents page
-export const DEMO_TIMELINE: TimelineEvent[] = [
-    { timestamp: '2026-02-18 06:23', event: 'Anomalous login detected from unknown IP', actor: 'SIEM Alert', type: 'DETECTION', notes: 'Source: 185.x.x.x (TOR exit node)' },
-    { timestamp: '2026-02-18 06:45', event: 'Alert escalated to SOC Analyst L2', actor: 'SOC Bot', type: 'ESCALATION' },
-    { timestamp: '2026-02-18 07:10', event: 'Confirmed unauthorized access attempt', actor: 'Ana Rodriguez (SOC L2)', type: 'TRIAGE', notes: 'Bruteforce attempt against admin account. 847 failed attempts.' },
-    { timestamp: '2026-02-18 07:15', event: 'Account locked, IP blocked at WAF', actor: 'Ana Rodriguez (SOC L2)', type: 'CONTAINMENT' },
-    { timestamp: '2026-02-18 08:30', event: 'Forensic analysis completed — no data exfiltration', actor: 'DFIR Team', type: 'ERADICATION', notes: 'No lateral movement. Attack contained at perimeter.' },
-    { timestamp: '2026-02-18 10:00', event: 'MFA enforced on all admin accounts', actor: 'IT Security', type: 'RECOVERY' },
-    { timestamp: '2026-02-18 14:00', event: 'Post-incident review completed', actor: 'CISO', type: 'LESSONS_LEARNED', notes: 'Action: Implement geo-fencing for admin access. Add rate limiting to auth endpoint.' },
-];
-
-export const DEMO_SLA: SLAMetrics = {
-    detectedAt: '2026-02-18 06:23',
-    containedAt: '2026-02-18 07:15',
-    resolvedAt: '2026-02-18 10:00',
-    ttd: 0.4, ttc: 0.9, ttr: 3.6
-};
+}

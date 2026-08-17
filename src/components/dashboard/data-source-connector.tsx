@@ -157,9 +157,9 @@ export function DataSourceConnector() {
                     ...s,
                     status: 'CONNECTED',
                     telemetry: {
-                        rpm: Math.floor(Math.random() * 500) + 100,
-                        latency: Math.floor(Math.random() * 50) + 10,
-                        lastSync: 'Now'
+                        rpm: 0,
+                        latency: 0,
+                        lastSync: 'never — UI handshake only, no live connector'
                     }
                 } : s));
                 return;

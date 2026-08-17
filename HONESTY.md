@@ -4,7 +4,7 @@ Living inventory. If a screen is not in **REAL** or **EMPTY**, it is still lying
 
 **Rule:** empty is honest. Silent mock is not.
 
-Last updated: 17 August 2026 (`3.0.0-decision.1`)
+Last updated: 17 August 2026 (`3.0.0-decision.2`)
 
 ## REAL (this slice)
 
@@ -12,14 +12,19 @@ Last updated: 17 August 2026 (`3.0.0-decision.1`)
 |---|---|
 | Login / session | NextAuth + Prisma `User` |
 | Vendor registry, Knowledge Base, CAIQ match | Prisma + `caiq.match` / `caiq.score` SkillRuns |
+| Vendor finalize go/no-go | `vendor.goNoGo` + last Shodan Observation |
 | Policies, Evidence vault, Audit logs | Prisma |
 | 5×5 Risk register | Prisma `Risk` + `risk.fiveByFive` |
-| Exercises (tabletop engine) | Prisma sessions; scenario library is static content (labeled as library, not live IR) |
-| Abuse.ch / OpenCTI / MISP / OTX clients | Live, last Observation, or empty — no `MOCK_*` IOCs |
+| Exercises (tabletop engine) | Prisma sessions; `tabletop.score` on finish |
+| Abuse.ch / OpenCTI / MISP / OTX / Shodan | Live, last Observation, or empty — no `MOCK_*` IOCs |
+| Attack surface | Observation + `AttackSurfaceScan` |
 | Decision Center → Needs you | `GET /api/decision-queue` from evidence + open risks + SkillRuns |
+| Command Center Needs-you | Same queue |
 | Command Center vendor/policy/playbook/evidence counts | APIs |
 | Command Center Recent Incidents | `GET /api/incidents` (empty until rows exist) |
 | Command Center Active Threats | live Abuse.ch or empty |
+| War Room | Bound `Incident` or labeled exercise mode |
+| OpenNeko sidecar APIs | Secret-gated watchers, approvals, skill catalog |
 
 ## EMPTY (honest, not mocked)
 
@@ -31,27 +36,23 @@ Last updated: 17 August 2026 (`3.0.0-decision.1`)
 | Incidents tabletop tab | Points at `/exercises` |
 | GitHub Dependabot | Empty without `GITHUB_TOKEN` |
 | OpenCTI/MISP/OTX UI | Empty without keys / when circuit open |
+| Trivy route | Empty (`trivy_not_wired`), never sample CVEs |
+| MITRE catalog | Unscored reference; no fake detections |
+| Vulnerability / security-event feeds | Empty until a scanner/SIEM writes Observations |
+| Contract mindmap | Empty until a contract is uploaded |
+| AppSec / Roadmap | Hidden from nav (fail the value test) |
 
-## STILL MIXED or MOCKED (do not claim)
+## STILL MIXED (do not claim)
 
-Documented so we do not forget. Next slices.
+Documented so we do not forget.
 
 | Surface | Issue |
 |---|---|
-| Command Center CompliancePosture | Hardcoded `FRAMEWORKS` |
 | Command Center KPI sparklines / Executive Brief | `computeAllKPIs()` literals |
-| Reports & Board Deck | `REPORT_TEMPLATES` / `RECENT_REPORTS` |
 | Governance Compliance heatmap | `ANNEX_A_SEED` |
 | KPI Dashboard tab | hardcoded engine + upload |
-| War Room (`/incidents/war-room`) | `MOCK_INCIDENT` |
-| GlobalThreatPulse | hardcoded ticker |
-| MITRE matrix widget | `Math.random()` technique flips |
-| Trivy API route | `MOCK_TRIVY_OUTPUT` |
-| Contract analysis | `MOCK_NODES` |
-| Vulnerability feed widget | `MOCK_VULNS` |
-| Security events feed | `SAMPLE_EVENTS` |
 | CAIQ review queue | in-memory Zustand |
-| Incident Prisma model | unused by War Room |
+| Data-source connector | UI handshake only — telemetry is zero |
 
 ## Integrations envelope
 

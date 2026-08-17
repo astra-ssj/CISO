@@ -127,5 +127,6 @@ export async function GET() {
             skillRuns: skillRuns.length,
         },
         items,
+        openNekoUrl: process.env.OPENNEKO_URL || null,
     });
 }

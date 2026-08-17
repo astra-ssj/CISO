@@ -8,6 +8,26 @@ v3 (`release/v3-decision-loop`) is a **separate line** from v2 on `main`. See [R
 
 ---
 
+## [3.0.0-decision.2] — 2026-08-17
+
+CISO factory slice: Postgres + OpenNeko sidecar + full skill catalog + UI honesty.
+
+### Added
+- Prisma Postgres (`@prisma/adapter-pg`), Docker `postgres:16-alpine`, GraphJin allowlist
+- Skills `vendor.goNoGo`, `tabletop.score`, `intel.correlate`, `playbook.nextStep`, `caiq.draft` with golden tests
+- `Approval` model; `POST /api/internal/watchers/tick`, `/api/internal/approvals`, `GET /api/internal/skills`
+- Command Center Needs-you widget; Decision Center OpenNeko CTA (`OPENNEKO_URL`)
+- `ops/openneko/README.md` sidecar runbook
+
+### Changed
+- Vendor finalize persists score + go/no-go; Shodan writes Observation and `AttackSurfaceScan`
+- War Room binds `Incident` or exercise mode; ticker is not fake IOCs
+- AppSec and Roadmap hidden from nav
+- Trivy / MITRE / vuln feed / events feed / contract mindmap: empty, not SAMPLE_
+- Dockerfile and entrypoint wait on Postgres, not SQLite
+
+---
+
 ## [3.0.0-decision.1] — 2026-08-17
 
 Honesty + skill runtime expansion. Empty is the product when data is missing.

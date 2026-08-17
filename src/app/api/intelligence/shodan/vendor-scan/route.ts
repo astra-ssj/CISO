@@ -8,6 +8,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { shodanClient } from '@/lib/intelligence/clients/shodan-client';
 import { logAudit, getRequestIp, getRequestUserAgent } from '@/lib/audit/audit-service';
+import { recordObservation } from '@/lib/observations/record';
 
 export async function POST(req: Request) {
     try {
@@ -31,6 +32,15 @@ export async function POST(req: Request) {
         }
 
         const result = await shodanClient.scanVendor(domain);
+        await recordObservation({
+            integrationId: 'shodan',
+            operation: 'vendorScan',
+            requestKey: domain.toLowerCase(),
+            status: 'ok',
+            payload: result,
+            ttlMs: 24 * 60 * 60 * 1000,
+            createdBy: (session.user as { id?: string }).id || 'system',
+        });
 
         await logAudit({
             userId: (session.user as { id?: string }).id,
