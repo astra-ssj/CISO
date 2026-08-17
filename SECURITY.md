@@ -4,7 +4,8 @@
 
 | Version | Supported |
 |---------|-----------|
-| 2.0.x   | ✅ Active |
+| 3.0.x-decision.* (`release/v3-decision-loop`) | ✅ Active |
+| 2.0.x (`main`) | ⚠️ Maintenance only — do not merge v3 mock-stripping back |
 | < 2.0   | ❌ No     |
 
 ---
@@ -22,7 +23,7 @@ Please include:
 1. **Description** of the vulnerability
 2. **Steps to reproduce** the issue
 3. **Impact assessment** — what could an attacker achieve?
-4. **Affected version(s)**
+4. **Affected version(s)** and branch
 5. **Suggested fix** (if you have one)
 
 ### What to Expect
@@ -43,20 +44,19 @@ Please include:
 
 ---
 
-## Security Architecture
+## Security Architecture (v3)
 
-Astra-CISO implements multiple security layers:
-
-- **Authentication:** NextAuth 5 with credentials provider
-- **Authorization:** RBAC with 4 roles (CISO, SEC_ENGINEER, AUDITOR, VIEWER)
-- **API Security:** Zod validation, rate limiting, CSP headers
-- **Data Protection:** Encrypted integration credentials (AES-256-GCM)
-- **Audit Trail:** Immutable append-only audit log
-- **AI Safety:** Circuit breaker pattern, Dynamic Autonomy Router
+- **Authentication:** NextAuth 5 (JWT). Public paths: `/login`, `/api/auth/*`, `/api/health`. `/api/internal/*` requires `x-astra-internal-secret`.
+- **Authorization:** RBAC (CISO, SEC_ENGINEER, AUDITOR, VIEWER)
+- **API Security:** Zod, rate limiting, CSP
+- **Data:** Postgres 16. GraphJin is **read** allowlist only — no `password`, no Integration `config`
+- **Audit Trail:** append-only `AuditLog`; skill runs in `SkillRun`
+- **AI Safety:** circuit breaker; LLM is `ai_draft`; default autonomy SUPERVISED
+- **OpenNeko:** sidecar. Do not embed the agent with API keys in Next.js serverless
 
 ## Default / Mock Credentials
 
 > [!WARNING]
-> By default, the database seeding (`npx prisma db push` via `prisma/seed.ts`) generates a demonstration user utilizing the credentials **`ciso@astra.ai`** and **`admin123`** (or `password123` depending on setup context). **You must change these default credentials or drop the active mock identities before deploying to a production environment to prevent unauthorized access.**
+> Seed creates **`ciso@astra.ai` / `admin123`**. Rotate or drop before any shared environment. Never commit `.env.local`.
 
-For architecture details, see [docs/HIGH_LEVEL_DESIGN.md](docs/HIGH_LEVEL_DESIGN.md).
+For what the product **honestly** claims, see [HONESTY.md](HONESTY.md). Architecture notes: [docs/HIGH_LEVEL_DESIGN.md](docs/HIGH_LEVEL_DESIGN.md) (v2 inventory — v3 overrides in [RELEASE.md](RELEASE.md)).

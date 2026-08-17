@@ -1,4 +1,6 @@
-# High-Level Design — Astra-CISO v2.0
+# High-Level Design — Astra-CISO
+
+> **v3 override (August 2026):** This document is the **v2 inventory**. Current product truth is [RELEASE.md](../RELEASE.md), [HONESTY.md](../HONESTY.md), and `.cursorrules`. Datasource is **Postgres 16**, APIs are session-gated, OpenNeko is a **sidecar**, skills live in `src/lib/skills/`. Do not treat SQLite or public `/api` below as current.
 
 ## 1. System Context
 

@@ -37,55 +37,48 @@ export const HELP_SECTIONS: HelpSection[] = [
                 content: `
 # What is Astra-CISO?
 
-Astra-CISO is an AI-powered cybersecurity compliance and risk management
-platform designed for organizations operating across multiple jurisdictions.
+**Astra is where security decisions get made, evidenced, and remembered.**
 
-## Core Capabilities
+It is not an autonomous CISO and not an OpenNeko wrapper. **Skills compute. Humans approve. Snapshots are the source of truth.**
 
-**Command Center** — Your CISO dashboard. Real-time KPIs, threat feeds,
-compliance posture, and pending actions across all modules in one view.
+Version **3.0.0-decision.2** on branch \`release/v3-decision-loop\`.
 
-**Decision Center** — AI-assisted decision queue. Pending approvals,
-risk-scored priorities, and three autonomy modes (Auto, Supervised, Manual)
-that control how much the AI acts independently.
+## What we claim today
 
-**Strategy & OKRs** — Security program strategy management. Set objectives,
-track key results, map controls to strategic initiatives, and measure
-program effectiveness.
+Vendor security questionnaires answered from a **1,000+ entry knowledge base** (\`caiq.match\` / \`caiq.score\`), 5×5 risk, evidence expiry, vendor go/no-go, Postgres snapshots, an honest decision queue, and an audit trail. OpenNeko is an optional **sidecar** for watchers and approvals.
 
-**Governance & Risk** — Multi-framework compliance tracking (ISO 27001,
-SOC 2, NIS2, GDPR, Cyber Essentials, EU AI Act), risk register with
-FAIR quantification, and policy lifecycle management.
+## What we do not claim today
 
-**Vendor Risk** — CAIQ-powered vendor assessment with a 1000+ entry
-Knowledge Base, 4-tier confidence matching (Exact, High, Partial, Low),
-and Shodan-integrated attack surface scanning.
+Live incident command, FAIR as dollar truth, board-ready KPIs, or an AI Decision Center that invents tickets. Empty is honest. Silent mock is not.
 
-**Incidents** — Incident lifecycle management from detection through
-resolution, War Room collaboration, and tabletop exercise integration.
+## Modules in the nav
 
-**Exercises** — Tabletop exercise engine with 3 crisis scenarios,
-decision tree and discussion modes, quantified consequences, and
-audit-ready session reports.
+**Command Center** — Needs-you queue plus real Prisma counts. Empty intel stays empty.
 
-**Threat Intelligence** — World Monitor geopolitical dashboard, Abuse.ch
-threat feeds (ThreatFox, URLhaus, MalwareBazaar), Shodan attack surface
-monitoring, and Country Instability Index.
+**Decision Center** — Work that needs a human: expired evidence, open 5×5 risks, recent skill runs. OpenNeko CTA when \`OPENNEKO_URL\` is set.
 
-**AppSec** — Vulnerability tracking, SAST scanner integration,
-remediation workflow, and risk register feed.
+**Strategy & OKRs** — Objectives and projects from Postgres. Defense Matrix unscored until assessments exist.
 
-**Integrations** — Data connectors for Google Workspace, Microsoft 365,
-and other platforms that feed real audit data into the compliance engine.
+**Governance & Risk** — Policies, evidence vault, 5×5 risk register (\`risk.fiveByFive\`).
 
-## Multi-Entity Architecture
-Astra-CISO supports multiple legal entities under one account. Switch
-between entities using the entity selector — all data isolates per entity.
+**Vendor Risk** — CAIQ match/score, knowledge base, vendor registry, optional Shodan snapshots.
 
-## AI Layer
-The platform uses multiple AI providers (Claude, Gemini, Ollama) with
-a circuit breaker for resilience. The Dynamic Autonomy Router controls
-AI decision-making authority. AI Economics tracks token usage and cost.
+**Incidents** — Playbooks from Postgres. War Room binds a real \`Incident\` or is labeled **exercise mode**.
+
+**Exercises** — Tabletop gym. Scoring is the \`tabletop.score\` skill.
+
+**Threat Intelligence** — Live feeds or empty. Never silent \`MOCK_*\` IOCs.
+
+**Integrations / Settings / Help** — Connectors, keys, this documentation.
+
+AppSec and Roadmap fail the value test and are **hidden from the nav**.
+
+## Value test (every feature)
+
+1. Does this create, evidence, or close a **decision**?
+2. Is the data **real** (or clearly empty)?
+3. Can the CISO **show an auditor** what happened?
+4. Same inputs + same skill version → **same output** (or a labeled \`ai_draft\`)?
       `
             },
             {
@@ -95,39 +88,37 @@ AI decision-making authority. AI Economics tracks token usage and cost.
                 content: `
 # First-Time Setup
 
-## 1. Configure Your Entities
-Go to Settings → Entities. Add each legal entity your organization
-operates (e.g., AstraLabs GmbH, AstraLabs UK Ltd, AstraLabs Pty Ltd).
-Each entity can have different compliance frameworks and jurisdictions.
+## 1. Postgres
+Astra v3 requires Postgres (GraphJin / OpenNeko cannot read SQLite).
 
-## 2. Set Up Compliance Frameworks
-Go to Governance & Risk → Compliance. Enable the frameworks relevant
-to each entity: ISO 27001, SOC 2, NIS2, GDPR, Cyber Essentials, EU AI Act.
-Mark controls as Implemented, Partial, or Not Implemented.
+\`\`\`bash
+docker compose up -d postgres
+# DATABASE_URL=postgresql://astra:astra@localhost:5432/astra
+npx prisma generate && npx prisma db push && npx prisma db seed
+npm run dev
+\`\`\`
 
-## 3. Configure Threat Intelligence
-Go to Settings → API Keys. Add:
-- **Shodan API Key** — for attack surface monitoring (free tier available)
-- API keys for AI providers (Claude/Gemini) if not pre-configured
+Local seed login: **ciso@astra.ai** / **admin123**. Change this before any shared deploy.
 
-Abuse.ch feeds (ThreatFox, URLhaus, MalwareBazaar) require no API key.
+## 2. Auth secrets
+Set \`AUTH_SECRET\` (and \`NEXTAUTH_SECRET\`) in \`.env.local\`.
 
-## 4. Connect Data Sources
-Go to Integrations. Connect Google Workspace and/or Microsoft 365 to
-feed real audit events into the platform. This is what makes the
-Command Center show real data instead of empty states.
+## 3. Threat intelligence (optional)
+Settings → API keys. **Shodan** for attack-surface snapshots. Abuse.ch feeds need no key. Missing key → last Observation or **empty**, never mock IOCs.
 
-## 5. Run Your First Exercise
-Go to Exercises and run Operation Trojan Vendor in Decision Tree mode.
-This takes ~90 minutes and gives you hands-on experience with the
-platform while testing your incident response instincts.
+## 4. Skills
+Skills run from Vendor Risk, Governance, Exercises, and \`POST /api/skills/*\`. Same input + version → same output. LLM output is labeled \`ai_draft\` and cannot close a decision.
 
-## 6. Add Your Team
-Go to Settings → Users. Invite team members with appropriate roles:
-- **CISO** — full access to all modules
-- **Engineer** — access to AppSec, Intelligence, and assigned tasks
-- **Auditor** — read-only access to Governance, Risk, and Exercise history
-- **Viewer** — read-only dashboard access
+## 5. OpenNeko (optional sidecar)
+Do **not** \`npm install\` OpenNeko into this app. Follow \`ops/openneko/README.md\`. Set \`ASTRA_INTERNAL_SECRET\` and optionally \`OPENNEKO_URL\`.
+
+## 6. First real work
+- Vendor Risk: run a CAIQ match against the knowledge base
+- Governance: add evidence with an expiry date (feeds Needs-you)
+- Exercises: run a tabletop (writes \`tabletop.score\`)
+
+## 7. Team
+Settings → Users. Roles: **CISO**, **SEC_ENGINEER**, **AUDITOR**, **VIEWER**.
       `
             },
             {
@@ -138,29 +129,79 @@ Go to Settings → Users. Invite team members with appropriate roles:
 # Navigation Guide
 
 ## Sidebar
-The left sidebar contains all 11 module links. Click "Collapse" at the
-bottom to minimize it to icons only.
+Command Center, Decision Center, Strategy & OKRs, Governance & Risk,
+Vendor Risk, Incidents, Exercises, Threat Intel, Integrations, Settings, Help.
+AppSec and Roadmap are hidden — they do not pass the value test.
 
-## Top Bar
-- **Astra Network** — status of connected systems
-- **Immunity Leaderboard** — industry benchmark comparison
-- **Data Status** — indicator showing whether real data is flowing
-- **Notifications** — alerts requiring attention
-- **Security Status** — overall security posture indicator
+Click Collapse at the bottom to icon-only.
 
-## Module Tabs
-Most modules have internal tabs for sub-sections. For example:
-- Governance has: Compliance, Risk Register, Policies
-- Intelligence has: World Monitor, Threat Feeds, IOC Enrichment, Attack Surface
-- Vendor Risk has: Quick Answer, Full Review, Knowledge Base, Vendor Registry
+## Top bar
+Status is **supervised**, not a fake "live SOC" ticker. Notifications
+come from Prisma. Empty queues mean nothing needs you.
 
-## Entity Switcher
-If you have multiple entities configured, use the entity selector to
-switch context. All data (compliance, risks, incidents, intelligence)
-filters to the selected entity.
+## Where decisions live
+- **Needs you** — Command Center widget and Decision Center tab
+- **Recorded** — operator-recorded decisions (starts empty)
+- **OpenNeko** — briefing CTA when \`OPENNEKO_URL\` is set
       `
             }
         ]
+    },
+
+    {
+        id: 'skills-openneko',
+        title: 'Skills & OpenNeko',
+        icon: '⚙️',
+        description: 'Deterministic skills, snapshots, and the sidecar',
+        articles: [
+            {
+                id: 'skills-catalog',
+                title: 'Skill catalog',
+                tags: ['skills', 'caiq', 'determinism', 'golden tests'],
+                content: `
+# Skill catalog
+
+Each skill is versioned, pure (clock is an input), and golden-tested.
+
+| Skill | Does |
+|-------|------|
+| \`caiq.match\` | KB match |
+| \`caiq.score\` | Coverage from hits |
+| \`caiq.draft\` | Label LLM text; cannot close a decision |
+| \`risk.fiveByFive\` | Likelihood × impact bands |
+| \`evidence.expiry\` | expiresAt vs asOf |
+| \`vendor.goNoGo\` | Score + Shodan snapshot vs appetite |
+| \`tabletop.score\` | Exercise grade from stored decisions |
+| \`intel.correlate\` | IOC ∩ vendor domains / hosts |
+| \`playbook.nextStep\` | Next incomplete checkbox |
+
+HTTP: \`POST /api/skills/...\` (session or \`x-astra-internal-secret\`).
+Catalog: \`GET /api/internal/skills\`.
+
+Runs persist to \`SkillRun\` (inputHash, skillVersion, outputJson).
+                `,
+                relatedArticles: ['openneko-sidecar'],
+            },
+            {
+                id: 'openneko-sidecar',
+                title: 'OpenNeko sidecar',
+                tags: ['openneko', 'watchers', 'approvals', 'graphjin'],
+                content: `
+# OpenNeko sidecar
+
+OpenNeko is **not** npm-installed into Astra. Install it beside the repo
+(\`ops/openneko/README.md\`). Point GraphJin at **Astra Postgres**, using
+the allowlist in \`ops/graphjin/config.yml\`.
+
+- Watchers call \`POST /api/internal/watchers/tick\`
+- Approvals: \`POST /api/internal/approvals\` (Approval + AuditLog)
+- Plugins need \`skillRunId\` and APPROVE
+
+If OpenNeko disappears, \`caiq.match\` still runs from the UI.
+                `,
+                relatedArticles: ['skills-catalog'],
+            },
+        ],
     },
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -179,43 +220,22 @@ filters to the selected entity.
                 content: `
 # Dashboard KPIs
 
-The Command Center displays 6 key performance indicators:
+Command Center is the **queue of decisions that need a human**, not a wallpaper of invented metrics.
 
-## Security Alerts (24h)
-Count of CRITICAL and HIGH severity events from threat intelligence
-feeds and connected integrations in the last 24 hours. Click to view
-details in the Threat Intelligence module.
+## Needs you
+Evidence expired / expiring (skill \`evidence.expiry\`) and open 5×5 risks
+(\`risk.fiveByFive\`). Empty means nothing needs you — not that the feed is demo.
 
-## Failed Logins (24h)
-Count of failed authentication attempts across connected platforms
-(Google Workspace, Microsoft 365). High numbers may indicate brute
-force attacks or credential stuffing. Requires active integration.
+## Counts that are real
+Vendor, policy, playbook, and evidence counts come from Postgres APIs.
+Recent incidents come from \`GET /api/incidents\` (empty until you create one).
+Active threats come from live Abuse.ch or stay empty.
 
-## Compliance Posture
-Percentage of controls marked as Implemented across all active
-frameworks. This is a weighted average — frameworks with more controls
-contribute proportionally.
+## When you see "—" or empty
+That is the product. Connect a real integration or add a row. Astra will
+not invent failed logins, board KPIs, or SAMPLE incidents.
 
-## Open Incidents
-Active incidents in the Incidents module that haven't reached "Closed"
-status. Click to jump to the incident list.
-
-## Pending Actions
-Count of items requiring attention across all modules: vendor assessments
-due, policy reviews pending, evidence expiring, and decisions awaiting
-approval in the Decision Center.
-
-## External Shares (7d)
-Count of file sharing events to external recipients in connected
-platforms over the last 7 days. High numbers may indicate data
-exfiltration risk or policy violation. Requires active integration.
-
-## When KPIs Show Zero or "—"
-If KPIs display zero or dashes, it means either:
-- No integration is connected (go to Integrations to connect Google
-  Workspace or Microsoft 365)
-- The connected integration hasn't synced yet (check last sync time)
-- There genuinely were no events in the measured period
+Executive Brief / some KPI sparklines are still mixed — see HONESTY.md.
       `
             },
             {
@@ -254,19 +274,23 @@ Click the map to open the full World Monitor in the Threat Intelligence module.
                 content: `
 # The Decision Center
 
-Astra-CISO's AI engine acts as a tireless security analyst, continuously scanning cross-module telemetry to surface high-impact recommendations into the **Decision Center**.
+The AI does **not** invent tickets. The queue is computed from Postgres.
 
-## AI Decision Cards
+## Needs you
+- Expired / expiring evidence — skill \`evidence.expiry\`
+- Open 5×5 risks — skill \`risk.fiveByFive\`
+- Recent skill runs (audit of what computed)
 
-When the platform correlates multiple low-level signals into a strategic finding, it generates a Decision Card. Each card includes:
-*   **The Proposition:** A clear statement of what needs to be decided (e.g., "Enforce MFA on legacy VPN gateway?").
-*   **Confidence Score:** How certain the AI is, based on historical data and policy alignment.
-*   **Impact Analysis:** Projected changes to the posture score or financial risk if the decision is approved.
-*   **Actions:** Direct links to approve, defer, or reject the recommendation.
+Empty = nothing needs a human. OpenNeko pending actions appear as a
+**Open OpenNeko briefing** link when \`OPENNEKO_URL\` is set.
 
-## The Action Queue
+## Recorded
+Operator-recorded decisions only. The list starts empty. OpenNeko memory
+is dual-written on approve/reject (\`Approval\` + \`AuditLog\` + skillRunId).
 
-Separate from strategic decisions, the Action Queue consolidates tactical tasks from across the platform (e.g., approving a policy draft, reviewing a vendor questionnaire, acknowledging an incident alert) into a single, prioritized inbox for the SEC_ENG and CISO roles.
+## Autonomy
+Default is **SUPERVISED**. LLM text is \`source: ai_draft\` and cannot
+close a vendor, risk, or incident without a human.
 `,
                 relatedArticles: ['arch-multi-ai']
             },
@@ -277,19 +301,19 @@ Separate from strategic decisions, the Action Queue consolidates tactical tasks 
                 content: `
 # Multi-Provider AI Architecture
 
-Astra-CISO uses a flexible AI abstraction layer, allowing you to route workloads to different Large Language Models (LLMs) based on task complexity and data sensitivity requirements.
+LLM output is a **draft**. Skills are the source of truth.
 
-### Supported Providers
+### Providers
+1. **Anthropic (Claude)** — drafts (policy language, tabletop prose, War Room copilot)
+2. **Google (Gemini)** — large-context drafts (CAIQ enhance as \`caiq.draft\`)
+3. **Ollama (local)** — same envelope, no data to a cloud LLM
 
-1.  **Anthropic (Claude):** Default engine for complex logic, policy drafting, and tabletop exercise simulation. Exceptional reasoning capabilities.
-2.  **Google (Gemini):** Highly efficient for massive context windows, document processing (CAIQ ingestion), and rapid report generation.
-3.  **Ollama (Local):** For organizations with strict data residency rules (e.g., defense contractors), Ollama allows you to run models like Llama 3 or Mistral entirely on your own infrastructure with zero data exfiltration.
+Circuit breaker per provider. Tokens/cost tracked. Missing config → no draft, not a fake "fail-safe" playbook.
 
-### Autonomy Levels
-In the Settings, you can configure the AI's autonomy:
-*   **Level 1 (Suggest):** AI highlights patterns but requires human action to draft responses.
-*   **Level 2 (Draft):** AI pre-populates forms, reports, and vendor questionnaires, waiting for human approval.
-*   **Level 3 (Autonomous):** (Coming Soon) AI can execute predefined remediation playbooks automatically for low-risk scenarios.
+### Autonomy (default SUPERVISED)
+- **MANUAL** — humans CRUD in Astra; no agent
+- **SUPERVISED** — OpenNeko / UI approve before plugins act
+- **AUTONOMOUS** — only behind an explicit written rule + audit. Not shipped for vendor reject or containment.
 `
             }
         ]
@@ -347,30 +371,17 @@ organizations operating under different regulatory regimes
                 content: `
 # Risk Register
 
-## Creating a Risk
-Each risk entry captures:
-- **Title** and description
-- **Category** — technical, operational, compliance, strategic, financial
-- **Likelihood** — probability of occurrence (1-5 scale)
-- **Impact** — consequence if realized (1-5 scale or FAIR $ quantification)
-- **Owner** — person accountable for mitigation
-- **Treatment** — avoid, mitigate, transfer, accept
+## 5×5 (what we claim)
+Each risk stores likelihood × impact (1–5). The skill \`risk.fiveByFive\`
+computes inherent/residual score and band. Same numbers → same band.
 
-## FAIR Quantification
-The platform supports Factor Analysis of Information Risk (FAIR) for
-dollar-value risk quantification. Instead of "High/Medium/Low," FAIR
-calculates expected annual loss:
+## FAIR
+FAIR dollar fields may exist on older scenario rows. They are **not**
+calibrated loss truth. Do not brief the board on ALE until you have
+your own loss data.
 
-- **Loss Event Frequency** — how often the event occurs per year
-- **Loss Magnitude** — dollar impact per occurrence
-- **Expected Annual Loss** = Frequency × Magnitude
-
-This gives the CFO a number they can work with: "This risk has an
-expected annual cost of €240K. The mitigation costs €80K. ROI is 3:1."
-
-## Risk Heatmap
-The visual matrix plots all risks by Likelihood (y-axis) and Impact
-(x-axis). Red zone = critical risks requiring immediate attention.
+## Heatmap
+Plots stored 5×5 cells. Unscored cells stay an em dash.
       `
             },
             {
@@ -415,35 +426,25 @@ Center's Pending Actions.
 # CAIQ Knowledge Transfer Engine
 
 ## What is CAIQ?
-The Consensus Assessment Initiative Questionnaire (CAIQ) is a Cloud
-Security Alliance (CSA) standard with 260+ questions covering 17 control
-domains. It's the industry standard for cloud vendor security assessment.
+Cloud Security Alliance questionnaire. Hundreds of questions. The job
+that hurts is answering them **the same way every time**, with evidence.
 
-## How Knowledge Transfer Works
-Instead of answering the same 260 questions from scratch for every
-vendor assessment, the Knowledge Base stores your organization's
-standard responses. When a new assessment arrives:
+## Skills (not a prompt)
+1. **\`caiq.match\`** — deterministic KB match (A-to-A / normalized). Golden-tested.
+2. **\`caiq.score\`** — coverage % from match hits only.
+3. **\`caiq.draft\`** — LLM paragraph labeled \`ai_draft\`. Cannot close a decision.
+4. Human review → \`VendorAssessment\`
+5. **\`vendor.goNoGo\`** — rules vs appetite + last Shodan Observation. Maps to
+   Approved / Conditionally Approved / Requires Reassessment. No autonomous reject.
 
-1. **Quick Answer** — paste a question, get the best matching response
-   from your Knowledge Base with a confidence score
-2. **Full Review** — run the entire CAIQ questionnaire against your
-   Knowledge Base, auto-matching all 260+ questions
-3. **Learning Loop** — correct any matches, and the system improves
-
-## Confidence Tiers
-- **EXACT** (100%) — identical question already answered
-- **HIGH** (>80%) — strong semantic match, answer likely correct
-- **PARTIAL** (50-80%) — related question, answer needs review
-- **LOW** (<50%) — weak match, manual answer recommended
+Same questionnaire hash + KB + skill version → same match.
 
 ## Knowledge Base
-The Knowledge Base contains 1000+ Q&A entries organized by control
-domain (AIS, BCR, CCC, DSP, GRC, etc.). Import/export as JSON.
+1,000+ Q&A entries. Import/export JSON.
 
-## Shodan Vendor Scanning
-Scan a vendor's domain to discover their external attack surface:
-exposed services, open ports, CVEs, SSL/TLS configuration. Results
-appear in the vendor profile alongside CAIQ assessment results.
+## Shodan
+Optional. Success writes an **Observation** (and attack-surface rows).
+Failure → last snapshot or empty.
       `
             }
         ]
@@ -561,7 +562,8 @@ All feeds are normalized to a consistent severity scale:
 - Error (red) — API connection failed
 - Unconfigured (gray) — API key not set (Shodan only)
 
-All Abuse.ch feeds are free and require no API key.
+All Abuse.ch feeds are free and require no API key. Circuit open or
+fetch fail → last Observation or empty. Never \`MOCK_*\` IOCs.
       `
             },
             {
@@ -608,31 +610,20 @@ Configure in Settings → API Keys.
                 content: `
 # Incident Lifecycle
 
-## Status Flow
-Open → Investigating → Contained → Resolved → Closed
-
-- **Open** — incident detected and logged
-- **Investigating** — root cause analysis underway
-- **Contained** — threat neutralized, spread stopped
-- **Resolved** — systems restored, evidence preserved
-- **Closed** — post-mortem complete, corrective actions assigned
+## Status
+Open → Investigating → Contained → Resolved → Closed — when an
+\`Incident\` row exists.
 
 ## War Room
-Real-time collaboration space for active incidents. Includes:
-- Timeline of events
-- Notes and observations
-- Evidence attachments
-- Assigned actions
+Binds the first real incident from \`GET /api/incidents\`. If none,
+it is **exercise mode** — not live IR. Copilot output is a draft
+and cannot close a decision. Playbook checkboxes stay empty until a
+stored Playbook is attached (\`playbook.nextStep\`).
 
-## Auto-Created Incidents
-When integrations detect anomalies (impossible travel, brute force,
-mass data exfiltration), the platform auto-creates incident proposals.
-Review and accept or dismiss from the Decision Center.
+Astra is not a SIEM/SOC. Nothing is auto-created from invented telemetry.
 
-## Linking Exercises to Incidents
-After a real incident, run a tabletop exercise based on a similar
-scenario within 30 days. This tests whether your lessons learned
-actually improved your response capability.
+## Tabletop
+Rehearse under **Exercises**. Finish writes \`tabletop.score\`.
       `
             },
         ],
@@ -650,56 +641,41 @@ actually improved your response capability.
                 content: `
 # AI Autonomy Modes
 
-## Auto Mode
-The AI acts on low-risk decisions automatically (e.g., updating threat
-feed classifications, marking expired evidence for review). All actions
-are logged in the audit trail.
+Default is **SUPERVISED**.
 
-## Supervised Mode
-The AI provides recommendations with confidence scores. A human must
-approve before any action is taken. Recommended for most organizations.
+## MANUAL
+Astra UI CRUD. No agent. Skills still run when you click them.
 
-## Manual Mode
-The AI provides information and analysis only. All decisions require
-explicit human initiation. Required for organizations with strict
-governance requirements or during the initial trust-building period.
+## SUPERVISED
+Watchers call Astra skills. Plugins (Jira, Slack, write Risk / vendor status)
+run only after **APPROVE** with a \`skillRunId\`. Dual-write \`Approval\` + \`AuditLog\`.
 
-## Switching Modes
-Change modes in Decision Center → Settings. Mode changes are logged
-in the audit trail. Some organizations use Auto for routine tasks and
-Manual for anything touching customer data or regulatory filings.
+## AUTONOMOUS
+Not shipped for vendor reject or incident containment. Requires a written
+rule plus audit before it would ever be enabled.
       `
             },
         ],
     },
     {
         id: "appsec",
-        title: "AppSec",
+        title: "AppSec (hidden)",
         icon: "🔐",
-        description: "Vulnerability management and code security",
+        description: "Hidden from nav until scanner snapshots are real",
         articles: [
             {
-                id: "vulnerability-tracking",
-                title: "Vulnerability Tracking",
-                tags: ["vulnerability", "CVE", "CVSS", "AppSec", "remediation"],
+                id: "appsec-hidden",
+                title: "Why AppSec is hidden",
+                tags: ["AppSec", "value test", "hidden"],
                 content: `
-# Vulnerability Tracking
+# AppSec is not in the nav
 
-## Vulnerability Feed
-Lists discovered vulnerabilities with CVE identifiers and CVSS scores.
-Sorted by severity (Critical → High → Medium → Low).
+The value test: if a screen does not create, evidence, or close a
+decision with **real** data, hide it. The AppSec / Trivy path still
+invented CVEs. It is hidden until a scanner writes Observations.
 
-## Remediation Workflow
-Open → In Progress → Resolved
-
-Track who is fixing what, set due dates, and measure remediation velocity.
-Critical vulnerabilities that exceed their SLA auto-escalate to the
-Decision Center.
-
-## Risk Register Integration
-Critical vulnerabilities auto-create risk proposals in the Governance
-module. This connects application security findings to your enterprise
-risk posture.
+Use Vendor Risk + Shodan snapshots and GitHub Dependabot (empty without
+\`GITHUB_TOKEN\`) instead of a fake vuln feed.
       `
             },
         ],
@@ -717,29 +693,18 @@ risk posture.
                 content: `
 # Why Integrations Matter
 
-Without integrations, the platform displays empty states. With
-integrations, it displays real data:
+Connectors persist **Observations**. Command Center and Decision Center
+read snapshots and skill outputs — never the live wire on every paint.
+
+Without a connector you see empty. That is correct.
 
 | Without | With |
 |---------|------|
-| KPIs show "—" | KPIs show real counts |
-| Compliance has no evidence | Auto-generated evidence from events |
-| Risk register is manual | Auto-proposals from anomalies |
-| Incidents are manually created | Auto-detection of suspicious activity |
+| Needs-you from evidence + risks only | Same, plus intel correlate hits |
+| Shodan disabled | Observation + AttackSurfaceScan |
+| No SIEM | Still not a SOC — we will not invent events |
 
-## Available Connectors
-- **Google Workspace** — login events, admin actions, Drive sharing,
-  OAuth grants, device compliance
-- **Microsoft 365** — sign-in logs, directory audit, SharePoint sharing,
-  Intune compliance, security alerts
-- **AWS CloudTrail** — IAM changes, S3 access, security group modifications
-- **GitHub** — code access, secret scanning, PR approvals
-- **Slack** — message retention, DLP events, app installations
-
-## Setup
-Go to Settings → Integrations. Each connector has specific setup
-instructions and required permissions. Credentials are encrypted
-and stored securely.
+Credentials stay encrypted. GraphJin must not read Integration \`config\`.
       `
             },
         ],
@@ -777,30 +742,29 @@ in full after saving.
                 content: `
 # FAQ
 
-## Why are my KPIs showing zero?
-Connect at least one integration (Google Workspace or Microsoft 365)
-to populate KPIs with real data.
+## Why is the queue empty?
+Nothing is expired and no open 5×5 risks. Add evidence with \`expiresAt\`
+or a risk on Governance.
 
-## Why is the World Monitor empty?
-Check that Abuse.ch feeds are connecting (they require no API key).
-If the map doesn't load, ensure MapLibre CSS is loading correctly
-(check browser console for errors).
+## Why no fake threats on the ticker?
+v3 deleted silent mocks. Abuse.ch / Shodan / OTX: live, last Observation, or empty.
 
-## Can multiple people use the platform simultaneously?
-Yes. Each user has their own session. Exercise sessions are per-user
-unless running in Discussion mode with assigned participants.
+## Is War Room live IR?
+Only if an \`Incident\` row exists. Otherwise it is labeled exercise mode.
 
-## How often should we run tabletop exercises?
-Quarterly for full Discussion mode exercises, monthly for quick
-Decision mode assessments. After any real incident, run a similar
-scenario within 30 days.
+## Where are skills documented?
+In-app: this Help Center → Skills. Repo: \`src/lib/skills/README.md\`.
+Honesty inventory: \`HONESTY.md\`.
+
+## Does OpenNeko replace CAIQ matching?
+No. OpenNeko calls \`caiq.match\` by id. If OpenNeko is unplugged, the
+skill still runs from the UI and golden tests.
 
 ## What data leaves my environment?
-- AI queries: sent to your configured AI provider (Claude, Gemini, or
-  Ollama). Use Ollama for fully local processing.
-- Shodan: target IPs/domains are sent to Shodan's API
-- Abuse.ch: no data is sent — read-only feeds
-- Integration data: stored in your database only
+- AI drafts: your configured provider (or none)
+- Shodan: IPs/domains you ask to scan
+- Abuse.ch: read-only
+- Domain data: your Postgres
       `
             },
         ],

@@ -18,6 +18,7 @@ CISO factory slice: Postgres + OpenNeko sidecar + full skill catalog + UI honest
 - `Approval` model; `POST /api/internal/watchers/tick`, `/api/internal/approvals`, `GET /api/internal/skills`
 - Command Center Needs-you widget; Decision Center OpenNeko CTA (`OPENNEKO_URL`)
 - `ops/openneko/README.md` sidecar runbook
+- Help Center + GitHub docs aligned to v3 (value test, skills, sidecar)
 
 ### Changed
 - Vendor finalize persists score + go/no-go; Shodan writes Observation and `AttackSurfaceScan`
