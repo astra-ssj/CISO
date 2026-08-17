@@ -102,8 +102,9 @@ To get the most out of Astra-CISO, modules are designed to interconnect. Here ar
 ### With Docker
 
 ```bash
-git clone https://github.com/SristiNative/CISO.git
+git clone https://github.com/astra-ssj/CISO.git
 cd CISO
+git checkout release/v3-decision-loop
 cp .env.example .env.local
 # Edit .env.local — AUTH_SECRET + DATABASE_URL (Postgres)
 docker compose up -d postgres
@@ -115,6 +116,7 @@ npm run dev
 ### Without Docker
 
 ```bash
+git checkout release/v3-decision-loop
 docker compose up -d postgres
 npm install
 cp .env.example .env.local
@@ -207,7 +209,7 @@ ISO 27001:2022 · NIST CSF 2.0 · SOC 2 Type II · GDPR · NIS2 · EU AI Act · 
 
 ## Roadmap
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for the full product roadmap.
+See [docs/ROADMAP.md](docs/ROADMAP.md) for the product roadmap. In-app Help Center (`/help`) matches this release. Honesty inventory: [HONESTY.md](HONESTY.md). Skills: [src/lib/skills/README.md](src/lib/skills/README.md). OpenNeko: [ops/openneko/README.md](ops/openneko/README.md).
 
 ---
 

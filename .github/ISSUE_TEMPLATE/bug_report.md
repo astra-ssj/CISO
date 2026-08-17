@@ -40,7 +40,8 @@ Paste logs here
 | OS | e.g. macOS 14, Ubuntu 22.04 |
 | Docker version | e.g. 26.1.4 |
 | Browser | e.g. Chrome 124, Firefox 125 |
-| App version | e.g. v2.0.0 |
+| App version | e.g. 3.0.0-decision.2 |
+| Branch | e.g. release/v3-decision-loop |
 | Node version | e.g. 22.x |
 
 ## Additional Context

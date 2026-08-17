@@ -226,7 +226,7 @@ const ROLE_COLORS: Record<string, string> = {
 
 const ROLE_PERMISSIONS: { role: string; modules: string[] }[] = [
     { role: 'CISO', modules: ['All modules', 'Settings', 'Team Management', 'AI Config', 'Billing'] },
-    { role: 'SEC_ENGINEER', modules: ['Command Center', 'Incidents', 'AppSec', 'Intelligence', 'Vendors', 'Integrations'] },
+    { role: 'SEC_ENGINEER', modules: ['Command Center', 'Incidents', 'Intelligence', 'Vendors', 'Exercises', 'Integrations'] },
     { role: 'AUDITOR', modules: ['Governance', 'Evidence', 'Audit Logs', 'Compliance Reports'] },
     { role: 'VIEWER', modules: ['Command Center (read-only)', 'Dashboards', 'Reports'] },
 ];

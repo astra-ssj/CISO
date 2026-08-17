@@ -1,4 +1,6 @@
-# Low-Level Design — Astra-CISO v2.0
+# Low-Level Design — Astra-CISO
+
+> **v3 override (August 2026):** Schema and runtime have moved. See `prisma/schema.prisma` (Postgres, `Observation`, `SkillRun`, `Approval`). This file’s SQLite / 17-model notes are historical. Skill HTTP paths: `src/lib/skills/README.md`. GraphJin allowlist: `ops/graphjin/config.yml`.
 
 ## 1. Database Schema
 

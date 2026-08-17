@@ -617,7 +617,7 @@ export default function HelpPage() {
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <span style={{ fontSize: 12, color: textMuted, fontWeight: 500 }}>System Help v3.0</span>
+                        <span style={{ fontSize: 12, color: textMuted, fontWeight: 500 }}>Help · 3.0.0-decision.2 · empty is honest</span>
                     </div>
                 </header>
 

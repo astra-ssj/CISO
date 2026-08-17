@@ -26,17 +26,24 @@ Describe any alternative solutions or features you have considered and why they 
 
 ## Module / Area Affected
 
-- [ ] Command Center
-- [ ] Vendor Risk / CAIQ
-- [ ] Intelligence / World Monitor
-- [ ] Reporting
+- [ ] Command Center / Needs you
+- [ ] Decision Center
+- [ ] Vendor Risk / CAIQ skills
+- [ ] Governance & Risk (5×5)
+- [ ] Intelligence / Observations
 - [ ] Tabletop Exercises
-- [ ] Compliance & Governance
-- [ ] AI CISO Assistant
+- [ ] Incidents / War Room
+- [ ] OpenNeko sidecar / GraphJin
+- [ ] Skills runtime
 - [ ] Settings / Configuration
 - [ ] API / Backend
-- [ ] Infrastructure / Docker
+- [ ] Documentation
 - [ ] Other: ___
+
+## Value test
+
+Does this create, evidence, or close a decision with real (or clearly empty) data?
+      `
 
 ## Additional Context
 

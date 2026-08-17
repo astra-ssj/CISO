@@ -1,5 +1,22 @@
 # Astra-CISO Product Roadmap
 
+v3 on `release/v3-decision-loop` is a **separate line** from v2 on `main`. See [RELEASE.md](../RELEASE.md) and [HONESTY.md](../HONESTY.md).
+
+## v3.0 — Decision loop (shipping)
+
+**Now (`3.0.0-decision.2`):** Postgres, session-gated APIs, Observation + SkillRun, full v1 skill catalog, OpenNeko as sidecar (watchers/approvals), honest UI (empty ≠ mock).
+
+**Not claimed:** live IR, FAIR as truth, board-ready KPIs, autonomous vendor reject.
+
+**Next on this line**
+
+- Operator OpenNeko install beside Astra (GraphJin → Astra Postgres)
+- More fetch jobs that **only** insert Observations
+- Decision Center deep-link from OpenNeko action cards
+- Hide or replace remaining MIXED screens (executive KPI engine, compliance heatmap)
+
+---
+
 ## v2.0 — Foundation ✅ Released (2026-02-26)
 
 - ✅ ZTAIP architecture alignment
@@ -68,14 +85,12 @@
 
 ---
 
-## v3.0 — Autonomous CISO
+## v3.0 — Supervised factory (north star)
 
-**Target:** 2027
+Not “autonomous CISO.” Default stays **SUPERVISED**.
 
-- Multi-Tenant Architecture
-- Natural Language Queries
-- Predictive Risk Scoring
-- AI Audit Preparation
-- Regulatory Change Monitoring
-- Self-Healing Compliance
-- Marketplace (community templates, policies, playbooks)
+- OpenNeko briefing as the morning Needs-you
+- Approval-gated plugins (Jira/Slack) with `skillRunId`
+- Continuous watch (questionnaires stay; snapshots refresh)
+- Still out of scope: SIEM/EDR truth, uncalibrated FAIR, board PowerPoint mill
+
