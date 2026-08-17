@@ -1,45 +1,63 @@
-# Astra-CISO v2.0 — Cursor Rules
+# Astra-CISO v3.0 — Decision Loop (release/v3-decision-loop)
 # Architecture context for AI-assisted development
 
+## Value (do not ship features that fail this)
+Astra is where security decisions get made, evidenced, and remembered.
+1. Does this create, evidence, or close a decision?
+2. Is the data real (or clearly empty), never silently mocked?
+3. Can the CISO show an auditor what happened?
+4. Same inputs + same skill version → same output (or an explicit labeled draft)?
+
+Skills compute. LLM drafts only. OpenNeko watches and approval-gates — it does not own domain truth.
+
 ## Platform Overview
-- CISO command center built on ZTAIP (Zero Trust AI Platform) architecture
-- Next.js 16, React 19, TypeScript 5, Prisma 7, SQLite, Zustand
+- CISO decision loop on ZTAIP (Zero Trust AI Platform)
+- Next.js 16, React 19, TypeScript 5, Prisma 7, Postgres 16
 - Dark hacker theme (Bloomberg Terminal aesthetic) — never use light backgrounds
-- 8 modules, 11 sidebar items, tab-based internal navigation
+- Version: 3.0.0-decision.2 on branch release/v3-decision-loop
 
-## Modules (8 total)
-1. Command Center — Overview, Executive Brief, Reports & Board Deck
-2. Decision Center — Decisions, Action Queue
-3. Strategy & OKRs — OKRs, Defense Matrix, KPI Dashboard, Program Tracker
-4. Governance & Risk — Compliance, Risk Register, Policy Engine, Audit Logs, Evidence Vault
-5. Vendor Risk — Quick Answer, Knowledge Transfer, Knowledge Base, CAIQ Review, Vendor Registry
-6. Incidents — Active Incidents, War Room, Tabletop Exercises
-7. Intelligence — Threat Briefing, World Monitor, Attack Surface, Signal Intelligence, Infrastructure, Military & Maritime, Live Feeds, Ransomware
-8. AppSec — Vulnerability Feed, SAST Scanner, Remediation Tracking
+## Skills (src/lib/skills/)
+- caiq.match@1.0.0 — deterministic KB match, no I/O, golden tests required
+- caiq.score@1.0.0 — coverage from match hits
+- caiq.draft@1.0.0 — LLM envelope only (source: ai_draft, cannot close a decision)
+- risk.fiveByFive@1.0.0 — likelihood × impact bands
+- evidence.expiry@1.0.0 — expiresAt vs asOf (clock is an input)
+- vendor.goNoGo@1.0.0 — score + last Shodan snapshot vs appetite
+- tabletop.score@1.0.0 — exercise grade from stored session decisions
+- intel.correlate@1.0.0 — snapshot IOCs ∩ vendor domains / attack-surface hosts
+- playbook.nextStep@1.0.0 — next incomplete Playbook checkbox
+- Skill runs persist to SkillRun (inputHash, skillVersion, outputJson)
+- Integration fetches persist to Observation (append-only). Never return MOCK intel.
+- OpenNeko watchers call POST /api/internal/watchers/tick (x-astra-internal-secret)
+- Approvals dual-write Approval + AuditLog (POST /api/internal/approvals)
 
-## Sidebar Items (11)
-Command Center, Decision Center, Strategy & OKRs, Governance & Risk, Vendor Risk, Incidents, Intelligence, AppSec, Settings, Help, Roadmap
+## Modules (product surface)
+Command Center, Decision Center, Strategy & OKRs, Governance & Risk, Vendor Risk, Incidents, Exercises, Threat Intel, Integrations, Settings, Help
+AppSec and Roadmap fail the value test — hidden from nav.
+If a screen does not create, evidence, or close a decision, hide it or delete it.
 
 ## Architecture Patterns
 - ZTAIP: Zero Trust AI Platform — never trust, always verify
 - Circuit Breaker: CLOSED → OPEN → HALF_OPEN per AI provider and intel API
-- Dynamic Autonomy Router: AUTONOMOUS / SUPERVISED / MANUAL
+- Dynamic Autonomy Router: AUTONOMOUS / SUPERVISED / MANUAL (default SUPERVISED)
 - Immutable Audit Fabric: append-only AuditLog, never update/delete
+- Deterministic skills + Observation snapshots
 
 ## AI Providers (multi-provider)
 - Anthropic Claude, Google Gemini, Ollama (local)
 - Always use circuit breaker per provider
 - AI Economics: track tokens, cost, queries
+- LLM output is a draft (source: ai_draft), never canonical without human approve
 
 ## Intelligence Module Patterns
 ### API Clients (src/lib/intelligence/clients/)
 - All clients use circuit breaker pattern
-- All clients cache with TTL (never uncached API calls)
-- Graceful degradation: return cached data or empty state on failure
+- Persist snapshots via Observation (TTL: Shodan host 24h, search 1h)
+- On failure: last Observation or empty — NEVER mock IOCs
 
 ### Shodan
 - Rate limit: 1 request/second (free tier)
-- Cache: host lookups 24h, search 1h
+- Cache: host lookups 24h, search 1h (Observation table)
 - All lookups logged to audit trail
 
 ### Abuse.ch
@@ -70,7 +88,7 @@ Command Center, Decision Center, Strategy & OKRs, Governance & Risk, Vendor Risk
 - src/components/command/ — Command Center widgets
 - src/components/intelligence/ — Intelligence components
 - src/components/intelligence/world-monitor/ — World Monitor map components
-- src/components/intelligence/tabs/ — Intelligence tab wrappers
+- src/lib/skills/ — deterministic skill runtime
 
 ## Code Conventions
 - TypeScript strict mode, no `any` types
@@ -81,9 +99,8 @@ Command Center, Decision Center, Strategy & OKRs, Governance & Risk, Vendor Risk
 - @/ path alias for imports
 
 ## Database
-- SQLite via Prisma 7
-- 17 models (see prisma/schema.prisma)
-- Key models: KnowledgeEntry (1000+ entries), AttackSurfaceScan, AuditLog
+- Postgres 16 via Prisma 7 (`@prisma/adapter-pg`). GraphJin / OpenNeko read the same DB.
+- Key models: KnowledgeEntry, Observation, SkillRun, Approval, AuditLog, AttackSurfaceScan
 
 ## Deleted Features (DO NOT reference or recreate)
 - Wargames module (replaced by Tabletop Exercises)
@@ -92,7 +109,6 @@ Command Center, Decision Center, Strategy & OKRs, Governance & Risk, Vendor Risk
 - Privacy placeholder
 - Network telemetry widget
 - OpenClaw agent (replaced by native AI)
-- MISP integration (replaced by Abuse.ch)
 - Light/purple theme (replaced by dark hacker theme)
 - Docker-based threat intel stack (replaced by cloud APIs)
-- 20-item sidebar (now 11 items)
+- Silent MOCK_* intel fallbacks (v3: empty or last Observation)

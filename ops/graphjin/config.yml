@@ -1,0 +1,45 @@
+# GraphJin — read-only allowlist over Astra Postgres
+# Point OpenNeko's GraphJin source here. Do not expose secrets.
+#
+# db: postgresql://astra:astra@postgres:5432/astra
+# OpenNeko must not write VendorAssessment, Risk, or KnowledgeEntry through GraphJin.
+
+app_name: astra
+production: true
+default_limit: 20
+
+# Tables the agent may READ. Writes stay on Astra skill runtime + AuditLog.
+roles:
+  - name: user
+    tables:
+      - name: User
+        query:
+          columns: [id, name, email, role, lastActiveAt, createdAt]
+          block: [password]
+      - name: Vendor
+      - name: VendorAssessment
+      - name: KnowledgeEntry
+      - name: Policy
+        query:
+          block: []
+      - name: Evidence
+      - name: Risk
+      - name: Playbook
+      - name: AuditLog
+      - name: Objective
+      - name: Project
+      - name: TabletopSession
+      - name: Integration
+        query:
+          columns: [id, name, type, status, createdAt]
+          block: [config]
+      - name: Observation
+      - name: SkillRun
+      - name: Approval
+      - name: AttackSurfaceScan
+
+# Never allowlist
+# - User.password
+# - Integration.config (ciphertext)
+# - invite tokens
+# - raw LLM prompts

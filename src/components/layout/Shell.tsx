@@ -19,9 +19,7 @@ import {
     Target,
     Building2,
     Radar,
-    Map,
     AlertTriangle,
-    Code,
     Plug,
     Siren,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -44,11 +42,9 @@ const navItems = [
     { name: 'Incidents', href: '/incidents', icon: AlertTriangle },
     { name: 'Exercises', href: '/exercises', icon: Siren },
     { name: 'Threat Intel', href: '/intelligence', icon: Radar },
-    { name: 'AppSec', href: '/appsec', icon: Code },
     { name: 'Integrations', href: '/integrations', icon: Plug },
     { name: 'Settings', href: '/settings', icon: Settings, separator: true },
     { name: 'Help Center', href: '/help', icon: HelpCircle },
-    { name: 'Roadmap', href: '/roadmap', icon: Map },
 ];
 
 export function Shell({ children }: { children: React.ReactNode }) {

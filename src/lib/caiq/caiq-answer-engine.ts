@@ -21,6 +21,8 @@ import {
 export type { AnsweredQuestion, QuestionnaireQuestion, ConfidenceLevel } from './caiq-knowledge-base';
 import { AIResponse } from '@/lib/ai/engine';
 import { TokenTracker, AIModel } from '@/lib/telemetry/token-tracker';
+import { runCaiqMatch, runCaiqScore, type KnowledgeRecord } from '@/lib/skills';
+import { persistSkillRun } from '@/lib/skills/persist';
 
 // ────────────────────────────────────────────
 // Types
@@ -481,92 +483,64 @@ export async function matchToKnowledgeBase(
         const entries = await (prisma as any).knowledgeEntry.findMany();
 
         if (entries && entries.length > 0) {
-            return questions.map((q: QuestionnaireQuestion) => {
-                let bestMatch: Record<string, unknown> | null = null;
-                let bestScore = 0;
-                let matchTier = 0; // 1: Exact, 2: Keyword/Domain, 3: Jaccard/Semantic
+            const records: KnowledgeRecord[] = entries.map((entry: {
+                id: string;
+                questionNormalized: string;
+                keywords: string;
+                answerText: string;
+                answerType?: string;
+                evidence?: string | null;
+            }) => ({
+                id: entry.id,
+                questionNormalized: entry.questionNormalized,
+                keywords: entry.keywords ?? '',
+                answerText: entry.answerText,
+                answerType: entry.answerType,
+                evidence: entry.evidence,
+            }));
 
-                const qNormRaw = q.questionText.toLowerCase();
-                const qNorm = qNormRaw.replace(/[^a-z0-9\s]/g, '').trim();
-                const qWords = qNorm.split(/\s+/).filter((w: string) => w.length > 3);
+            const matchInput = {
+                questions: questions.map((q) => ({ questionText: q.questionText })),
+                entries: records,
+                minConfidence,
+            };
+            const matchRun = runCaiqMatch(matchInput, new Date().toISOString());
+            const scoreRun = runCaiqScore({ hits: matchRun.output }, matchRun.asOf);
+            void persistSkillRun(matchRun);
+            void persistSkillRun(scoreRun);
+            const hits = matchRun.output;
 
-                for (const entry of entries) {
-                    const eNorm = entry.questionNormalized;
-
-                    // Tier 1: Exact Normalized Match
-                    if (qNorm === eNorm && qNorm.length > 0) {
-                        bestScore = 97;
-                        bestMatch = entry;
-                        matchTier = 1;
-                        break; // Perfect match, shortcut
-                    }
-
-                    const eWords = eNorm.split(/\s+/).filter((w: string) => w.length > 3);
-                    const entryKeywords = (entry.keywords || '').split(',').map((k: string) => k.trim().toLowerCase()).filter(Boolean);
-
-                    let keywordHits = 0;
-                    for (const kw of entryKeywords) {
-                        if (qNormRaw.includes(kw)) keywordHits++;
-                    }
-                    const keywordScore = entryKeywords.length > 0 ? (keywordHits / entryKeywords.length) * 100 : 0;
-
-                    let wordOverlap = 0;
-                    for (const w of qWords) {
-                        if (eWords.some((ew: string) => ew.includes(w) || w.includes(ew))) wordOverlap++;
-                    }
-                    const overlapScore = qWords.length > 0 ? (wordOverlap / Math.max(qWords.length, eWords.length)) * 100 : 0;
-
-                    // Tier 2: Keyword + Domain Overlap (Weighted)
-                    const t2Score = Math.round(keywordScore * 0.6 + overlapScore * 0.4);
-
-                    // Tier 3: Jaccard Similarity (Basic Semantic Approximation)
-                    const intersection = qWords.filter((x: string) => eWords.includes(x));
-                    const union = new Set([...qWords, ...eWords]);
-                    const jaccard = union.size === 0 ? 0 : (intersection.length / union.size) * 100;
-                    const t3Score = Math.round(jaccard * 0.7 + overlapScore * 0.3);
-
-                    const currentScore = Math.max(t2Score, t3Score);
-                    const currentTier = t2Score >= t3Score ? 2 : 3;
-
-                    if (currentScore > bestScore) {
-                        bestScore = currentScore;
-                        bestMatch = entry;
-                        matchTier = currentTier;
-                    }
-                }
-
-                if (bestMatch && bestScore >= minConfidence) {
-                    let confidence: ConfidenceLevel = 'low';
-                    if (matchTier === 1) confidence = 'high';
-                    else if (matchTier === 2 && bestScore >= 80) confidence = 'high';
-                    else if (matchTier === 2 || (matchTier === 3 && bestScore >= 65)) confidence = 'medium';
-
-                    // Track usage asynchronously (fire-and-forget)
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (prisma as any).knowledgeEntry.update({
-                        where: { id: bestMatch.id },
-                        data: { usageCount: { increment: 1 }, lastUsed: new Date() },
-                    }).catch(() => { });
-
+            return questions.map((q, i) => {
+                const hit = hits[i];
+                if (!hit?.entryId || !hit.answer) {
                     return {
                         ...q,
-                        answer: bestMatch.answerText as string,
-                        yesNo: bestMatch.answerType as 'Yes' | 'No' | 'N/A',
-                        confidence,
-                        matchedEntryId: bestMatch.id as string,
-                        source: 'a2a' as const,
-                        evidenceRef: (bestMatch.evidence as string) || '',
+                        answer: '',
+                        yesNo: '' as const,
+                        confidence: 'low' as const,
+                        source: 'manual' as const,
+                        evidenceRef: '',
                     };
                 }
 
-                // Tier 5 (Fallback): Manual
+                (prisma as { knowledgeEntry: { update: (args: unknown) => Promise<unknown> } }).knowledgeEntry.update({
+                    where: { id: hit.entryId },
+                    data: { usageCount: { increment: 1 }, lastUsed: new Date() },
+                }).catch(() => { });
+
+                const yesNo = hit.answerType === 'YES' || hit.answerType === 'Yes' ? 'Yes'
+                    : hit.answerType === 'NO' || hit.answerType === 'No' ? 'No'
+                    : hit.answerType === 'NA' || hit.answerType === 'N/A' ? 'N/A'
+                    : (hit.answerType as 'Yes' | 'No' | 'N/A' | '');
+
                 return {
                     ...q,
-                    answer: '',
-                    yesNo: '' as const,
-                    confidence: 'low' as const,
-                    source: 'manual' as const,
-                    evidenceRef: '',
+                    answer: hit.answer,
+                    yesNo,
+                    confidence: hit.confidence,
+                    matchedEntryId: hit.entryId,
+                    source: 'a2a' as const,
+                    evidenceRef: hit.evidence || '',
                 };
             });
         }

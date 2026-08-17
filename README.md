@@ -1,14 +1,16 @@
-# Astra-CISO v2.0
+# Astra-CISO v3 (decision-loop)
 
-**Autonomous Security Operations Platform** — AI-powered compliance, risk management, and threat intelligence for multi-jurisdictional enterprises.
+**Astra is where security decisions get made, evidenced, and remembered.**
 
----
+Not an autonomous CISO. Not an OpenNeko wrapper. Skills compute; humans approve; snapshots are the source of truth.
 
-## Overview
+**Today (this release):** vendor questionnaires from a defensible KB, 5×5 risk, evidence expiry, vendor go/no-go, Postgres snapshots, an honest decision queue, and OpenNeko as a sidecar for watchers/approvals. Cycle time down, evidence up, a decision you can defend.
 
-Astra-CISO is a CISO command center built on **ZTAIP (Zero Trust AI Platform)** architecture. It manages security operations across **8 countries** (DE, UK, TH, AU, NZ, ES, AT, US) and provides unified visibility into compliance posture, threat landscape, vendor risk, and incident response.
+**Not this release:** live IR, board-ready KPIs, silent mock intel, or an AI Decision Center that invents tickets.
 
-**Key differentiator:** CAIQ Knowledge Transfer engine with **1,000+ pre-validated Q&A pairs** — reducing vendor risk assessments from days to hours.
+This line ships on branch `release/v3-decision-loop` (`3.0.0-decision.2`). See [RELEASE.md](RELEASE.md), [HONESTY.md](HONESTY.md), [CHANGELOG.md](CHANGELOG.md).
+
+**Key differentiator:** CAIQ Knowledge Transfer with **1,000+ pre-validated Q&A pairs** — replayable, not a new LLM paragraph each time.
 
 ---
 
@@ -16,14 +18,13 @@ Astra-CISO is a CISO command center built on **ZTAIP (Zero Trust AI Platform)** 
 
 | Module | Description |
 |--------|-------------|
-| **Command Center** | Real-time security posture dashboard with Global Threat Monitor, KPI metrics, active threats feed, compliance overview, and AI activity monitoring. |
-| **Decision Center** | AI-assisted security decision queue with prioritized action items aggregated from across the platform. |
-| **Strategy & OKRs** | Security strategy management with OKRs, defense matrix, KPI dashboards, and program tracking. |
-| **Governance & Risk** | Multi-framework compliance tracking (ISO 27001, SOC 2, NIS2, GDPR, Cyber Essentials, EU AI Act), FAIR risk quantification, and policy lifecycle management. |
-| **Vendor Risk** | CAIQ v4 automation with Knowledge Transfer engine (4-tier confidence matching), 1,000+ entry knowledge base, multi-company/product configuration, and Shodan-powered vendor scanning. |
-| **Incidents** | Incident management with war room collaboration, tabletop exercises linked to real threat data, and after-action reporting. |
-| **Threat Intelligence** | World Monitor with interactive map (25+ data layers), attack surface monitoring via Shodan, live threat feeds from Abuse.ch (ThreatFox, URLhaus, MalwareBazaar), signal intelligence with anomaly detection, infrastructure monitoring, and ransomware tracking. |
-| **AppSec** | Vulnerability feed, SAST scanning, Trivy integration, and remediation velocity tracking. |
+| **Command Center** | Queue of real counts + live/empty intel. Does not seed SAMPLE incidents or threats. |
+| **Decision Center** | Needs-you queue from evidence expiry and open 5×5 risks. Recorded decisions start empty. |
+| **Strategy & OKRs** | OKRs and projects from Prisma. Defense Matrix unscored until assessments exist. KPI tab still mixed — see HONESTY.md. |
+| **Governance & Risk** | Risk register (5×5 skill), policies, evidence, audit. Compliance heatmap still seeded. |
+| **Vendor Risk** | CAIQ match/score skills, knowledge base, vendor registry, optional Shodan. |
+| **Incidents** | Playbooks from Prisma. Register empty until used. War Room binds `Incident` or is labeled exercise mode. |
+| **Threat Intelligence** | Live feeds or empty. World Monitor static layers + live cyber points. No silent MOCK IOCs. |
 
 ---
 
@@ -86,7 +87,7 @@ To get the most out of Astra-CISO, modules are designed to interconnect. Here ar
 │  └──────────────────────────────────────────────────┘   │
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌───────────────────┐     │
-│  │ SQLite   │  │ MapLibre │  │ Immutable Audit   │     │
+│  │ Postgres │  │ MapLibre │  │ Immutable Audit   │     │
 │  │ (Prisma) │  │ GL Maps  │  │ Fabric            │     │
 │  └──────────┘  └──────────┘  └───────────────────┘     │
 └─────────────────────────────────────────────────────────┘
@@ -104,19 +105,22 @@ To get the most out of Astra-CISO, modules are designed to interconnect. Here ar
 git clone https://github.com/SristiNative/CISO.git
 cd CISO
 cp .env.example .env.local
-# Edit .env.local — add AI provider key (minimum)
-docker compose build
-docker compose up -d
+# Edit .env.local — AUTH_SECRET + DATABASE_URL (Postgres)
+docker compose up -d postgres
+npx prisma generate && npx prisma db push && npx prisma db seed
+npm run dev
 # Open http://localhost:3000
 ```
 
 ### Without Docker
 
 ```bash
+docker compose up -d postgres
 npm install
 cp .env.example .env.local
-# Edit .env.local
+# Edit .env.local — DATABASE_URL=postgresql://astra:astra@localhost:5432/astra
 npx prisma db push
+npx prisma db seed
 npm run dev
 # Open http://localhost:3000
 ```
@@ -147,7 +151,9 @@ npm audit
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `DATABASE_URL` | SQLite path | `file:./dev.db` |
+| `DATABASE_URL` | Postgres URL | `postgresql://astra:astra@localhost:5432/astra` |
+| `ASTRA_INTERNAL_SECRET` | OpenNeko watcher/approval header | — |
+| `OPENNEKO_URL` | OpenNeko briefing CTA | — |
 | `NEXTAUTH_SECRET` | Random 32+ char string | — |
 | `NEXTAUTH_URL` | Application URL | `http://localhost:3000` |
 

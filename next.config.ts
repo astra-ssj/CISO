@@ -2,7 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: 'standalone',
-  serverExternalPackages: ['@prisma/client', 'better-sqlite3', '@prisma/adapter-better-sqlite3'],
+  turbopack: {
+    root: process.cwd(),
+  },
+  serverExternalPackages: ['@prisma/client', 'pg', '@prisma/adapter-pg'],
   async headers() {
     return [
       {

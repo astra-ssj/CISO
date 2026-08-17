@@ -1,4 +1,3 @@
-
 export interface SecurityVulnerability {
     id: string;
     repository: string;
@@ -17,40 +16,10 @@ export interface GitHubStats {
     dependabotActive: boolean;
 }
 
-// Simulated "Real" Data - In production this uses fetch('https://api.github.com/...')
-const MOCK_GITHUB_DATA: SecurityVulnerability[] = [
-    {
-        id: 'GHSA-234-567',
-        repository: 'astra-frontend',
-        severity: 'CRITICAL',
-        package: 'next-auth',
-        version: '4.20.1',
-        fixedIn: '4.22.1',
-        alertDate: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-        url: 'https://github.com/advisories/GHSA-123'
-    },
-    {
-        id: 'GHSA-890-123',
-        repository: 'astra-backend',
-        severity: 'HIGH',
-        package: 'axios',
-        version: '0.21.1',
-        fixedIn: '0.21.2',
-        alertDate: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
-        url: 'https://github.com/advisories/GHSA-456'
-    },
-    {
-        id: 'GHSA-456-789',
-        repository: 'ops-scripts',
-        severity: 'MODERATE',
-        package: 'lodash',
-        version: '4.17.15',
-        fixedIn: '4.17.21',
-        alertDate: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(), // 2 days ago
-        url: 'https://github.com/advisories/GHSA-789'
-    }
-];
-
+/**
+ * GitHub Dependabot connector.
+ * Without GITHUB_TOKEN this returns empty — never demo GHSA rows.
+ */
 export class GitHubConnector {
     private token: string | null = null;
 
@@ -59,35 +28,61 @@ export class GitHubConnector {
     }
 
     async isConnected(): Promise<boolean> {
-        // Return true if token exists or if we are in "Demo Mode" (which we are)
-        return true;
+        return Boolean(this.token);
     }
 
     async getVulnerabilities(): Promise<SecurityVulnerability[]> {
-        // In real impl: 
-        // if (!this.token) throw new Error("No Token");
-        // const res = await fetch('api.github.com/orgs/astra/dependabot/alerts', ...);
-
-        // Brief simulated delay (keep UI responsive)
-        await new Promise(resolve => setTimeout(resolve, 150));
-
-        return MOCK_GITHUB_DATA;
+        if (!this.token) return [];
+        try {
+            const res = await fetch('https://api.github.com/orgs/astra/dependabot/alerts?state=open&per_page=50', {
+                headers: {
+                    Authorization: `Bearer ${this.token}`,
+                    Accept: 'application/vnd.github+json',
+                    'X-GitHub-Api-Version': '2022-11-28',
+                },
+                signal: AbortSignal.timeout(15_000),
+            });
+            if (!res.ok) return [];
+            const data = await res.json() as Array<{
+                number: number;
+                html_url: string;
+                created_at: string;
+                security_advisory?: { ghsa_id?: string; severity?: string };
+                security_vulnerability?: {
+                    package?: { name?: string };
+                    vulnerable_version_range?: string;
+                    first_patched_version?: { identifier?: string };
+                };
+                dependency?: { manifest_path?: string };
+            }>;
+            return data.map((alert) => ({
+                id: alert.security_advisory?.ghsa_id || `GHSA-${alert.number}`,
+                repository: alert.dependency?.manifest_path || 'unknown',
+                severity: (alert.security_advisory?.severity?.toUpperCase() || 'LOW') as SecurityVulnerability['severity'],
+                package: alert.security_vulnerability?.package?.name || 'unknown',
+                version: alert.security_vulnerability?.vulnerable_version_range || '',
+                fixedIn: alert.security_vulnerability?.first_patched_version?.identifier || '',
+                alertDate: alert.created_at,
+                url: alert.html_url,
+            }));
+        } catch {
+            console.warn('[GitHub] getVulnerabilities — empty (live fetch failed, no mock)');
+            return [];
+        }
     }
 
     async getStats(): Promise<GitHubStats> {
         const vulns = await this.getVulnerabilities();
         return {
-            totalRepos: 12,
+            totalRepos: 0,
             openAlerts: vulns.length,
-            criticalCount: vulns.filter(v => v.severity === 'CRITICAL').length,
-            dependabotActive: true
+            criticalCount: vulns.filter((v) => v.severity === 'CRITICAL').length,
+            dependabotActive: Boolean(this.token),
         };
     }
 
     async syncNow(userId: string) {
-        // Log the sync action
-        // We can't import user profile here easily without context, so we just take ID
         console.log(`[GitHub] Sync triggered by ${userId}`);
-        return true;
+        return this.getVulnerabilities();
     }
 }

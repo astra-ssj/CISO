@@ -1,35 +1,51 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: astra-postgres
+    environment:
+      POSTGRES_USER: astra
+      POSTGRES_PASSWORD: astra
+      POSTGRES_DB: astra
+    ports:
+      - "${ASTRA_PG_PORT:-5432}:5432"
+    volumes:
+      - astra-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U astra -d astra"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
   astra-ciso:
     build:
       context: .
       dockerfile: Dockerfile
     image: astra-ciso:latest
     container_name: astra-ciso
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - "3000:3000"
     env_file:
       - .env.local
     environment:
       NODE_ENV: production
-      # Database (SQLite in persisted volume)
-      DATABASE_URL: "file:/app/data/astra-ciso.db"
-      # Auth (set in .env or override in deployment)
+      DATABASE_URL: "postgresql://astra:astra@postgres:5432/astra"
       AUTH_SECRET: ${AUTH_SECRET:-change-me-in-production}
       AUTH_TRUST_HOST: "true"
       JWT_SECRET: ${JWT_SECRET:-${AUTH_SECRET:-change-me-in-production}}
-      # Optional: app branding / health
-      VERSION: ${VERSION:-0.1.0}
+      VERSION: ${VERSION:-3.0.0-decision.2}
       ASTRA_ORG_NAME: ${ASTRA_ORG_NAME:-}
       ASTRA_JURISDICTION: ${ASTRA_JURISDICTION:-}
       ASTRA_INDUSTRY: ${ASTRA_INDUSTRY:-}
       ASTRA_ORG_SIZE: ${ASTRA_ORG_SIZE:-}
       ASTRA_CLOUD_MODEL: ${ASTRA_CLOUD_MODEL:-}
-      # Optional: AI providers (keys come from env_file: .env.local; do not override here or they get cleared)
       AI_PROVIDER: ${AI_PROVIDER:-ANTHROPIC}
+      OPENNEKO_URL: ${OPENNEKO_URL:-http://localhost:8080}
+      ASTRA_INTERNAL_SECRET: ${ASTRA_INTERNAL_SECRET:-}
     volumes:
-      # Writable data dir for SQLite (DB, WAL, journal files)
-      - astra-ciso-data:/app/data
-      # Evidence file storage
       - evidence-data:/data/evidence
     healthcheck:
       test: [ "CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health" ]
@@ -40,7 +56,5 @@ services:
     restart: unless-stopped
 
 volumes:
-  astra-ciso-data:
+  astra-pg-data:
   evidence-data:
-
-

@@ -2,6 +2,8 @@
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { scoreFiveByFive, runFiveByFive } from "@/lib/skills/risk-five-by-five";
+import { persistSkillRun } from "@/lib/skills/persist";
 
 export async function createRisk(data: {
     title: string;
@@ -14,12 +16,13 @@ export async function createRisk(data: {
     treatmentPlan?: string;
     reviewDate: Date;
 }) {
-    const inherentScore = data.likelihood * data.impact;
+    const scored = scoreFiveByFive({ likelihood: data.likelihood, impact: data.impact });
+    void persistSkillRun(runFiveByFive({ likelihood: data.likelihood, impact: data.impact }, new Date().toISOString()));
 
     const risk = await prisma.risk.create({
         data: {
             ...data,
-            inherentScore,
+            inherentScore: scored.inherentScore,
         },
     });
 
@@ -56,7 +59,9 @@ export async function updateRisk(id: string, data: Partial<{
     if (data.likelihood !== undefined || data.impact !== undefined) {
         const newLikelihood = data.likelihood ?? existingRisk.likelihood;
         const newImpact = data.impact ?? existingRisk.impact;
-        updates.inherentScore = newLikelihood * newImpact;
+        const scored = scoreFiveByFive({ likelihood: newLikelihood, impact: newImpact });
+        updates.inherentScore = scored.inherentScore;
+        void persistSkillRun(runFiveByFive({ likelihood: newLikelihood, impact: newImpact }, new Date().toISOString()));
     }
 
     const updatedRisk = await prisma.risk.update({

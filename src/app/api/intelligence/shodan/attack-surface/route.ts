@@ -8,6 +8,8 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { shodanClient } from '@/lib/intelligence/clients/shodan-client';
 import { logAudit, getRequestIp, getRequestUserAgent } from '@/lib/audit/audit-service';
+import { recordObservation } from '@/lib/observations/record';
+import prisma from '@/lib/prisma';
 
 export async function POST(req: Request) {
     try {
@@ -33,6 +35,28 @@ export async function POST(req: Request) {
         }
 
         const report = await shodanClient.scanOrgAssets(ips, domains);
+        const userId = (session.user as { id?: string }).id || 'system';
+        const requestKey = [...ips, ...domains].sort().join(',');
+
+        const observationId = await recordObservation({
+            integrationId: 'shodan',
+            operation: 'attackSurface',
+            requestKey,
+            status: 'ok',
+            payload: report,
+            ttlMs: 24 * 60 * 60 * 1000,
+            createdBy: userId,
+        });
+
+        await prisma.attackSurfaceScan.create({
+            data: {
+                totalAssets: report.totalAssets,
+                totalVulns: report.totalVulnerabilities,
+                riskScore: report.riskScore,
+                results: JSON.stringify({ ...report, observationId }),
+                createdBy: userId,
+            },
+        });
 
         await logAudit({
             userId: (session.user as { id?: string }).id,

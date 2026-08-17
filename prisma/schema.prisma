@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 // -----------------------------------------------------------------------------
@@ -339,7 +339,7 @@ model Notification {
   message   String
   severity  String
   read      Boolean  @default(false)
-  timestamp Int // Unix ms
+  timestamp BigInt // Unix ms (Postgres Int cannot hold Date.now())
   actionUrl String?
   createdAt DateTime @default(now())
 }
@@ -630,4 +630,57 @@ model TabletopCommsDraft {
   draftedAt DateTime        @default(now())
 
   @@index([sessionId])
+}
+
+// -----------------------------------------------------------------------------
+// 19. Deterministic observations + skill runs (v3 decision-loop)
+//     Snapshots are append-only. Skills are replayable. LLM drafts are not stored here.
+// -----------------------------------------------------------------------------
+
+model Observation {
+  id             String    @id @default(cuid())
+  integrationId  String // shodan, threatfox, urlhaus, malwarebazaar, otx, ...
+  operation      String // hostLookup, recentIocs, vendorScan, ...
+  requestKey     String // canonical query
+  fetchedAt      DateTime  @default(now())
+  expiresAt      DateTime?
+  status         String // ok, error, stale, empty
+  httpStatus     Int?
+  errorCode      String?
+  payloadSha256  String
+  payload        String // JSON
+  createdBy      String    @default("system")
+
+  @@index([integrationId, operation, requestKey, fetchedAt])
+}
+
+model SkillRun {
+  id            String   @id @default(cuid())
+  skillId       String // caiq.match
+  skillVersion  String
+  inputHash     String
+  outputJson    String
+  asOf          DateTime
+  observationIds String? // JSON array of Observation ids
+  createdAt     DateTime @default(now())
+
+  @@index([skillId, inputHash])
+  @@index([createdAt])
+}
+
+// Approvals remembered in Astra (OpenNeko memory is dual-written when configured).
+model Approval {
+  id              String   @id @default(cuid())
+  skillRunId      String
+  observationIds  String   @default("[]") // JSON
+  decision        String // APPROVE | REJECT
+  actorId         String?
+  actorName       String?
+  plugin          String? // jira, slack, astra.risk, astra.vendor
+  payload         String? // JSON plugin body — must include skillRunId
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  @@index([skillRunId])
+  @@index([createdAt])
 }

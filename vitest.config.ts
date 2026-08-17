@@ -2,10 +2,11 @@ import { defineConfig } from 'vitest/config';
 import path from 'path';
 
 export default defineConfig({
+  root: path.resolve(__dirname),
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: ['./tests/setup.ts'],
+    setupFiles: [path.resolve(__dirname, 'tests/setup.ts')],
     include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
     exclude: ['tests/integration/**', 'tests/smoke/**'],
     coverage: {

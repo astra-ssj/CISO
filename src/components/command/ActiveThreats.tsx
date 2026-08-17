@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { ArrowRight, MapPin, Zap } from 'lucide-react';
 
-/* ── Design tokens ─────────────────────────────────── */
 const CARD_BG = 'rgba(8, 12, 24, 0.85)';
 const CARD_BD = 'rgba(56, 189, 248, 0.06)';
 
@@ -16,17 +15,6 @@ interface ThreatItem {
     time: string;
     region?: string;
 }
-
-const SAMPLE_THREATS: ThreatItem[] = [
-    { id: 't1', title: 'APT29 phishing campaign targeting EU institutions', severity: 'critical', source: 'ThreatFox', time: '2h ago', region: 'EU' },
-    { id: 't2', title: 'LockBit 3.0 ransomware surge in healthcare sector', severity: 'critical', source: 'MalwareBazaar', time: '4h ago', region: 'Global' },
-    { id: 't3', title: 'DDoS advisory for financial services — Killnet', severity: 'high', source: 'GDELT', time: '6h ago', region: 'EU/US' },
-    { id: 't4', title: 'New Qakbot variant detected in email campaigns', severity: 'high', source: 'URLhaus', time: '8h ago', region: 'APAC' },
-    { id: 't5', title: 'RedLine Stealer distribution via fake software updates', severity: 'medium', source: 'ThreatFox', time: '12h ago', region: 'Global' },
-    { id: 't6', title: 'Emotet resurgence with updated C2 infrastructure', severity: 'high', source: 'MalwareBazaar', time: '14h ago', region: 'EU' },
-    { id: 't7', title: 'Cobalt Strike beacon detected on infrastructure scan', severity: 'medium', source: 'OTX', time: '18h ago', region: 'APAC' },
-    { id: 't8', title: 'SolarWinds-style supply chain advisory active', severity: 'medium', source: 'GDELT', time: '1d ago', region: 'US' },
-];
 
 const SEVERITY_COLORS = {
     critical: '#f43f5e',
@@ -42,7 +30,7 @@ const SOURCE_COLORS: Record<string, string> = {
 };
 
 export function ActiveThreats() {
-    const [threats, setThreats] = useState<ThreatItem[]>(SAMPLE_THREATS);
+    const [threats, setThreats] = useState<ThreatItem[]>([]);
     const [isLive, setIsLive] = useState(false);
     const [feedError, setFeedError] = useState(false);
 
@@ -64,16 +52,20 @@ export function ActiveThreats() {
                 setThreats(liveThreats);
                 setIsLive(true);
                 setFeedError(false);
+            } else {
+                setThreats([]);
+                setIsLive(false);
+                setFeedError(false);
             }
         } catch {
-            // Keep existing data (sample or previously loaded live data)
-            if (!isLive) setFeedError(true);
+            setThreats([]);
+            setIsLive(false);
+            setFeedError(true);
         }
-    }, [isLive]);
+    }, []);
 
     useEffect(() => {
         fetchThreats();
-        // Auto-refresh every 5 minutes
         const interval = setInterval(fetchThreats, 5 * 60 * 1000);
         return () => clearInterval(interval);
     }, [fetchThreats]);
@@ -85,31 +77,34 @@ export function ActiveThreats() {
         >
             <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: CARD_BD }}>
                 <div className="flex items-center gap-2">
-                    <div className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
+                    <div className="h-1.5 w-1.5 rounded-full" style={{ background: isLive ? '#10b981' : '#64748b' }} />
                     <span
                         className="text-xs font-semibold uppercase tracking-wider text-white"
                         style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}
                     >
                         Active Threats
                     </span>
-                    {!isLive && !feedError && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'rgba(30,41,59,0.6)', color: '#94a3b8' }}>Sample Data</span>
-                    )}
                     {isLive && (
                         <span className="text-[9px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981' }}>LIVE</span>
+                    )}
+                    {!isLive && !feedError && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'rgba(30,41,59,0.6)', color: '#94a3b8' }}>EMPTY</span>
                     )}
                 </div>
                 <Link href="/intelligence" className="text-[10px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors">
                     View All <ArrowRight className="h-3 w-3" />
                 </Link>
             </div>
-            {feedError && !isLive && (
+            {feedError && (
                 <div className="flex items-center gap-1.5 px-4 py-1.5 text-[9px] text-amber-400" style={{ background: 'rgba(251,191,36,0.05)' }}>
                     <Zap className="h-3 w-3" />
-                    Threat feeds temporarily unavailable — showing cached data
+                    Threat feeds unavailable — showing empty, not cached samples
                 </div>
             )}
             <div className="flex-1 overflow-y-auto px-2 py-1" style={{ maxHeight: '300px' }}>
+                {threats.length === 0 && !feedError && (
+                    <p className="text-[11px] text-slate-500 px-2 py-6 text-center">No live IOCs. Abuse.ch returned empty or is unreachable.</p>
+                )}
                 {threats.map((t, i) => (
                     <div
                         key={t.id}

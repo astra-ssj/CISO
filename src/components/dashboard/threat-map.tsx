@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Globe } from "lucide-react";
@@ -63,36 +63,7 @@ interface Attack {
 }
 
 export function CyberThreatMap() {
-    const [attacks, setAttacks] = useState<Attack[]>([]);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            const id = Date.now();
-            const sourceZone = APT_ZONES[Math.floor(Math.random() * APT_ZONES.length)];
-
-            // Randomize start slightly around the zone center
-            const startX = sourceZone.x + (Math.random() * 20 - 10);
-            const startY = sourceZone.y + (Math.random() * 20 - 10);
-
-            // Target: US East Coast (Approx 150, 120) or EU (400, 100)
-            const targets = [{ x: 150, y: 120 }, { x: 400, y: 100 }];
-            const target = targets[Math.floor(Math.random() * targets.length)];
-            const endX = target.x + (Math.random() * 20 - 10);
-            const endY = target.y + (Math.random() * 20 - 10);
-
-            // Arc Control Point
-            const midX = (startX + endX) / 2;
-            const midY = Math.min(startY, endY) - 100;
-
-            setAttacks(prev => [...prev.slice(-10), {
-                id, startX, startY, controlX: midX, controlY: midY, endX, endY,
-                type: 'apt',
-                color: sourceZone.color,
-                label: sourceZone.name
-            }]);
-        }, 1200);
-        return () => clearInterval(interval);
-    }, []);
+    const [attacks] = useState<Attack[]>([]);
 
     return (
         <Card className="col-span-1 md:col-span-2 min-h-[500px] border-zinc-200 bg-white shadow-xl relative overflow-hidden text-zinc-900">
@@ -100,7 +71,7 @@ export function CyberThreatMap() {
             <CardHeader className="relative z-10 flex flex-row items-center justify-between pb-2 border-b border-zinc-100 bg-white/90 backdrop-blur-sm">
                 <CardTitle className="text-lg font-bold flex items-center gap-2 text-zinc-800 tracking-tight">
                     <Globe className="h-5 w-5 text-blue-600" />
-                    GLOBAL THREAT INTELLIGENCE
+                    REFERENCE MAP
                 </CardTitle>
                 <div className="flex gap-2">
                     {APT_ZONES.map(zone => (

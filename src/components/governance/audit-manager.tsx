@@ -55,7 +55,7 @@ export function AuditManager() {
 
     useEffect(() => {
         if (nextChallengeTrigger === 0) return;
-        const target = controls[Math.floor(Math.random() * controls.length)];
+        const target = controls.length === 0 ? null : controls[nextChallengeTrigger % controls.length];
         const id = setTimeout(() => {
             setCurrentRequest(target);
             setSelectedEvidence("");

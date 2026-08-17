@@ -28,27 +28,21 @@ export async function consultCommandCenter(
 
     // 1. Safety Check
     if (!isAIConfigured()) {
-        await new Promise(resolve => setTimeout(resolve, 1500));
         return {
-            success: true,
+            success: false,
             role: 'assistant',
-            content: "⚠️ **AI Offline**: The neural core is unreachable. Please check your API configuration.\n\n*Running in localized fail-safe mode.*",
+            content: 'AI is not configured. No draft. Set an AI provider in Settings.',
+            error: 'ai_not_configured',
             timestamp: new Date()
         };
     }
 
     try {
         // 2. Construct Prompt
-        const systemPrompt = `You are the AI Commander of a Cyber War Room. 
-        Current active incident: ${JSON.stringify(incidentContext)}.
-        
-        Your role:
-        1. Analyze the situation based on the user's input.
-        2. Provide immediate, tactical guidance (containment, eradication, recovery).
-        3. Be authoritative, concise, and precise. Use military/cybersecurity terminology.
-        4. If the user asks for a specific artifact (email, report), draft it.
-        
-        Format your response in Markdown. Use bolding for key actions.`;
+        const systemPrompt = `You are a CISO copilot drafting incident guidance.
+        Incident context (may be exercise mode): ${JSON.stringify(incidentContext)}.
+        Label every recommendation as a draft. Do not invent IOCs, asset names, or containment that did not happen.
+        You cannot close a decision or change Vendor/Incident status.`;
 
         // 3. Call AI
         const chatSession = getAIProvider().createChatSession(
@@ -78,11 +72,11 @@ export async function consultCommandCenter(
         const message = error instanceof Error ? error.message : String(error);
         // 4. Quota Fallback (The Feature we verified)
         if (message.includes("429") || message.includes("Quota exceeded")) {
-            console.warn("Quota exceeded. Returning mock fallback.");
             return {
-                success: true,
+                success: false,
                 role: 'assistant',
-                content: `**AI assistant temporarily unavailable.**\n\nUnable to reach the AI service. Please try again shortly.\n\n**Recommended actions:**\n1.  **Isolate** the compromised subnet immediately.\n2.  **Snapshot** all affected VM memory states.\n3.  **Reset** Kerberos Ticket Granting Ticket (KRBTGT) account password twice.\n\n*You can retry the AI connection in 60s.*`,
+                content: 'AI quota exceeded. No draft was invented.',
+                error: 'quota_exceeded',
                 timestamp: new Date()
             };
         }

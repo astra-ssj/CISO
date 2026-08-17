@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,18 +13,11 @@ import {
     Bot,
     User,
     Clock,
-    Shield,
     CheckCircle,
-    Phone,
-    Users,
     FileText,
-    Activity,
     Loader2,
     Siren,
-    Target,
-    Zap
 } from "lucide-react";
-import { SecureCommsWidget } from "@/components/war-room/secure-comms";
 import { consultCommandCenter } from "@/app/actions/war-room-ai";
 
 interface Message {
@@ -33,58 +27,61 @@ interface Message {
     timestamp: Date;
 }
 
-interface Incident {
+interface BoundIncident {
     id: string;
     title: string;
-    severity: 'critical' | 'high' | 'medium' | 'low';
-    status: 'active' | 'investigating' | 'contained' | 'resolved';
-    startTime: Date;
-    type: string;
-    affectedSystems: string[];
+    severity: string;
+    status: string;
+    startedAt: string;
 }
 
-const MOCK_INCIDENT: Incident = {
-    id: "INC-2026-0142",
-    title: "Suspected Ransomware Activity - Finance Servers",
-    severity: "critical",
-    status: "investigating",
-    startTime: new Date(Date.now() - 1000 * 60 * 45), // 45 mins ago
-    type: "Ransomware",
-    affectedSystems: ["fin-srv-01", "fin-srv-02", "backup-nas-03"]
-};
-
-const PLAYBOOK_ITEMS = [
-    { id: 1, text: "Isolate affected systems from network", completed: true },
-    { id: 2, text: "Notify incident response team lead", completed: true },
-    { id: 3, text: "Preserve evidence (memory dumps, logs)", completed: false },
-    { id: 4, text: "Identify scope of compromise", completed: false },
-    { id: 5, text: "Determine attack vector", completed: false },
-    { id: 6, text: "Assess data impact", completed: false },
-    { id: 7, text: "Prepare executive briefing", completed: false },
-    { id: 8, text: "Initiate recovery procedures", completed: false },
-];
+const EMPTY_PLAYBOOK: { id: number; text: string; completed: boolean }[] = [];
 
 export default function WarRoomPage() {
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            id: '1',
-            role: 'system',
-            content: `🚨 **War Room Activated** for ${MOCK_INCIDENT.id}\n\nIncident: ${MOCK_INCIDENT.title}\nSeverity: ${MOCK_INCIDENT.severity.toUpperCase()}\nStatus: ${MOCK_INCIDENT.status}\n\nI'm your AI incident response advisor. I can help with containment strategies, forensic guidance, communication templates, and playbook recommendations.`,
-            timestamp: new Date()
-        }
-    ]);
+    const [incident, setIncident] = useState<BoundIncident | null>(null);
+    const [loaded, setLoaded] = useState(false);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
-    const [playbook, setPlaybook] = useState(PLAYBOOK_ITEMS);
+    const [playbook, setPlaybook] = useState(EMPTY_PLAYBOOK);
     const scrollRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        fetch('/api/incidents')
+            .then(async (res) => {
+                if (!res.ok) return { incidents: [] as BoundIncident[] };
+                return res.json() as Promise<{ incidents: BoundIncident[] }>;
+            })
+            .then((data) => {
+                const first = (data.incidents ?? [])[0] ?? null;
+                setIncident(first);
+                const exercise = !first;
+                setMessages([{
+                    id: '1',
+                    role: 'system',
+                    content: exercise
+                        ? '**Exercise mode.** No Incident row exists. This is not live IR. Open a real incident or run a tabletop under Exercises. Copilot output is a labeled draft and cannot close a decision.'
+                        : `War Room bound to incident **${first.id}** — ${first.title}. Copilot output is a draft (source: ai_draft). Containment still requires a human approve.`,
+                    timestamp: new Date(),
+                }]);
+            })
+            .catch(() => {
+                setIncident(null);
+                setMessages([{
+                    id: '1',
+                    role: 'system',
+                    content: '**Exercise mode.** Incident list unavailable. Astra is not a SOC.',
+                    timestamp: new Date(),
+                }]);
+            })
+            .finally(() => setLoaded(true));
+    }, []);
 
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }, [messages]);
-
-
 
     const sendMessage = async () => {
         if (!input.trim() || isTyping) return;
@@ -93,7 +90,7 @@ export default function WarRoomPage() {
             id: Date.now().toString(),
             role: 'user',
             content: input,
-            timestamp: new Date()
+            timestamp: new Date(),
         };
 
         setMessages(prev => [...prev, userMessage]);
@@ -101,30 +98,28 @@ export default function WarRoomPage() {
         setIsTyping(true);
 
         try {
-            // Call Real AI Action
             const result = await consultCommandCenter(
                 input,
-                MOCK_INCIDENT as unknown as import('@/app/actions/war-room-ai').IncidentContext,
-                messages // Pass history for context
+                incident
+                    ? { id: incident.id, title: incident.title, severity: incident.severity, status: incident.status }
+                    : { id: 'exercise', title: 'No live incident', severity: 'none', status: 'exercise' },
+                messages,
             );
 
             if (result.success) {
-                const aiResponse: Message = {
+                setMessages(prev => [...prev, {
                     id: (Date.now() + 1).toString(),
                     role: 'assistant',
                     content: result.content,
-                    timestamp: new Date()
-                };
-                setMessages(prev => [...prev, aiResponse]);
+                    timestamp: new Date(),
+                }]);
             } else {
-                // Fallback error UI
-                const errorResponse: Message = {
+                setMessages(prev => [...prev, {
                     id: (Date.now() + 1).toString(),
-                    role: 'system', // Show as system alert
-                    content: `⚠️ **Communication Error**: ${result.error}`,
-                    timestamp: new Date()
-                };
-                setMessages(prev => [...prev, errorResponse]);
+                    role: 'system',
+                    content: `Draft unavailable: ${result.error ?? result.content}`,
+                    timestamp: new Date(),
+                }]);
             }
         } catch (e) {
             console.error(e);
@@ -139,59 +134,62 @@ export default function WarRoomPage() {
         ));
     };
 
-    const elapsedMinutes = Math.floor((Date.now() - MOCK_INCIDENT.startTime.getTime()) / 1000 / 60);
+    const elapsedMinutes = incident
+        ? Math.max(0, Math.floor((Date.now() - new Date(incident.startedAt).getTime()) / 1000 / 60))
+        : 0;
+
+    if (!loaded) {
+        return <p className="text-sm text-muted-foreground">Loading incident…</p>;
+    }
 
     return (
         <div className="h-[calc(100vh-8rem)] flex flex-col gap-4 max-w-7xl mx-auto">
-            {/* Incident Header */}
             <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
                 <div className="flex items-start gap-3">
                     <div className="p-2 bg-red-500/10 rounded-lg">
-                        <Siren className="h-6 w-6 text-red-500 animate-pulse" />
+                        <Siren className="h-6 w-6 text-red-500" />
                     </div>
                     <div>
                         <div className="flex items-center gap-2">
-                            <h1 className="text-xl font-bold">{MOCK_INCIDENT.id}</h1>
-                            <Badge variant="destructive" className="animate-pulse">
-                                {MOCK_INCIDENT.severity.toUpperCase()}
-                            </Badge>
-                            <Badge variant="outline" className="text-amber-500 border-amber-500/30">
-                                {MOCK_INCIDENT.status}
-                            </Badge>
+                            <h1 className="text-xl font-bold">{incident ? incident.id : 'Exercise mode'}</h1>
+                            {incident ? (
+                                <>
+                                    <Badge variant="destructive">{incident.severity.toUpperCase()}</Badge>
+                                    <Badge variant="outline" className="text-amber-500 border-amber-500/30">{incident.status}</Badge>
+                                </>
+                            ) : (
+                                <Badge variant="outline" className="text-cyan-400 border-cyan-400/30">Not live IR</Badge>
+                            )}
                         </div>
-                        <p className="text-muted-foreground text-sm mt-0.5">{MOCK_INCIDENT.title}</p>
+                        <p className="text-muted-foreground text-sm mt-0.5">
+                            {incident ? incident.title : 'No Incident row. Rehearse under Exercises; do not invent a ransomware event.'}
+                        </p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 text-sm bg-red-500/10 px-3 py-1.5 rounded-lg border border-red-500/20">
-                        <Clock className="h-4 w-4 text-red-500" />
-                        <span className="font-mono font-bold text-red-500">{elapsedMinutes}m</span>
-                        <span className="text-muted-foreground">elapsed</span>
-                    </div>
-                    <Button size="sm" variant="outline" className="gap-2">
-                        <Phone className="h-4 w-4" />
-                        Call Bridge
-                    </Button>
-                    <Button size="sm" variant="outline" className="gap-2">
-                        <Users className="h-4 w-4" />
-                        Team: 4 active
+                    {incident && (
+                        <div className="flex items-center gap-2 text-sm bg-red-500/10 px-3 py-1.5 rounded-lg border border-red-500/20">
+                            <Clock className="h-4 w-4 text-red-500" />
+                            <span className="font-mono font-bold text-red-500">{elapsedMinutes}m</span>
+                            <span className="text-muted-foreground">since startedAt</span>
+                        </div>
+                    )}
+                    <Button size="sm" variant="outline" asChild>
+                        <Link href="/exercises">Open tabletop</Link>
                     </Button>
                 </div>
             </div>
 
-            {/* Main Content */}
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4 min-h-0">
-                {/* Chat Panel */}
                 <Card className="lg:col-span-3 flex flex-col min-h-0">
                     <CardHeader className="pb-3 border-b">
                         <div className="flex items-center justify-between">
                             <CardTitle className="text-lg flex items-center gap-2">
                                 <Bot className="h-5 w-5 text-primary" />
-                                Incident Response Copilot
+                                Copilot (ai_draft)
                             </CardTitle>
-                            <Badge variant="outline" className="text-emerald-500 border-emerald-500/30">
-                                <span className="h-2 w-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse" />
-                                AI Online
+                            <Badge variant="outline" className="text-cyan-400 border-cyan-400/30">
+                                Cannot close a decision
                             </Badge>
                         </div>
                     </CardHeader>
@@ -204,8 +202,7 @@ export default function WarRoomPage() {
                                     className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}
                                 >
                                     {message.role !== 'user' && (
-                                        <div className={`p-2 rounded-lg h-fit ${message.role === 'system' ? 'bg-amber-500/10' : 'bg-primary/10'
-                                            }`}>
+                                        <div className={`p-2 rounded-lg h-fit ${message.role === 'system' ? 'bg-amber-500/10' : 'bg-primary/10'}`}>
                                             {message.role === 'system' ? (
                                                 <AlertTriangle className="h-4 w-4 text-amber-500" />
                                             ) : (
@@ -251,7 +248,7 @@ export default function WarRoomPage() {
                     <div className="p-4 border-t">
                         <div className="flex gap-2">
                             <Input
-                                placeholder="Ask the AI advisor... (e.g., 'What are the next steps?' or 'Draft an executive update')"
+                                placeholder="Ask for a draft (containment checklist, exec note). Not canonical."
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
@@ -262,25 +259,10 @@ export default function WarRoomPage() {
                                 <Send className="h-4 w-4" />
                             </Button>
                         </div>
-                        <div className="flex gap-2 mt-2">
-                            {['Containment steps', 'Draft exec update', 'Check compliance', 'Recovery plan'].map((suggestion) => (
-                                <Button
-                                    key={suggestion}
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-xs h-7"
-                                    onClick={() => setInput(suggestion)}
-                                >
-                                    {suggestion}
-                                </Button>
-                            ))}
-                        </div>
                     </div>
                 </Card>
 
-                {/* Side Panel */}
                 <div className="space-y-4">
-                    {/* Playbook */}
                     <Card className="border-primary/10">
                         <CardHeader className="pb-3">
                             <CardTitle className="text-sm flex items-center gap-2">
@@ -289,6 +271,11 @@ export default function WarRoomPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
+                            {playbook.length === 0 && (
+                                <p className="text-xs text-muted-foreground">
+                                    Empty until a stored Playbook is attached. Use Incidents playbooks or <code>playbook.nextStep</code>.
+                                </p>
+                            )}
                             {playbook.map((item) => (
                                 <button
                                     key={item.id}
@@ -308,55 +295,8 @@ export default function WarRoomPage() {
                             ))}
                         </CardContent>
                     </Card>
-
-                    {/* Affected Systems */}
-                    <Card className="border-red-500/10 bg-red-500/5">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-sm flex items-center gap-2 text-red-500">
-                                <Target className="h-4 w-4" />
-                                Affected Systems
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                            {MOCK_INCIDENT.affectedSystems.map((system) => (
-                                <div
-                                    key={system}
-                                    className="flex items-center justify-between p-2 bg-background/50 rounded text-xs"
-                                >
-                                    <span className="font-mono">{system}</span>
-                                    <Badge variant="destructive" className="text-[10px]">Isolated</Badge>
-                                </div>
-                            ))}
-                        </CardContent>
-                    </Card>
-
-                    {/* Quick Actions */}
-                    <Card className="border-primary/10">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-sm flex items-center gap-2">
-                                <Zap className="h-4 w-4 text-primary" />
-                                Quick Actions
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                            <Button variant="outline" size="sm" className="w-full justify-start text-xs">
-                                <Shield className="h-3.5 w-3.5 mr-2" />
-                                Run IOC Scan
-                            </Button>
-                            <Button variant="outline" size="sm" className="w-full justify-start text-xs">
-                                <Activity className="h-3.5 w-3.5 mr-2" />
-                                View Timeline
-                            </Button>
-                            <Button variant="outline" size="sm" className="w-full justify-start text-xs">
-                                <FileText className="h-3.5 w-3.5 mr-2" />
-                                Generate Report
-                            </Button>
-                        </CardContent>
-                    </Card>
                 </div>
             </div>
-            {/* Overlay Widget */}
-            <SecureCommsWidget />
         </div>
     );
 }

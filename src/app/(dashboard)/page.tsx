@@ -3,21 +3,20 @@
 import { useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  LayoutDashboard, Presentation, FileBarChart
+  LayoutDashboard, Presentation
 } from 'lucide-react';
 import { useVendorRiskStore } from '@/lib/vendor-risk-store';
 import { usePolicyStore } from '@/lib/policy-store';
 import { usePlaybookStore } from '@/lib/playbook-store';
 import { useEvidenceStore } from '@/lib/evidence-store';
 import { ExecutiveBriefTab } from '@/components/executive/executive-brief-tab';
-import { ReportsTab } from '@/components/reporting/reports-tab';
 
 // Command Center components
 import { KPIStatusBar } from '@/components/command/KPIStatusBar';
 import { ThreatMonitorWidget } from '@/components/command/ThreatMonitorWidget';
 import { ActiveThreats } from '@/components/command/ActiveThreats';
 import { PendingActions } from '@/components/command/PendingActions';
-import { CompliancePosture } from '@/components/command/CompliancePosture';
+import { NeedsYou } from '@/components/command/NeedsYou';
 import { RecentIncidents } from '@/components/command/RecentIncidents';
 import { AIActivity } from '@/components/command/AIActivity';
 
@@ -59,7 +58,7 @@ function CommandCenterOverview() {
 
       {/* ═══ ROW 3: BOTTOM PANELS (3-column grid) ═══ */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <CompliancePosture />
+        <NeedsYou />
         <RecentIncidents />
         <AIActivity />
       </div>
@@ -73,8 +72,8 @@ export default function DashboardPage() {
       <div className="flex items-center gap-3">
         <h1 className="text-3xl font-bold tracking-tight text-white">Command Center</h1>
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(34,211,238,0.08)' }}>
-          <div className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
-          <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-wider">Live</span>
+          <div className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
+          <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-wider">Supervised</span>
         </div>
       </div>
 
@@ -82,12 +81,10 @@ export default function DashboardPage() {
         <TabsList>
           <TabsTrigger value="overview" className="gap-2"><LayoutDashboard className="h-4 w-4" />Overview</TabsTrigger>
           <TabsTrigger value="executive" className="gap-2"><Presentation className="h-4 w-4" />Executive Brief</TabsTrigger>
-          <TabsTrigger value="reports" className="gap-2"><FileBarChart className="h-4 w-4" />Reports &amp; Board Deck</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview"><CommandCenterOverview /></TabsContent>
         <TabsContent value="executive"><ExecutiveBriefTab /></TabsContent>
-        <TabsContent value="reports"><ReportsTab /></TabsContent>
       </Tabs>
     </div>
   );

@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { TechniqueCard, TechniqueStatus } from "./technique-card";
-import { Search, Filter, Shield } from "lucide-react";
+import { useState } from "react";
+import { TechniqueCard } from "./technique-card";
+import { Search, Shield } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 
-// Simplified MITRE Structure for Demo
+// MITRE tactic catalog (reference only — cells are unscored)
 const MITRE_DATA = {
     tactics: [
         {
@@ -77,36 +76,7 @@ const MITRE_DATA = {
 };
 
 export function MitreMatrix() {
-    const [activeThreats, setActiveThreats] = useState<Record<string, { status: TechniqueStatus, count: number }>>(() => ({
-        'T1566': { status: 'blocked', count: 124 },
-        'T1190': { status: 'active', count: 3 },
-        'T1110': { status: 'blocked', count: 890 },
-        'T1059': { status: 'active', count: 1 },
-    }));
     const [filter, setFilter] = useState('');
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            // Randomly flip a technique to active or blocked
-            const tactic = MITRE_DATA.tactics[Math.floor(Math.random() * MITRE_DATA.tactics.length)];
-            const technique = tactic.techniques[Math.floor(Math.random() * tactic.techniques.length)];
-
-            setActiveThreats(prev => {
-                const newState = { ...prev };
-                if (Math.random() > 0.7) {
-                    // 70% chance to clear or nothing, 30% chance to act
-                    if (Math.random() > 0.5) {
-                        newState[technique.id] = { status: 'active', count: Math.floor(Math.random() * 5) + 1 };
-                    } else {
-                        newState[technique.id] = { status: 'blocked', count: Math.floor(Math.random() * 50) + 10 };
-                    }
-                }
-                return newState;
-            });
-        }, 3000);
-
-        return () => clearInterval(interval);
-    }, []);
 
     return (
         <div className="space-y-4">
@@ -114,7 +84,7 @@ export function MitreMatrix() {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <Shield className="h-5 w-5 text-primary" />
-                    <h2 className="text-xl font-bold tracking-tight">MITRE ATT&CK Matrix (Enterprise)</h2>
+                    <h2 className="text-xl font-bold tracking-tight">MITRE ATT&CK catalog</h2>
                 </div>
                 <div className="flex gap-2">
                     <div className="relative w-64">
@@ -126,12 +96,9 @@ export function MitreMatrix() {
                             onChange={(e) => setFilter(e.target.value)}
                         />
                     </div>
-                    <Button variant="outline" size="sm" className="h-9">
-                        <Filter className="h-4 w-4 mr-2" />
-                        Filter
-                    </Button>
                 </div>
             </div>
+            <p className="text-xs text-muted-foreground">Reference catalog only. Cells are unscored — Astra has no EDR/SIEM ingest.</p>
 
             {/* Matrix Grid */}
             <div className="overflow-x-auto pb-4 custom-scrollbar">
@@ -157,8 +124,7 @@ export function MitreMatrix() {
                                             <TechniqueCard
                                                 id={technique.id}
                                                 name={technique.name}
-                                                status={activeThreats[technique.id]?.status || 'dormant'}
-                                                detectionCount={activeThreats[technique.id]?.count}
+                                                status="dormant"
                                             />
                                         </div>
                                     ))}

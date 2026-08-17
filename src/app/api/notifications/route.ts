@@ -15,7 +15,7 @@ export async function GET() {
             message: n.message,
             severity: n.severity,
             read: n.read,
-            timestamp: n.timestamp,
+            timestamp: Number(n.timestamp),
             actionUrl: n.actionUrl ?? undefined,
         }));
         const rules = alertRules.map((r) => ({
@@ -79,11 +79,11 @@ export async function POST(req: Request) {
                 message: nIn.message ?? '',
                 severity: nIn.severity ?? 'INFO',
                 read: false,
-                timestamp: nIn.timestamp ?? Date.now(),
+                timestamp: BigInt(nIn.timestamp ?? Date.now()),
                 actionUrl: nIn.actionUrl ?? null,
             },
         });
-        return NextResponse.json({ id: n.id, type: n.type, title: n.title, message: n.message, severity: n.severity, read: n.read, timestamp: n.timestamp, actionUrl: n.actionUrl ?? undefined }, { status: 201 });
+        return NextResponse.json({ id: n.id, type: n.type, title: n.title, message: n.message, severity: n.severity, read: n.read, timestamp: Number(n.timestamp), actionUrl: n.actionUrl ?? undefined }, { status: 201 });
     } catch (error: unknown) {
         console.error('Notifications POST:', error);
         return NextResponse.json(

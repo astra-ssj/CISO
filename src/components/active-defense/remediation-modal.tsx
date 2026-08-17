@@ -15,12 +15,10 @@ interface RemediationModalProps {
 
 type Step = 'scanning' | 'simulation' | 'supervisor' | 'proposal' | 'auth' | 'diagnostics' | 'executing' | 'complete';
 
-const MOCK_LOGS = [
-    "> Initializing Astra Defense Protocol v9.2...",
-    "> Analyzing CVE-2024-9992 variance...",
-    "> Target identified: AWS-US-EAST-1/checkout-api-Cluster",
-    "> Calculating blast radius... [SAFE]",
-    "> Awaiting simulation..."
+const REFUSAL_LOGS = [
+    '> Refused. Astra does not auto-remediate.',
+    '> Plugins run only after OpenNeko APPROVE with a skillRunId.',
+    '> No sandbox, Ansible, or Jira ticket was invented.',
 ];
 
 const SIMULATION_LOGS = [
@@ -78,11 +76,10 @@ export function RemediationModal({ isOpen, onClose, threatId, threatTitle = "Cri
     }, []);
 
     const runScan = useCallback(async () => {
-        for (const log of MOCK_LOGS) {
-            await new Promise(r => setTimeout(r, 600));
+        for (const log of REFUSAL_LOGS) {
             addLog(log);
         }
-        setStep('simulation');
+        setStep('complete');
     }, [addLog]);
 
     // Reset state on open (defer setState to avoid synchronous setState in effect)

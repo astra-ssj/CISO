@@ -57,11 +57,12 @@ export function PlaybookActiveView({ playbookId, onExit }: PlaybookActiveViewPro
 
     if (!playbook) return <div>Playbook not found</div>;
 
-    const handleLogEvidence = () => {
+    const handleLogEvidence = async () => {
         if (!evidenceInput.trim()) return;
-        // In a real app, we'd calculate a hash here
-        const mockHash = "SHA256:" + Math.random().toString(36).substring(2, 15);
-        logEvidence(playbookId, `${evidenceInput} [${mockHash}]`);
+        const encoded = new TextEncoder().encode(evidenceInput);
+        const digest = await crypto.subtle.digest('SHA-256', encoded);
+        const hex = Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('');
+        logEvidence(playbookId, `${evidenceInput} [note-sha256:${hex.slice(0, 16)}]`);
         setEvidenceInput("");
     };
 
