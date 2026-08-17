@@ -4,6 +4,44 @@ All notable changes to Astra-CISO are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+v3 (`release/v3-decision-loop`) is a **separate line** from v2 on `main`. See [RELEASE.md](RELEASE.md) and [HONESTY.md](HONESTY.md).
+
+---
+
+## [3.0.0-decision.1] — 2026-08-17
+
+Honesty + skill runtime expansion. Empty is the product when data is missing.
+
+### Added
+- Skills `caiq.score@1.0.0`, `risk.fiveByFive@1.0.0`, `evidence.expiry@1.0.0` with golden tests
+- `GET /api/decision-queue`, `GET /api/skills/runs`, `GET /api/incidents`
+- `liveOrEmpty()` Observation envelope (ok / stale / empty)
+- `HONESTY.md` living inventory and `src/lib/skills/README.md` catalog
+
+### Changed
+- CAIQ engine persists `caiq.match` + `caiq.score` SkillRuns
+- 5×5 Risk create/update uses `risk.fiveByFive`
+- OpenCTI, MISP, OTX, GitHub: live, last Observation, or empty — never `MOCK_*` IOCs
+- Decision Center Needs-you queue is real; recorded decisions start empty
+- Command Center threats/incidents start empty
+- Defense Matrix cells unscored; Incidents MTTR/timeline no longer invented
+- World Monitor marker jitter is a hash of threat id
+
+---
+
+## [3.0.0-decision.0] — 2026-08-17
+
+Decision-loop foundation on `release/v3-decision-loop`.
+
+### Added
+- Session-gated APIs (public: `/login`, `/api/auth/*`, `/api/health`)
+- Prisma `Observation` + `SkillRun`
+- Skill `caiq.match@1.0.0` + `POST /api/skills/caiq-match`
+
+### Changed
+- Abuse.ch returns empty on failure, never mock IOCs
+- Turbopack root pinned to this app directory
+
 ---
 
 ## [2.0.2] — 2026-04-09

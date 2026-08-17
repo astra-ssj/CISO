@@ -120,15 +120,13 @@ function ProjectCard({ project }: { project: Project }) {
 
 // ─── Defense Matrix Tab (from /strategy/matrix) ───
 function DefenseMatrixTab() {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { objectives, fetchOKR } = useOKRProjectStore();
-    useEffect(() => { fetchOKR(); }, [fetchOKR]);
-    // Simplified matrix view
     const domains = ["Network", "Endpoint", "Identity", "Data", "Application", "Cloud"];
     const controls = ["Prevent", "Detect", "Respond", "Recover"];
     return (
         <div className="space-y-6">
-            <p className="text-muted-foreground">Control coverage matrix across security domains.</p>
+            <p className="text-muted-foreground">
+                Control coverage by domain. Cells stay unscored until a persisted control assessment exists — this matrix does not invent percentages.
+            </p>
             <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-sm">
                     <thead>
@@ -141,11 +139,11 @@ function DefenseMatrixTab() {
                         {domains.map(domain => (
                             <tr key={domain} className="hover:bg-secondary/30 transition-colors">
                                 <td className="p-3 font-medium border-b border-border">{domain}</td>
-                                {controls.map(control => {
-                                    const score = Math.floor(Math.random() * 100);
-                                    const color = score >= 80 ? "bg-emerald-500/20 text-emerald-400" : score >= 50 ? "bg-amber-500/20 text-amber-400" : "bg-red-500/20 text-red-400";
-                                    return <td key={control} className="p-3 text-center border-b border-border"><span className={cn("px-2 py-1 rounded text-xs font-mono font-bold", color)}>{score}%</span></td>;
-                                })}
+                                {controls.map(control => (
+                                    <td key={control} className="p-3 text-center border-b border-border">
+                                        <span className="px-2 py-1 rounded text-xs font-mono text-muted-foreground">—</span>
+                                    </td>
+                                ))}
                             </tr>
                         ))}
                     </tbody>

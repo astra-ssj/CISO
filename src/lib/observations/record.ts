@@ -58,3 +58,65 @@ export async function latestObservation(integrationId: string, operation: string
         return null;
     }
 }
+
+/**
+ * Live fetch envelope: success writes an Observation; failure returns the last
+ * ok snapshot (labeled stale) or `empty`. Never invents a payload.
+ */
+export async function liveOrEmpty<T>(
+    meta: {
+        integrationId: string;
+        operation: string;
+        requestKey: string;
+        ttlMs?: number;
+        createdBy?: string;
+    },
+    fetchFn: () => Promise<T>,
+    empty: T,
+): Promise<T> {
+    try {
+        const data = await fetchFn();
+        await recordObservation({
+            integrationId: meta.integrationId,
+            operation: meta.operation,
+            requestKey: meta.requestKey,
+            status: 'ok',
+            payload: data,
+            ttlMs: meta.ttlMs,
+            createdBy: meta.createdBy,
+        });
+        return data;
+    } catch (err) {
+        const last = await latestObservation(meta.integrationId, meta.operation, meta.requestKey);
+        const errorCode = err instanceof Error ? err.message.slice(0, 200) : 'fetch_failed';
+
+        if (last?.status === 'ok' && last.payload) {
+            try {
+                const restored = JSON.parse(last.payload) as T;
+                await recordObservation({
+                    integrationId: meta.integrationId,
+                    operation: meta.operation,
+                    requestKey: meta.requestKey,
+                    status: 'stale',
+                    errorCode,
+                    payload: { restoredFrom: last.id, fetchedAt: last.fetchedAt.toISOString() },
+                    createdBy: meta.createdBy,
+                });
+                return restored;
+            } catch {
+                // corrupt snapshot — fall through to empty
+            }
+        }
+
+        await recordObservation({
+            integrationId: meta.integrationId,
+            operation: meta.operation,
+            requestKey: meta.requestKey,
+            status: 'empty',
+            errorCode,
+            payload: null,
+            createdBy: meta.createdBy,
+        });
+        return empty;
+    }
+}

@@ -195,8 +195,14 @@ export default function IntelligencePage() {
                     const coords = country ? COUNTRY_COORDS[country.toUpperCase()] : null;
                     if (!coords) continue; // skip items with no geo data — don't plot at 0,0
 
-                    // Random jitter so overlapping markers spread
-                    const jitter = () => (Math.random() - 0.5) * 4;
+                    // Deterministic spread so overlapping country markers don't sit on one pixel.
+                    // Same threat id → same offset. Never Math.random().
+                    const jitter = (axis: 0 | 1) => {
+                        let h = axis + 7;
+                        const seed = String(threat.id || threat.title || '');
+                        for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0;
+                        return ((Math.abs(h) % 400) / 100) - 2;
+                    };
 
                     const layerId = threat.category === 'ransomware' ? 'ransomware'
                         : threat.source === 'URLhaus' ? 'malicious_urls'
@@ -210,8 +216,8 @@ export default function IntelligencePage() {
 
                     points.push({
                         id: threat.id,
-                        latitude: coords.lat + jitter(),
-                        longitude: coords.lng + jitter(),
+                        latitude: coords.lat + jitter(0),
+                        longitude: coords.lng + jitter(1),
                         label: threat.title || 'Unknown Threat',
                         category: 'CYBER',
                         severity: (threat.severity || 'medium').toLowerCase() as MapDataPoint['severity'],

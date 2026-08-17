@@ -4,11 +4,11 @@
 
 Not an autonomous CISO. Not an OpenNeko wrapper. Skills compute; humans approve; snapshots are the source of truth.
 
-**Today (this release):** vendor security questionnaires answered from a defensible knowledge base (`caiq.match`), with an audit trail. Cycle time down, evidence up, a decision you can defend.
+**Today (this release):** vendor questionnaires from a defensible KB (`caiq.match` + `caiq.score`), 5×5 risk scoring, evidence expiry, an honest decision queue, and an audit trail. Cycle time down, evidence up, a decision you can defend.
 
-**Not this release:** live IR, board-ready KPIs, silent mock intel, or an AI Decision Center.
+**Not this release:** live IR, board-ready KPIs, silent mock intel, or an AI Decision Center that invents tickets.
 
-This line ships on branch `release/v3-decision-loop` (`3.0.0-decision.0`). See [RELEASE.md](RELEASE.md).
+This line ships on branch `release/v3-decision-loop` (`3.0.0-decision.1`). See [RELEASE.md](RELEASE.md), [HONESTY.md](HONESTY.md), [CHANGELOG.md](CHANGELOG.md).
 
 **Key differentiator:** CAIQ Knowledge Transfer with **1,000+ pre-validated Q&A pairs** — replayable, not a new LLM paragraph each time.
 
@@ -18,13 +18,13 @@ This line ships on branch `release/v3-decision-loop` (`3.0.0-decision.0`). See [
 
 | Module | Description |
 |--------|-------------|
-| **Command Center** | Real-time security posture dashboard with Global Threat Monitor, KPI metrics, active threats feed, compliance overview, and AI activity monitoring. |
-| **Decision Center** | AI-assisted security decision queue with prioritized action items aggregated from across the platform. |
-| **Strategy & OKRs** | Security strategy management with OKRs, defense matrix, KPI dashboards, and program tracking. |
-| **Governance & Risk** | Multi-framework compliance tracking (ISO 27001, SOC 2, NIS2, GDPR, Cyber Essentials, EU AI Act), FAIR risk quantification, and policy lifecycle management. |
-| **Vendor Risk** | CAIQ v4 automation with Knowledge Transfer engine (4-tier confidence matching), 1,000+ entry knowledge base, multi-company/product configuration, and Shodan-powered vendor scanning. |
-| **Incidents** | Incident management with war room collaboration, tabletop exercises linked to real threat data, and after-action reporting. |
-| **Threat Intelligence** | World Monitor with interactive map (25+ data layers), attack surface monitoring via Shodan, live threat feeds from Abuse.ch (ThreatFox, URLhaus, MalwareBazaar), signal intelligence with anomaly detection, infrastructure monitoring, and ransomware tracking. |
+| **Command Center** | Queue of real counts + live/empty intel. Does not seed SAMPLE incidents or threats. |
+| **Decision Center** | Needs-you queue from evidence expiry and open 5×5 risks. Recorded decisions start empty. |
+| **Strategy & OKRs** | OKRs and projects from Prisma. Defense Matrix unscored until assessments exist. KPI tab still mixed — see HONESTY.md. |
+| **Governance & Risk** | Risk register (5×5 skill), policies, evidence, audit. Compliance heatmap still seeded. |
+| **Vendor Risk** | CAIQ match/score skills, knowledge base, vendor registry, optional Shodan. |
+| **Incidents** | Playbooks from Prisma. Register empty until used. Tabletop lives under Exercises. War Room still mocked. |
+| **Threat Intelligence** | Live feeds or empty. World Monitor static layers + live cyber points. No silent MOCK IOCs. |
 | **AppSec** | Vulnerability feed, SAST scanning, Trivy integration, and remediation velocity tracking. |
 
 ---

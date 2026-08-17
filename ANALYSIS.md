@@ -1,10 +1,24 @@
 # Astra-CISO Codebase Analysis
 
-**Date:** 17 August 2026  
+**Date:** 17 August 2026 (inventory) · **v3 progress:** 17 August 2026 (`3.0.0-decision.1` on `release/v3-decision-loop`)  
 **Repo root:** `CISO/CISO`  
 **Stack:** Next.js 16 (App Router), React 19, TypeScript 5, Prisma 7, SQLite, Zustand, NextAuth 5  
 
-This is a read-only inventory. No application code was changed as part of this report.
+> **v3 note:** Sections below are the original read-only inventory. They are **historical**. For what is true on this branch now, read [HONESTY.md](HONESTY.md), [RELEASE.md](RELEASE.md), and [CHANGELOG.md](CHANGELOG.md). In particular: `/api` is no longer public; `caiq.match` is a skill; OpenCTI/MISP/OTX no longer return `MOCK_*`; Decision Center no longer seeds `DEMO_TICKETS`.
+
+### v3 progress vs this inventory
+
+| Inventory claim (Aug 17 snapshot) | Status on 3.0.0-decision.1 |
+|---|---|
+| All `/api/*` public | Fixed in 3.0.0-decision.0 |
+| `DEMO_DECISIONS` / `DEMO_TICKETS` | Removed; Needs-you queue is real |
+| Intel `MOCK_*` fallbacks | Removed (Abuse.ch, OpenCTI, MISP, OTX) |
+| Command Center `SAMPLE_*` | Removed for incidents + threats |
+| Defense Matrix `Math.random()` | Unscored cells |
+| No Observation / SkillRun | Added; CAIQ and 5×5 persist runs |
+| War Room / board KPIs / compliance heatmap | Still mocked — see HONESTY.md |
+
+This is a read-only inventory. No application code was changed as part of **this report**. Application changes live on the v3 branch and are listed in CHANGELOG.
 
 **Method:** static review of 21 `page.tsx` files, 96 `route.ts` API files, `prisma/schema.prisma`, local `./dev.db`, `src/components/layout/Shell.tsx`, auth/middleware, and import graphs. TypeScript (`tsc --noEmit`) and ESLint were reported clean at analysis time.
 

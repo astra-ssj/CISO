@@ -21,7 +21,8 @@ import {
 export type { AnsweredQuestion, QuestionnaireQuestion, ConfidenceLevel } from './caiq-knowledge-base';
 import { AIResponse } from '@/lib/ai/engine';
 import { TokenTracker, AIModel } from '@/lib/telemetry/token-tracker';
-import { matchCaiq, type KnowledgeRecord } from '@/lib/skills/caiq-match';
+import { runCaiqMatch, runCaiqScore, type KnowledgeRecord } from '@/lib/skills';
+import { persistSkillRun } from '@/lib/skills/persist';
 
 // ────────────────────────────────────────────
 // Types
@@ -498,11 +499,16 @@ export async function matchToKnowledgeBase(
                 evidence: entry.evidence,
             }));
 
-            const hits = matchCaiq({
+            const matchInput = {
                 questions: questions.map((q) => ({ questionText: q.questionText })),
                 entries: records,
                 minConfidence,
-            });
+            };
+            const matchRun = runCaiqMatch(matchInput, new Date().toISOString());
+            const scoreRun = runCaiqScore({ hits: matchRun.output }, matchRun.asOf);
+            void persistSkillRun(matchRun);
+            void persistSkillRun(scoreRun);
+            const hits = matchRun.output;
 
             return questions.map((q, i) => {
                 const hit = hits[i];

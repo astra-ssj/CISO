@@ -14,10 +14,13 @@ Skills compute. LLM drafts only. OpenNeko (later) watches and approval-gates —
 - CISO decision loop on ZTAIP (Zero Trust AI Platform)
 - Next.js 16, React 19, TypeScript 5, Prisma 7, SQLite (Postgres planned on this line)
 - Dark hacker theme (Bloomberg Terminal aesthetic) — never use light backgrounds
-- Version: 3.0.0-decision.0 on branch release/v3-decision-loop
+- Version: 3.0.0-decision.1 on branch release/v3-decision-loop
 
 ## Skills (src/lib/skills/)
 - caiq.match@1.0.0 — deterministic KB match, no I/O, golden tests required
+- caiq.score@1.0.0 — coverage from match hits
+- risk.fiveByFive@1.0.0 — likelihood × impact bands
+- evidence.expiry@1.0.0 — expiresAt vs asOf (clock is an input)
 - Skill runs persist to SkillRun (inputHash, skillVersion, outputJson)
 - Integration fetches persist to Observation (append-only). Never return MOCK intel.
 
