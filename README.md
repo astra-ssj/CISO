@@ -1,14 +1,16 @@
-# Astra-CISO v2.0
+# Astra-CISO v3 (decision-loop)
 
-**Autonomous Security Operations Platform** — AI-powered compliance, risk management, and threat intelligence for multi-jurisdictional enterprises.
+**Astra is where security decisions get made, evidenced, and remembered.**
 
----
+Not an autonomous CISO. Not an OpenNeko wrapper. Skills compute; humans approve; snapshots are the source of truth.
 
-## Overview
+**Today (this release):** vendor security questionnaires answered from a defensible knowledge base (`caiq.match`), with an audit trail. Cycle time down, evidence up, a decision you can defend.
 
-Astra-CISO is a CISO command center built on **ZTAIP (Zero Trust AI Platform)** architecture. It manages security operations across **8 countries** (DE, UK, TH, AU, NZ, ES, AT, US) and provides unified visibility into compliance posture, threat landscape, vendor risk, and incident response.
+**Not this release:** live IR, board-ready KPIs, silent mock intel, or an AI Decision Center.
 
-**Key differentiator:** CAIQ Knowledge Transfer engine with **1,000+ pre-validated Q&A pairs** — reducing vendor risk assessments from days to hours.
+This line ships on branch `release/v3-decision-loop` (`3.0.0-decision.0`). See [RELEASE.md](RELEASE.md).
+
+**Key differentiator:** CAIQ Knowledge Transfer with **1,000+ pre-validated Q&A pairs** — replayable, not a new LLM paragraph each time.
 
 ---
 

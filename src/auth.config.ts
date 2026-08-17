@@ -5,6 +5,8 @@ export const authConfig = {
         signIn: '/login',
     },
     session: { strategy: 'jwt' as const },
+    trustHost: true,
+    secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
     providers: [
         // Added later in auth.ts
     ],
@@ -13,8 +15,9 @@ export const authConfig = {
             const isLoggedIn = !!auth?.user;
             const isOnLogin = nextUrl.pathname === '/login';
 
-            // Public routes that don't require auth
-            const publicPaths = ['/login', '/api'];
+            // Public: login page, NextAuth handlers, health probes only.
+            // All other /api/* require a session (v3 decision-loop).
+            const publicPaths = ['/login', '/api/auth', '/api/health'];
             const isPublicRoute = publicPaths.some(path => nextUrl.pathname.startsWith(path));
 
             if (isPublicRoute) {

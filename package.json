@@ -1,7 +1,7 @@
 {
   "name": "astra",
-  "version": "2.0.0",
-  "description": "Autonomous Security Operations Platform",
+  "version": "3.0.0-decision.0",
+  "description": "Where security decisions get made, evidenced, and remembered.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SristiNative/CISO.git"

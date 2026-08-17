@@ -9,12 +9,17 @@ import { logAudit } from '@/lib/audit/audit-service';
 
 async function getUser(email: string) {
     try {
-        const user = await prisma.user.findUnique({ where: { email } });
-        return user;
+        return await prisma.user.findUnique({ where: { email } });
     } catch (error) {
         console.error('Failed to fetch user:', error);
-        throw new Error('Failed to fetch user.');
+        return null;
     }
+}
+
+export function isGoogleOAuthConfigured(): boolean {
+    return Boolean(
+        process.env.GOOGLE_CLIENT_ID?.trim() && process.env.GOOGLE_CLIENT_SECRET?.trim()
+    );
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -134,33 +139,41 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     providers: [
         Credentials({
+            credentials: {
+                email: { label: 'Email', type: 'email' },
+                password: { label: 'Password', type: 'password' },
+            },
             async authorize(credentials) {
                 const parsedCredentials = z
                     .object({ email: z.string().email(), password: z.string().min(6) })
                     .safeParse(credentials);
 
-                if (parsedCredentials.success) {
-                    const { email, password } = parsedCredentials.data;
-                    const user = await getUser(email);
-                    if (!user) return null;
-
-                    // For now, if no password set on user, allow simple check or fail
-                    if (!user.password) return null;
-
-                    const passwordsMatch = await bcrypt.compare(password, user.password);
-                    if (passwordsMatch) return user;
+                if (!parsedCredentials.success) {
+                    return null;
                 }
 
-                console.log('Invalid credentials');
-                return null;
+                const { email, password } = parsedCredentials.data;
+                const user = await getUser(email);
+                if (!user?.password) return null;
+
+                const passwordsMatch = await bcrypt.compare(password, user.password);
+                if (!passwordsMatch) return null;
+
+                return {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                    image: user.image,
+                    role: user.role,
+                };
             },
         }),
-        // Google SSO — only enabled when env vars are set
-        ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+        // Google SSO — optional. Credentials login always works without it.
+        ...(isGoogleOAuthConfigured()
             ? [
                 Google({
-                    clientId: process.env.GOOGLE_CLIENT_ID,
-                    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+                    clientId: process.env.GOOGLE_CLIENT_ID as string,
+                    clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
                 }),
             ]
             : []),

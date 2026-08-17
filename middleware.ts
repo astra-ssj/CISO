@@ -89,8 +89,10 @@ export default auth((req) => {
     const pathname = req.nextUrl.pathname;
     const ip = getClientIp(req);
 
-    // Rate limit auth endpoints (login, password reset, NextAuth callbacks)
-    if (pathname.startsWith('/api/auth')) {
+    // Rate-limit only the custom login route. NextAuth internals (session, csrf,
+    // callback, providers) must not share that bucket — a single sign-in hits them all.
+    const isCustomAuthRoute = pathname === '/api/auth/login';
+    if (isCustomAuthRoute) {
         const authResult = rateLimit(`auth:${ip}`, AUTH_LIMIT);
         if (!authResult.success) {
             const retryAfter = Math.ceil((authResult.resetAt - Date.now()) / 1000);
@@ -107,8 +109,8 @@ export default auth((req) => {
         }
     }
 
-    // Rate limit all other API routes
-    if (pathname.startsWith('/api/')) {
+    // Rate limit all other API routes (exclude NextAuth catch-all)
+    if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth')) {
         const apiResult = rateLimit(`api:${ip}`, API_LIMIT);
         if (!apiResult.success) {
             const retryAfter = Math.ceil((apiResult.resetAt - Date.now()) / 1000);

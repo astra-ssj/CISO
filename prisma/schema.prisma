@@ -631,3 +631,39 @@ model TabletopCommsDraft {
 
   @@index([sessionId])
 }
+
+// -----------------------------------------------------------------------------
+// 19. Deterministic observations + skill runs (v3 decision-loop)
+//     Snapshots are append-only. Skills are replayable. LLM drafts are not stored here.
+// -----------------------------------------------------------------------------
+
+model Observation {
+  id             String    @id @default(cuid())
+  integrationId  String // shodan, threatfox, urlhaus, malwarebazaar, otx, ...
+  operation      String // hostLookup, recentIocs, vendorScan, ...
+  requestKey     String // canonical query
+  fetchedAt      DateTime  @default(now())
+  expiresAt      DateTime?
+  status         String // ok, error, stale, empty
+  httpStatus     Int?
+  errorCode      String?
+  payloadSha256  String
+  payload        String // JSON
+  createdBy      String    @default("system")
+
+  @@index([integrationId, operation, requestKey, fetchedAt])
+}
+
+model SkillRun {
+  id            String   @id @default(cuid())
+  skillId       String // caiq.match
+  skillVersion  String
+  inputHash     String
+  outputJson    String
+  asOf          DateTime
+  observationIds String? // JSON array of Observation ids
+  createdAt     DateTime @default(now())
+
+  @@index([skillId, inputHash])
+  @@index([createdAt])
+}
