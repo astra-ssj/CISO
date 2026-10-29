@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, "chore/oss-v0.1-hardening"]
+    branches: [main]
   pull_request:
     branches: [main]
 
