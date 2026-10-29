@@ -180,6 +180,50 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                 ? 'Conditionally Approved'
                 : 'Requires Reassessment';
 
+        const urgency = riskTier === 'Critical'
+            ? 'CRITICAL'
+            : riskTier === 'High'
+                ? 'HIGH'
+                : riskTier === 'Medium'
+                    ? 'MEDIUM'
+                    : 'LOW';
+
+        const decision = await prisma.decision.create({
+            data: {
+                pillar: 'VENDOR',
+                urgency,
+                status: 'PENDING',
+                title: `Vendor assessment: ${vendor.name}`,
+                question: `Should ${vendor.name} be ${proposedStatus.toLowerCase()}?`,
+                context: JSON.stringify({
+                    overallScore,
+                    riskTier,
+                    criticalGaps,
+                    coveragePct: scoreRun.output.coveragePct,
+                    shodanRiskScore,
+                }),
+                recommendationAction: goNoGo.output.decision === 'go'
+                    ? 'APPROVE'
+                    : goNoGo.output.decision === 'conditional'
+                        ? 'APPROVE_WITH_CONDITIONS'
+                        : 'REJECT',
+                recommendationSummary: `Recommended outcome: ${proposedStatus}`,
+                recommendationRationale: goNoGo.output.reasons.join(' '),
+                confidenceValue: 0,
+                confidenceLabel: 'UNSCORED',
+                source: 'SKILL',
+                skillRunId: goNoGoRunId,
+                sourceResourceType: 'VENDOR',
+                sourceResourceId: vendor.id,
+                evidenceIds: JSON.stringify(lastScan ? [lastScan.id] : []),
+                executionType: 'VENDOR_STATUS',
+                executionPayload: JSON.stringify({
+                    vendorId: vendor.id,
+                    status: proposedStatus,
+                }),
+            },
+        });
+
         return NextResponse.json({
             success: true,
             updatedVendor,
@@ -196,6 +240,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                 skillRunId: goNoGoRunId,
                 coverageSkillRunId: scoreRunId,
             },
+            decisionId: decision.id,
             requiresHumanDecision: true,
         });
     } catch (error: unknown) {
