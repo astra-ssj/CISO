@@ -30,7 +30,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN apk add --no-cache wget su-exec && \
     addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
+    adduser --system --uid 1001 nextjs && \
+    rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack && \
+    rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
+          /usr/local/bin/yarn /usr/local/bin/yarnpkg /usr/local/bin/pnpm /usr/local/bin/pnpx
 
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
