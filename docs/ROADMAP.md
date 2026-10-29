@@ -1,96 +1,53 @@
 # Astra-CISO Product Roadmap
 
-v3 on `release/v3-decision-loop` is a **separate line** from v2 on `main`. See [RELEASE.md](../RELEASE.md) and [HONESTY.md](../HONESTY.md).
+Astra is hardening `main` toward the first public **v0.1.0 Community Preview**. Historical v2/v3 labels describe development iterations, not the public OSS version contract.
 
-## v3.0 — Decision loop (shipping)
+## v0.1 — Decision Core
 
-**Now (`3.0.0-decision.2`):** Postgres, session-gated APIs, Observation + SkillRun, full v1 skill catalog, OpenNeko as sidecar (watchers/approvals), honest UI (empty ≠ mock).
+**Release goal:** a security leader can clone Astra, start the demo, complete a vendor assessment, receive a deterministic recommendation, make a human decision, and retrieve the decision/audit history after restart.
 
-**Not claimed:** live IR, FAIR as truth, board-ready KPIs, autonomous vendor reject.
+### Must ship
 
-**Next on this line**
+- Postgres-backed Decision records
+- human approval before material vendor state changes
+- vendor / CAIQ / Knowledge workflows
+- Evidence Vault + evidence expiry
+- 5×5 risk
+- versioned SkillRuns and Observations
+- write-operation RBAC
+- optional AI (`NONE | ANTHROPIC | GOOGLE`)
+- reproducible Docker Compose demo
+- PostgreSQL CI + security scanning
+- honest empty states
 
-- Operator OpenNeko install beside Astra (GraphJin → Astra Postgres)
-- More fetch jobs that **only** insert Observations
-- Decision Center deep-link from OpenNeko action cards
-- Hide or replace remaining MIXED screens (executive KPI engine, compliance heatmap)
+### Explicitly not v0.1 product surface
 
----
+- board-ready KPI engine
+- Strategy / OKRs
+- incident-response platform / War Room
+- tabletop exercises
+- world/threat-intelligence visualization
+- AppSec suite
+- autonomous security decisions
+- OpenNeko / GraphJin as required dependencies
 
-## v2.0 — Foundation ✅ Released (2026-02-26)
+## v0.2 — Integration Foundation
 
-- ✅ ZTAIP architecture alignment
-- ✅ Docker deployment (single-command setup)
-- ✅ CAIQ Knowledge Transfer Engine with 4-tier confidence matching
-- ✅ Knowledge Repository with 1,000+ pre-validated Q&A
-- ✅ Multi-company, multi-product CAIQ configuration
-- ✅ Quick Answer 3-step flow
-- ✅ JSON import/export for knowledge base
-- ✅ World Monitor intelligence dashboard (MapLibre GL, 25+ data layers)
-- ✅ Country Instability Index for 8 office locations
-- ✅ Signal intelligence and anomaly detection
-- ✅ Infrastructure monitoring (cables, datacenters, nuclear, pipelines)
-- ✅ Abuse.ch integration (ThreatFox, URLhaus, MalwareBazaar)
-- ✅ Shodan integration (attack surface, enrichment, vendor scanning)
-- ✅ Attack Surface Monitor with dangerous service detection
-- ✅ AI CISO Assistant (Astra persona)
-- ✅ Circuit breaker pattern for AI resilience
-- ✅ Dynamic Autonomy Router (AUTONOMOUS / SUPERVISED / MANUAL)
-- ✅ Immutable Audit Fabric
-- ✅ Tabletop exercises (replaced wargames)
-- ✅ Dark hacker theme (Bloomberg Terminal aesthetic)
-- ✅ Command Center with KPI bar, threat monitor, compliance posture
-- ✅ Interactive product roadmap page
-- ✅ Help center with module documentation
-- ✅ AI Economics tracking (tokens, cost, provider health)
+- connector SDK
+- normalized GitHub and Jira connectors
+- Slack/notification actions
+- storage adapters
+- stronger multi-user authorization
+- API documentation
 
----
+## v0.3 — Compliance Graph
 
-## v2.1 — Enterprise Ready
+- versioned framework manifests
+- canonical controls and mappings
+- evidence-to-control relationships
+- evidence freshness / drift
+- framework contribution model
 
-**Target:** Q2 2026
+## Experimental / research
 
-- SSO/SAML (Azure AD, Okta, Google Workspace)
-- Multi-User Team Management
-- Audit Log Viewer UI
-- Evidence Vault File Storage
-- Board Report Generator (DOCX/PDF export)
-- Email Notifications
-- AlienVault OTX deep integration
-
----
-
-## v2.2 — Integrations
-
-**Target:** Q3 2026
-
-- Jira Cloud Bi-Directional Sync
-- Slack Integration
-- Microsoft Teams Integration
-- REST API + Webhooks (OpenAPI spec)
-- GitHub/GitLab Security Alerts
-- OpenCTI integration (self-hosted or demo)
-
----
-
-## v2.3 — Cloud Security
-
-**Target:** Q4 2026
-
-- AWS SecurityHub Integration
-- Azure Defender Integration
-- Vulnerability Scanner Integration (Nessus, Qualys)
-- Automated Evidence Collection
-- Compliance Drift Detection
-
----
-
-## v3.0 — Supervised factory (north star)
-
-Not “autonomous CISO.” Default stays **SUPERVISED**.
-
-- OpenNeko briefing as the morning Needs-you
-- Approval-gated plugins (Jira/Slack) with `skillRunId`
-- Continuous watch (questionnaires stay; snapshots refresh)
-- Still out of scope: SIEM/EDR truth, uncalibrated FAIR, board PowerPoint mill
-
+The existing intelligence, incident, exercise, strategy, OpenNeko, and GraphJin code can continue to evolve behind experimental boundaries. It should only return to primary navigation when it passes Astra's value test: real data, a clear decision outcome, and an auditable trail.
