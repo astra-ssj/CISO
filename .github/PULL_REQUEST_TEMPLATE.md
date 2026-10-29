@@ -1,36 +1,51 @@
-## Description
+## Problem
 
-<!-- Clearly describe what this PR does and why. Link to any relevant issue(s). -->
+What problem does this PR solve?
 
-Closes #<!-- issue number -->
+## Change
 
-## Type of Change
+Summarize the implementation.
 
-- [ ] ✨ Feature (new functionality)
-- [ ] 🐛 Bug fix (non-breaking change that solves an issue)
-- [ ] ♻️ Refactor (code change that neither fixes a bug nor adds a feature)
-- [ ] 📝 Documentation
-- [ ] 🔒 Security fix
-- [ ] 🧪 Tests only
-- [ ] 🏗️ Infrastructure / CI
+## Value test
 
-## Checklist
+- [ ] Creates/routes a security decision
+- [ ] Improves evidence supporting a decision
+- [ ] Improves a deterministic recommendation
+- [ ] Helps close or verify a decision
+- [ ] Improves security/reliability/DevEx only
 
-- [ ] Passes the value test (decision / real-or-empty / auditor trail / deterministic or labeled draft)
-- [ ] My code follows the project's TypeScript strict rules (no `any` types)
-- [ ] I have used Zod for all external data boundaries
-- [ ] Skills have golden tests if this PR adds or changes a skill
-- [ ] No silent `MOCK_*` intel or `Math.random()` metrics
-- [ ] All existing tests pass (`npx vitest run`)
-- [ ] No TypeScript errors (`npx tsc --noEmit`)
-- [ ] `HONESTY.md` updated if a screen changed REAL / EMPTY / MIXED
-- [ ] I have updated relevant documentation (`README.md`, Help Center, `docs/`)
-- [ ] Screenshots or screen recordings included (if UI change)
+## Security checklist
 
-## Screenshots (if applicable)
+- [ ] No credentials, customer evidence, or production telemetry committed
+- [ ] Authentication/authorization impact reviewed
+- [ ] External inputs validated
+- [ ] Sensitive outputs reviewed
+- [ ] Audit/provenance impact reviewed
+- [ ] No silent mock data introduced
 
-<!-- Drag and drop screenshots or recordings here -->
+## Database
 
-## Notes for Reviewer
+- [ ] No schema change
+- [ ] PostgreSQL migration included and tested
+- [ ] Upgrade/rollback impact documented
 
-<!-- Anything specific the reviewer should pay attention to, e.g. tricky logic, performance implications, data migration concerns. -->
+## Tests
+
+- [ ] Unit tests
+- [ ] Integration tests where behavior crosses DB/API boundaries
+- [ ] Smoke tests for user-visible route changes
+- [ ] Regression test added for any bug fix
+
+## Documentation
+
+- [ ] README/docs updated where needed
+- [ ] HONESTY.md updated if product truth changed
+- [ ] CHANGELOG updated when release-facing
+
+## Screenshots
+
+For user-visible changes, include before/after screenshots.
+
+## Reviewer notes
+
+Call out security-sensitive logic, migrations, compatibility changes, or deliberately deferred work.
