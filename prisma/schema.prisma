@@ -668,6 +668,53 @@ model SkillRun {
   @@index([createdAt])
 }
 
+
+
+// -----------------------------------------------------------------------------
+// 20. Security decisions
+//     Authoritative decision history lives in Postgres. Client state may cache,
+//     but must never be the system of record.
+// -----------------------------------------------------------------------------
+
+model Decision {
+  id                      String   @id @default(cuid())
+  pillar                  String
+  urgency                 String
+  status                  String   @default("PENDING") // PENDING | APPROVED | REJECTED | DEFERRED
+  title                   String
+  question                String
+  context                 String   @default("")
+
+  recommendationAction    String
+  recommendationSummary   String
+  recommendationRationale String   @default("")
+  confidenceValue         Int      @default(0)
+  confidenceLabel         String   @default("LOW")
+
+  source                  String   @default("SKILL") // SKILL | AI_DRAFT | HUMAN
+  skillRunId              String?
+  sourceResourceType      String?
+  sourceResourceId        String?
+  evidenceIds             String   @default("[]") // JSON array of evidence ids
+
+  executionType           String? // e.g. VENDOR_STATUS
+  executionPayload        String? // JSON, interpreted only by allowlisted executors
+
+  decidedById             String?
+  decidedByName           String?
+  decidedAt               DateTime?
+  decisionNotes           String?
+  expiresAt               DateTime?
+
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  @@index([status, urgency])
+  @@index([pillar])
+  @@index([sourceResourceType, sourceResourceId])
+  @@index([skillRunId])
+}
+
 // Approvals remembered in Astra (OpenNeko memory is dual-written when configured).
 model Approval {
   id              String   @id @default(cuid())
