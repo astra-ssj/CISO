@@ -4,7 +4,7 @@
   "description": "Where security decisions get made, evidenced, and remembered.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SristiNative/CISO.git"
+    "url": "git+https://github.com/astra-ssj/CISO.git"
   },
   "license": "MIT",
   "scripts": {
@@ -18,7 +18,9 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:integration": "npx tsx tests/integration/run-all.ts",
-    "test:smoke": "npx tsx tests/smoke/run-all.ts"
+    "test:smoke": "npx tsx tests/smoke/run-all.ts",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed:demo": "prisma db seed"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.72.1",
@@ -110,5 +112,9 @@
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
+  },
+  "homepage": "https://github.com/astra-ssj/CISO#readme",
+  "bugs": {
+    "url": "https://github.com/astra-ssj/CISO/issues"
   }
 }
