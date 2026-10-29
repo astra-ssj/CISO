@@ -20,7 +20,7 @@
     "test:integration": "npx tsx tests/integration/run-all.ts",
     "test:smoke": "npx tsx tests/smoke/run-all.ts",
     "db:migrate": "prisma migrate deploy",
-    "db:seed:demo": "prisma db seed"
+    "db:seed:demo": "ASTRA_MODE=demo prisma db seed"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.72.1",
