@@ -8,7 +8,7 @@ Astra is not a SIEM, EDR, vulnerability scanner, or autonomous CISO. It sits abo
 
 > **What needs a decision, why, and what evidence supports it?**
 
-> **Status:** Community Preview hardening toward `v0.1.0`. APIs and schema may still change.
+> **Current release:** `v0.1.0` Community Preview. APIs and schema may still change.
 
 ## Why Astra?
 
@@ -230,7 +230,7 @@ Project rule:
 
 ## Roadmap
 
-### v0.1 — Decision Core
+### v0.1 — Decision Core (current)
 
 - persistent security decisions
 - human approval before execution

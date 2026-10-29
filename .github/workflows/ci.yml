@@ -121,3 +121,16 @@ jobs:
           severity: CRITICAL,HIGH
           ignore-unfixed: true
           exit-code: "1"
+
+  demo:
+    name: Docker demo acceptance
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run documented demo quickstart
+        run: sh scripts/demo-acceptance.sh
+

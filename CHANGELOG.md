@@ -4,7 +4,57 @@ All notable changes to Astra-CISO are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-v3 (`release/v3-decision-loop`) is a **separate line** from v2 on `main`. See [RELEASE.md](RELEASE.md) and [HONESTY.md](HONESTY.md).
+Public semantic versioning starts at `v0.1.0`. Earlier `2.x` / `3.0.0-decision.*` entries document pre-public development history.
+
+---
+
+## [0.1.0] — 2026-10-29
+
+### Community Preview
+
+The first public Astra CISO release.
+
+Astra is an open-source security decision and evidence platform that turns security evidence, vendor assessments, and risk signals into reproducible recommendations and human-approved decisions.
+
+### Added
+- PostgreSQL-backed security `Decision` records
+- Decision Center with pending, approved, rejected, and deferred state
+- Human approval gate for material vendor decisions
+- Versioned deterministic security SkillRuns
+- Vendor / CAIQ assessment workflow
+- Evidence vault and evidence expiry
+- 5×5 deterministic risk scoring
+- Knowledge repository
+- API-level RBAC
+- PostgreSQL baseline migration
+- Docker Compose Community deployment
+- Explicit demo mode
+- Optional AI providers
+- CodeQL, Gitleaks, and runtime-image Trivy scanning
+
+### Security
+- Fixed vendor answer classification ambiguity
+- Removed implicit SSO self-provisioning
+- Separated connector encryption key from session signing secret
+- Removed npm/corepack from the production container
+- Updated vulnerable runtime dependencies
+- Added explicit write permissions for sensitive APIs
+
+### Changed
+- Repositioned Astra from a broad CISO dashboard to security decision and evidence infrastructure
+- Experimental modules removed from primary navigation
+- AI is advisory and optional
+- Vendor recommendations require human approval before execution
+
+### Experimental
+The following remain outside the supported v0.1 product surface:
+- incident response / War Room
+- tabletop exercises
+- threat intelligence visualization
+- Strategy / OKRs
+- executive KPI engine
+- OpenNeko
+- GraphJin
 
 ---
 

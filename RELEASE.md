@@ -1,62 +1,133 @@
-# Astra v3 — Decision Loop (release/v3-decision-loop)
+# Astra CISO v0.1.0 — Community Preview
 
-This branch is a **separate release line** from v2.0 on `main`. Do not merge mock UI or silent intel fallbacks back into this line.
+Astra CISO is an open-source security decision and evidence platform.
 
-**Version:** `3.0.0-decision.2`  
-**Previous slice:** `3.0.0-decision.1`
+This release focuses on one core loop:
 
-See [CHANGELOG.md](CHANGELOG.md), [HONESTY.md](HONESTY.md), and [ops/openneko/README.md](ops/openneko/README.md).
-
-## What this release is
-
-Astra is where security decisions get made, evidenced, and remembered.
-
-- **Today:** deterministic skill catalog, Postgres snapshots, an honest decision queue, OpenNeko as a **sidecar** (watchers + approvals), not a wrapper.
-- **Not claimed:** live IR, board-ready KPIs, autonomous vendor reject.
-
-## What shipped in 3.0.0-decision.2
-
-1. Prisma datasource is **Postgres 16** (`docker compose up -d postgres`). GraphJin allowlist in `ops/graphjin/config.yml`.
-2. Full v1 skill catalog with golden tests, including `vendor.goNoGo`, `tabletop.score`, `intel.correlate`, `playbook.nextStep`, `caiq.draft`.
-3. CAIQ → score → go/no-go → Risk; Shodan persists Observation **and** `AttackSurfaceScan`.
-4. OpenNeko sidecar APIs: `/api/internal/watchers/tick`, `/api/internal/approvals`, `/api/internal/skills`. Dual-write `Approval` + `AuditLog`.
-5. UI honesty: War Room binds `Incident` or exercise mode; ticker is not fake IOCs; Command Center Needs-you; AppSec/Roadmap hidden; remaining SAMPLE_/Math.random feeds emptied.
-
-## What shipped in 3.0.0-decision.1
-
-1. Skill catalog expanded (`caiq.score`, `risk.fiveByFive`, `evidence.expiry`); golden tests.
-2. CAIQ engine persists SkillRuns; 5×5 Risk writes persist `risk.fiveByFive`.
-3. OpenCTI / MISP / OTX / GitHub: live, last Observation, or empty — no `MOCK_*` IOCs.
-4. Decision Center **Needs you** reads evidence expiry + open risks. Recorded decisions start empty.
-5. Command Center threats/incidents, Defense Matrix, Incidents MTTR: empty or unscored.
-
-## What shipped in 3.0.0-decision.0
-
-1. APIs are session-gated. Public: `/login`, `/api/auth/*`, `/api/health`.
-2. `Observation` and `SkillRun` Prisma models.
-3. Skill `caiq.match@1.0.0` + `POST /api/skills/caiq-match`.
-4. Abuse.ch client returns **empty** on failure, never mock IOCs.
-5. Turbopack root pinned to this app directory.
-
-## What is explicitly not in this release
-
-- OpenNeko is **not** npm-installed into Next.js. Operator installs it beside the repo (see `ops/openneko/README.md`).
-- Board KPI engine still hardcoded
-- Compliance heatmap still seeded ISO annex
-
-## Run
-
-```bash
-git checkout release/v3-decision-loop
-docker compose up -d postgres
-# DATABASE_URL=postgresql://astra:astra@localhost:5432/astra
-npx prisma generate
-npx prisma db push
-npx prisma db seed
-npx vitest run tests/unit/*.skill.test.ts
-npm run dev
+```text
+Evidence / risk / vendor context
+        ↓
+Deterministic skill
+        ↓
+Recommendation
+        ↓
+Human decision
+        ↓
+Action
+        ↓
+Audit trail
 ```
 
-Set `ASTRA_INTERNAL_SECRET` for OpenNeko watchers. Set `OPENNEKO_URL` to show the briefing CTA.
+## Supported in v0.1.0
 
-Login: `ciso@astra.ai` / `admin123` (local seed only).
+- Command Center / Needs You
+- Decision Center
+- Vendor registry
+- CAIQ / Knowledge workflow
+- Evidence Vault and evidence expiry
+- Risk register and deterministic 5×5 scoring
+- Policies where they support decision context
+- Versioned SkillRuns and Observations
+- Human approvals
+- Audit history
+- Docker Compose Community deployment
+- Optional Anthropic or Google AI drafting
+
+## Experimental / not supported as v0.1 product surface
+
+- incident response / War Room
+- tabletop exercises
+- threat-intelligence visualization
+- attack-surface UI
+- Strategy / OKRs
+- executive KPI engine
+- FAIR as a decision authority
+- OpenNeko
+- GraphJin
+
+These modules may remain in the repository while they are progressively isolated.
+
+## Quickstart
+
+```bash
+git clone https://github.com/astra-ssj/CISO.git
+cd CISO
+cp .env.example .env
+docker compose --profile demo up -d --build
+```
+
+Open:
+
+```text
+http://localhost:3000
+```
+
+Demo credentials:
+
+```text
+ciso@astra.ai
+admin123
+```
+
+Demo credentials are created only when `ASTRA_MODE=demo`. Do not expose a demo deployment to untrusted networks.
+
+## Security model
+
+- authentication via NextAuth
+- role-based API authorization
+- versioned deterministic skills
+- Postgres-backed Decision records
+- human approval before allowlisted material state changes
+- separate integration encryption key
+- application-level append-only AuditLog
+- CodeQL, Gitleaks, and runtime-image Trivy in CI
+- AI output is advisory
+
+## Important limitations
+
+v0.1.0 is a Community Preview, not a certified GRC or compliance platform.
+
+Known limitations include:
+
+- API/schema contracts may change before v1.0
+- AuditLog is not yet cryptographically tamper-evident
+- local filesystem evidence storage is the default Community backend
+- rate limiting is currently suited to single-instance Community deployments
+- experimental modules are not part of the supported release surface
+- historical pre-public migration history was replaced by a PostgreSQL baseline; old development databases should be recreated for this release
+
+## Upgrade note
+
+Public semantic versioning begins with `v0.1.0`.
+
+Earlier `2.x` and `3.0.0-decision.*` versions are historical development iterations and should not be interpreted as public stable releases.
+
+## Release verification
+
+Before tagging, the release branch must pass:
+
+- PostgreSQL migration
+- TypeScript
+- ESLint on supported v0.1 surface
+- unit tests
+- integration tests
+- smoke tests
+- production build
+- CodeQL
+- Gitleaks
+- runtime image Trivy
+- Docker demo acceptance
+
+## Container
+
+The tag workflow publishes:
+
+```text
+ghcr.io/astra-ssj/astra-ciso:0.1.0
+ghcr.io/astra-ssj/astra-ciso:0.1
+ghcr.io/astra-ssj/astra-ciso:latest
+```
+
+## License
+
+MIT.

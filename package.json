@@ -1,6 +1,6 @@
 {
-  "name": "astra",
-  "version": "3.0.0-decision.2",
+  "name": "astra-ciso",
+  "version": "0.1.0",
   "description": "Where security decisions get made, evidenced, and remembered.",
   "repository": {
     "type": "git",
