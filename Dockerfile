@@ -14,6 +14,14 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npx prisma generate
 
 FROM tools AS builder
+# Build-time placeholders satisfy route/module initialization only. Runtime
+# values are injected by Compose/Kubernetes and these credentials are never
+# used to connect during the image build.
+ENV DATABASE_URL="postgresql://astra:build-only@127.0.0.1:5432/astra"
+ENV AUTH_SECRET="build-only-auth-secret-not-for-runtime-0000"
+ENV NEXTAUTH_SECRET="build-only-auth-secret-not-for-runtime-0000"
+ENV AI_PROVIDER="NONE"
+ENV ASTRA_ENCRYPTION_KEY="build-only-encryption-secret-not-for-runtime"
 RUN npx next build --webpack
 
 FROM base AS runner
