@@ -4,8 +4,7 @@ import { requirePermission } from '@/lib/api/require-session';
 import { runCaiqScore } from '@/lib/skills/caiq-score';
 import { runGoNoGo } from '@/lib/skills/vendor-gonogo';
 import { persistSkillRun } from '@/lib/skills/persist';
-
-type CanonicalAnswer = 'YES' | 'NO' | 'PARTIAL' | 'NA' | 'UNKNOWN';
+import { canonicalizeAssessmentAnswer } from '@/lib/caiq/answer-normalizer';
 
 interface AssessmentQuestion {
     domain?: string;
@@ -14,17 +13,6 @@ interface AssessmentQuestion {
     matchedEntryId?: string;
 }
 
-export function canonicalizeAnswer(question: AssessmentQuestion): CanonicalAnswer {
-    const raw = String(question.answerType ?? question.answer ?? '').trim().toUpperCase();
-
-    // Evaluate negative states before positive tokens so phrases such as
-    // "not implemented" can never be misclassified as "implemented".
-    if (['NO', 'FALSE', 'NOT IMPLEMENTED', 'NON-COMPLIANT', 'NONCOMPLIANT'].includes(raw)) return 'NO';
-    if (['PARTIAL', 'PARTIALLY IMPLEMENTED', 'CONDITIONAL'].includes(raw)) return 'PARTIAL';
-    if (['YES', 'TRUE', 'IMPLEMENTED', 'COMPLIANT'].includes(raw)) return 'YES';
-    if (['NA', 'N/A', 'NOT APPLICABLE'].includes(raw)) return 'NA';
-    return 'UNKNOWN';
-}
 
 /**
  * Finalize assessment computation.
@@ -66,7 +54,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
         for (const question of questions) {
             const domain = question.domain?.trim() || 'General';
-            const state = canonicalizeAnswer(question);
+            const state = canonicalizeAssessmentAnswer(question);
             domainScores[domain] ??= {
                 total: 0, yes: 0, no: 0, partial: 0, na: 0, unknown: 0, score: 0,
             };
