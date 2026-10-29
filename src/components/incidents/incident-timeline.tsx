@@ -116,5 +116,3 @@ function SLACard({ label, hours, target }: { label: string; hours?: number; targ
         </div>
     );
 }
-
-}
