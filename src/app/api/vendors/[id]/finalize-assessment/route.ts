@@ -14,7 +14,7 @@ interface AssessmentQuestion {
     matchedEntryId?: string;
 }
 
-function canonicalizeAnswer(question: AssessmentQuestion): CanonicalAnswer {
+export function canonicalizeAnswer(question: AssessmentQuestion): CanonicalAnswer {
     const raw = String(question.answerType ?? question.answer ?? '').trim().toUpperCase();
 
     // Evaluate negative states before positive tokens so phrases such as
