@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
+import type { Session } from 'next-auth';
 import { auth } from '@/auth';
 import { hasPermission, type UserProfile, type UserRole } from '@/lib/auth/rbac';
 
-function sessionUserProfile(session: Awaited<ReturnType<typeof auth>>): UserProfile | null {
+function sessionUserProfile(session: Session | null): UserProfile | null {
     if (!session?.user) return null;
     const user = session.user as typeof session.user & { id?: string; role?: string };
     const role = user.role as UserRole | undefined;
