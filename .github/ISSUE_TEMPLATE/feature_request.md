@@ -1,50 +1,57 @@
 ---
 name: Feature Request
-about: Suggest a new feature or enhancement for Astra CISO
+about: Propose a capability that strengthens Astra's decision loop
 title: '[FEAT] '
 labels: enhancement
 assignees: ''
 ---
 
-## Feature Description
+## Security problem
 
-A clear and concise description of the feature you are requesting.
+What real security-management problem does this solve?
 
-## Use Case / Problem
+## User
 
-What problem does this feature solve? Who benefits from it?
+- [ ] CISO / Head of Security
+- [ ] Security / GRC Engineer
+- [ ] Auditor
+- [ ] Maintainer / operator
 
-> _As a [CISO / security analyst / compliance officer], I want [feature] so that [benefit]._
+## Decision-loop value
 
-## Proposed Solution
+Which part does this improve?
 
-Describe the solution you'd like to see implemented. Be as specific as possible about the expected behaviour, UI changes, or API additions.
+- [ ] Creates/routes a decision
+- [ ] Adds or improves evidence
+- [ ] Improves a deterministic recommendation
+- [ ] Helps a human approve/reject/defer
+- [ ] Executes/verifies an approved action
+- [ ] Improves provenance, security, reliability, or DevEx
 
-## Alternatives Considered
+## Proposed solution
 
-Describe any alternative solutions or features you have considered and why they fall short.
+Describe the smallest useful implementation.
 
-## Module / Area Affected
+## Core area
 
-- [ ] Command Center / Needs you
 - [ ] Decision Center
-- [ ] Vendor Risk / CAIQ skills
-- [ ] Governance & Risk (5×5)
-- [ ] Intelligence / Observations
-- [ ] Tabletop Exercises
-- [ ] Incidents / War Room
-- [ ] OpenNeko sidecar / GraphJin
+- [ ] Vendor / CAIQ
+- [ ] Evidence
+- [ ] Risk
+- [ ] Knowledge
+- [ ] Integrations
+- [ ] Auth / RBAC
 - [ ] Skills runtime
-- [ ] Settings / Configuration
-- [ ] API / Backend
-- [ ] Documentation
-- [ ] Other: ___
+- [ ] Audit / provenance
+- [ ] Packaging / CI
+- [ ] Experimental — explain why it belongs in the repository
 
-## Value test
+## Data integrity
 
-Does this create, evidence, or close a decision with real (or clearly empty) data?
-      `
+What is the source of truth? How does the feature behave when data is absent?
 
-## Additional Context
+> Astra rule: empty is honest; silent mock data is not.
 
-Add any mockups, sketches, links to similar features in other tools, or other context here.
+## Alternatives
+
+What simpler alternatives did you consider?
