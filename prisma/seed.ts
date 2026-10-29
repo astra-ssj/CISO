@@ -13,6 +13,15 @@ async function main() {
 
     console.log('🌱 Starting explicit demo seed...')
 
+    const existingDemoUser = await prisma.user.findUnique({
+        where: { email: 'ciso@astra.ai' },
+        select: { id: true },
+    });
+    if (existingDemoUser) {
+        console.log('✅ Demo dataset already present; skipping duplicate seed.');
+        return;
+    }
+
     // Passwords for NextAuth credentials (min 6 chars for auth.ts zod)
     const cisoHash = await bcrypt.hash('admin123', 10)
     const analystHash = await bcrypt.hash('user123', 10)
