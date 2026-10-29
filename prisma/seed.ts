@@ -5,7 +5,13 @@ config({ path: '.env.local' })
 import prisma from '../src/lib/prisma'
 
 async function main() {
-    console.log('🌱 Starting seed...')
+    if ((process.env.ASTRA_MODE || '').trim().toLowerCase() !== 'demo') {
+        throw new Error(
+            'Demo seed refused. Set ASTRA_MODE=demo explicitly before running prisma db seed.'
+        );
+    }
+
+    console.log('🌱 Starting explicit demo seed...')
 
     // Passwords for NextAuth credentials (min 6 chars for auth.ts zod)
     const cisoHash = await bcrypt.hash('admin123', 10)
