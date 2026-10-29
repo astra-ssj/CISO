@@ -116,6 +116,10 @@
     "url": "https://github.com/astra-ssj/CISO/issues"
   },
   "overrides": {
-    "@auth/core": "0.41.3"
+    "@auth/core": "0.41.3",
+    "minimatch@3.1.5": {
+      "brace-expansion": "1.1.20"
+    },
+    "source-map-js": "1.2.2"
   }
 }
