@@ -1,0 +1,7 @@
+title = "Astra CISO Gitleaks configuration"
+
+[allowlist]
+description = "Known non-secret CI test fixtures only"
+regexes = [
+  '''0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'''
+]
