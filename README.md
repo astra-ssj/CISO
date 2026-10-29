@@ -111,7 +111,7 @@ docker compose --profile demo up -d --build
 
 Open **http://localhost:3000**.
 
-The demo seed currently creates local-only evaluation users. Do not expose a demo deployment to untrusted networks.
+The demo seed creates the local evaluation account `ciso@astra.ai / admin123`. It is only created when `ASTRA_MODE=demo`; do not expose a demo deployment to untrusted networks.
 
 No external AI key, SIEM, cloud account, or threat-intelligence API is required to evaluate the core workflow.
 
