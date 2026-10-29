@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.72.1",
-    "@auth/prisma-adapter": "^2.11.1",
+    "@auth/prisma-adapter": "2.11.3",
     "@ax-llm/ax": "^16.1.0",
     "@deck.gl/aggregation-layers": "^9.2.9",
     "@deck.gl/core": "^9.2.9",
@@ -66,7 +66,7 @@
     "jspdf-autotable": "^5.0.7",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.563.0",
-    "maplibre-gl": "^5.19.0",
+    "maplibre-gl": "6.4.1",
     "mermaid": "^10.9.5",
     "next": "16.4.3",
     "next-auth": "5.0.0-beta.32",
@@ -99,7 +99,7 @@
     "@types/react-dom": "^19",
     "@vitest/coverage-v8": "^4.0.18",
     "eslint": "^9.39.2",
-    "eslint-config-next": "^16.1.6",
+    "eslint-config-next": "16.4.3",
     "jsdom": "^28.1.0",
     "prisma": "^7.4.0",
     "tailwindcss": "^4",
@@ -114,5 +114,8 @@
   "homepage": "https://github.com/astra-ssj/CISO#readme",
   "bugs": {
     "url": "https://github.com/astra-ssj/CISO/issues"
+  },
+  "overrides": {
+    "@auth/core": "0.41.3"
   }
 }
