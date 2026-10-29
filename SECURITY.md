@@ -1,62 +1,54 @@
 # Security Policy
 
-## Supported Versions
+## Supported versions
 
-| Version | Supported |
-|---------|-----------|
-| 3.0.x-decision.* (`release/v3-decision-loop`) | ✅ Active |
-| 2.0.x (`main`) | ⚠️ Maintenance only — do not merge v3 mock-stripping back |
-| < 2.0   | ❌ No     |
+| Version | Status |
+|---|---|
+| `main` | Active development |
+| `v0.1.x` | Supported after the first public release |
+| historical preview branches | Unsupported |
 
----
+## Reporting a vulnerability
 
-## Reporting a Vulnerability
+Do **not** create a public GitHub issue for a security vulnerability.
 
-If you discover a security vulnerability in Astra-CISO, please report it responsibly.
+Report privately to **security@sristinative.com** with:
 
-### How to Report
+1. vulnerability description
+2. reproduction steps
+3. affected version or commit
+4. impact assessment
+5. suggested remediation, if available
 
-**Email:** [security@sristinative.com](mailto:security@sristinative.com)
+## Security architecture
 
-Please include:
+The current Community Preview includes:
 
-1. **Description** of the vulnerability
-2. **Steps to reproduce** the issue
-3. **Impact assessment** — what could an attacker achieve?
-4. **Affected version(s)** and branch
-5. **Suggested fix** (if you have one)
+- NextAuth-based authentication
+- role-based API authorization
+- Zod validation at key external boundaries
+- CSP and security headers
+- separate encryption key for integration credentials
+- deterministic, versioned security skills
+- persisted SkillRuns and external Observations
+- Postgres-backed security Decisions
+- human approval before allowlisted decision execution
+- Approval and AuditLog records
 
-### What to Expect
+## Important limitations
 
-| Timeframe | Action |
-|-----------|--------|
-| **24 hours** | Acknowledgment of your report |
-| **72 hours** | Initial assessment and severity classification |
-| **7 days** | Status update with remediation plan |
-| **30 days** | Fix released (critical) or scheduled (moderate/low) |
+The Community Preview is not a certified compliance platform.
 
-### Responsible Disclosure
+Current limitations include:
 
-- **Do not** open public GitHub issues for security vulnerabilities
-- **Do not** exploit the vulnerability beyond what's needed to demonstrate it
-- **Do** give us reasonable time to fix the issue before disclosure
-- We will credit you in the release notes (unless you prefer anonymity)
+- `AuditLog` is application-level append-only, not cryptographically tamper-evident
+- local filesystem evidence storage is the default Community backend
+- some older/experimental routes still require further authorization/validation hardening
+- rate limiting is in-memory and intended for single-instance Community deployments
+- AI output is advisory
+- experimental modules are not part of the supported v0.1 product surface
+- demo seed credentials must never be exposed to untrusted networks
 
----
+## Responsible disclosure
 
-## Security Architecture (v3)
-
-- **Authentication:** NextAuth 5 (JWT). Public paths: `/login`, `/api/auth/*`, `/api/health`. `/api/internal/*` requires `x-astra-internal-secret`.
-- **Authorization:** RBAC (CISO, SEC_ENGINEER, AUDITOR, VIEWER)
-- **API Security:** Zod, rate limiting, CSP
-- **Data:** Postgres 16. GraphJin is **read** allowlist only — no `password`, no Integration `config`
-- **Audit Trail:** append-only `AuditLog`; skill runs in `SkillRun`
-- **AI Safety:** circuit breaker; LLM is `ai_draft`; default autonomy SUPERVISED
-- **OpenNeko:** sidecar. Do not embed the agent with API keys in Next.js serverless
-
-## Default / Mock Credentials
-
-> [!WARNING]
-> Seed creates **`ciso@astra.ai` / `admin123`**. Rotate or drop before any shared environment. Never commit `.env.local`.
-
-For what the product **honestly** claims, see [HONESTY.md](HONESTY.md). Architecture notes: [docs/HIGH_LEVEL_DESIGN.md](docs/HIGH_LEVEL_DESIGN.md) (v2 inventory — v3 overrides in [RELEASE.md](RELEASE.md)).
+Please avoid destructive testing and unrelated data access. We will acknowledge valid reports and coordinate remediation/disclosure as appropriate.
