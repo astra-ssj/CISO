@@ -27,7 +27,8 @@ jobs:
 
       - name: Refresh security-sensitive direct dependencies
         run: |
-          npm install --save-exact next@16.4.1 next-auth@5.0.0-beta.32 nodemailer@10.0.6
+          npm install --save-exact next@16.4.3 next-auth@5.0.0-beta.32
+          npm uninstall nodemailer @types/nodemailer
 
       - name: Commit lockfile refresh
         run: |
@@ -36,5 +37,6 @@ jobs:
           git add package.json package-lock.json
           if ! git diff --cached --quiet; then
             git commit -m "security: refresh vulnerable framework dependencies"
+            git pull --rebase origin chore/oss-v0.1-hardening
             git push origin HEAD:chore/oss-v0.1-hardening
           fi
