@@ -12,15 +12,34 @@ export interface UserProfile {
 export const ROLES: Record<UserRole, { label: string; permissions: string[] }> = {
     CISO: {
         label: 'Chief Information Security Officer',
-        permissions: ['*'], // Admin access (includes caiq:*)
+        permissions: ['*'],
     },
     SEC_ENGINEER: {
         label: 'Security Engineer',
-        permissions: ['policy:write', 'incident:write', 'settings:read', 'caiq:assess', 'caiq:review'],
+        permissions: [
+            'dashboard:read',
+            'policy:read', 'policy:write',
+            'risk:read', 'risk:write',
+            'vendor:read', 'vendor:write',
+            'evidence:read', 'evidence:write',
+            'incident:read', 'incident:write',
+            'settings:read',
+            'caiq:read', 'caiq:assess', 'caiq:review',
+        ],
     },
     AUDITOR: {
         label: 'Compliance Auditor',
-        permissions: ['policy:read', 'incident:read', 'audit:read', 'report:export', 'caiq:read'],
+        permissions: [
+            'dashboard:read',
+            'policy:read',
+            'risk:read',
+            'vendor:read',
+            'evidence:read',
+            'incident:read',
+            'audit:read',
+            'report:export',
+            'caiq:read',
+        ],
     },
     VIEWER: {
         label: 'Viewer',
@@ -29,7 +48,7 @@ export const ROLES: Record<UserRole, { label: string; permissions: string[] }> =
 };
 
 export function hasPermission(user: UserProfile, permission: string): boolean {
-    const userPermissions = ROLES[user.role].permissions;
+    const userPermissions = ROLES[user.role]?.permissions ?? [];
     if (userPermissions.includes('*')) return true;
     return userPermissions.includes(permission);
 }
@@ -37,14 +56,11 @@ export function hasPermission(user: UserProfile, permission: string): boolean {
 export function canAccessRoute(role: UserRole, path: string): boolean {
     if (role === 'CISO') return true;
 
-    // CAIQ: CISO full; SEC_ENGINEER assess + review; AUDITOR read-only; VIEWER no access
     if (path.startsWith('/vendors/caiq') || path.startsWith('/vendors/caiq-review')) {
         if (role === 'VIEWER') return false;
         return role === 'SEC_ENGINEER' || role === 'AUDITOR';
     }
 
-    // Route-based protection rules
-    if (path.startsWith('/settings')) return role === 'SEC_ENGINEER'; // Only CISO/Eng can edit settings
-    // Default allow for dashboard
+    if (path.startsWith('/settings')) return role === 'SEC_ENGINEER';
     return true;
 }
