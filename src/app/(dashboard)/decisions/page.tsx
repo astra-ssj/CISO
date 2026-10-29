@@ -1,17 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useDecisionStore } from "@/lib/decision-engine/router";
-import { DecisionCard } from "@/components/decisions/decision-card";
-import { PILLAR_META, type DecisionPillar } from "@/lib/decision-engine/types";
 import {
-    BrainCircuit, CheckCircle2, Clock, Filter,
-    ArrowUpDown, Gauge, Zap, TicketCheck, ShieldAlert
+    BrainCircuit, CheckCircle2, Clock, TicketCheck, ShieldAlert, XCircle
 } from "lucide-react";
 
 interface DecisionQueueItem {
@@ -25,10 +21,33 @@ interface DecisionQueueItem {
     asOf: string;
 }
 
-const urgencyStyle = (p: string) =>
-    p === "CRITICAL" ? "bg-red-500/10 text-red-500"
-        : p === "HIGH" ? "bg-orange-500/10 text-orange-400"
-        : p === "MEDIUM" ? "bg-amber-500/10 text-amber-400"
+interface PersistedDecision {
+    id: string;
+    pillar: string;
+    urgency: string;
+    status: string;
+    title: string;
+    question: string;
+    context: string;
+    recommendationAction: string;
+    recommendationSummary: string;
+    recommendationRationale: string;
+    confidenceValue: number;
+    confidenceLabel: string;
+    source: string;
+    skillRunId: string | null;
+    sourceResourceType: string | null;
+    sourceResourceId: string | null;
+    decidedByName: string | null;
+    decidedAt: string | null;
+    decisionNotes: string | null;
+    createdAt: string;
+}
+
+const urgencyStyle = (urgency: string) =>
+    urgency === "CRITICAL" ? "bg-red-500/10 text-red-500"
+        : urgency === "HIGH" ? "bg-orange-500/10 text-orange-400"
+        : urgency === "MEDIUM" ? "bg-amber-500/10 text-amber-400"
         : "bg-blue-500/10 text-blue-400";
 
 function NeedsYouTab() {
@@ -37,50 +56,40 @@ function NeedsYouTab() {
     const [empty, setEmpty] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
-    const [openNekoUrl, setOpenNekoUrl] = useState<string | null>(null);
 
     useEffect(() => {
         fetch('/api/decision-queue')
             .then(async (res) => {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                return res.json() as Promise<{ items: DecisionQueueItem[]; empty: boolean; counts: typeof counts; openNekoUrl: string | null }>;
+                return res.json() as Promise<{ items: DecisionQueueItem[]; empty: boolean; counts: typeof counts }>;
             })
             .then((data) => {
                 setItems(data.items);
                 setCounts(data.counts);
                 setEmpty(data.empty);
-                setOpenNekoUrl(data.openNekoUrl);
             })
             .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to load queue'))
             .finally(() => setLoading(false));
     }, []);
 
-    if (loading) {
-        return <p className="text-sm text-muted-foreground">Loading real work that needs a human…</p>;
-    }
-    if (error) {
-        return <p className="text-sm text-amber-400">Decision queue unavailable: {error}</p>;
-    }
+    if (loading) return <p className="text-sm text-muted-foreground">Loading work that needs a human…</p>;
+    if (error) return <p className="text-sm text-amber-400">Decision queue unavailable: {error}</p>;
 
-    const actionable = items.filter((i) => i.kind !== 'skill_run');
-    const runs = items.filter((i) => i.kind === 'skill_run');
+    const actionable = items.filter((item) => item.kind !== 'skill_run');
+    const runs = items.filter((item) => item.kind === 'skill_run');
 
     return (
         <div className="space-y-6">
             <p className="text-muted-foreground">
-                Computed from evidence expiry (evidence.expiry) and open 5×5 risks (risk.fiveByFive). Empty means nothing needs you — not that the feed is demo.
+                Computed from evidence expiry and open 5×5 risks. Empty means nothing needs attention; Astra does not invent work.
             </p>
-            {openNekoUrl && (
-                <a href={openNekoUrl} className="inline-flex items-center text-sm text-cyan-400 hover:underline">
-                    Open OpenNeko briefing
-                </a>
-            )}
+
             {counts && (
                 <div className="grid gap-3 md:grid-cols-4">
-                    <Card className="bg-card/30 border-border/30"><CardContent className="p-3"><p className="text-xl font-bold font-mono">{counts.evidenceExpired}</p><p className="text-[10px] text-muted-foreground">Evidence expired</p></CardContent></Card>
-                    <Card className="bg-card/30 border-border/30"><CardContent className="p-3"><p className="text-xl font-bold font-mono">{counts.evidenceExpiring}</p><p className="text-[10px] text-muted-foreground">Expiring in 30d</p></CardContent></Card>
-                    <Card className="bg-card/30 border-border/30"><CardContent className="p-3"><p className="text-xl font-bold font-mono">{counts.openRisks}</p><p className="text-[10px] text-muted-foreground">Open risks</p></CardContent></Card>
-                    <Card className="bg-card/30 border-border/30"><CardContent className="p-3"><p className="text-xl font-bold font-mono">{counts.skillRuns}</p><p className="text-[10px] text-muted-foreground">Recent skill runs</p></CardContent></Card>
+                    <Metric value={counts.evidenceExpired} label="Evidence expired" />
+                    <Metric value={counts.evidenceExpiring} label="Expiring in 30d" />
+                    <Metric value={counts.openRisks} label="Open risks" />
+                    <Metric value={counts.skillRuns} label="Recent skill runs" />
                 </div>
             )}
 
@@ -88,7 +97,6 @@ function NeedsYouTab() {
                 <div className="text-center py-12 text-muted-foreground">
                     <ShieldAlert className="h-12 w-12 mx-auto mb-3 opacity-20" />
                     <p>No expired evidence or open risks.</p>
-                    <p className="text-xs mt-2">Add evidence with an expiry date or a risk on Governance. Approvals live in OpenNeko when <code>OPENNEKO_URL</code> is set.</p>
                 </div>
             )}
 
@@ -102,7 +110,6 @@ function NeedsYouTab() {
                                     <Badge className={urgencyStyle(item.urgency)}>{item.urgency}</Badge>
                                 </div>
                                 <p className="text-xs text-muted-foreground mt-2">{item.detail}</p>
-                                <p className="text-[10px] text-muted-foreground mt-2 font-mono">{item.kind}</p>
                             </CardContent>
                         </Card>
                     </Link>
@@ -126,56 +133,157 @@ function NeedsYouTab() {
     );
 }
 
-function DecisionFeedTab() {
-    const { decisions, getPending, getStats } = useDecisionStore();
-    const [mounted, setMounted] = useState(false);
-    useEffect(() => { setMounted(true); }, []);
+function Metric({ value, label }: { value: number; label: string }) {
+    return (
+        <Card className="bg-card/30 border-border/30">
+            <CardContent className="p-3">
+                <p className="text-xl font-bold font-mono">{value}</p>
+                <p className="text-[10px] text-muted-foreground">{label}</p>
+            </CardContent>
+        </Card>
+    );
+}
 
-    const stats = mounted ? getStats() : { pending: 0, approved: 0, deferred: 0, avgConfidence: 0, total: 0 };
-    const pending = mounted ? getPending() : [];
-    const [pillarFilter, setPillarFilter] = useState<DecisionPillar | 'ALL'>('ALL');
-    const [showResolved, setShowResolved] = useState(false);
+function RecordedDecisionsTab() {
+    const [decisions, setDecisions] = useState<PersistedDecision[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [resolving, setResolving] = useState<string | null>(null);
 
-    const filtered = pillarFilter === 'ALL'
-        ? (showResolved ? decisions : pending)
-        : (showResolved ? decisions : pending).filter(d => d.pillar === pillarFilter);
+    const load = useCallback(async () => {
+        setLoading(true);
+        try {
+            const res = await fetch('/api/decisions?limit=200');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json() as { decisions: PersistedDecision[] };
+            setDecisions(data.decisions);
+            setError(null);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to load decisions');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => { void load(); }, [load]);
+
+    const stats = useMemo(() => ({
+        pending: decisions.filter((d) => d.status === 'PENDING').length,
+        approved: decisions.filter((d) => d.status === 'APPROVED').length,
+        rejected: decisions.filter((d) => d.status === 'REJECTED').length,
+        deferred: decisions.filter((d) => d.status === 'DEFERRED').length,
+    }), [decisions]);
+
+    const resolve = async (decision: PersistedDecision, status: 'APPROVED' | 'REJECTED' | 'DEFERRED') => {
+        setResolving(decision.id);
+        try {
+            const res = await fetch(`/api/decisions/${decision.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status }),
+            });
+            if (!res.ok) {
+                const body = await res.json().catch(() => ({})) as { error?: string };
+                throw new Error(body.error ?? `HTTP ${res.status}`);
+            }
+            await load();
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Decision update failed');
+        } finally {
+            setResolving(null);
+        }
+    };
+
+    if (loading && decisions.length === 0) return <p className="text-sm text-muted-foreground">Loading recorded decisions…</p>;
 
     return (
         <div className="space-y-6">
             <p className="text-muted-foreground">
-                Operator-recorded decisions only. This list starts empty. OpenNeko will write here later; until then nothing is invented.
+                These decisions are persisted in PostgreSQL. Recommendations do not execute material changes until an authorized human approves them.
             </p>
-            <div className="flex items-center justify-end">
-                <Button size="sm" variant={showResolved ? 'default' : 'outline'} className="h-8 text-xs gap-1" onClick={() => setShowResolved(!showResolved)}>
-                    <Filter className="h-3.5 w-3.5" />{showResolved ? 'All Decisions' : 'Pending Only'}
-                </Button>
+
+            <div className="grid gap-3 md:grid-cols-4">
+                <Metric value={stats.pending} label="Pending" />
+                <Metric value={stats.approved} label="Approved" />
+                <Metric value={stats.rejected} label="Rejected" />
+                <Metric value={stats.deferred} label="Deferred" />
             </div>
 
-            <div className="grid gap-3 md:grid-cols-5">
-                <Card className="bg-card/30 border-border/30"><CardContent className="p-3 flex items-center gap-3"><Zap className="h-6 w-6 text-amber-400" /><div><p className="text-xl font-bold">{stats.pending}</p><p className="text-[10px] text-muted-foreground">Pending</p></div></CardContent></Card>
-                <Card className="bg-card/30 border-border/30"><CardContent className="p-3 flex items-center gap-3"><CheckCircle2 className="h-6 w-6 text-emerald-400" /><div><p className="text-xl font-bold">{stats.approved}</p><p className="text-[10px] text-muted-foreground">Approved</p></div></CardContent></Card>
-                <Card className="bg-card/30 border-border/30"><CardContent className="p-3 flex items-center gap-3"><Clock className="h-6 w-6 text-amber-400" /><div><p className="text-xl font-bold">{stats.deferred}</p><p className="text-[10px] text-muted-foreground">Deferred</p></div></CardContent></Card>
-                <Card className="bg-card/30 border-border/30"><CardContent className="p-3 flex items-center gap-3"><Gauge className="h-6 w-6 text-blue-400" /><div><p className="text-xl font-bold">{stats.avgConfidence}%</p><p className="text-[10px] text-muted-foreground">Avg Confidence</p></div></CardContent></Card>
-                <Card className="bg-card/30 border-border/30"><CardContent className="p-3 flex items-center gap-3"><ArrowUpDown className="h-6 w-6 text-purple-400" /><div><p className="text-xl font-bold">{stats.total}</p><p className="text-[10px] text-muted-foreground">Total</p></div></CardContent></Card>
-            </div>
+            {error && <p className="text-sm text-amber-400">{error}</p>}
 
-            <div className="flex flex-wrap gap-2">
-                <Button size="sm" variant={pillarFilter === 'ALL' ? 'default' : 'outline'} className="h-7 text-[11px]" onClick={() => setPillarFilter('ALL')}>All Pillars</Button>
-                {(Object.keys(PILLAR_META) as DecisionPillar[]).map(pillar => {
-                    const meta = PILLAR_META[pillar]; const count = pending.filter(d => d.pillar === pillar).length;
-                    return (
-                        <Button key={pillar} size="sm" variant={pillarFilter === pillar ? 'default' : 'outline'} className="h-7 text-[11px] gap-1" onClick={() => setPillarFilter(pillar)}>
-                            {meta.label}{count > 0 && <Badge className="h-4 w-4 p-0 justify-center rounded-full text-[9px] bg-primary/30">{count}</Badge>}
-                        </Button>
-                    );
-                })}
-            </div>
+            {decisions.length === 0 && (
+                <div className="text-center py-12 text-muted-foreground">
+                    <BrainCircuit className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                    <p>No recorded decisions yet.</p>
+                </div>
+            )}
 
             <div className="space-y-3">
-                {filtered.length === 0 && (
-                    <div className="text-center py-12 text-muted-foreground"><BrainCircuit className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>No recorded decisions yet.</p></div>
-                )}
-                {filtered.map(decision => <DecisionCard key={decision.id} decision={decision} />)}
+                {decisions.map((decision) => (
+                    <Card key={decision.id} className="border-border bg-card/30">
+                        <CardContent className="p-4 space-y-3">
+                            <div className="flex items-start justify-between gap-3">
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Badge variant="outline">{decision.pillar}</Badge>
+                                        <Badge className={urgencyStyle(decision.urgency)}>{decision.urgency}</Badge>
+                                        <Badge variant="secondary">{decision.status}</Badge>
+                                    </div>
+                                    <h3 className="font-semibold">{decision.title}</h3>
+                                    <p className="text-xs text-muted-foreground mt-1">{decision.question}</p>
+                                </div>
+                                <span className="text-[10px] font-mono text-muted-foreground">{decision.id}</span>
+                            </div>
+
+                            <div className="rounded-md border border-border/50 bg-background/30 p-3">
+                                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                                    {decision.source === 'AI_DRAFT' ? 'AI draft' : 'Recommendation'}
+                                </p>
+                                <p className="text-sm font-medium mt-1">{decision.recommendationSummary}</p>
+                                {decision.recommendationRationale && (
+                                    <p className="text-xs text-muted-foreground mt-2">{decision.recommendationRationale}</p>
+                                )}
+                            </div>
+
+                            {decision.status === 'PENDING' && (
+                                <div className="flex gap-2">
+                                    <Button
+                                        size="sm"
+                                        disabled={resolving === decision.id}
+                                        onClick={() => void resolve(decision, 'APPROVED')}
+                                        className="gap-1.5"
+                                    >
+                                        <CheckCircle2 className="h-4 w-4" /> Approve
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        disabled={resolving === decision.id}
+                                        onClick={() => void resolve(decision, 'DEFERRED')}
+                                        className="gap-1.5"
+                                    >
+                                        <Clock className="h-4 w-4" /> Defer
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        disabled={resolving === decision.id}
+                                        onClick={() => void resolve(decision, 'REJECTED')}
+                                        className="gap-1.5 text-red-400"
+                                    >
+                                        <XCircle className="h-4 w-4" /> Reject
+                                    </Button>
+                                </div>
+                            )}
+
+                            {decision.decidedAt && (
+                                <p className="text-[10px] text-muted-foreground">
+                                    Decided by {decision.decidedByName ?? 'unknown'} · {new Date(decision.decidedAt).toLocaleString()}
+                                </p>
+                            )}
+                        </CardContent>
+                    </Card>
+                ))}
             </div>
         </div>
     );
@@ -184,16 +292,22 @@ function DecisionFeedTab() {
 export default function DecisionsPage() {
     return (
         <div className="space-y-6 max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2"><BrainCircuit className="h-7 w-7 text-primary" />Decision Center</h1>
+            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+                <BrainCircuit className="h-7 w-7 text-primary" />Decision Center
+            </h1>
 
             <Tabs defaultValue="queue" className="space-y-6">
                 <TabsList>
-                    <TabsTrigger value="queue" className="gap-2"><TicketCheck className="h-4 w-4" />Needs you</TabsTrigger>
-                    <TabsTrigger value="decisions" className="gap-2"><Zap className="h-4 w-4" />Recorded</TabsTrigger>
+                    <TabsTrigger value="queue" className="gap-2">
+                        <TicketCheck className="h-4 w-4" />Needs You
+                    </TabsTrigger>
+                    <TabsTrigger value="decisions" className="gap-2">
+                        <BrainCircuit className="h-4 w-4" />Recorded
+                    </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="queue"><NeedsYouTab /></TabsContent>
-                <TabsContent value="decisions"><DecisionFeedTab /></TabsContent>
+                <TabsContent value="decisions"><RecordedDecisionsTab /></TabsContent>
             </Tabs>
         </div>
     );
