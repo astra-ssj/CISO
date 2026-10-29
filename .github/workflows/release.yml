@@ -41,7 +41,7 @@ jobs:
         with:
           image-ref: astra-ciso:release
           format: spdx-json
-          output: astra-ciso-v0.1.0-sbom.spdx.json
+          output: astra-ciso-${{ github.ref_name }}-sbom.spdx.json
           vuln-type: os,library
 
       - name: Generate CycloneDX SBOM
@@ -49,19 +49,19 @@ jobs:
         with:
           image-ref: astra-ciso:release
           format: cyclonedx
-          output: astra-ciso-v0.1.0-sbom.cdx.json
+          output: astra-ciso-${{ github.ref_name }}-sbom.cdx.json
           vuln-type: os,library
 
       - name: Generate checksums
-        run: sha256sum astra-ciso-v0.1.0-sbom.spdx.json astra-ciso-v0.1.0-sbom.cdx.json > SHA256SUMS
+        run: sha256sum astra-ciso-${{ github.ref_name }}-sbom.spdx.json astra-ciso-${{ github.ref_name }}-sbom.cdx.json > SHA256SUMS
 
       - name: Create GitHub prerelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "${GITHUB_REF_NAME}" \
-            astra-ciso-v0.1.0-sbom.spdx.json \
-            astra-ciso-v0.1.0-sbom.cdx.json \
+            astra-ciso-${{ github.ref_name }}-sbom.spdx.json \
+            astra-ciso-${{ github.ref_name }}-sbom.cdx.json \
             SHA256SUMS \
             --verify-tag \
             --prerelease \
