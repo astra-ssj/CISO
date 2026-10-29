@@ -27,7 +27,7 @@
     "@auth/prisma-adapter": "2.11.3",
     "@ax-llm/ax": "^16.1.0",
     "@deck.gl/aggregation-layers": "^9.2.9",
-    "@deck.gl/core": "^9.2.9",
+    "@deck.gl/core": "^9.4.0",
     "@deck.gl/layers": "^9.2.9",
     "@deck.gl/mapbox": "^9.2.9",
     "@google/generative-ai": "^0.24.1",
