@@ -28,7 +28,7 @@ services:
       - .env
     environment:
       DATABASE_URL: "postgresql://astra:${POSTGRES_PASSWORD:-astra_local}@postgres:5432/astra"
-    command: ["npx", "prisma", "db", "push", "--skip-generate"]
+    command: ["npx", "prisma", "migrate", "deploy"]
     restart: "no"
 
   seed-demo:
