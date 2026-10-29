@@ -104,16 +104,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   trivy:
-    name: Filesystem vulnerability scan
+    name: Runtime image vulnerability scan
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v4
-      - uses: aquasecurity/trivy-action@master
+
+      - name: Build runtime image
+        run: docker build --target runner -t astra-ciso:ci .
+
+      - name: Scan runtime image
+        uses: aquasecurity/trivy-action@master
         with:
-          scan-type: fs
-          scan-ref: .
+          image-ref: astra-ciso:ci
           severity: CRITICAL,HIGH
           ignore-unfixed: true
           exit-code: "1"
