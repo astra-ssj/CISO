@@ -1,5 +1,3 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 /node_modules
 /.pnp
@@ -10,8 +8,14 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
+# testing / generated reports
 /coverage
+/reports
+/artifacts
+eslint.json
+lint-results.json
+eslint-any-count.txt
+tests/RESULTS.md
 
 # next.js
 /.next/
@@ -20,6 +24,10 @@
 # production
 /build
 dist/
+
+# runtime-generated data
+/data/evidence
+/data/token_logs*.json
 
 # misc
 .DS_Store
@@ -34,8 +42,9 @@ yarn-error.log*
 .pnpm-debug.log*
 *.log
 
-# env files (can opt-in for committing if needed)
+# env files — keep example only
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -45,4 +54,3 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
-/data/evidence
