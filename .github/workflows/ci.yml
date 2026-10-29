@@ -59,11 +59,8 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate
 
-      - name: Generate PostgreSQL baseline preview
-        run: npx prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script | tee /tmp/postgres-baseline.sql
-
-      - name: Synchronize test schema
-        run: npx prisma db push --skip-generate
+      - name: Apply PostgreSQL migrations
+        run: npx prisma migrate deploy
 
       - name: Type check
         run: npx tsc --noEmit
@@ -103,6 +100,8 @@ jobs:
         with:
           fetch-depth: 0
       - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   trivy:
     name: Filesystem vulnerability scan
