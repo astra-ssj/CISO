@@ -56,8 +56,8 @@ const apiRoutes = [
     { path: '@/app/api/knowledge/route', methods: ['GET'] },
     { path: '@/app/api/notifications/route', methods: ['GET'] },
     { path: '@/app/api/audit-logs/route', methods: ['GET'] },
-    // Vendor & Admin
-    { path: '@/app/api/vendor-list/route', methods: ['GET', 'POST'] },
+    // Decisions, Vendor & Admin
+    { path: '@/app/api/decisions/route', methods: ['GET', 'POST'] },
     { path: '@/app/api/vendor-risk/route', methods: ['GET'] },
     { path: '@/app/api/team/users/route', methods: ['GET'] },
     { path: '@/app/api/team/invite/route', methods: ['POST'] },
