@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { requirePermission } from '@/lib/api/require-session';
 
 function mapPolicy(p: { id: string; title: string; content: string; version: string; status: string; type: string | null; owner: string | null; frameworks: string; controls: string; sections: string | null; mappings: string | null; dependencies: string | null; acknowledgment: string | null; changelog: string | null; lastUpdated: string | null; updatedAt: Date }) {
     return {
@@ -19,6 +20,8 @@ function mapPolicy(p: { id: string; title: string; content: string; version: str
 }
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    const { error } = await requirePermission('policy:write');
+    if (error) return error;
     try {
         const { id } = await params;
         const body = await req.json();
@@ -53,6 +56,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 }
 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+    const { error } = await requirePermission('policy:write');
+    if (error) return error;
     try {
         const { id } = await params;
         await prisma.policy.delete({ where: { id } });
