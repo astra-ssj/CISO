@@ -1,25 +1,52 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
+import { hasPermission, type UserProfile, type UserRole } from '@/lib/auth/rbac';
 
-/**
- * Session gate for App Router handlers.
- * Middleware already blocks anonymous /api (except health + NextAuth + internal).
- */
+function sessionUserProfile(session: Awaited<ReturnType<typeof auth>>): UserProfile | null {
+    if (!session?.user) return null;
+    const user = session.user as typeof session.user & { id?: string; role?: string };
+    const role = user.role as UserRole | undefined;
+    if (!role || !['CISO', 'SEC_ENGINEER', 'AUDITOR', 'VIEWER'].includes(role)) return null;
+
+    return {
+        id: user.id ?? user.email ?? '',
+        email: user.email ?? '',
+        name: user.name ?? 'User',
+        role,
+        avatarUrl: user.image ?? undefined,
+        lastLogin: new Date().toISOString(),
+    };
+}
+
 export async function requireSession() {
     const session = await auth();
     if (!session?.user) {
         return {
             session: null,
+            user: null,
             error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
         };
     }
-    return { session, error: null };
+    return { session, user: sessionUserProfile(session), error: null };
 }
 
-/**
- * Shared secret for OpenNeko watchers / GraphJin sidecars.
- * Not a public API — the header must match ASTRA_INTERNAL_SECRET.
- */
+export async function requirePermission(permission: string) {
+    const result = await requireSession();
+    if (result.error) return result;
+
+    if (!result.user || !hasPermission(result.user, permission)) {
+        return {
+            session: result.session,
+            user: result.user,
+            error: NextResponse.json(
+                { error: 'Forbidden', requiredPermission: permission },
+                { status: 403 },
+            ),
+        };
+    }
+    return result;
+}
+
 export function requireInternalSecret(req: Request) {
     const expected = process.env.ASTRA_INTERNAL_SECRET;
     if (!expected) {
@@ -35,9 +62,9 @@ export function requireInternalSecret(req: Request) {
 export async function requireSessionOrInternal(req: Request) {
     const internal = requireInternalSecret(req);
     if (!internal) {
-        return { session: null, error: null as NextResponse | null, via: 'internal' as const };
+        return { session: null, user: null, error: null as NextResponse | null, via: 'internal' as const };
     }
-    const { session, error } = await requireSession();
-    if (error) return { session: null, error, via: 'none' as const };
-    return { session, error: null, via: 'session' as const };
+    const result = await requireSession();
+    if (result.error) return { session: null, user: null, error: result.error, via: 'none' as const };
+    return { session: result.session, user: result.user, error: null, via: 'session' as const };
 }
