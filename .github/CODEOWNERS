@@ -1,14 +1,20 @@
-# CODEOWNERS
-# Each line is a pattern followed by one or more owners.
-# Order matters — the last matching pattern takes precedence.
-# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+# Astra CISO CODEOWNERS
 
-# Default owner for everything
-* @SristiNative
+* @astra-ssj
 
-# Security-critical and compliance modules
-src/lib/caiq/ @SristiNative
-src/lib/intelligence/ @SristiNative
+# Security-sensitive platform code
+/src/auth.ts @astra-ssj
+/src/auth.config.ts @astra-ssj
+/src/lib/auth/ @astra-ssj
+/src/lib/crypto.ts @astra-ssj
+/src/lib/api/ @astra-ssj
+/src/lib/skills/ @astra-ssj
+/src/lib/observations/ @astra-ssj
+/prisma/ @astra-ssj
 
-# Documentation
-docs/ @SristiNative
+# Supply chain / CI
+/.github/workflows/ @astra-ssj
+/Dockerfile @astra-ssj
+/docker-compose.yml @astra-ssj
+/package.json @astra-ssj
+/package-lock.json @astra-ssj
