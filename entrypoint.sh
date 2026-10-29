@@ -1,17 +1,18 @@
 #!/bin/sh
-set -e
+set -eu
 
-export DATABASE_URL="${DATABASE_URL:-postgresql://astra:astra@postgres:5432/astra}"
+export DATABASE_URL="${DATABASE_URL:-postgresql://astra:astra_local@postgres:5432/astra}"
 
-# Wait for Postgres (compose healthcheck already gates start; this is a safety net)
 host=$(echo "$DATABASE_URL" | sed -n 's#.*@\([^:/]*\).*#\1#p')
 host="${host:-postgres}"
+
 i=0
-while [ "$i" -lt 30 ]; do
-  if node -e "const n=require('net');const s=n.connect(5432, process.env.H, ()=>{s.end();process.exit(0)});s.on('error',()=>process.exit(1))" H="$host"; then
-    break
-  fi
+until H="$host" node -e "const n=require('net');const s=n.connect(5432, process.env.H,()=>{s.end();process.exit(0)});s.on('error',()=>process.exit(1))"; do
   i=$((i + 1))
+  if [ "$i" -ge 30 ]; then
+    echo "Postgres did not become reachable at $host:5432" >&2
+    exit 1
+  fi
   sleep 1
 done
 
