@@ -59,8 +59,11 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate
 
-      - name: Apply database migrations
-        run: npx prisma migrate deploy
+      - name: Generate PostgreSQL baseline preview
+        run: npx prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script | tee /tmp/postgres-baseline.sql
+
+      - name: Synchronize test schema
+        run: npx prisma db push --skip-generate
 
       - name: Type check
         run: npx tsc --noEmit
