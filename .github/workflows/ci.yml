@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: CI
 
 on:
   push:
@@ -6,38 +6,118 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  security-events: write
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  ci:
-    name: Type Check · Lint · Test · Build
+  validate:
+    name: Typecheck · Lint · Test · Build
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: astra
+          POSTGRES_PASSWORD: astra_ci
+          POSTGRES_DB: astra_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U astra -d astra_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://astra:astra_ci@localhost:5432/astra_ci
+      AUTH_SECRET: ci-only-auth-secret-32-characters-minimum
+      NEXTAUTH_SECRET: ci-only-auth-secret-32-characters-minimum
+      NEXTAUTH_URL: http://localhost:3000
+      ASTRA_ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+      AI_PROVIDER: NONE
+
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Apply PostgreSQL migrations
+        run: npx prisma migrate deploy
 
       - name: Type check
         run: npx tsc --noEmit
 
       - name: Lint
-        run: npx eslint src/
+        run: npm run lint
 
-      - name: Run tests
-        run: npx vitest run
+      - name: Unit tests
+        run: npm test
 
-      - name: Build
+      - name: Integration tests
+        run: npm run test:integration
+
+      - name: Smoke tests
+        run: npm run test:smoke
+
+      - name: Production build
         run: npm run build
+
+  codeql:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+      - uses: github/codeql-action/analyze@v3
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
         env:
-          # Provide minimal env so Next.js build doesn't fail on missing vars
-          DATABASE_URL: file:/tmp/test.db
-          AUTH_SECRET: ci-placeholder-secret-32-chars-long
-          NEXTAUTH_SECRET: ci-placeholder-secret-32-chars-long
-          NEXTAUTH_URL: http://localhost:3000
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  trivy:
+    name: Runtime image vulnerability scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build runtime image
+        run: docker build --target runner -t astra-ciso:ci .
+
+      - name: Scan runtime image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: astra-ciso:ci
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"

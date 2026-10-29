@@ -49,21 +49,62 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                         user.id = existing.id;
                         (user as { role?: string }).role = existing.role;
                     } else {
-                        // First-time Google user — auto-provision with VIEWER role
+                        const email = user.email.toLowerCase();
+                        const now = new Date();
+                        const signupMode = (process.env.AUTH_SIGNUP_MODE || 'INVITE_ONLY').trim().toUpperCase();
+
+                        const invite = await prisma.teamInvite.findFirst({
+                            where: {
+                                email: { equals: email, mode: 'insensitive' },
+                                status: 'pending',
+                                expiresAt: { gt: now },
+                            },
+                            orderBy: { createdAt: 'desc' },
+                        });
+
+                        const allowedDomains = (process.env.ALLOWED_EMAIL_DOMAINS || '')
+                            .split(',')
+                            .map((d) => d.trim().toLowerCase())
+                            .filter(Boolean);
+                        const domain = email.split('@')[1] ?? '';
+                        const domainAllowed = signupMode === 'DOMAIN'
+                            && allowedDomains.length > 0
+                            && allowedDomains.includes(domain);
+
+                        if (!invite && !domainAllowed) {
+                            await logAudit({
+                                userName: user.name ?? undefined,
+                                action: 'LOGIN',
+                                category: 'AUTH',
+                                resource: 'User',
+                                description: `Rejected uninvited Google SSO signup for ${email}`,
+                                severity: 'WARNING',
+                            });
+                            return false;
+                        }
+
+                        const role = invite?.role ?? 'VIEWER';
                         const newUser = await prisma.user.create({
                             data: {
-                                email: user.email,
-                                name: user.name ?? user.email.split('@')[0],
+                                email,
+                                name: user.name ?? email.split('@')[0],
                                 image: user.image,
-                                role: 'VIEWER',
+                                role,
                                 ssoProvider: 'google',
-                                lastActiveAt: new Date(),
+                                lastActiveAt: now,
                             },
                         });
+
+                        if (invite) {
+                            await prisma.teamInvite.update({
+                                where: { id: invite.id },
+                                data: { status: 'accepted' },
+                            });
+                        }
+
                         user.id = newUser.id;
                         (user as { role?: string }).role = newUser.role;
 
-                        // Audit: auto-provisioned
                         await logAudit({
                             userId: newUser.id,
                             userName: newUser.name ?? undefined,
@@ -71,7 +112,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                             category: 'AUTH',
                             resource: 'User',
                             resourceId: newUser.id,
-                            description: `User auto-provisioned from Google SSO: ${newUser.email}`,
+                            description: `User provisioned from Google SSO: ${newUser.email} (${invite ? 'invite' : 'allowed domain'})`,
                             severity: 'INFO',
                         });
                     }

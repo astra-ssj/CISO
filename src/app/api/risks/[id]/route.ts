@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { calculateRisk, type RiskScenario } from '@/lib/risk-engine/fair';
 import prisma from '@/lib/prisma';
+import { requirePermission } from '@/lib/api/require-session';
 
 const THREAT_ACTORS: RiskScenario['threatActor'][] = ['NATION_STATE', 'CYBER_CRIMINAL', 'INSIDER', 'HACKTIVIST', 'SCRIPT_KIDDIE'];
 
@@ -43,6 +44,8 @@ function mapRiskToEntry(r: Awaited<ReturnType<typeof prisma.riskScenario.findUni
 
 // PUT /api/risks/[id] — Update risk scenario (and optionally append history)
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    const { error } = await requirePermission('risk:write');
+    if (error) return error;
     try {
         const { id } = await params;
         const body = await req.json();
@@ -94,6 +97,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
 // DELETE /api/risks/[id]
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+    const { error } = await requirePermission('risk:write');
+    if (error) return error;
     try {
         const { id } = await params;
         await prisma.riskScenario.delete({ where: { id } });

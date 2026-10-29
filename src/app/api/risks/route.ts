@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { calculateRisk, type RiskScenario } from '@/lib/risk-engine/fair';
 import prisma from '@/lib/prisma';
 import { logAudit } from '@/lib/audit/audit-service';
+import { requirePermission } from '@/lib/api/require-session';
 
 const THREAT_ACTORS: RiskScenario['threatActor'][] = ['NATION_STATE', 'CYBER_CRIMINAL', 'INSIDER', 'HACKTIVIST', 'SCRIPT_KIDDIE'];
 
@@ -58,6 +59,8 @@ export async function GET() {
 
 // POST /api/risks — Create a new risk scenario
 export async function POST(req: Request) {
+    const { error } = await requirePermission('risk:write');
+    if (error) return error;
     try {
         const body = await req.json();
         const { scenario, owner, notes } = body;

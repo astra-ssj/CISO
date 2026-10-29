@@ -16,12 +16,8 @@ import {
     Sparkles,
     HelpCircle,
     Settings,
-    Target,
     Building2,
-    Radar,
-    AlertTriangle,
     Plug,
-    Siren,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Zap,
 } from 'lucide-react';
@@ -30,18 +26,13 @@ import { signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { ChatInterface } from '@/components/ui/chat-interface';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { GlobalThreatPulse } from '@/components/federated/global-threat-pulse';
 import { NotificationCenter } from '@/components/notifications/notification-center';
 
 const navItems = [
     { name: 'Command Center', href: '/', icon: LayoutDashboard },
     { name: 'Decision Center', href: '/decisions', icon: Brain },
-    { name: 'Strategy & OKRs', href: '/strategy', icon: Target },
     { name: 'Governance & Risk', href: '/governance', icon: Shield },
     { name: 'Vendor Risk', href: '/vendors', icon: Building2 },
-    { name: 'Incidents', href: '/incidents', icon: AlertTriangle },
-    { name: 'Exercises', href: '/exercises', icon: Siren },
-    { name: 'Threat Intel', href: '/intelligence', icon: Radar },
     { name: 'Integrations', href: '/integrations', icon: Plug },
     { name: 'Settings', href: '/settings', icon: Settings, separator: true },
     { name: 'Help Center', href: '/help', icon: HelpCircle },
@@ -202,7 +193,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                                     <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                                     <span>SYS_STATUS: ONLINE</span>
                                 </div>
-                                <div className="opacity-60">VER: 0.9.3 (UNICORN)</div>
+                                <div className="opacity-60">COMMUNITY PREVIEW</div>
                             </div>
                         )}
                     </div>
@@ -262,9 +253,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
                             </div>
                         </div>
                     </header>
-
-                    {/* Federated Defense Ticker */}
-                    <GlobalThreatPulse />
 
                     {/* Page Content */}
                     <div className="flex-1 overflow-auto p-4 md:p-6 lg:p-8 scroll-smooth">

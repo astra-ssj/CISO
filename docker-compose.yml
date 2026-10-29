@@ -1,58 +1,79 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: astra-postgres
     environment:
       POSTGRES_USER: astra
-      POSTGRES_PASSWORD: astra
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-astra_local}
       POSTGRES_DB: astra
     ports:
-      - "${ASTRA_PG_PORT:-5432}:5432"
+      - "127.0.0.1:${ASTRA_PG_PORT:-5432}:5432"
     volumes:
       - astra-pg-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U astra -d astra"]
       interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 20
     restart: unless-stopped
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: tools
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: "postgresql://astra:${POSTGRES_PASSWORD:-astra_local}@postgres:5432/astra"
+    command: ["npx", "prisma", "migrate", "deploy"]
+    restart: "no"
+
+  seed-demo:
+    profiles: ["demo"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: tools
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: "postgresql://astra:${POSTGRES_PASSWORD:-astra_local}@postgres:5432/astra"
+      ASTRA_MODE: demo
+    command: ["npx", "prisma", "db", "seed"]
+    restart: "no"
 
   astra-ciso:
     build:
       context: .
       dockerfile: Dockerfile
-    image: astra-ciso:latest
-    container_name: astra-ciso
+      target: runner
+    image: astra-ciso:local
     depends_on:
-      postgres:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     env_file:
-      - .env.local
+      - .env
     environment:
       NODE_ENV: production
-      DATABASE_URL: "postgresql://astra:astra@postgres:5432/astra"
-      AUTH_SECRET: ${AUTH_SECRET:-change-me-in-production}
+      DATABASE_URL: "postgresql://astra:${POSTGRES_PASSWORD:-astra_local}@postgres:5432/astra"
+      EVIDENCE_STORAGE_PATH: /data/evidence
       AUTH_TRUST_HOST: "true"
-      JWT_SECRET: ${JWT_SECRET:-${AUTH_SECRET:-change-me-in-production}}
-      VERSION: ${VERSION:-3.0.0-decision.2}
-      ASTRA_ORG_NAME: ${ASTRA_ORG_NAME:-}
-      ASTRA_JURISDICTION: ${ASTRA_JURISDICTION:-}
-      ASTRA_INDUSTRY: ${ASTRA_INDUSTRY:-}
-      ASTRA_ORG_SIZE: ${ASTRA_ORG_SIZE:-}
-      ASTRA_CLOUD_MODEL: ${ASTRA_CLOUD_MODEL:-}
-      AI_PROVIDER: ${AI_PROVIDER:-ANTHROPIC}
-      OPENNEKO_URL: ${OPENNEKO_URL:-http://localhost:8080}
-      ASTRA_INTERNAL_SECRET: ${ASTRA_INTERNAL_SECRET:-}
     volumes:
       - evidence-data:/data/evidence
     healthcheck:
-      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
     restart: unless-stopped
 
 volumes:

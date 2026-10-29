@@ -1,29 +1,32 @@
 /**
  * AES-256-GCM encryption/decryption for Integration credentials.
- * Key is derived from NEXTAUTH_SECRET using scrypt.
- * Output format: iv:authTag:ciphertext (all hex-encoded, colon-separated)
+ *
+ * The encryption root key is intentionally separate from the Auth.js signing
+ * secret so authentication-secret rotation does not make stored connector
+ * credentials undecryptable.
  *
  * SERVER-SIDE ONLY — never import this in client components.
  */
 
-import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'crypto';
 
 const ALGORITHM = 'aes-256-gcm';
-const IV_LENGTH = 12;   // 96-bit IV for GCM
-const SALT = 'astra-ciso-integration-hub-v1'; // fixed salt (key is already a secret)
+const IV_LENGTH = 12;
 
 function deriveKey(): Buffer {
-    const secret = process.env.NEXTAUTH_SECRET;
+    const secret = process.env.ASTRA_ENCRYPTION_KEY?.trim();
     if (!secret) {
-        throw new Error('NEXTAUTH_SECRET is not set — cannot encrypt/decrypt integration credentials');
+        throw new Error('ASTRA_ENCRYPTION_KEY is not set — cannot encrypt/decrypt integration credentials');
     }
-    return scryptSync(secret, SALT, 32); // 256-bit key
+
+    // Accept a 64-character hex key directly; otherwise derive a stable 32-byte
+    // key from the configured secret without coupling to authentication.
+    if (/^[a-fA-F0-9]{64}$/.test(secret)) {
+        return Buffer.from(secret, 'hex');
+    }
+    return createHash('sha256').update(secret, 'utf8').digest();
 }
 
-/**
- * Encrypts a plaintext string using AES-256-GCM.
- * Returns: `iv:authTag:ciphertext` (all hex-encoded)
- */
 export function encrypt(plaintext: string): string {
     const key = deriveKey();
     const iv = randomBytes(IV_LENGTH);
@@ -43,10 +46,6 @@ export function encrypt(plaintext: string): string {
     ].join(':');
 }
 
-/**
- * Decrypts a ciphertext string produced by `encrypt()`.
- * Expects: `iv:authTag:ciphertext` (all hex-encoded)
- */
 export function decrypt(ciphertext: string): string {
     if (!ciphertext || ciphertext.trim() === '') return '';
 
@@ -64,18 +63,12 @@ export function decrypt(ciphertext: string): string {
     const decipher = createDecipheriv(ALGORITHM, key, iv);
     decipher.setAuthTag(authTag);
 
-    const decrypted = Buffer.concat([
+    return Buffer.concat([
         decipher.update(encrypted),
         decipher.final(),
-    ]);
-
-    return decrypted.toString('utf8');
+    ]).toString('utf8');
 }
 
-/**
- * Masks a secret value by showing only the last N characters.
- * Used for API responses to avoid leaking credentials.
- */
 export function maskSecret(value: string, showLast = 4): string {
     if (!value || value.length <= showLast) return '****';
     return '•'.repeat(Math.min(value.length - showLast, 12)) + value.slice(-showLast);

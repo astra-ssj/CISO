@@ -1,9 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import Anthropic from '@anthropic-ai/sdk';
 
-// ------------------------------------------------------------------
-// Interfaces
-// ------------------------------------------------------------------
 export interface AIUsageMetadata {
     promptTokens: number;
     completionTokens: number;
@@ -26,27 +23,36 @@ export interface UnifiedAIProvider {
     generateStructuredContent(prompt: string, schema?: Record<string, unknown>): Promise<AIResponse<Record<string, unknown>>>;
 }
 
-// ------------------------------------------------------------------
-// Google Gemini Provider
-// ------------------------------------------------------------------
+class DisabledAIProvider implements UnifiedAIProvider {
+    private disabled(): never {
+        throw new Error('AI is disabled. Set AI_PROVIDER=ANTHROPIC or AI_PROVIDER=GOOGLE and configure its API key.');
+    }
+
+    createChatSession(): UnifiedChatSession {
+        return { sendMessage: async () => this.disabled() };
+    }
+
+    async generateContent(): Promise<AIResponse<string>> {
+        return this.disabled();
+    }
+
+    async generateStructuredContent(): Promise<AIResponse<Record<string, unknown>>> {
+        return this.disabled();
+    }
+}
+
 class GeminiProvider implements UnifiedAIProvider {
     private client: GoogleGenerativeAI;
     private modelName: string;
 
-    constructor(apiKey: string, modelName: string = 'gemini-2.0-flash-001') {
+    constructor(apiKey: string, modelName: string = process.env.GOOGLE_MODEL || 'gemini-2.0-flash-001') {
         this.client = new GoogleGenerativeAI(apiKey);
         this.modelName = modelName;
     }
 
     createChatSession(systemInstruction: string, history: Array<UnifiedChatMessage>): UnifiedChatSession {
-        const model = this.client.getGenerativeModel({
-            model: this.modelName,
-            systemInstruction
-        });
-
-        const chat = model.startChat({
-            history: history as unknown as import('@google/generative-ai').Content[]
-        });
+        const model = this.client.getGenerativeModel({ model: this.modelName, systemInstruction });
+        const chat = model.startChat({ history: history as unknown as import('@google/generative-ai').Content[] });
 
         return {
             sendMessage: async (msg: string) => {
@@ -56,10 +62,10 @@ class GeminiProvider implements UnifiedAIProvider {
                     data: result.response.text(),
                     usage: usageMetadata ? {
                         promptTokens: usageMetadata.promptTokenCount,
-                        completionTokens: usageMetadata.candidatesTokenCount
-                    } : undefined
+                        completionTokens: usageMetadata.candidatesTokenCount,
+                    } : undefined,
                 };
-            }
+            },
         };
     }
 
@@ -71,80 +77,67 @@ class GeminiProvider implements UnifiedAIProvider {
             data: result.response.text(),
             usage: usageMetadata ? {
                 promptTokens: usageMetadata.promptTokenCount,
-                completionTokens: usageMetadata.candidatesTokenCount
-            } : undefined
+                completionTokens: usageMetadata.candidatesTokenCount,
+            } : undefined,
         };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async generateStructuredContent(prompt: string, _schema?: Record<string, unknown>): Promise<AIResponse<Record<string, unknown>>> {
+    async generateStructuredContent(prompt: string): Promise<AIResponse<Record<string, unknown>>> {
         const model = this.client.getGenerativeModel({
             model: this.modelName,
-            generationConfig: { responseMimeType: "application/json" }
+            generationConfig: { responseMimeType: 'application/json' },
         });
-
-        const result = await model.generateContent(prompt + "\n\nRespond locally in JSON.");
+        const result = await model.generateContent(prompt + '\n\nRespond only in valid JSON.');
         const text = result.response.text();
         const usageMetadata = result.response.usageMetadata;
-
         const usage = usageMetadata ? {
             promptTokens: usageMetadata.promptTokenCount,
-            completionTokens: usageMetadata.candidatesTokenCount
+            completionTokens: usageMetadata.candidatesTokenCount,
         } : undefined;
 
         try {
             return { data: JSON.parse(text), usage };
-        } catch (e) {
-            console.error("Gemini JSON parse failed, attempting cleanup", e);
+        } catch {
             const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
             return { data: JSON.parse(cleaned), usage };
         }
     }
 }
 
-// ------------------------------------------------------------------
-// Anthropic Claude Provider
-// ------------------------------------------------------------------
 class AnthropicProvider implements UnifiedAIProvider {
     private client: Anthropic;
     private modelName: string;
 
-    constructor(apiKey: string, modelName: string = 'claude-3-haiku-20240307') {
+    constructor(apiKey: string, modelName: string = process.env.ANTHROPIC_MODEL || 'claude-3-haiku-20240307') {
         this.client = new Anthropic({ apiKey });
         this.modelName = modelName;
     }
 
     createChatSession(systemInstruction: string, history: Array<UnifiedChatMessage>): UnifiedChatSession {
-        const internalHistory = history.map((msg: UnifiedChatMessage) => ({
+        const internalHistory = history.map((msg) => ({
             role: (msg.role === 'model' ? 'assistant' : msg.role) as 'user' | 'assistant',
-            content: (msg.parts as Array<{ text: string }>)?.[0]?.text || ''
+            content: msg.parts?.[0]?.text || msg.content || '',
         }));
 
         return {
             sendMessage: async (msg: string) => {
                 internalHistory.push({ role: 'user', content: msg });
-
                 const response = await this.client.messages.create({
                     model: this.modelName,
                     max_tokens: 4096,
                     system: systemInstruction,
-                    messages: internalHistory
+                    messages: internalHistory,
                 });
-
-                const text = response.content
-                    .filter(block => block.type === 'text')
-                    .map(block => block.text)
-                    .join('\n');
-
+                const text = response.content.filter((b) => b.type === 'text').map((b) => b.text).join('\n');
                 internalHistory.push({ role: 'assistant', content: text });
                 return {
                     data: text,
                     usage: {
                         promptTokens: response.usage.input_tokens,
-                        completionTokens: response.usage.output_tokens
-                    }
+                        completionTokens: response.usage.output_tokens,
+                    },
                 };
-            }
+            },
         };
     }
 
@@ -152,77 +145,63 @@ class AnthropicProvider implements UnifiedAIProvider {
         const response = await this.client.messages.create({
             model: this.modelName,
             max_tokens: 4096,
-            messages: [{ role: 'user', content: prompt }]
+            messages: [{ role: 'user', content: prompt }],
         });
-
         return {
-            data: response.content
-                .filter(block => block.type === 'text')
-                .map(block => block.text)
-                .join('\n'),
+            data: response.content.filter((b) => b.type === 'text').map((b) => b.text).join('\n'),
             usage: {
                 promptTokens: response.usage.input_tokens,
-                completionTokens: response.usage.output_tokens
-            }
+                completionTokens: response.usage.output_tokens,
+            },
         };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async generateStructuredContent(prompt: string, _schema?: Record<string, unknown>): Promise<AIResponse<Record<string, unknown>>> {
-        // Claude doesn't have a strict JSON mode flag like Gemini/OpenAI yet in the SDK 
-        // effectively, but we prompt-engineer it.
+    async generateStructuredContent(prompt: string): Promise<AIResponse<Record<string, unknown>>> {
         const response = await this.client.messages.create({
             model: this.modelName,
             max_tokens: 4096,
-            system: "You are a data extraction AI. Respond ONLY with valid JSON. Do not include markdown formatting.",
-            messages: [{ role: 'user', content: prompt }]
+            system: 'Respond ONLY with valid JSON. Do not include markdown formatting.',
+            messages: [{ role: 'user', content: prompt }],
         });
-
-        const text = response.content
-            .filter(block => block.type === 'text')
-            .map(block => block.text)
-            .join('\n');
-
+        const text = response.content.filter((b) => b.type === 'text').map((b) => b.text).join('\n');
         const usage = {
             promptTokens: response.usage.input_tokens,
-            completionTokens: response.usage.output_tokens
+            completionTokens: response.usage.output_tokens,
         };
-
         try {
             return { data: JSON.parse(text), usage };
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (_e) {
+        } catch {
             const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
             return { data: JSON.parse(cleaned), usage };
         }
     }
 }
 
-// ------------------------------------------------------------------
-// Factory
-// ------------------------------------------------------------------
-export const getAIProvider = (): UnifiedAIProvider => {
-    const providerType = process.env.AI_PROVIDER || 'GEMINI';
+export type SupportedAIProvider = 'NONE' | 'ANTHROPIC' | 'GOOGLE';
 
-    console.log(`[ASTRA CORE] AI Provider Selected: ${providerType}`);
+export const getAIProvider = (): UnifiedAIProvider => {
+    const providerType = (process.env.AI_PROVIDER || 'NONE').trim().toUpperCase() as SupportedAIProvider;
+
+    if (providerType === 'NONE') return new DisabledAIProvider();
 
     if (providerType === 'ANTHROPIC') {
-        const apiKey = process.env.ANTHROPIC_API_KEY || '';
-        if (!apiKey) throw new Error("ANTHROPIC_API_KEY not found");
+        const apiKey = process.env.ANTHROPIC_API_KEY?.trim();
+        if (!apiKey) throw new Error('ANTHROPIC_API_KEY not found');
         return new AnthropicProvider(apiKey);
     }
 
-    // Default to Gemini
-    const apiKey = (process.env.GOOGLE_API_KEY || '').trim();
-    if (!apiKey) console.warn("GOOGLE_API_KEY not found");
-    return new GeminiProvider(apiKey);
+    if (providerType === 'GOOGLE') {
+        const apiKey = process.env.GOOGLE_API_KEY?.trim();
+        if (!apiKey) throw new Error('GOOGLE_API_KEY not found');
+        return new GeminiProvider(apiKey);
+    }
+
+    throw new Error(`Unsupported AI_PROVIDER "${providerType}". Supported: NONE, ANTHROPIC, GOOGLE.`);
 };
 
-// Kept for backward compatibility during refactor if needed, 
-// but we will update route.ts to use getAIProvider()
-// export const generativeModel = ... (Removed)
-
-// Helper to check availability
-export const isAIConfigured = () => {
-    return !!process.env.GOOGLE_API_KEY || !!process.env.ANTHROPIC_API_KEY;
+export const isAIConfigured = (): boolean => {
+    const providerType = (process.env.AI_PROVIDER || 'NONE').trim().toUpperCase();
+    if (providerType === 'ANTHROPIC') return Boolean(process.env.ANTHROPIC_API_KEY?.trim());
+    if (providerType === 'GOOGLE') return Boolean(process.env.GOOGLE_API_KEY?.trim());
+    return false;
 };

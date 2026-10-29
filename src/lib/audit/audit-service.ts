@@ -12,7 +12,7 @@ export type AuditAction =
 export type AuditCategory =
     | 'AUTH' | 'COMPLIANCE' | 'RISK' | 'INCIDENT'
     | 'VENDOR' | 'INTELLIGENCE' | 'APPSEC' | 'SETTINGS'
-    | 'INTEGRATION' | 'CAIQ' | 'EVIDENCE' | 'POLICY';
+    | 'INTEGRATION' | 'CAIQ' | 'EVIDENCE' | 'POLICY' | 'DECISION';
 
 export type AuditSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 

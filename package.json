@@ -4,7 +4,7 @@
   "description": "Where security decisions get made, evidenced, and remembered.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SristiNative/CISO.git"
+    "url": "git+https://github.com/astra-ssj/CISO.git"
   },
   "license": "MIT",
   "scripts": {
@@ -18,11 +18,13 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:integration": "npx tsx tests/integration/run-all.ts",
-    "test:smoke": "npx tsx tests/smoke/run-all.ts"
+    "test:smoke": "npx tsx tests/smoke/run-all.ts",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed:demo": "ASTRA_MODE=demo prisma db seed"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.72.1",
-    "@auth/prisma-adapter": "^2.11.1",
+    "@auth/prisma-adapter": "2.11.3",
     "@ax-llm/ax": "^16.1.0",
     "@deck.gl/aggregation-layers": "^9.2.9",
     "@deck.gl/core": "^9.2.9",
@@ -48,7 +50,6 @@
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@types/file-saver": "^2.0.7",
-    "@types/nodemailer": "^7.0.11",
     "@upstash/redis": "^1.36.2",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
@@ -65,12 +66,11 @@
     "jspdf-autotable": "^5.0.7",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.563.0",
-    "maplibre-gl": "^5.19.0",
+    "maplibre-gl": "6.4.1",
     "mermaid": "^10.9.5",
-    "next": "16.1.6",
-    "next-auth": "^5.0.0-beta.30",
+    "next": "16.4.3",
+    "next-auth": "5.0.0-beta.32",
     "next-themes": "^0.4.6",
-    "nodemailer": "^7.0.13",
     "officeparser": "^6.0.4",
     "openai": "^6.17.0",
     "pg": "^8.16.3",
@@ -99,7 +99,7 @@
     "@types/react-dom": "^19",
     "@vitest/coverage-v8": "^4.0.18",
     "eslint": "^9.39.2",
-    "eslint-config-next": "^16.1.6",
+    "eslint-config-next": "16.4.3",
     "jsdom": "^28.1.0",
     "prisma": "^7.4.0",
     "tailwindcss": "^4",
@@ -110,5 +110,12 @@
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
+  },
+  "homepage": "https://github.com/astra-ssj/CISO#readme",
+  "bugs": {
+    "url": "https://github.com/astra-ssj/CISO/issues"
+  },
+  "overrides": {
+    "@auth/core": "0.41.3"
   }
 }

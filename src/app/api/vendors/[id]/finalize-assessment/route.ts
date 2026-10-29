@@ -1,67 +1,104 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { requirePermission } from '@/lib/api/require-session';
 import { runCaiqScore } from '@/lib/skills/caiq-score';
 import { runGoNoGo } from '@/lib/skills/vendor-gonogo';
-import { runFiveByFive } from '@/lib/skills/risk-five-by-five';
 import { persistSkillRun } from '@/lib/skills/persist';
+import { canonicalizeAssessmentAnswer } from '@/lib/caiq/answer-normalizer';
 
+interface AssessmentQuestion {
+    domain?: string;
+    answer?: unknown;
+    answerType?: unknown;
+    matchedEntryId?: string;
+}
+
+
+/**
+ * Finalize assessment computation.
+ *
+ * This endpoint intentionally computes and persists the assessment + SkillRuns,
+ * but does NOT approve/reject the vendor. The returned go/no-go is a
+ * recommendation for a human decision workflow.
+ */
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    const { user, error } = await requirePermission('vendor:write');
+    if (error) return error;
+
     try {
         const { id: vendorId } = await params;
-        const body = await req.json();
-        const { questions, assessor } = body; // expecting questions array from Quick Answer
-        
-        if (!questions || !Array.isArray(questions)) {
+        const body = await req.json() as { questions?: AssessmentQuestion[]; assessor?: string };
+        const questions = body.questions;
+        const assessor = body.assessor || user?.name || 'System';
+
+        if (!Array.isArray(questions) || questions.length === 0) {
             return NextResponse.json({ error: 'questions array is required' }, { status: 400 });
         }
 
-        // Auto-scoring logic
-        // 1. Calculate domain completeness and compliance
-        // Here we do a simplified score based on how many questions were answered 'YES' or explicitly passed vs total
-        // We simulate a breakdown per domain
-        const domainScores: Record<string, { total: number; passed: number; score: number }> = {};
-        let totalPassed = 0;
+        const vendor = await prisma.vendor.findUnique({ where: { id: vendorId } });
+        if (!vendor) return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
+
+        const domainScores: Record<string, {
+            total: number;
+            yes: number;
+            no: number;
+            partial: number;
+            na: number;
+            unknown: number;
+            score: number;
+        }> = {};
+
+        let weightedPassed = 0;
+        let scorableCount = 0;
         let criticalGaps = 0;
 
-        questions.forEach((q: { domain?: string; answer?: unknown }) => {
-            const domain = q.domain || 'General';
-            if (!domainScores[domain]) {
-                domainScores[domain] = { total: 0, passed: 0, score: 0 };
-            }
-            domainScores[domain].total++;
-            
-            // Basic simplistic grading rule
-            // In a real scenario, this relies on proper answer mappings
-            const answer = String(q.answer).toLowerCase();
-            const isPassed = ['yes', 'true', 'implemented', 'compliant'].some(keyword => answer.includes(keyword));
-            const isFailed = ['no', 'false', 'not implemented', 'non-compliant'].some(keyword => answer.includes(keyword));
-            
-            if (isPassed || (!isFailed && answer.length > 5)) {
-                domainScores[domain].passed++;
-                totalPassed++;
-            } else if (isFailed) {
-                // assume failed equals a critical gap for this prototype
-                criticalGaps++;
-            }
-        });
+        for (const question of questions) {
+            const domain = question.domain?.trim() || 'General';
+            const state = canonicalizeAssessmentAnswer(question);
+            domainScores[domain] ??= {
+                total: 0, yes: 0, no: 0, partial: 0, na: 0, unknown: 0, score: 0,
+            };
+            const domainScore = domainScores[domain];
+            domainScore.total += 1;
 
-        // Calculate overall score 0-100
-        const overallScore = questions.length > 0 
-            ? Math.round((totalPassed / questions.length) * 100) 
-            : 0;
+            if (state === 'NA') {
+                domainScore.na += 1;
+                continue;
+            }
 
-        // Auto risk scoring to Tier
-        // 0-40 Critical, 41-60 High, 61-80 Medium, 81-100 Low
+            scorableCount += 1;
+            if (state === 'YES') {
+                domainScore.yes += 1;
+                weightedPassed += 1;
+            } else if (state === 'PARTIAL') {
+                domainScore.partial += 1;
+                weightedPassed += 0.5;
+            } else if (state === 'NO') {
+                domainScore.no += 1;
+                criticalGaps += 1;
+            } else {
+                // UNKNOWN is deliberately not a pass. Ambiguous prose must be
+                // normalized by the user/AI-draft review flow first.
+                domainScore.unknown += 1;
+            }
+        }
+
+        for (const domain of Object.values(domainScores)) {
+            const applicable = domain.yes + domain.no + domain.partial + domain.unknown;
+            domain.score = applicable === 0
+                ? 100
+                : Math.round(((domain.yes + (domain.partial * 0.5)) / applicable) * 100);
+        }
+
+        const overallScore = scorableCount === 0
+            ? 0
+            : Math.round((weightedPassed / scorableCount) * 100);
+
         let riskTier = 'Low';
         if (overallScore <= 40) riskTier = 'Critical';
         else if (overallScore <= 60) riskTier = 'High';
         else if (overallScore <= 80) riskTier = 'Medium';
 
-        // 2. Grab vendor to know their data access
-        const vendor = await prisma.vendor.findUnique({ where: { id: vendorId } });
-        if (!vendor) return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
-
-        // 3. Create Assessment Record
         await prisma.vendorAssessment.create({
             data: {
                 vendorId,
@@ -70,29 +107,38 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                 domainScores: JSON.stringify(domainScores),
                 criticalGaps,
                 status: 'Complete',
-                assessedBy: assessor || 'System',
-            }
+                assessedBy: assessor,
+            },
         });
 
-        // 4. Update the Vendor
-        const hits = (questions as Array<{ answer?: unknown; matchedEntryId?: string }>).map((q) => ({
-            entryId: q.matchedEntryId ? String(q.matchedEntryId) : (String(q.answer || '').length > 0 ? 'answered' : null),
-            confidence: 'medium' as const,
-            matchTier: (q.matchedEntryId ? 1 : 0) as 0 | 1 | 2 | 3,
+        // Knowledge coverage means an approved KB match exists. A non-empty
+        // free-text answer is not automatically treated as covered.
+        const hits = questions.map((q) => ({
+            entryId: q.matchedEntryId ? String(q.matchedEntryId) : null,
+            confidence: (q.matchedEntryId ? 'high' : 'low') as 'high' | 'low',
+            matchTier: (q.matchedEntryId ? 1 : 0) as 0 | 1,
         }));
+
         const scoreRun = runCaiqScore({ hits }, new Date().toISOString());
-        await persistSkillRun(scoreRun);
+        const scoreRunId = await persistSkillRun(scoreRun);
 
         const lastScan = await prisma.observation.findFirst({
-            where: { integrationId: 'shodan', operation: { in: ['vendorScan', 'attackSurface'] }, status: 'ok' },
+            where: {
+                integrationId: 'shodan',
+                operation: { in: ['vendorScan', 'attackSurface'] },
+                status: 'ok',
+            },
             orderBy: { fetchedAt: 'desc' },
         });
+
         let shodanRiskScore: number | null = null;
         if (lastScan?.payload) {
             try {
                 const parsed = JSON.parse(lastScan.payload) as { riskScore?: number };
                 if (typeof parsed.riskScore === 'number') shodanRiskScore = parsed.riskScore;
-            } catch { /* ignore */ }
+            } catch {
+                // Corrupt/legacy observations are ignored rather than invented.
+            }
         }
 
         const goNoGo = runGoNoGo({
@@ -102,85 +148,94 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             shodanRiskScore,
             criticalGaps,
         }, scoreRun.asOf);
-        await persistSkillRun(goNoGo, lastScan ? [lastScan.id] : []);
+        const goNoGoRunId = await persistSkillRun(goNoGo, lastScan ? [lastScan.id] : []);
 
-        const vendorStatus = goNoGo.output.decision === 'go'
-            ? 'Approved'
-            : goNoGo.output.decision === 'conditional'
-                ? 'Conditionally Approved'
-                : 'Requires Reassessment';
-
+        // Assessment facts may update immediately, but the recommendation must
+        // not auto-approve/reject the vendor.
         const updatedVendor = await prisma.vendor.update({
             where: { id: vendorId },
             data: {
                 riskScore: overallScore,
                 riskTier,
                 lastAssessedAt: new Date(),
-                status: vendorStatus,
-            }
+                status: 'Under Review',
+            },
         });
 
-        // 5. Auto Create Risk Register entry if High or Critical
-        if (riskTier === 'Critical' || riskTier === 'High') {
-            // High data access + Critical score = likelihood 5, impact 5
-            
-            // parse data access to impact 1-5
-            const accessImpactMap: Record<string, number> = {
-                'None': 1, 'Low': 2, 'Medium': 3, 'High': 4, 'Critical': 5
-            };
-            const impact = accessImpactMap[vendor.dataAccess] || 3;
-            
-            // Risk tier to likelihood 1-5
-            const likelihood = riskTier === 'Critical' ? 5 : 4;
+        const proposedStatus = goNoGo.output.decision === 'go'
+            ? 'Approved'
+            : goNoGo.output.decision === 'conditional'
+                ? 'Conditionally Approved'
+                : 'Requires Reassessment';
 
-            const scored = runFiveByFive({ likelihood, impact }, goNoGo.asOf);
-            await persistSkillRun(scored);
+        const urgency = riskTier === 'Critical'
+            ? 'CRITICAL'
+            : riskTier === 'High'
+                ? 'HIGH'
+                : riskTier === 'Medium'
+                    ? 'MEDIUM'
+                    : 'LOW';
 
-            await prisma.risk.create({
-                data: {
-                    title: `Third-Party Risk: ${vendor.name}`,
-                    description: `Created from ${riskTier} vendor assessment. Overall score: ${overallScore}. Critical Gaps: ${criticalGaps}. goNoGo=${goNoGo.output.decision}.`,
-                    category: 'ThirdParty',
-                    likelihood,
-                    impact,
-                    inherentScore: scored.output.inherentScore,
-                    owner: assessor || 'System',
-                    status: 'Open',
-                    reviewDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+        const decision = await prisma.decision.create({
+            data: {
+                pillar: 'VENDOR',
+                urgency,
+                status: 'PENDING',
+                title: `Vendor assessment: ${vendor.name}`,
+                question: `Should ${vendor.name} be ${proposedStatus.toLowerCase()}?`,
+                context: JSON.stringify({
+                    overallScore,
+                    riskTier,
+                    criticalGaps,
+                    coveragePct: scoreRun.output.coveragePct,
+                    shodanRiskScore,
+                }),
+                recommendationAction: goNoGo.output.decision === 'go'
+                    ? 'APPROVE'
+                    : goNoGo.output.decision === 'conditional'
+                        ? 'APPROVE_WITH_CONDITIONS'
+                        : 'REJECT',
+                recommendationSummary: `Recommended outcome: ${proposedStatus}`,
+                recommendationRationale: goNoGo.output.reasons.join(' '),
+                confidenceValue: 0,
+                confidenceLabel: 'UNSCORED',
+                source: 'SKILL',
+                skillRunId: goNoGoRunId,
+                sourceResourceType: 'VENDOR',
+                sourceResourceId: vendor.id,
+                evidenceIds: JSON.stringify(lastScan ? [lastScan.id] : []),
+                executionType: 'VENDOR_STATUS',
+                executionPayload: JSON.stringify({
                     vendorId: vendor.id,
-                }
-            });
-        } else {
-            // If they improved to Medium/Low, could update residual score of existing risk.
-            const existingRisk = await prisma.risk.findFirst({
-                where: { vendorId: vendor.id, status: 'Open' }
-            });
-            if (existingRisk) {
-                await prisma.risk.update({
-                    where: { id: existingRisk.id },
-                    data: {
-                        residualScore: (riskTier === 'Low' ? 1 : 2) * (existingRisk.impact || 3),
-                        status: 'Mitigating',
-                        description: existingRisk.description + `\n[Auto Update] Vendor reassessed with improved score: ${overallScore} (${riskTier}).`
-                    }
-                });
-            }
-        }
+                    status: proposedStatus,
+                }),
+            },
+        });
 
         return NextResponse.json({
             success: true,
             updatedVendor,
-            newScore: overallScore,
-            riskTier,
-            goNoGo: goNoGo.output,
+            assessment: {
+                overallScore,
+                riskTier,
+                criticalGaps,
+                domainScores,
+            },
             coverage: scoreRun.output,
+            recommendation: {
+                ...goNoGo.output,
+                proposedVendorStatus: proposedStatus,
+                skillRunId: goNoGoRunId,
+                coverageSkillRunId: scoreRunId,
+            },
+            decisionId: decision.id,
+            requiresHumanDecision: true,
         });
-
     } catch (error: unknown) {
         console.error('Vendor finalize-assessment POST:', error);
         return NextResponse.json(
             { error: error instanceof Error ? error.message : 'Unknown error' },
-            { status: 500 }
+            { status: 500 },
         );
     }
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { requirePermission } from '@/lib/api/require-session';
 import prisma from '@/lib/prisma';
 import { getIntegration } from '@/lib/integrations/registry';
 
@@ -7,10 +7,8 @@ export async function POST(
     _req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const session = await auth();
-    if (!session?.user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user, error } = await requirePermission('integration:manage');
+    if (error) return error;
 
     const { id } = await params;
     const def = getIntegration(id);
@@ -18,7 +16,7 @@ export async function POST(
         return NextResponse.json({ error: 'Integration not found' }, { status: 404 });
     }
 
-    const userId = (session.user as { id?: string }).id ?? 'unknown';
+    const userId = user?.id ?? 'unknown';
 
     // Clear the integration row
     await prisma.integration.upsert({

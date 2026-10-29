@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { requirePermission } from '@/lib/api/require-session';
 import prisma from '@/lib/prisma';
 import { getIntegration } from '@/lib/integrations/registry';
 import { encrypt } from '@/lib/crypto';
@@ -8,10 +8,8 @@ export async function POST(
     req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const session = await auth();
-    if (!session?.user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user, error } = await requirePermission('integration:manage');
+    if (error) return error;
 
     const { id } = await params;
     const def = getIntegration(id);
@@ -45,7 +43,7 @@ export async function POST(
     // Encrypt the config blob
     const encryptedConfig = encrypt(JSON.stringify(parsed.data));
 
-    const userId = (session.user as { id?: string }).id ?? 'unknown';
+    const userId = user?.id ?? 'unknown';
 
     // Upsert integration row
     const row = await prisma.integration.upsert({

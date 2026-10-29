@@ -4,7 +4,7 @@ Living inventory. If a screen is not in **REAL** or **EMPTY**, it is still lying
 
 **Rule:** empty is honest. Silent mock is not.
 
-Last updated: 17 August 2026 (`3.0.0-decision.2`)
+Last updated: 29 October 2026 (`chore/oss-v0.1-hardening`)
 
 ## REAL (this slice)
 
@@ -12,7 +12,7 @@ Last updated: 17 August 2026 (`3.0.0-decision.2`)
 |---|---|
 | Login / session | NextAuth + Prisma `User` |
 | Vendor registry, Knowledge Base, CAIQ match | Prisma + `caiq.match` / `caiq.score` SkillRuns |
-| Vendor finalize go/no-go | `vendor.goNoGo` + last Shodan Observation |
+| Vendor assessment recommendation | `vendor.goNoGo` + last Shodan Observation → PENDING Postgres `Decision`; human approval changes vendor status |
 | Policies, Evidence vault, Audit logs | Prisma |
 | 5×5 Risk register | Prisma `Risk` + `risk.fiveByFive` |
 | Exercises (tabletop engine) | Prisma sessions; `tabletop.score` on finish |
@@ -30,7 +30,7 @@ Last updated: 17 August 2026 (`3.0.0-decision.2`)
 
 | Surface | What you see |
 |---|---|
-| Decision Center recorded list | Starts empty (persist key `astra-v3-decision-store`) |
+| Decision Center recorded list | Postgres `Decision`; starts empty until a recommendation or operator creates one |
 | Defense Matrix cells | Em dash until a control assessment exists |
 | Incidents MTTR / active count | Em dash; demo timeline removed |
 | Incidents tabletop tab | Points at `/exercises` |
@@ -68,3 +68,13 @@ Documented so we do not forget.
 2. Is the data real (or clearly empty)?
 3. Can the CISO show an auditor what happened?
 4. Same inputs + same skill version → same output (or a labeled draft)?
+
+
+## OSS v0.1 hardening
+
+- Recorded decisions are server-side Postgres records; localStorage is not authoritative.
+- Vendor assessment finalization creates a recommendation and leaves the vendor `Under Review`.
+- Approving a decision is the operation that may execute an allowlisted state change.
+- AI can be disabled with `AI_PROVIDER=NONE`.
+- Strategy/KPI, Incidents/War Room, Exercises, and Threat Intel remain in the codebase but are not part of the primary v0.1 navigation.
+- Historical SQLite migration files are being replaced by a PostgreSQL baseline for clean installs.

@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { requirePermission } from '@/lib/api/require-session';
 import prisma from '@/lib/prisma';
 import { randomBytes } from 'crypto';
 
 export async function POST(req: NextRequest) {
-    const session = await auth();
-    if (!session?.user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user, error } = await requirePermission('team:invite');
+    if (error) return error;
 
     const body = await req.json() as { email: string; role: string };
     const { email, role } = body;
@@ -30,7 +28,7 @@ export async function POST(req: NextRequest) {
     });
 
     const token = randomBytes(32).toString('hex');
-    const actorId = (session.user as { id?: string }).id ?? 'unknown';
+    const actorId = user?.id ?? 'unknown';
 
     const invite = await prisma.teamInvite.create({
         data: {
@@ -42,32 +40,9 @@ export async function POST(req: NextRequest) {
         },
     });
 
-    // Try to send invite email if SMTP is connected
-    try {
-        const smtpRow = await prisma.integration.findUnique({
-            where: { integrationId: 'email-smtp' },
-        });
-        if (smtpRow && smtpRow.status === 'connected' && smtpRow.config) {
-            const { decrypt } = await import('@/lib/crypto');
-            const smtpConfig = JSON.parse(decrypt(smtpRow.config)) as Record<string, string>;
-            const nodemailer = await import('nodemailer');
-            const transporter = nodemailer.default.createTransport({
-                host: smtpConfig.host,
-                port: parseInt(smtpConfig.port, 10),
-                secure: smtpConfig.tls === 'true',
-                auth: { user: smtpConfig.user, pass: smtpConfig.password },
-            });
-            const inviteUrl = `${process.env.NEXTAUTH_URL}/invite?token=${token}`;
-            await transporter.sendMail({
-                from: `"${smtpConfig.fromName ?? 'Astra CISO'}" <${smtpConfig.fromEmail}>`,
-                to: email,
-                subject: `You've been invited to Astra CISO`,
-                html: `<p>You've been invited to join Astra CISO as <strong>${role}</strong>.</p><p><a href="${inviteUrl}">Accept Invitation</a></p><p>This link expires in 7 days.</p>`,
-            });
-        }
-    } catch {
-        // Email failure is non-fatal; invite still created
-    }
+    // Community Preview does not send invitation email directly. Delivery is
+    // intentionally deferred to a future notification connector so the core
+    // product does not carry an SMTP library into the trusted runtime.
 
     return NextResponse.json({ success: true, inviteId: invite.id });
 }
