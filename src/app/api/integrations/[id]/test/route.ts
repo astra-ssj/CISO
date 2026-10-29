@@ -129,16 +129,10 @@ export async function POST(
             }
 
             case 'email-smtp': {
-                const nodemailer = await import('nodemailer');
-                const { host, port, user, password, tls } = config;
-                const transporter = nodemailer.default.createTransport({
-                    host,
-                    port: parseInt(port, 10),
-                    secure: tls === 'true',
-                    auth: { user, pass: password },
-                });
-                await transporter.verify();
-                result = { success: true, message: `SMTP connection verified to ${host}:${port}` };
+                result = {
+                    success: false,
+                    message: 'SMTP execution is not included in the v0.1 Community Preview.',
+                };
                 break;
             }
 
